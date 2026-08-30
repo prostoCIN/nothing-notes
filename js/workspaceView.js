@@ -1,0 +1,499 @@
+// js/workspaceView.js - Головний контролер мультиколонкового робочого простору
+window.App = window.App || {};
+
+(function() {
+    window.App.smartPositionDropdown = function(triggerEl, dropdownEl, minHeight = 220) {
+        if (!triggerEl || !dropdownEl) return;
+        dropdownEl.classList.remove('open-upward');
+        const triggerRect = triggerEl.getBoundingClientRect();
+        const spaceBelow = window.innerHeight - triggerRect.bottom;
+        if (spaceBelow < minHeight && triggerRect.top > minHeight) {
+            dropdownEl.classList.add('open-upward');
+        }
+    };
+
+    window.App.workspaceView = {
+        init() {
+            this.bindEvents();
+        },
+
+        bindEvents() {
+            // Глобальне закриття всіх випадних списків та контекстних меню при кліку або pointerdown поза ними
+            const handleOutsideClose = (e) => {
+                // Якщо клікнули всередину самого випадаючого меню або кнопки його відкриття — не чіпаємо
+                if (e.target.closest('.sticker-menu-dropdown') ||
+                    e.target.closest('.sticker-emoji-picker-dropdown') ||
+                    e.target.closest('.sticker-tag-dropdown') ||
+                    e.target.closest('.column-filter-dropdown') ||
+                    e.target.closest('.sidebar-context-menu') ||
+                    e.target.closest('.sticker-more-btn') ||
+                    e.target.closest('.sticker-emoji-btn') ||
+                    e.target.closest('.sticker-add-tag-btn') ||
+                    e.target.closest('.column-filter-btn')) {
+                    return;
+                }
+
+                document.querySelectorAll('.sticker-menu-dropdown.active, .sticker-emoji-picker-dropdown.active, .sticker-tag-dropdown.active, .column-filter-dropdown.active, .sidebar-context-menu').forEach(d => {
+                    d.classList.remove('active', 'open-upward');
+                    if (d.classList.contains('sidebar-context-menu')) d.remove();
+                });
+                document.querySelectorAll('.sticker-add-tag-btn.active, .column-filter-btn.active').forEach(b => {
+                    b.classList.remove('active');
+                });
+            };
+
+            document.addEventListener('pointerdown', handleOutsideClose, true);
+            document.addEventListener('click', handleOutsideClose, true);
+
+            // Закриття меню при натисканні Escape
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    document.querySelectorAll('.sticker-menu-dropdown.active, .sticker-emoji-picker-dropdown.active, .sticker-tag-dropdown.active, .column-filter-dropdown.active, .sidebar-context-menu').forEach(d => {
+                        d.classList.remove('active', 'open-upward');
+                        if (d.classList.contains('sidebar-context-menu')) d.remove();
+                    });
+                }
+            });
+
+            // Прив'язка кнопок плаваючого верхнього острівця дій (Workspace Top Island)
+            const viewColumnsBtn = document.getElementById('island-view-columns-btn');
+            const viewGraphBtn = document.getElementById('island-view-graph-btn');
+            const selectToggleBtn = document.getElementById('island-select-toggle-btn');
+
+            if (viewColumnsBtn) {
+                viewColumnsBtn.addEventListener('click', () => {
+                    const state = window.App.state;
+                    if (state.isGraphView) {
+                        state.isGraphView = false;
+                        window.App.storage.saveGraphViewMode(false);
+                        this.render();
+                    }
+                });
+            }
+
+            if (viewGraphBtn) {
+                viewGraphBtn.addEventListener('click', () => {
+                    const state = window.App.state;
+                    if (!state.isGraphView) {
+                        state.isGraphView = true;
+                        window.App.storage.saveGraphViewMode(true);
+                        this.render();
+                    }
+                });
+            }
+
+            if (selectToggleBtn) {
+                selectToggleBtn.addEventListener('click', () => {
+                    if (window.App.workspaceSelectionBar) {
+                        window.App.workspaceSelectionBar.toggleSelectMode();
+                    }
+                });
+            }
+
+            // Горизонтальний скрол колонок робочої області коліщатком миші
+            const columnsContainer = document.getElementById('columns-container');
+            if (columnsContainer) {
+                columnsContainer.addEventListener('wheel', (e) => {
+                    // Якщо відкриті випадні списки — не перехоплюємо скрол
+                    if (e.target.closest('.sticker-menu-dropdown') ||
+                        e.target.closest('.sticker-emoji-picker-dropdown') ||
+                        e.target.closest('.sticker-tag-dropdown') ||
+                        e.target.closest('.column-filter-dropdown') ||
+                        e.target.closest('.sidebar-context-menu')) {
+                        return;
+                    }
+
+                    // Перевіряємо, чи знаходиться курсор над вертикальним списком нотаток всередині колонки
+                    const notesList = e.target.closest('.column-notes-list');
+                    if (notesList) {
+                        const canScrollDown = e.deltaY > 0 && notesList.scrollTop + notesList.clientHeight < notesList.scrollHeight - 1;
+                        const canScrollUp = e.deltaY < 0 && notesList.scrollTop > 1;
+
+                        // Якщо всередині списку нотаток ще є куди скролити вертикально — скролимо список
+                        if (canScrollDown || canScrollUp) {
+                            return;
+                        }
+                    }
+
+                    // Якщо є куди скролити колонки горизонтально
+                    if (columnsContainer.scrollWidth > columnsContainer.clientWidth) {
+                        if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+                            columnsContainer.scrollLeft += e.deltaY;
+                            e.preventDefault();
+                        }
+                    }
+                }, { passive: false });
+            }
+        },
+
+        toggleChain(noteId, colIndex) {
+            const state = window.App.state;
+            state.activeChain = state.activeChain.slice(0, colIndex + 1);
+
+            const nextNoteId = state.activeChain[colIndex + 1];
+            if (nextNoteId === noteId) {
+                this.render();
+                return;
+            }
+
+            state.activeChain.push(noteId);
+            this.render();
+
+            // Автоматично скролимо контейнер колонок до останньої щойно відкритої колонки
+            setTimeout(() => {
+                const els = window.App.getElements();
+                const container = els.columnsContainer;
+                if (!container) return;
+
+                const lastColIndex = colIndex + 1;
+                const newCol = container.querySelector(`.board-column[data-col-index="${lastColIndex}"]`);
+                if (newCol) {
+                    newCol.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'end' });
+                } else {
+                    container.scrollTo({ left: container.scrollWidth, behavior: 'smooth' });
+                }
+            }, 50);
+        },
+
+        closeColumn(colIndex) {
+            const state = window.App.state;
+            state.activeChain = state.activeChain.slice(0, colIndex);
+            this.render();
+        },
+
+        render() {
+            const els = window.App.getElements();
+            const state = window.App.state;
+            const noteManager = window.App.noteManager;
+
+            if (!els.columnsContainer) return;
+
+            // Зберігаємо позиції скролу колонок, щоб вони не стрибали нагору при Undo/Redo чи оновленні
+            const scrollPositions = new Map();
+            els.columnsContainer.querySelectorAll('.board-column').forEach(col => {
+                const parentKey = col.dataset.parentId || 'root';
+                const scrollList = col.querySelector('.board-column-notes-list');
+                if (scrollList) {
+                    scrollPositions.set(parentKey, scrollList.scrollTop);
+                }
+            });
+
+            // Зберігаємо позиції стікерів перед оновленням для плавної FLIP-анімації
+            const prevStickerRects = new Map();
+            els.columnsContainer.querySelectorAll('.note-sticker[data-note-id]').forEach(card => {
+                prevStickerRects.set(card.dataset.noteId, card.getBoundingClientRect());
+            });
+
+            els.columnsContainer.innerHTML = '';
+
+            const currentBoard = window.App.boardManager.getActiveBoard();
+            if (!currentBoard) return;
+
+            // Синхронізуємо стан верхнього хедера
+            const boardTitleEl = document.getElementById('workspace-header-board-title');
+            if (boardTitleEl) {
+                boardTitleEl.textContent = currentBoard.name || 'Блокнот';
+            }
+
+            const viewColumnsBtn = document.getElementById('island-view-columns-btn');
+            const viewGraphBtn = document.getElementById('island-view-graph-btn');
+            const selectToggleBtn = document.getElementById('island-select-toggle-btn');
+            const selectText = document.getElementById('island-select-text');
+
+            if (viewColumnsBtn && viewGraphBtn) {
+                if (state.isGraphView) {
+                    viewColumnsBtn.classList.remove('active');
+                    viewGraphBtn.classList.add('active');
+                } else {
+                    viewColumnsBtn.classList.add('active');
+                    viewGraphBtn.classList.remove('active');
+                }
+            }
+
+            if (selectToggleBtn && selectText) {
+                if (state.isWorkspaceSelectMode) {
+                    selectToggleBtn.classList.add('active');
+                    selectText.textContent = 'Готово';
+                } else {
+                    selectToggleBtn.classList.remove('active');
+                    selectText.textContent = 'Вибрати';
+                }
+            }
+
+            const topHeader = document.getElementById('workspace-top-header');
+
+            // Якщо увімкнено режим карти нотаток (Obsidian Graph View)
+            if (state.isGraphView && window.App.graphView) {
+                if (topHeader) topHeader.classList.add('graph-mode-active');
+                if (window.App.textSelectionToolbar) {
+                    window.App.textSelectionToolbar.disableBrushMode();
+                    window.App.textSelectionToolbar.hide();
+                }
+                const searchBar = document.getElementById('workspace-search-bar');
+                if (searchBar) searchBar.style.display = 'none';
+
+                els.columnsContainer.classList.remove('has-many-columns');
+                window.App.graphView.render();
+                return;
+            } else {
+                if (topHeader) topHeader.classList.remove('graph-mode-active');
+                if (window.App.graphView) {
+                    window.App.graphView.stopSimulation();
+                }
+            }
+
+            // Якщо колонок 3 і більше — додаємо спеціальний клас (колонки по 50% зі скролом)
+            const totalCols = state.activeChain.length;
+            if (totalCols >= 3) {
+                els.columnsContainer.classList.add('has-many-columns');
+            } else {
+                els.columnsContainer.classList.remove('has-many-columns');
+            }
+
+            state.activeChain.forEach((parentNoteId, colIndex) => {
+                const columnEl = document.createElement('div');
+                columnEl.className = `board-column ${colIndex > 0 ? 'child-column' : 'root-column'}`;
+                columnEl.dataset.colIndex = colIndex;
+                columnEl.dataset.parentId = parentNoteId || 'root';
+
+                let allColNotes = noteManager.getNotesForColumn(parentNoteId);
+
+                // Застосовуємо фільтр тегів для цієї колонки
+                const parentKey = parentNoteId || 'root';
+                const currentColumnFilter = state.activeTagFilters.get(parentKey) || new Set();
+
+                let colNotes = allColNotes;
+                if (currentColumnFilter.size > 0) {
+                    colNotes = allColNotes.filter(note => {
+                        const noteTags = noteManager.getNoteTags(note);
+                        return [...currentColumnFilter].every(t => noteTags.includes(t));
+                    });
+                }
+
+                const totalNoteCount = allColNotes.length;
+
+                // Header
+                const header = document.createElement('div');
+                header.className = 'column-header';
+
+                const titleWrap = document.createElement('div');
+                titleWrap.className = 'column-title-wrap';
+
+                if (colIndex === 0) {
+                    const iconSpan = document.createElement('span');
+                    iconSpan.className = 'column-header-icon';
+                    iconSpan.textContent = '🗒️';
+
+                    const titleH2 = document.createElement('h2');
+                    titleH2.className = 'column-title';
+                    titleH2.textContent = currentBoard.name;
+
+                    const badgeSpan = document.createElement('span');
+                    badgeSpan.className = 'column-count-badge';
+                    badgeSpan.textContent = totalNoteCount;
+
+                    titleWrap.appendChild(iconSpan);
+                    titleWrap.appendChild(titleH2);
+                    titleWrap.appendChild(badgeSpan);
+                } else {
+                    const parentNote = noteManager.getNoteById(parentNoteId);
+                    const parentTitle = parentNote ? parentNote.title.trim() : 'Без назви';
+                    const parentIcon = (parentNote && parentNote.icon) ? parentNote.icon : '📄';
+
+                    const iconSpan = document.createElement('span');
+                    iconSpan.className = 'column-header-icon';
+                    iconSpan.textContent = parentIcon;
+
+                    const titleH2 = document.createElement('h2');
+                    titleH2.className = 'column-title';
+                    titleH2.textContent = parentTitle || 'Без назви';
+
+                    const badgeSpan = document.createElement('span');
+                    badgeSpan.className = 'column-count-badge';
+                    badgeSpan.textContent = totalNoteCount;
+
+                    titleWrap.appendChild(iconSpan);
+                    titleWrap.appendChild(titleH2);
+                    titleWrap.appendChild(badgeSpan);
+                }
+
+                // Кнопка та меню фільтрів тегів
+                const filterWrap = window.App.columnFilter.createFilter(parentNoteId, currentColumnFilter, () => this.render());
+                titleWrap.appendChild(filterWrap);
+
+                // Кнопка перемикання вигляду: Список (по порядку вниз) / Сітка 2 колонки (Pinterest Masonry)
+                const currentLayout = state.columnLayouts[parentKey] || 'list';
+                const layoutToggleBtn = document.createElement('button');
+                layoutToggleBtn.className = `column-layout-toggle-btn ${currentLayout === 'grid' ? 'active' : ''}`;
+                layoutToggleBtn.title = currentLayout === 'grid' ? 'Перемкнути на звичайний список' : 'Перемкнути на сітку в 2 колонки (Pinterest)';
+                
+                // SVG іконка: список або сітка з 2 колонок
+                layoutToggleBtn.innerHTML = currentLayout === 'grid' 
+                    ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                         <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+                         <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+                         <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+                         <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+                       </svg>`
+                    : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                         <line x1="8" y1="6" x2="21" y2="6"></line>
+                         <line x1="8" y1="12" x2="21" y2="12"></line>
+                         <line x1="8" y1="18" x2="21" y2="18"></line>
+                         <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                         <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                         <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                       </svg>`;
+
+                layoutToggleBtn.addEventListener('click', () => {
+                    const newLayout = (state.columnLayouts[parentKey] || 'list') === 'grid' ? 'list' : 'grid';
+                    state.columnLayouts[parentKey] = newLayout;
+                    window.App.storage.saveColumnLayouts(state.columnLayouts);
+                    this.render();
+                });
+
+                titleWrap.appendChild(layoutToggleBtn);
+                header.appendChild(titleWrap);
+
+                // Кнопка закриття для прив'язаних колонок
+                if (colIndex > 0) {
+                    const closeBtn = document.createElement('button');
+                    closeBtn.className = 'column-close-btn';
+                    closeBtn.title = 'Закрити цю колонку';
+                    closeBtn.innerHTML = '×';
+                    closeBtn.addEventListener('click', () => this.closeColumn(colIndex));
+                    header.appendChild(closeBtn);
+                }
+
+                columnEl.appendChild(header);
+
+                // Список нотаток у колонці
+                const notesScrollList = document.createElement('div');
+                notesScrollList.className = `column-notes-list ${currentLayout === 'grid' ? 'layout-grid' : 'layout-list'}`;
+
+                if (colNotes.length === 0) {
+                    const emptyState = document.createElement('div');
+                    emptyState.className = 'column-empty-state';
+                    emptyState.innerHTML = `
+                        <div class="column-empty-icon">${colIndex === 0 ? '📝' : '🔗'}</div>
+                        <div class="column-empty-text">
+                            ${colIndex === 0 ? 'У цьому блокноті ще немає нотаток' : 'До цієї нотатки ще не прив\'язано жодної піднотатки'}
+                        </div>
+                    `;
+
+                    const createFirstBtn = document.createElement('button');
+                    createFirstBtn.className = 'btn-create-first-note';
+                    createFirstBtn.innerHTML = `<span class="btn-plus-icon">+</span> ${colIndex === 0 ? 'Створити першу нотатку' : 'Додати першу піднотатку'}`;
+                    createFirstBtn.addEventListener('click', () => noteManager.createNewNote(parentNoteId, true));
+
+                    emptyState.appendChild(createFirstBtn);
+                    notesScrollList.appendChild(emptyState);
+                } else {
+                    if (currentLayout === 'grid') {
+                        // Створюємо справжні 2 колонки (ліва та права) з підтримкою вільного розміщення будь-якої кількості карток у кожній
+                        const gridWrapper = document.createElement('div');
+                        gridWrapper.className = 'masonry-grid-wrapper';
+
+                        const colLeft = document.createElement('div');
+                        colLeft.className = 'masonry-column masonry-column-left';
+
+                        const colRight = document.createElement('div');
+                        colRight.className = 'masonry-column masonry-column-right';
+
+                        // Відокремлюємо нотатки за збереженою колонкою gridCol або початковим балансом
+                        colNotes.forEach((note, idx) => {
+                            const sticker = window.App.stickerCard.createCard(note, colIndex);
+                            const targetCol = note.gridCol ? note.gridCol : (idx % 2 === 0 ? 'left' : 'right');
+                            if (targetCol === 'left') {
+                                colLeft.appendChild(sticker);
+                            } else {
+                                colRight.appendChild(sticker);
+                            }
+                        });
+
+                        gridWrapper.appendChild(colLeft);
+                        gridWrapper.appendChild(colRight);
+                        notesScrollList.appendChild(gridWrapper);
+                    } else {
+                        colNotes.forEach(note => {
+                            const sticker = window.App.stickerCard.createCard(note, colIndex);
+                            notesScrollList.appendChild(sticker);
+                        });
+                    }
+
+                    // Кнопка додавання внизу колонки
+                    const bottomBtnContainer = document.createElement('div');
+                    bottomBtnContainer.className = 'add-note-bottom-container';
+
+                    const addBtn = document.createElement('button');
+                    addBtn.className = 'bottom-add-note-btn';
+                    addBtn.innerHTML = `<span class="btn-plus-icon">+</span> Додати ${colIndex === 0 ? 'нотатку' : 'піднотатку'}`;
+                    addBtn.addEventListener('click', () => noteManager.createNewNote(parentNoteId, true));
+
+                    bottomBtnContainer.appendChild(addBtn);
+                    notesScrollList.appendChild(bottomBtnContainer);
+                }
+
+                columnEl.appendChild(notesScrollList);
+                els.columnsContainer.appendChild(columnEl);
+
+                // Відновлюємо точну позицію скролу цієї колонки
+                if (scrollPositions.has(parentKey)) {
+                    notesScrollList.scrollTop = scrollPositions.get(parentKey);
+                }
+            });
+
+            // FLIP-анімація плавного ковзання стікерів на робочій області при зміні порядку
+            if (prevStickerRects.size > 0) {
+                els.columnsContainer.querySelectorAll('.note-sticker[data-note-id]:not(.is-dragging)').forEach(card => {
+                    const oldRect = prevStickerRects.get(card.dataset.noteId);
+                    if (!oldRect) return;
+                    const newRect = card.getBoundingClientRect();
+                    const dy = oldRect.top - newRect.top;
+                    const dx = oldRect.left - newRect.left;
+
+                    if (dy !== 0 || dx !== 0) {
+                        card.style.transition = 'none';
+                        card.style.transform = `translate(${dx}px, ${dy}px)`;
+                        requestAnimationFrame(() => {
+                            card.style.transition = 'transform 0.24s cubic-bezier(0.2, 0, 0, 1)';
+                            card.style.transform = '';
+                        });
+                    }
+                });
+            }
+        },
+
+        scrollToNote(noteId) {
+            const noteManager = window.App.noteManager;
+            const state = window.App.state;
+
+            const note = noteManager.getNoteById(noteId);
+            if (!note) return;
+
+            // Будуємо ланцюжок батьківських нотаток для відкриття потрібних колонок
+            const chain = [null]; // Корінь
+            const ancestors = [];
+            let curr = note;
+            while (curr && curr.parentId) {
+                ancestors.unshift(curr.parentId);
+                curr = noteManager.getNoteById(curr.parentId);
+            }
+            ancestors.forEach(pId => chain.push(pId));
+
+            state.activeChain = chain;
+            this.render();
+
+            // Знаходимо картку на екрані та плавно скролимо до неї
+            setTimeout(() => {
+                const card = document.querySelector(`.note-sticker[data-note-id="${noteId}"]`);
+                if (card) {
+                    card.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+                    card.classList.remove('sticker-highlight-pulse');
+                    void card.offsetWidth; // Тригер перезапуску CSS-анімації
+                    card.classList.add('sticker-highlight-pulse');
+                    setTimeout(() => card.classList.remove('sticker-highlight-pulse'), 1800);
+                }
+            }, 60);
+        }
+    };
+})();

@@ -1,0 +1,683 @@
+/* Sidebar Styles */
+.sidebar {
+    width: 260px;
+    background-color: var(--sidebar-bg);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    transition: width 0.3s ease;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Брендовий хедер (Логотип + NothingNotes) */
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 16px 14px 16px;
+    border-bottom: 1px solid var(--border-color);
+    user-select: none;
+    background: rgba(255, 255, 255, 0.01);
+}
+
+.sidebar-brand-logo {
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.sidebar-brand:hover .sidebar-brand-logo {
+    transform: scale(1.06);
+}
+
+.sidebar-brand-title {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    color: var(--text-main);
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+}
+
+.brand-title-accent {
+    color: #10b981;
+    margin-left: 1px;
+}
+
+.sidebar-section {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.boards-section {
+    max-height: 45%;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 8px;
+}
+
+.notes-section {
+    flex-grow: 1;
+    min-height: 0;
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px 8px 14px;
+}
+
+.boards-header {
+    padding: 12px 14px 8px 14px;
+}
+
+.notes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s ease;
+    border-radius: 6px;
+    margin: 4px 8px 0 8px;
+    padding: 10px 10px 8px 10px;
+}
+
+.notes-header.sidebar-root-drop-target {
+    background-color: rgba(16, 185, 129, 0.18) !important;
+    outline: 1.5px dashed #10b981 !important;
+    outline-offset: -1px;
+}
+
+.notes-header.sidebar-root-drop-target h2 {
+    color: #10b981 !important;
+    font-weight: 800 !important;
+}
+
+.sidebar-header h2 {
+    font-size: var(--font-xs);
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+.header-add-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: var(--font-md);
+    font-weight: 400;
+    cursor: pointer;
+    border-radius: 4px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.header-add-btn:hover {
+    background-color: var(--hover-bg);
+    color: var(--text-main);
+}
+
+.sidebar-inline-form {
+    padding: 4px 12px 8px 12px;
+}
+
+.sidebar-inline-form input {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: var(--font-sm);
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-main);
+    outline: none;
+    font-family: inherit;
+}
+
+.sidebar-inline-form input:focus {
+    border-color: var(--accent-color);
+}
+
+.sidebar-list {
+    list-style: none;
+    overflow-y: auto;
+    flex-grow: 1;
+    padding: 0 8px 8px 8px;
+}
+
+.sidebar-note-tree-node {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.sidebar-subnotes-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.note-toggle-arrow {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    margin-right: 2px;
+    flex-shrink: 0;
+    transition: transform var(--transition-fast), color var(--transition-fast), background-color var(--transition-fast);
+    padding: 0;
+}
+
+.note-toggle-arrow:hover {
+    color: var(--text-main);
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.note-toggle-arrow.expanded {
+    transform: rotate(90deg);
+    color: var(--text-main);
+}
+
+.sidebar-child-count {
+    font-size: var(--font-xs);
+    font-weight: 700;
+    line-height: 1;
+    color: var(--text-muted);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: auto;
+    margin-right: 4px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: inherit;
+    letter-spacing: 0.2px;
+    height: 18px;
+    box-sizing: border-box;
+    transition: opacity 0.2s cubic-bezier(0.2, 0, 0, 1), background-color 0.2s ease;
+}
+
+.board-item.active .sidebar-child-count,
+.note-item.is-selected .sidebar-child-count {
+    background: rgba(255, 255, 255, 0.14);
+    color: var(--text-main);
+}
+
+/* Дерево нотаток та вертикальні напрямні лінії ієрархії */
+.sidebar-note-tree-node {
+    list-style: none;
+    position: relative;
+}
+
+.sidebar-subnotes-list {
+    list-style: none;
+    margin-left: 14px;
+    padding-left: 10px;
+    border-left: 1.5px solid rgba(255, 255, 255, 0.12); /* Чітка лінія ієрархії */
+    display: flex;
+    flex-direction: column;
+    margin-top: 1px;
+    margin-bottom: 2px;
+    position: relative;
+    transition: border-color 0.2s ease;
+}
+
+.sidebar-subnotes-list:hover {
+    border-left-color: rgba(16, 185, 129, 0.4); /* Підсвічування гілки при наведенні */
+}
+
+.board-item, .note-item {
+    padding: 6px 8px;
+    cursor: pointer;
+    font-size: var(--font-xs);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 6px;
+    margin-bottom: 2px;
+    min-height: 32px;
+    box-sizing: border-box;
+    transition: background-color var(--transition-fast), opacity var(--transition-fast), color var(--transition-fast);
+    color: var(--text-muted);
+    user-select: none;
+}
+
+.note-item {
+    cursor: grab;
+    touch-action: none;
+}
+
+.note-item:active {
+    cursor: grabbing;
+}
+
+.sidebar-note-tree-node.is-dragging {
+    position: fixed !important;
+    z-index: 10000 !important;
+    pointer-events: none !important;
+    opacity: 0.96 !important;
+    box-sizing: border-box;
+}
+
+.sidebar-note-tree-node.is-dragging > .note-item {
+    border: 1.5px solid #10b981 !important;
+    background-color: #262626 !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 0 2px rgba(16, 185, 129, 0.25) !important;
+    color: #ffffff !important;
+    border-radius: 8px !important;
+    position: relative;
+}
+
+/* Бейдж кількості виділених нотаток при груповому перетягуванні */
+.sidebar-drag-count-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #10b981;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    border: 1.5px solid #1e1e1e;
+    z-index: 10001;
+}
+
+.sidebar-drag-placeholder {
+    height: 32px;
+    border: 1.5px dashed var(--accent-color);
+    background-color: rgba(16, 185, 129, 0.12);
+    border-radius: 6px;
+    margin-bottom: 3px;
+    box-sizing: border-box;
+    list-style: none;
+    transition: all 0.15s ease;
+    display: block;
+}
+
+/* Коли відкрита кишеня піднотатки — повністю приховуємо плейсхолдер переміщення */
+body.is-sidebar-pocket-open .sidebar-drag-placeholder {
+    display: none !important;
+}
+
+/* Плавне збільшення висоти плашок нотаток під час режиму перетягування для максимальної зручності */
+body.is-sidebar-dragging .note-item:not(.is-dragging) {
+    padding-top: 9px;
+    padding-bottom: 9px;
+    margin-bottom: 3px;
+    transition: padding 0.2s cubic-bezier(0.2, 0, 0, 1), margin 0.2s ease, background-color 0.15s ease;
+}
+
+body.is-sidebar-dragging .sidebar-drag-placeholder {
+    min-height: 38px;
+    border: 1.5px dashed #10b981 !important;
+    background-color: rgba(16, 185, 129, 0.16) !important;
+}
+
+/* Під час перетягування приховуємо кнопку видалення, щоб зона-кишеня була на самому правому краї */
+body.is-sidebar-dragging .delete-btn {
+    display: none !important;
+}
+
+/* Виділена зона-іконка для перетворення на піднотатку (розташована праворуч) */
+.sidebar-nest-drop-zone {
+    width: 0;
+    opacity: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: width 0.2s cubic-bezier(0.2, 0, 0, 1), opacity 0.2s ease, margin 0.2s ease, transform 0.15s ease;
+    margin-left: 0;
+}
+
+/* Коли в сайдбарі активне перетягування — іконки-зони плавно виїжджають у самому правому кутку */
+body.is-sidebar-dragging .sidebar-nest-drop-zone {
+    width: 24px;
+    height: 24px;
+    opacity: 0.85;
+    margin-left: auto;
+    border-radius: 5px;
+    border: 1.5px dashed rgba(16, 185, 129, 0.6);
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+}
+
+/* Підсвічування зони-іконки, коли користувач наводить картку прямо на неї */
+body.is-sidebar-dragging .sidebar-nest-drop-zone.active-hover {
+    opacity: 1 !important;
+    background: rgba(16, 185, 129, 0.35) !important;
+    border: 1.5px solid #10b981 !important;
+    transform: scale(1.18);
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.6);
+    color: #ffffff;
+}
+
+/* Розкривна кишеня знизу нотатки для перетягування (Google Pick & Drop Style) */
+.sidebar-nest-pocket {
+    height: 0;
+    opacity: 0;
+    overflow: hidden;
+    margin-left: 8px;
+    margin-right: 4px;
+    margin-top: 0;
+    margin-bottom: 0;
+    border: 2px dashed rgba(16, 185, 129, 0.7);
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(37, 99, 235, 0.06) 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 14px;
+    box-sizing: border-box;
+    transition: height 0.24s cubic-bezier(0.2, 0, 0, 1), opacity 0.22s ease, margin 0.22s ease, transform 0.18s ease;
+    pointer-events: auto;
+    text-align: center;
+}
+
+.sidebar-nest-pocket.is-open {
+    height: 68px;
+    opacity: 1;
+    margin-top: 8px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.25), inset 0 0 12px rgba(16, 185, 129, 0.08);
+}
+
+.nest-pocket-text-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    overflow: hidden;
+    width: 100%;
+}
+
+.nest-pocket-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #ffffff;
+    letter-spacing: 0.2px;
+}
+
+.nest-pocket-subtitle {
+    font-size: 11.5px;
+    font-weight: 400;
+    color: #a7f3d0;
+    white-space: nowrap;
+    opacity: 0.9;
+}
+
+/* Стан наведення на кишеню */
+.sidebar-nest-pocket.active-hover {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.3) 0%, rgba(37, 99, 235, 0.22) 100%) !important;
+    border: 2px dashed #34d399 !important;
+    transform: scale(1.02);
+    box-shadow: 0 6px 24px rgba(16, 185, 129, 0.45), inset 0 0 16px rgba(16, 185, 129, 0.2) !important;
+}
+
+.board-item:hover, .note-item:hover {
+    background-color: var(--hover-bg);
+    color: var(--text-main);
+}
+
+.board-item.active, .note-item.active {
+    background-color: var(--active-bg);
+    color: var(--text-main);
+    font-weight: 500;
+}
+
+/* Windows-style виділення нотаток у сайдбарі */
+.note-item.is-selected {
+    background-color: rgba(16, 185, 129, 0.22) !important;
+    border: 1px solid #10b981 !important;
+    color: #ffffff !important;
+    border-radius: 6px;
+}
+
+.note-item.is-selected:hover {
+    background-color: rgba(16, 185, 129, 0.28) !important;
+}
+
+/* Прямокутна рамка гумового виділення як на робочому столі Windows */
+.sidebar-marquee-selection {
+    position: fixed;
+    border: 2px dashed #10b981;
+    background-color: rgba(16, 185, 129, 0.18);
+    pointer-events: none;
+    z-index: 99999;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.note-item-icon {
+    font-size: 15px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-right: 9px;
+    margin-left: 2px;
+    vertical-align: middle;
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", sans-serif;
+}
+
+.board-item-name {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    overflow: hidden;
+    margin-right: 6px;
+    line-height: 1.2;
+    min-width: 0;
+}
+
+.board-item-text {
+    flex: 0 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    outline: none;
+    border-radius: 4px;
+    padding: 1px 4px;
+    margin: -1px -4px;
+    transition: background-color 0.2s, box-shadow 0.2s;
+    min-width: 0;
+}
+
+.note-item-title {
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-right: 6px;
+    display: block;
+    line-height: 1.2;
+    min-width: 0;
+}
+
+.board-item-text[contenteditable="true"] {
+    background-color: var(--bg-color);
+    box-shadow: 0 0 0 1px var(--accent-color);
+    color: var(--text-main);
+    cursor: text;
+    user-select: text;
+    text-overflow: clip !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    white-space: nowrap !important;
+    min-width: 50px !important;
+    max-width: 100% !important;
+    flex: 1 1 auto !important;
+    scrollbar-width: none !important;
+}
+
+.board-item-text[contenteditable="true"]::-webkit-scrollbar {
+    display: none !important;
+}
+
+/* Під час редагування назви дошки даємо полю повну ширину рядка і приховуємо лічильник */
+.board-item.is-editing {
+    overflow: hidden !important;
+}
+
+.board-item.is-editing .board-item-name {
+    overflow: hidden !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+}
+
+.board-item.is-editing .sidebar-child-count {
+    display: none !important;
+}
+
+.board-item.is-editing .board-actions {
+    display: none !important;
+}
+
+.board-item-icon {
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.sidebar-child-count {
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--text-muted);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: auto;
+    margin-right: 4px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: inherit;
+    letter-spacing: 0.2px;
+    height: 18px;
+    box-sizing: border-box;
+    transition: opacity 0.2s cubic-bezier(0.2, 0, 0, 1), background-color 0.2s ease;
+}
+
+.board-actions, .board-item-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 4px !important;
+    margin-left: auto;
+    flex-shrink: 0;
+    opacity: 0;
+    max-width: 0;
+    overflow: hidden;
+    pointer-events: none;
+    transition: opacity 0.2s cubic-bezier(0.2, 0, 0, 1), max-width 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.board-item:hover .board-actions,
+.board-item:hover .board-item-actions {
+    opacity: 1;
+    max-width: 60px;
+    pointer-events: auto;
+}
+
+/* При наведенні на рядок дошки чи нотатки лічильник плавно зникає */
+.board-item:hover .sidebar-child-count,
+.note-item:hover .sidebar-child-count {
+    opacity: 0 !important;
+    max-width: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-right: 0 !important;
+    border: none !important;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.delete-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    opacity: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s cubic-bezier(0.2, 0, 0, 1), background-color 0.15s ease, color 0.15s ease;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.note-item:hover .delete-btn {
+    opacity: 0.8;
+}
+
+.delete-btn:hover {
+    background-color: rgba(255, 99, 99, 0.2);
+    color: var(--danger-color);
+    opacity: 1 !important;
+}
+
+/* Кнопки блокнота (з'являються при наведенні на рядок дошки) */
+.board-delete-btn, .board-edit-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    opacity: 0.75;
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s cubic-bezier(0.2, 0, 0, 1), background-color 0.15s ease, color 0.15s ease;
+    flex-shrink: 0;
+}
+
+.board-edit-btn:hover {
+    background-color: var(--hover-bg);
+    color: var(--accent-color);
+    opacity: 1 !important;
+}
+
+.board-delete-btn:hover {
+    background-color: rgba(255, 99, 99, 0.2);
+    color: var(--danger-color);
+    opacity: 1 !important;
+}

@@ -1,0 +1,182 @@
+/* modal.css - Стилі модального вікна підтвердження з кнопкою затискання */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.confirm-modal-box {
+    background-color: #202020;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    width: 90%;
+    max-width: 480px;
+    padding: 24px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+    transform: scale(0.94) translateY(10px);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    color: var(--text-main);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-sizing: border-box;
+}
+
+.modal-overlay.active .confirm-modal-box {
+    transform: scale(1) translateY(0);
+}
+
+.confirm-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.confirm-modal-icon-badge {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background-color: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.confirm-modal-title {
+    font-size: var(--font-md);
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1.2;
+    margin: 0;
+}
+
+.confirm-modal-body {
+    font-size: var(--font-sm);
+    line-height: 1.5;
+    color: var(--text-muted);
+}
+
+.confirm-modal-highlight {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.confirm-modal-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.confirm-modal-icon-badge.info-badge {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+}
+
+.hold-delete-btn.hold-info-btn {
+    background-color: rgba(16, 185, 129, 0.15);
+    border-color: rgba(16, 185, 129, 0.4);
+    color: #10b981;
+}
+
+.hold-delete-btn.hold-info-btn:hover {
+    border-color: #10b981;
+}
+
+.hold-delete-btn.hold-info-btn .hold-btn-progress {
+    background-color: #059669;
+}
+
+.modal-cancel-btn {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: var(--font-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+    font-family: inherit;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.modal-cancel-btn:hover {
+    background-color: var(--hover-bg);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Кнопка затискання з внутрішнім прогрес-баром */
+.hold-delete-btn {
+    position: relative;
+    background-color: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    color: #ef4444;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: var(--font-sm);
+    font-weight: 600;
+    cursor: pointer;
+    overflow: hidden;
+    user-select: none;
+    touch-action: none;
+    font-family: inherit;
+    transition: border-color 0.2s, color 0.2s, transform 0.1s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+}
+
+.hold-delete-btn:active {
+    transform: scale(0.98);
+}
+
+.hold-delete-btn:hover {
+    border-color: #ef4444;
+}
+
+.hold-btn-text {
+    position: relative;
+    z-index: 2;
+    pointer-events: none;
+    transition: color 0.15s ease;
+}
+
+.hold-delete-btn.holding .hold-btn-text {
+    color: #ffffff;
+}
+
+.hold-btn-progress {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0%;
+    background-color: #dc2626;
+    z-index: 1;
+    pointer-events: none;
+    transition: width 0.05s linear;
+}

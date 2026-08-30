@@ -1,0 +1,25 @@
+:root {
+    /* Кольорова палітра Notion у темній темі */
+    --bg-color: #191919;
+    --sidebar-bg: #202020;
+    --modal-bg: #252525;
+    --text-main: rgba(255, 255, 255, 0.9);
+    --text-muted: rgba(255, 255, 255, 0.5);
+    --border-color: rgba(255, 255, 255, 0.1);
+    --hover-bg: rgba(255, 255, 255, 0.05);
+    --active-bg: rgba(255, 255, 255, 0.1);
+    --accent-color: #10b981;
+    --danger-color: #ff6b6b;
+
+    /* Єдина система кривих та таймінгів анімацій */
+    --ease-out-smooth: cubic-bezier(0.2, 0.8, 0.2, 1);
+    --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+    --transition-fast: 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
+    --transition-normal: 0.2s cubic-bezier(0.2, 0, 0, 1);
+    --transition-fade: opacity 0.2s cubic-bezier(0.2, 0, 0, 1), transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    /* Стандартизована 4-рівнева типографічна сітка */
+    --font-xs: 12px; /* Бейджі, підказки, другорядні підписи, теги, заголовки меню */
+    --font-sm: 16px; /* Основний текст, рядки списків, кнопки, інпути, вміст нотатки */
+    --font-md: 24px; /* Заголовки колонок, модальних вікон, welcome */
+    --font-lg: 32px; /* Головний заголовок нотатки-стікера */
+}

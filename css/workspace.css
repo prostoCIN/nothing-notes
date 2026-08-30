@@ -1,0 +1,1327 @@
+/* Workspace Styles (Multi-Column) */
+.board-workspace {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    background-color: var(--bg-color);
+    overflow: hidden;
+    height: 100vh;
+}
+
+/* ==========================================================================
+   Фіксований тонкий верхній хедер (Workspace Top Header)
+   ========================================================================== */
+.workspace-top-header {
+    height: 48px;
+    min-height: 48px;
+    background: rgba(26, 26, 28, 0.95);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 150;
+    flex-shrink: 0;
+    user-select: none;
+}
+
+.workspace-header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.workspace-header-board-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.workspace-header-board-title {
+    font-size: var(--font-xs);
+    font-weight: 700;
+    color: var(--text-main);
+    letter-spacing: -0.2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
+}
+
+.workspace-header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+/* Кнопки Undo / Redo та Швидкого пензля */
+.header-history-control {
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 3px;
+    gap: 3px;
+}
+
+.header-action-icon-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    width: 24px;
+    height: 24px;
+    border-radius: 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.header-action-icon-btn:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.header-action-icon-btn:disabled,
+.header-action-icon-btn.disabled {
+    opacity: 0.35;
+    cursor: default;
+    color: var(--text-muted);
+}
+
+.header-action-icon-btn:disabled:hover,
+.header-action-icon-btn.disabled:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-muted);
+}
+
+.header-action-icon-btn.active {
+    background: #10b981 !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+}
+
+/* Група швидкого пензля з палітрою */
+.header-brush-group {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.header-brush-color-trigger {
+    background: transparent;
+    border: none;
+    padding: 0;
+    height: 24px;
+    width: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background 0.15s ease;
+    flex-shrink: 0;
+}
+
+.header-brush-color-trigger:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.brush-color-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.4);
+    transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.header-brush-color-trigger:hover .brush-color-dot {
+    transform: scale(1.2);
+    border-color: #ffffff;
+}
+
+/* Випадаюча палітра пензля */
+.header-brush-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    background: rgba(26, 26, 30, 0.96);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    padding: 6px;
+    display: none;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    z-index: 200;
+}
+
+.header-brush-dropdown.active {
+    display: flex;
+}
+
+/* Контейнер кнопки з підказкою */
+.header-btn-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Універсальне спливаюче віконечко-підказка для кнопок хедера */
+.header-tooltip {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(-4px);
+    background: rgba(18, 18, 22, 0.98);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 5px 9px;
+    font-size: 11px;
+    line-height: 1.4;
+    color: var(--text-main);
+    white-space: nowrap;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s ease;
+    z-index: 10001;
+}
+
+.header-tooltip b {
+    color: #10b981;
+}
+
+/* Стрілочка зверху підказки */
+.header-tooltip::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 4px;
+    border-style: solid;
+    border-color: transparent transparent rgba(255, 255, 255, 0.15) transparent;
+}
+
+/* Специфічне вирівнювання для підказки пензля (прив'язка до правого краю) */
+.header-brush-tooltip {
+    left: auto;
+    right: 0;
+    transform: translateY(-4px);
+}
+
+.header-brush-tooltip::before {
+    left: auto;
+    right: 18px;
+    transform: none;
+}
+
+/* Показуємо підказку при наведенні на кнопку */
+.header-btn-wrap:hover .header-tooltip,
+.header-search-wrap:hover .header-tooltip,
+.header-brush-group:hover .header-brush-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+.header-brush-group:hover .header-brush-tooltip {
+    transform: translateY(0);
+}
+
+.header-brush-group:has(.header-brush-dropdown.active) .header-brush-tooltip,
+.header-search-wrap:has(.header-search-bar[style*="display: flex"]) .header-tooltip {
+    display: none !important;
+}
+
+.brush-palette-item {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.brush-palette-item:hover {
+    transform: scale(1.25);
+    border-color: #ffffff;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+}
+
+.brush-palette-item.active {
+    outline: 2px solid #ffffff;
+    outline-offset: 1px;
+    transform: scale(1.15);
+}
+
+.header-mini-divider {
+    width: 1px;
+    height: 14px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 0 1px;
+}
+
+.header-action-icon-btn:active:not(:disabled) {
+    transform: scale(0.94);
+}
+
+.workspace-top-header.graph-mode-active .header-tools-pill,
+.workspace-top-header.graph-mode-active #island-select-toggle-btn {
+    opacity: 0.22;
+    pointer-events: none;
+    user-select: none;
+    filter: grayscale(0.85);
+    transition: opacity 0.2s ease, filter 0.2s ease;
+}
+
+.header-tools-pill,
+.header-tools-control,
+.header-history-control {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 2px 4px;
+    gap: 3px;
+    position: relative;
+}
+
+/* Пошукова панель у хедері */
+.header-search-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.header-search-bar {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 10px);
+    display: flex;
+    align-items: center;
+    background: rgba(22, 22, 26, 0.98);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(16, 185, 129, 0.25);
+    border-radius: 12px;
+    padding: 7px 10px 7px 14px;
+    gap: 8px;
+    z-index: 10005;
+    width: 290px;
+    box-sizing: border-box;
+    animation: searchBarDropdownAppear 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Стрілочка зверху випадаючого пошуку */
+.header-search-bar::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    right: 8px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent transparent rgba(255, 255, 255, 0.16) transparent;
+}
+
+@keyframes searchBarDropdownAppear {
+    from {
+        opacity: 0;
+        transform: translateY(-6px) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.header-search-bar input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-main);
+    font-size: 13px;
+    font-weight: 500;
+    font-family: inherit;
+    width: 100%;
+}
+
+.header-search-bar input::placeholder {
+    color: var(--text-muted);
+    opacity: 0.7;
+}
+
+.header-search-count {
+    font-size: 11px;
+    font-weight: 700;
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.15);
+    padding: 2px 7px;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    flex-shrink: 0;
+    letter-spacing: 0.2px;
+}
+
+/* Кнопки перемикання збігів (PDF Style Nav) */
+.header-search-nav-btns {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 7px;
+    padding: 1px;
+}
+
+.header-search-nav-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    padding: 0;
+}
+
+.header-search-nav-btn:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.header-search-close {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 2px 5px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+
+.header-search-close:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Підсвічування знайдених слів глобальним пошуком */
+mark.workspace-search-highlight {
+    background-color: #fde047 !important;
+    color: #000000 !important;
+    border-radius: 2px;
+    padding: 0 1px;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Активний поточний збіг під час гортання (PDF Orange / Amber Glow) */
+mark.workspace-search-highlight.current-search-match {
+    background-color: #f97316 !important;
+    color: #ffffff !important;
+    outline: 2px solid #ea580c;
+    outline-offset: 1px;
+    box-shadow: 0 0 12px rgba(249, 115, 22, 0.7);
+    font-weight: 700;
+}
+
+/* Дзен / Фокус Режим */
+body.zen-mode-active .sidebar {
+    display: none !important;
+}
+
+body.zen-mode-active .board-workspace {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    flex-grow: 1 !important;
+}
+
+body.zen-mode-active #workspace-zen-btn {
+    background: #10b981 !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+}
+
+/* Швидка гумка активна */
+body.global-eraser-active {
+    cursor: crosshair !important;
+}
+
+body.global-eraser-active .sticker-content {
+    cursor: crosshair !important;
+}
+
+body.global-eraser-active #workspace-eraser-btn {
+    background: #ef4444 !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+}
+
+.header-segment-control {
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 2px;
+    gap: 2px;
+}
+
+.header-segment-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: var(--font-xs);
+    font-weight: 600;
+    font-family: inherit;
+    padding: 4px 10px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.header-segment-btn:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.header-segment-btn.active {
+    background: #10b981 !important;
+    color: #ffffff !important;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+}
+
+.header-divider {
+    width: 1px;
+    height: 18px;
+    background: rgba(255, 255, 255, 0.12);
+    margin: 0 2px;
+}
+
+.header-select-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--text-muted);
+    font-size: var(--font-xs);
+    font-weight: 600;
+    font-family: inherit;
+    padding: 5px 12px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.header-select-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--text-main);
+    border-color: rgba(255, 255, 255, 0.18);
+}
+
+.header-select-btn.active {
+    background: #10b981 !important;
+    border-color: #10b981 !important;
+    color: #ffffff !important;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+}
+
+.columns-container {
+    display: flex;
+    flex-direction: row;
+    gap: 14px; /* Зменшений відступ між усіма колонками */
+    padding: 16px 24px 20px 24px;
+    height: calc(100vh - 48px);
+    width: 100%;
+    min-width: 100%;
+    box-sizing: border-box;
+    align-items: stretch;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+/* Multi-Columns Responsive Widths:
+   1 колонка = 100%
+   2 колонки = 50% / 50%
+   3+ колонок = фіксовано 50% з комфортним горизонтальним скролом */
+.board-column {
+    flex: 1 1 0px;
+    width: 100%;
+    min-width: 420px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 22px 24px 20px 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    box-sizing: border-box;
+    transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+
+/* Коли колонок 3 і більше — кожна колонка займає рівно 50% ширини екрана (calc((100% - 14px) / 2)) */
+.columns-container.has-many-columns .board-column {
+    flex: 0 0 calc((100% - 14px) / 2) !important;
+    min-width: calc((100% - 14px) / 2) !important;
+    max-width: calc((100% - 14px) / 2) !important;
+}
+
+.board-column.drag-column-target {
+    border-color: #10b981 !important;
+    background-color: rgba(16, 185, 129, 0.04) !important;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3), 0 8px 30px rgba(0, 0, 0, 0.35) !important;
+}
+
+.board-column.linked-column {
+    border-color: var(--border-color);
+}
+
+.column-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 14px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+    gap: 12px;
+    position: relative;
+    z-index: 20;
+}
+
+.column-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-grow: 1;
+    min-width: 0;
+    position: relative;
+}
+
+.column-icon {
+    font-size: var(--font-md);
+    flex-shrink: 0;
+}
+
+.column-title {
+    font-size: var(--font-md);
+    font-weight: 700;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: -0.2px;
+}
+
+.column-title.editable-board-title {
+    cursor: text;
+    border-radius: 4px;
+    padding: 2px 6px;
+    margin-left: -6px;
+    transition: background-color 0.2s, box-shadow 0.2s;
+    outline: none;
+}
+
+.column-title.editable-board-title:hover {
+    background-color: var(--hover-bg);
+}
+
+.column-title.editable-board-title:focus {
+    background-color: var(--sidebar-bg);
+    box-shadow: 0 0 0 1px var(--accent-color);
+}
+
+.column-title-edit-hint {
+    opacity: 0;
+    color: var(--text-muted);
+    transition: opacity 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.column-title-wrap:hover .column-title-edit-hint {
+    opacity: 0.6;
+}
+
+.column-badge, .column-count-badge {
+    font-size: var(--font-xs);
+    font-weight: 700;
+    line-height: 1;
+    color: var(--text-muted);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: 6px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: inherit;
+    letter-spacing: 0.2px;
+}
+
+/* Кнопка фільтру тегів у правій частині title-wrap колонки */
+.column-filter-wrap {
+    position: relative;
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+}
+
+.column-filter-btn,
+.column-layout-toggle-btn {
+    background: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: var(--font-xs);
+    height: 26px;
+    padding: 0 8px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+    user-select: none;
+    font-family: inherit;
+}
+
+.column-layout-toggle-btn {
+    width: 26px;
+    padding: 0;
+    margin-left: 4px;
+}
+
+.column-graph-toggle-btn {
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    margin-left: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+}
+
+/* Кнопка "Вибрати" у стилі iOS Галереї */
+.column-select-toggle-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+    font-size: var(--font-xs);
+    font-weight: 600;
+    height: 26px;
+    padding: 0 10px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+    user-select: none;
+    font-family: inherit;
+    margin-left: 6px;
+}
+
+.column-filter-btn:hover,
+.column-layout-toggle-btn:hover,
+.column-graph-toggle-btn:hover,
+.column-select-toggle-btn:hover {
+    background-color: var(--hover-bg);
+    color: var(--text-main);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: scale(0.96);
+}
+
+.column-layout-toggle-btn.active {
+    background-color: rgba(16, 185, 129, 0.15);
+    border-color: #10b981;
+    color: #34d399;
+}
+
+.column-select-toggle-btn.active {
+    background-color: #10b981;
+    border-color: #10b981;
+    color: #ffffff;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+}
+
+.column-filter-btn.has-filter {
+    background-color: rgba(16, 185, 129, 0.15);
+    border-color: #10b981;
+    color: #34d399;
+    font-weight: 600;
+}
+
+.column-filter-btn.active {
+    box-shadow: 0 0 0 1.5px #10b981;
+}
+
+/* ==========================================================================
+   Нижня панель масового вибору та дій у стилі iOS Галереї (iOS Selection Bar)
+   ========================================================================== */
+.workspace-selection-bar {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background-color: rgba(30, 30, 30, 0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+    max-width: calc(100vw - 48px);
+    box-sizing: border-box;
+}
+
+.workspace-selection-bar.active {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.selection-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.selection-bar-close-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    color: var(--text-muted);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.selection-bar-close-btn:hover {
+    background: rgba(255, 255, 255, 0.18);
+    color: var(--text-main);
+    transform: scale(0.95);
+}
+
+.selection-bar-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: var(--font-xs);
+}
+
+.selection-bar-count {
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.2px;
+}
+
+.selection-bar-divider {
+    color: rgba(255, 255, 255, 0.2);
+}
+
+.selection-bar-text-btn {
+    background: none;
+    border: none;
+    color: #34d399;
+    font-size: var(--font-xs);
+    font-weight: 600;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: all var(--transition-fast);
+    font-family: inherit;
+}
+
+.selection-bar-text-btn:hover {
+    background: rgba(16, 185, 129, 0.15);
+    color: #a7f3d0;
+}
+
+.selection-bar-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.selection-action-item {
+    position: relative;
+}
+
+.selection-action-btn {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--text-main);
+    padding: 6px 12px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: var(--font-xs);
+    font-weight: 600;
+    transition: all var(--transition-fast);
+    font-family: inherit;
+    user-select: none;
+}
+
+.selection-action-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+.selection-action-btn.active {
+    background: #10b981 !important;
+    border-color: #10b981 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+}
+
+.selection-action-delete-btn {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.25);
+    color: #ef4444;
+}
+
+.selection-action-delete-btn:hover:not(:disabled) {
+    background: #ef4444 !important;
+    border-color: #ef4444 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+/* Випадаючі субменю (Колір, Теги, Шрифт) над панеллю */
+.selection-submenu-dropdown {
+    position: absolute;
+    bottom: calc(100% + 12px);
+    left: 50%;
+    transform: translateX(-50%) translateY(8px);
+    background-color: #242424;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 14px;
+    padding: 12px;
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.75);
+    z-index: 1010;
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    box-sizing: border-box;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.selection-submenu-dropdown.active {
+    display: flex !important;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+}
+
+.selection-submenu-title {
+    font-size: var(--font-xs);
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: -0.1px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.selection-color-swatches {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 0;
+}
+
+.selection-color-swatches .color-swatch-btn {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.selection-color-swatches .color-swatch-btn:hover {
+    transform: scale(1.15);
+    border-color: #ffffff;
+}
+
+.selection-tag-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 180px;
+    overflow-y: auto;
+    min-width: 170px;
+}
+
+.selection-tag-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    color: var(--text-main);
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: var(--font-xs);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-align: left;
+    font-family: inherit;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.selection-tag-item:hover {
+    background: rgba(16, 185, 129, 0.15);
+    border-color: #10b981;
+    color: #34d399;
+}
+
+.selection-tag-item.active {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: #10b981;
+    color: #a7f3d0;
+}
+
+.selection-tag-item.partial {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #d1d5db;
+}
+
+.selection-tag-status-icon {
+    font-size: 11px;
+    font-weight: 700;
+    margin-left: auto;
+    color: #34d399;
+}
+
+.selection-tag-color-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.selection-tag-clear-btn {
+    background: none;
+    border: 1px dashed rgba(239, 68, 68, 0.4);
+    color: #ef4444;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: var(--font-xs);
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 4px;
+    transition: all var(--transition-fast);
+    font-family: inherit;
+}
+
+.selection-tag-clear-btn:hover {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: #ef4444;
+}
+
+.selection-font-dropdown {
+    min-width: 220px;
+}
+
+/* Випадаюче меню фільтру */
+.column-filter-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background-color: #242424;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 12px;
+    padding: 8px;
+    box-sizing: border-box;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7);
+    z-index: 150;
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 200px;
+}
+
+.column-filter-dropdown.active {
+    display: flex !important;
+    animation: menuFadeIn 0.15s ease-out;
+}
+
+.column-filter-header {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 4px 8px 6px 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.column-filter-clear-all {
+    background: none;
+    border: none;
+    color: #34d399;
+    font-size: 11px;
+    cursor: pointer;
+    font-weight: 500;
+    padding: 0;
+    transition: color 0.15s;
+}
+
+.column-filter-clear-all:hover {
+    color: #a7f3d0;
+    text-decoration: underline;
+}
+
+.column-filter-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-height: 200px;
+    overflow-y: auto;
+    padding-top: 4px;
+}
+
+.column-filter-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 8px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.85);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+}
+
+.column-filter-item:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+}
+
+.column-filter-item.active {
+    background-color: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+    font-weight: 600;
+}
+
+.column-filter-item-empty {
+    padding: 8px;
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.column-close-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 18px;
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.column-close-btn:hover {
+    background-color: var(--hover-bg);
+    color: var(--text-main);
+}
+
+.column-notes-list {
+    flex-grow: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding-right: 4px;
+    min-height: 100px;
+}
+
+/* Режим Pinterest Masonry сітки строго у 2 фізичні колонки */
+.masonry-grid-wrapper {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 14px !important;
+    width: 100% !important;
+    align-items: flex-start !important;
+}
+
+.masonry-column {
+    flex: 1 1 0px !important;
+    width: calc(50% - 7px) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+    min-width: 0 !important;
+}
+
+.column-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 16px;
+    margin: auto 0;
+    color: var(--text-muted);
+    gap: 12px;
+}
+
+.column-empty-icon {
+    font-size: 36px;
+    opacity: 0.8;
+}
+
+.column-empty-text {
+    font-size: 14px;
+    line-height: 1.5;
+    max-width: 240px;
+}
+
+.btn-create-first-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--text-main);
+    color: var(--bg-color);
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+    font-family: inherit;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.btn-create-first-note:hover {
+    opacity: 0.9;
+    transform: scale(0.985);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Bottom Add Note Button */
+.add-note-bottom-container {
+    margin-top: 24px;
+    width: 100%;
+}
+
+.bottom-add-note-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    background-color: rgba(255, 255, 255, 0.02);
+    border: 2px dashed var(--border-color);
+    border-radius: 12px;
+    color: var(--text-muted);
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.bottom-add-note-btn:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.25);
+    color: var(--text-main);
+    transform: scale(0.99);
+}
+
+.btn-plus-icon {
+    font-size: 18px;
+    line-height: 1;
+    font-weight: 600;
+}
