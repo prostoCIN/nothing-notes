@@ -183,11 +183,32 @@ window.App = window.App || {};
             }
         },
 
-        // 4. Вивантаження всіх локальних нотаток (первинна міграція)
+        // 4. Вивантаження всіх локальних нотаток (первинна міграція з фотографіями)
         async pushAllToCloud() {
             if (!currentUser || !window.App.supabase) return;
             const state = window.App.state;
             const supabase = window.App.supabase;
+
+            // Якщо є фото, що живуть локально в IndexedDB — вивантажуємо їх у Supabase Storage
+            for (const note of state.notes) {
+                if (Array.isArray(note.images) && note.images.length > 0) {
+                    for (const img of note.images) {
+                        if (!img.url && window.App.imageDb) {
+                            try {
+                                const base64 = await window.App.imageDb.getImage(img.id);
+                                if (base64) {
+                                    const cloudUrl = await this.uploadBase64Image(base64, img.id);
+                                    if (cloudUrl) {
+                                        img.url = cloudUrl;
+                                    }
+                                }
+                            } catch (e) {
+                                console.warn('[CloudSync] Image migration failed for:', img.id, e);
+                            }
+                        }
+                    }
+                }
+            }
 
             const payloads = state.notes.map((note, idx) => ({
                 id: note.id,
@@ -209,9 +230,45 @@ window.App = window.App || {};
             try {
                 const { error } = await supabase.from('notes').upsert(payloads, { onConflict: 'id' });
                 if (error) console.warn('[CloudSync] Bulk push error:', error.message);
-                else console.log('[CloudSync] Synced all local notes to cloud');
+                else {
+                    console.log('[CloudSync] Synced all local notes & images to cloud');
+                    window.App.storage.saveNotes(state.notes, true);
+                }
             } catch (err) {
                 console.warn('[CloudSync] Bulk push exception:', err);
+            }
+        },
+
+        // 4.5 Конвертація та завантаження Base64 у Supabase Storage
+        async uploadBase64Image(base64Data, imgId) {
+            const supabase = window.App.supabase;
+            if (!supabase || !currentUser || !base64Data) return null;
+
+            try {
+                const res = await fetch(base64Data);
+                const blob = await res.blob();
+                const filePath = `${currentUser.id}/${imgId}.jpg`;
+
+                const { error } = await supabase.storage
+                    .from('note-images')
+                    .upload(filePath, blob, {
+                        contentType: 'image/jpeg',
+                        upsert: true
+                    });
+
+                if (error) {
+                    console.warn('[CloudSync] Base64 upload error:', error.message);
+                    return null;
+                }
+
+                const { data: publicUrlData } = supabase.storage
+                    .from('note-images')
+                    .getPublicUrl(filePath);
+
+                return publicUrlData ? publicUrlData.publicUrl : null;
+            } catch (err) {
+                console.warn('[CloudSync] Base64 upload exception:', err);
+                return null;
             }
         },
 
