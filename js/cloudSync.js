@@ -68,8 +68,13 @@ window.App = window.App || {};
             const state = window.App.state;
 
             try {
-                // Отримуємо збережені метадані профілю/блокнотів користувача
-                const savedBoards = currentUser.user_metadata?.boards;
+                // Отримуємо найсвіжіші дані користувача з сервера (user_metadata)
+                const { data: freshUserResp } = await supabase.auth.getUser();
+                if (freshUserResp && freshUserResp.user) {
+                    currentUser = freshUserResp.user;
+                }
+
+                const savedBoards = currentUser?.user_metadata?.boards;
                 if (Array.isArray(savedBoards) && savedBoards.length > 0) {
                     state.boards = savedBoards;
                     window.App.storage.saveBoards(state.boards);
@@ -78,7 +83,7 @@ window.App = window.App || {};
                         window.App.storage.saveActiveBoardId(state.activeBoardId);
                     }
                 } else if (state.boards.length > 0) {
-                    // Якщо в хмарі ще не було блокнотів, вивантажуємо поточні
+                    // Якщо в хмарі ще немає збережених блокнотів — вивантажуємо поточні оригінальні блокноти
                     await this.syncBoards();
                 }
 
@@ -147,11 +152,14 @@ window.App = window.App || {};
             if (!currentUser || !window.App.supabase) return;
             const state = window.App.state;
             try {
-                await window.App.supabase.auth.updateUser({
+                const { data, error } = await window.App.supabase.auth.updateUser({
                     data: {
                         boards: state.boards
                     }
                 });
+                if (data && data.user) {
+                    currentUser = data.user;
+                }
             } catch (e) {
                 console.warn('[CloudSync] syncBoards error:', e);
             }
