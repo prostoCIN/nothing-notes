@@ -105,8 +105,14 @@ window.App = window.App || {};
                 storage.saveBoards(state.boards);
 
                 // Видаляємо всі нотатки цього блокнота
+                const deletedNotes = state.notes.filter(n => n.boardId === id);
                 state.notes = state.notes.filter(n => n.boardId !== id);
                 storage.saveNotes(state.notes);
+
+                if (window.App.cloudSync) {
+                    window.App.cloudSync.syncBoards();
+                    deletedNotes.forEach(dn => window.App.cloudSync.deleteNoteFromCloud(dn.id));
+                }
 
                 if (state.boards.length === 0) {
                     state.activeBoardId = null;

@@ -26,6 +26,19 @@ window.App = window.App || {};
                 this.handleAuthChange(session ? session.user : null);
             });
 
+            // ⚡ Realtime-синхронізація: миттєве оновлення при змінах або видаленнях на іншому девайсі на льоту!
+            try {
+                supabase
+                    .channel('notes-realtime-channel')
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'notes' }, (payload) => {
+                        console.log('[CloudSync] Realtime change detected:', payload.eventType);
+                        this.pullFromCloud();
+                    })
+                    .subscribe();
+            } catch (e) {
+                console.warn('[CloudSync] Realtime subscription error:', e);
+            }
+
             // Гарантуємо відправку незбережених змін перед закриттям вкладки або згортанням браузера
             const flushOnExit = () => {
                 this.flushPendingNote();
@@ -127,28 +140,9 @@ window.App = window.App || {};
                         };
                     });
 
-                    // Оновлюємо або додаємо нотатки
-                    formattedNotes.forEach(fn => {
-                        const existing = localMap.get(fn.id);
-                        if (!existing) {
-                            state.notes.push(fn);
-                            hasChanges = true;
-                        } else {
-                            // Оновлюємо дані, але НЕ перезаписуємо валідний boardId на випадковий
-                            if (!existing.boardId && fn.boardId) {
-                                existing.boardId = fn.boardId;
-                                hasChanges = true;
-                            }
-                            if (JSON.stringify(existing.images) !== JSON.stringify(fn.images)) {
-                                existing.images = fn.images;
-                                hasChanges = true;
-                            }
-                        }
-                    });
-
-                    if (hasChanges) {
-                        window.App.storage.saveNotes(state.notes, true);
-                    }
+                    // Повна синхронізація: стан нотаток стає ідентичним до хмари (хмара — єдине джерело правди)
+                    state.notes = formattedNotes;
+                    window.App.storage.saveNotes(state.notes, true);
 
                     if (window.App.welcomeView) window.App.welcomeView.hide();
                     if (window.App.sidebarView) window.App.sidebarView.render();
@@ -156,8 +150,12 @@ window.App = window.App || {};
 
                     // Вивантажуємо фото з IndexedDB, якщо є локальні
                     await this.uploadMissingLocalImages();
-                } else if (state.notes.length > 0) {
-                    await this.pushAllToCloud();
+                } else {
+                    // Якщо в хмарі пусто, а користувач видалив усі нотатки
+                    state.notes = [];
+                    window.App.storage.saveNotes(state.notes, true);
+                    if (window.App.sidebarView) window.App.sidebarView.render();
+                    if (window.App.workspaceView) window.App.workspaceView.render();
                 }
             } catch (err) {
                 console.error('[CloudSync] Pull exception:', err);
