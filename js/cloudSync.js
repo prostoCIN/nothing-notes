@@ -98,9 +98,11 @@ window.App = window.App || {};
                 }
 
                 if (cloudNotes && cloudNotes.length > 0) {
+                    const currentBoardId = state.activeBoardId || (state.boards[0] ? state.boards[0].id : null);
+                    
                     const formattedNotes = cloudNotes.map(n => ({
                         id: n.id,
-                        boardId: n.board_id || state.activeBoardId,
+                        boardId: currentBoardId,
                         parentId: n.parent_id || null,
                         title: n.title || '',
                         content: n.content || '',
@@ -122,6 +124,11 @@ window.App = window.App || {};
                             state.notes.push(fn);
                             hasChanges = true;
                         } else {
+                            // Оновлюємо прив'язку до блокнота, якщо вона відрізнялася
+                            if (existing.boardId !== fn.boardId) {
+                                existing.boardId = fn.boardId;
+                                hasChanges = true;
+                            }
                             if (JSON.stringify(existing.images) !== JSON.stringify(fn.images)) {
                                 existing.images = fn.images;
                                 hasChanges = true;
@@ -230,6 +237,7 @@ window.App = window.App || {};
         async _pushNoteToCloud(note) {
             const supabase = window.App.supabase;
             if (!supabase || !currentUser) return;
+            const state = window.App.state;
 
             const payload = {
                 id: note.id,
