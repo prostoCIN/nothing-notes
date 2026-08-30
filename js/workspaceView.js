@@ -168,6 +168,29 @@ window.App = window.App || {};
 
             if (!els.columnsContainer) return;
 
+            // Зберігаємо фокус та позицію курсора введення тексту для уникнення збивання при Realtime-оновленнях
+            let focusedNoteId = null;
+            let focusedField = null; // 'title' | 'content'
+            let selectionStart = 0;
+            let selectionEnd = 0;
+            const activeEl = document.activeElement;
+
+            if (activeEl && (activeEl.classList.contains('sticker-title') || activeEl.classList.contains('sticker-content'))) {
+                const parentSticker = activeEl.closest('.note-sticker[data-note-id]');
+                if (parentSticker) {
+                    focusedNoteId = parentSticker.dataset.noteId;
+                    focusedField = activeEl.classList.contains('sticker-title') ? 'title' : 'content';
+                    try {
+                        const sel = window.getSelection();
+                        if (sel && sel.rangeCount > 0) {
+                            const range = sel.getRangeAt(0);
+                            selectionStart = range.startOffset;
+                            selectionEnd = range.endOffset;
+                        }
+                    } catch (e) {}
+                }
+            }
+
             // Зберігаємо позиції скролу колонок, щоб вони не стрибали нагору при Undo/Redo чи оновленні
             const scrollPositions = new Map();
             els.columnsContainer.querySelectorAll('.board-column').forEach(col => {
@@ -460,6 +483,30 @@ window.App = window.App || {};
                         });
                     }
                 });
+            }
+
+            // Відновлюємо фокус і курсор, якщо користувач у цей момент друкував текст під час Realtime-оновлення
+            if (focusedNoteId && focusedField) {
+                const targetCard = els.columnsContainer.querySelector(`.note-sticker[data-note-id="${focusedNoteId}"]`);
+                if (targetCard) {
+                    const targetEl = targetCard.querySelector(focusedField === 'title' ? '.sticker-title' : '.sticker-content');
+                    if (targetEl) {
+                        targetEl.focus();
+                        try {
+                            const sel = window.getSelection();
+                            if (sel && targetEl.childNodes.length > 0) {
+                                const range = document.createRange();
+                                const nodeToFocus = targetEl.firstChild || targetEl;
+                                const maxOffset = nodeToFocus.textContent ? nodeToFocus.textContent.length : 0;
+                                const safeOffset = Math.min(selectionStart, maxOffset);
+                                range.setStart(nodeToFocus, safeOffset);
+                                range.collapse(true);
+                                sel.removeAllRanges();
+                                sel.addRange(range);
+                            }
+                        } catch (e) {}
+                    }
+                }
             }
         },
 

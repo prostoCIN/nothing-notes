@@ -420,6 +420,11 @@ window.App = window.App || {};
                         window.App.imageDb.deleteImage(imgId);
                     }
 
+                    // Видаляємо файл з хмарного сховища Supabase Storage
+                    if (window.App.cloudSync && window.App.cloudSync.deleteImageFile) {
+                        window.App.cloudSync.deleteImageFile(imgId);
+                    }
+
                     if (window.App.historyManager) {
                         window.App.historyManager.recordState('remove_image');
                     }

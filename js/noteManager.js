@@ -168,6 +168,21 @@ window.App = window.App || {};
                     window.App.historyManager.recordState('delete_notes');
                 }
 
+                // Видаляємо зв'язані фотографії цих нотаток
+                const deletedNotes = state.notes.filter(n => toDeleteIds.has(n.id));
+                deletedNotes.forEach(dn => {
+                    if (Array.isArray(dn.images)) {
+                        dn.images.forEach(im => {
+                            if (im && im.id) {
+                                if (window.App.imageDb) window.App.imageDb.deleteImage(im.id);
+                                if (window.App.cloudSync && window.App.cloudSync.deleteImageFile) {
+                                    window.App.cloudSync.deleteImageFile(im.id);
+                                }
+                            }
+                        });
+                    }
+                });
+
                 state.notes = state.notes.filter(note => !toDeleteIds.has(note.id));
 
                 if (window.App.cloudSync) {

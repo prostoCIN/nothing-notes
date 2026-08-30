@@ -104,8 +104,21 @@ window.App = window.App || {};
                 state.boards = state.boards.filter(b => b.id !== id);
                 storage.saveBoards(state.boards);
 
-                // Видаляємо всі нотатки цього блокнота
+                // Видаляємо всі нотатки цього блокнота та їхні фотографії
                 const deletedNotes = state.notes.filter(n => n.boardId === id);
+                deletedNotes.forEach(dn => {
+                    if (Array.isArray(dn.images)) {
+                        dn.images.forEach(im => {
+                            if (im && im.id) {
+                                if (window.App.imageDb) window.App.imageDb.deleteImage(im.id);
+                                if (window.App.cloudSync && window.App.cloudSync.deleteImageFile) {
+                                    window.App.cloudSync.deleteImageFile(im.id);
+                                }
+                            }
+                        });
+                    }
+                });
+
                 state.notes = state.notes.filter(n => n.boardId !== id);
                 storage.saveNotes(state.notes);
 

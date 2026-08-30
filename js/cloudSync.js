@@ -39,6 +39,12 @@ window.App = window.App || {};
                 console.warn('[CloudSync] Realtime subscription error:', e);
             }
 
+            // Автоматичне відновлення зв'язку при поверненні інтернету
+            window.addEventListener('online', () => {
+                console.log('[CloudSync] Network reconnected, syncing with cloud...');
+                this.pullFromCloud();
+            });
+
             // Гарантуємо відправку незбережених змін перед закриттям вкладки або згортанням браузера
             const flushOnExit = () => {
                 this.flushPendingNote();
@@ -69,6 +75,8 @@ window.App = window.App || {};
                 console.log('[CloudSync] Logged in as:', user.email);
                 // Завантажуємо та об'єднуємо нотатки з хмари
                 await this.pullFromCloud();
+                // Запускаємо фоновий збирач сміття для звільнення пам'яті в Storage
+                setTimeout(() => this.cleanupOrphanedImages(), 2000);
             } else {
                 console.log('[CloudSync] Guest mode (local storage)');
             }
@@ -407,6 +415,64 @@ window.App = window.App || {};
             } catch (err) {
                 console.warn('[CloudSync] Storage upload exception:', err);
                 return null;
+            }
+        },
+
+        // 6. Миттєве видалення одного фото зі сховища Supabase Storage
+        async deleteImageFile(imgId) {
+            const supabase = window.App.supabase;
+            if (!supabase || !currentUser || !imgId) return;
+
+            try {
+                const filePathJpg = `${currentUser.id}/${imgId}.jpg`;
+                const filePathPng = `${currentUser.id}/${imgId}.png`;
+                await supabase.storage.from('note-images').remove([filePathJpg, filePathPng]);
+                console.log('[CloudSync] Deleted image file from Storage:', imgId);
+            } catch (err) {
+                console.warn('[CloudSync] Storage delete error:', err);
+            }
+        },
+
+        // 7. Збирач сміття (Garbage Collector): видаляє з Storage всі фото, яких немає в жодній нотатці
+        async cleanupOrphanedImages() {
+            const supabase = window.App.supabase;
+            if (!supabase || !currentUser) return;
+            const state = window.App.state;
+
+            try {
+                // 1. Отримуємо список усіх файлів користувача в Storage
+                const { data: files, error } = await supabase.storage
+                    .from('note-images')
+                    .list(currentUser.id, { limit: 500 });
+
+                if (error || !files || files.length === 0) return;
+
+                // 2. Збираємо список усіх актуальних ID картинок з активних нотаток
+                const activeImageIds = new Set();
+                state.notes.forEach(note => {
+                    if (Array.isArray(note.images)) {
+                        note.images.forEach(im => {
+                            if (im && im.id) activeImageIds.add(im.id);
+                        });
+                    }
+                });
+
+                // 3. Знаходимо файли-сироти
+                const orphanedPaths = [];
+                files.forEach(file => {
+                    const nameWithoutExt = file.name.replace(/\.[^/.]+$/, "");
+                    if (!activeImageIds.has(nameWithoutExt) && nameWithoutExt !== '.emptyFolderPlaceholder') {
+                        orphanedPaths.push(`${currentUser.id}/${file.name}`);
+                    }
+                });
+
+                // 4. Перманентно видаляємо застарілі файли
+                if (orphanedPaths.length > 0) {
+                    console.log(`[CloudSync Garbage Collector] Cleaning up ${orphanedPaths.length} orphaned images from storage...`);
+                    await supabase.storage.from('note-images').remove(orphanedPaths);
+                }
+            } catch (err) {
+                console.warn('[CloudSync] Cleanup orphaned images exception:', err);
             }
         },
 
