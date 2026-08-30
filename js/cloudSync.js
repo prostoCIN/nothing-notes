@@ -61,13 +61,27 @@ window.App = window.App || {};
             }
         },
 
-        // 1. Завантаження нотаток з Supabase у локальний стан
+        // 1. Завантаження нотаток та блокнотів з Supabase у локальний стан
         async pullFromCloud() {
             if (!currentUser || !window.App.supabase) return;
             const supabase = window.App.supabase;
             const state = window.App.state;
 
             try {
+                // Отримуємо збережені метадані профілю/блокнотів користувача
+                const savedBoards = currentUser.user_metadata?.boards;
+                if (Array.isArray(savedBoards) && savedBoards.length > 0) {
+                    state.boards = savedBoards;
+                    window.App.storage.saveBoards(state.boards);
+                    if (!state.activeBoardId || !state.boards.find(b => b.id === state.activeBoardId)) {
+                        state.activeBoardId = state.boards[0].id;
+                        window.App.storage.saveActiveBoardId(state.activeBoardId);
+                    }
+                } else if (state.boards.length > 0) {
+                    // Якщо в хмарі ще не було блокнотів, вивантажуємо поточні
+                    await this.syncBoards();
+                }
+
                 const { data: cloudNotes, error } = await supabase
                     .from('notes')
                     .select('*')
@@ -79,10 +93,9 @@ window.App = window.App || {};
                 }
 
                 if (cloudNotes && cloudNotes.length > 0) {
-                    // Якщо в локальному сховищі пусто або користувач щойно увійшов з іншого девайсу — наповнюємо
                     const formattedNotes = cloudNotes.map(n => ({
                         id: n.id,
-                        boardId: n.parent_id ? (state.notes.find(x => x.id === n.parent_id)?.boardId || state.activeBoardId) : state.activeBoardId,
+                        boardId: n.board_id || state.activeBoardId,
                         parentId: n.parent_id || null,
                         title: n.title || '',
                         content: n.content || '',
@@ -94,7 +107,7 @@ window.App = window.App || {};
                         createdAt: new Date(n.created_at).getTime() || Date.now()
                     }));
 
-                    // 1. Оновлюємо існуючі нотатки або додаємо нові з хмари
+                    // Оновлюємо або додаємо нотатки
                     const localMap = new Map(state.notes.map(n => [n.id, n]));
                     let hasChanges = false;
 
@@ -104,7 +117,6 @@ window.App = window.App || {};
                             state.notes.push(fn);
                             hasChanges = true;
                         } else {
-                            // Якщо в хмарі є url фото, яких немає локально — оновлюємо
                             if (JSON.stringify(existing.images) !== JSON.stringify(fn.images)) {
                                 existing.images = fn.images;
                                 hasChanges = true;
@@ -114,18 +126,34 @@ window.App = window.App || {};
 
                     if (hasChanges) {
                         window.App.storage.saveNotes(state.notes, true);
-                        if (window.App.sidebarView) window.App.sidebarView.render();
-                        if (window.App.workspaceView) window.App.workspaceView.render();
                     }
 
-                    // 2. Якщо на цьому пристрої є локальні фото в IndexedDB без хмарного URL — вивантажуємо їх прямо зараз!
+                    if (window.App.welcomeView) window.App.welcomeView.hide();
+                    if (window.App.sidebarView) window.App.sidebarView.render();
+                    if (window.App.workspaceView) window.App.workspaceView.render();
+
+                    // Вивантажуємо фото з IndexedDB, якщо є локальні
                     await this.uploadMissingLocalImages();
                 } else if (state.notes.length > 0) {
-                    // Якщо в хмарі пусто, а локально є нотатки — вивантажуємо первинні нотатки в хмару!
                     await this.pushAllToCloud();
                 }
             } catch (err) {
                 console.error('[CloudSync] Pull exception:', err);
+            }
+        },
+
+        // Синхронізація списку блокнотів у метадані користувача
+        async syncBoards() {
+            if (!currentUser || !window.App.supabase) return;
+            const state = window.App.state;
+            try {
+                await window.App.supabase.auth.updateUser({
+                    data: {
+                        boards: state.boards
+                    }
+                });
+            } catch (e) {
+                console.warn('[CloudSync] syncBoards error:', e);
             }
         },
 

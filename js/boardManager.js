@@ -32,6 +32,10 @@ window.App = window.App || {};
             state.boards.push(newBoard);
             storage.saveBoards(state.boards);
 
+            if (window.App.cloudSync) {
+                window.App.cloudSync.syncBoards();
+            }
+
             this.switchBoard(newBoard.id);
 
             if (els.welcomeBoardInput) els.welcomeBoardInput.value = '';
@@ -50,6 +54,10 @@ window.App = window.App || {};
 
             board.name = trimmedName;
             storage.saveBoards(state.boards);
+
+            if (window.App.cloudSync) {
+                window.App.cloudSync.syncBoards();
+            }
 
             // Синхронізуємо DOM назви блокнота в сайдбарі
             const sidebarBoardText = document.querySelector(`.board-item[data-board-id="${id}"] .board-item-text`);
