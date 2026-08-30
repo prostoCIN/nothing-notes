@@ -98,33 +98,44 @@ window.App = window.App || {};
                 }
 
                 if (cloudNotes && cloudNotes.length > 0) {
-                    const defaultBoardId = state.activeBoardId || (state.boards[0] ? state.boards[0].id : null);
-                    
-                    const formattedNotes = cloudNotes.map(n => ({
-                        id: n.id,
-                        boardId: n.board_id || defaultBoardId,
-                        parentId: n.parent_id || null,
-                        title: n.title || '',
-                        content: n.content || '',
-                        color: n.color || 'yellow',
-                        fontSize: n.font_size || 16,
-                        icon: n.icon || '',
-                        images: n.images || [],
-                        isCollapsed: !!n.is_collapsed,
-                        createdAt: new Date(n.created_at).getTime() || Date.now()
-                    }));
-
-                    // Оновлюємо або додаємо нотатки
+                    const firstBoardId = (state.boards && state.boards[0]) ? state.boards[0].id : null;
                     const localMap = new Map(state.notes.map(n => [n.id, n]));
                     let hasChanges = false;
 
+                    const formattedNotes = cloudNotes.map(n => {
+                        const localNote = localMap.get(n.id);
+                        // Якщо в базі board_id був null (стара нотатка), беремо її локальний boardId або перший блокнот
+                        const resolvedBoardId = n.board_id || (localNote ? localNote.boardId : null) || firstBoardId;
+
+                        // Якщо в базі не було board_id, оновлюємо його в хмарі раз і назавжди!
+                        if (!n.board_id && resolvedBoardId) {
+                            supabase.from('notes').update({ board_id: resolvedBoardId }).eq('id', n.id);
+                        }
+
+                        return {
+                            id: n.id,
+                            boardId: resolvedBoardId,
+                            parentId: n.parent_id || null,
+                            title: n.title || '',
+                            content: n.content || '',
+                            color: n.color || 'yellow',
+                            fontSize: n.font_size || 16,
+                            icon: n.icon || '',
+                            images: n.images || [],
+                            isCollapsed: !!n.is_collapsed,
+                            createdAt: new Date(n.created_at).getTime() || Date.now()
+                        };
+                    });
+
+                    // Оновлюємо або додаємо нотатки
                     formattedNotes.forEach(fn => {
                         const existing = localMap.get(fn.id);
                         if (!existing) {
                             state.notes.push(fn);
                             hasChanges = true;
                         } else {
-                            if (existing.boardId !== fn.boardId) {
+                            // Оновлюємо дані, але НЕ перезаписуємо валідний boardId на випадковий
+                            if (!existing.boardId && fn.boardId) {
                                 existing.boardId = fn.boardId;
                                 hasChanges = true;
                             }
