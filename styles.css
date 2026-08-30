@@ -203,15 +203,15 @@
         overflow: hidden;
     }
 
-    /* 3. Хедер робочої області (з відступом від годинника, Dynamic Island та батареї iPhone) */
+    /* 3. Хедер робочої області (з фіксованим відступом від годинника та Dynamic Island iPhone) */
     .workspace-top-header {
-        padding-top: env(safe-area-inset-top, 0px);
-        padding-left: max(10px, env(safe-area-inset-left, 0px));
-        padding-right: max(10px, env(safe-area-inset-right, 0px));
-        padding-bottom: 6px;
-        height: auto;
-        min-height: calc(48px + env(safe-area-inset-top, 0px));
-        box-sizing: border-box;
+        padding-top: max(env(safe-area-inset-top, 0px), 24px) !important;
+        padding-left: max(12px, env(safe-area-inset-left, 0px)) !important;
+        padding-right: max(12px, env(safe-area-inset-right, 0px)) !important;
+        padding-bottom: 8px !important;
+        height: auto !important;
+        min-height: calc(54px + env(safe-area-inset-top, 0px)) !important;
+        box-sizing: border-box !important;
     }
 
     /* Приховуємо блок заголовка блокнота на мобільних, оскільки назва вже є в самій кореневій колонці */
