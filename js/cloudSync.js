@@ -94,27 +94,78 @@ window.App = window.App || {};
                         createdAt: new Date(n.created_at).getTime() || Date.now()
                     }));
 
-                    // Об'єднуємо: якщо нотатки ще не було локально — додаємо
-                    const localIds = new Set(state.notes.map(n => n.id));
-                    let hasNew = false;
+                    // 1. Оновлюємо існуючі нотатки або додаємо нові з хмари
+                    const localMap = new Map(state.notes.map(n => [n.id, n]));
+                    let hasChanges = false;
+
                     formattedNotes.forEach(fn => {
-                        if (!localIds.has(fn.id)) {
+                        const existing = localMap.get(fn.id);
+                        if (!existing) {
                             state.notes.push(fn);
-                            hasNew = true;
+                            hasChanges = true;
+                        } else {
+                            // Якщо в хмарі є url фото, яких немає локально — оновлюємо
+                            if (JSON.stringify(existing.images) !== JSON.stringify(fn.images)) {
+                                existing.images = fn.images;
+                                hasChanges = true;
+                            }
                         }
                     });
 
-                    if (hasNew) {
+                    if (hasChanges) {
                         window.App.storage.saveNotes(state.notes, true);
                         if (window.App.sidebarView) window.App.sidebarView.render();
                         if (window.App.workspaceView) window.App.workspaceView.render();
                     }
+
+                    // 2. Якщо на цьому пристрої є локальні фото в IndexedDB без хмарного URL — вивантажуємо їх прямо зараз!
+                    await this.uploadMissingLocalImages();
                 } else if (state.notes.length > 0) {
                     // Якщо в хмарі пусто, а локально є нотатки — вивантажуємо первинні нотатки в хмару!
                     await this.pushAllToCloud();
                 }
             } catch (err) {
                 console.error('[CloudSync] Pull exception:', err);
+            }
+        },
+
+        // Вивантаження фото з IndexedDB у Supabase Storage для всіх нотаток, де ще немає url
+        async uploadMissingLocalImages() {
+            if (!currentUser || !window.App.supabase || !window.App.imageDb) return;
+            const state = window.App.state;
+            let uploadedCount = 0;
+
+            for (const note of state.notes) {
+                if (Array.isArray(note.images) && note.images.length > 0) {
+                    let noteUpdated = false;
+                    for (const img of note.images) {
+                        if (!img.url) {
+                            try {
+                                const base64 = await window.App.imageDb.getImage(img.id);
+                                if (base64) {
+                                    console.log('[CloudSync] Uploading local image to cloud:', img.id);
+                                    const cloudUrl = await this.uploadBase64Image(base64, img.id);
+                                    if (cloudUrl) {
+                                        img.url = cloudUrl;
+                                        noteUpdated = true;
+                                        uploadedCount++;
+                                    }
+                                }
+                            } catch (err) {
+                                console.warn('[CloudSync] Error uploading local image:', img.id, err);
+                            }
+                        }
+                    }
+                    if (noteUpdated) {
+                        await this._pushNoteToCloud(note);
+                    }
+                }
+            }
+
+            if (uploadedCount > 0) {
+                console.log(`[CloudSync] Successfully uploaded ${uploadedCount} images to Supabase Storage!`);
+                window.App.storage.saveNotes(state.notes, true);
+                if (window.App.workspaceView) window.App.workspaceView.render();
             }
         },
 
