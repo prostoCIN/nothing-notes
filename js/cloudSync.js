@@ -28,13 +28,23 @@ window.App = window.App || {};
 
             // ⚡ Realtime-синхронізація: миттєве оновлення при змінах або видаленнях на іншому девайсі на льоту!
             try {
-                supabase
+                if (this._realtimeChannel) {
+                    supabase.removeChannel(this._realtimeChannel);
+                }
+
+                this._realtimeChannel = supabase
                     .channel('notes-realtime-channel')
                     .on('postgres_changes', { event: '*', schema: 'public', table: 'notes' }, (payload) => {
-                        console.log('[CloudSync] Realtime change detected:', payload.eventType);
+                        console.log('[CloudSync] ⚡ Realtime change detected from cloud:', payload.eventType, payload);
                         this.pullFromCloud();
                     })
-                    .subscribe();
+                    .subscribe((status, err) => {
+                        console.log('[CloudSync] Realtime status:', status);
+                        if (err) console.warn('[CloudSync] Realtime subscription warning/error:', err);
+                        if (status === 'SUBSCRIBED') {
+                            console.log('[CloudSync] ✅ Realtime listening active for notes table');
+                        }
+                    });
             } catch (e) {
                 console.warn('[CloudSync] Realtime subscription error:', e);
             }
