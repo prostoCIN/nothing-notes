@@ -13,6 +13,10 @@ window.App.getElements = function() {
         welcomeLoginBtn: document.getElementById('welcome-login-btn'),
 
         // Сайдбар
+        sidebar: document.getElementById('sidebar'),
+        sidebarOverlay: document.getElementById('sidebar-overlay'),
+        mobileMenuBtn: document.getElementById('mobile-menu-btn'),
+        sidebarCloseBtn: document.getElementById('sidebar-close-btn'),
         sidebarAddBoardBtn: document.getElementById('sidebar-add-board-btn'),
         sidebarNewBoardForm: document.getElementById('sidebar-new-board-form'),
         sidebarNewBoardInput: document.getElementById('sidebar-new-board-input'),

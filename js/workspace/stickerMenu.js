@@ -85,16 +85,17 @@ window.App = window.App || {};
             });
 
             const currentSizePx = FONT_SIZES[closestStepIdx];
+            const FONT_LABELS = ['S (12px)', 'M (16px)', 'L (24px)', 'XL (32px)'];
 
             const fontSizeHeader = document.createElement('div');
             fontSizeHeader.className = 'sticker-menu-section-title sticker-font-size-header';
 
             const fontSizeTitle = document.createElement('span');
-            fontSizeTitle.textContent = 'Розмір шрифту';
+            fontSizeTitle.textContent = 'Розмір тексту';
 
             const fontSizeValueBadge = document.createElement('span');
             fontSizeValueBadge.className = 'font-size-value-badge';
-            fontSizeValueBadge.textContent = `${currentSizePx}px`;
+            fontSizeValueBadge.textContent = FONT_LABELS[closestStepIdx];
 
             fontSizeHeader.appendChild(fontSizeTitle);
             fontSizeHeader.appendChild(fontSizeValueBadge);
@@ -107,10 +108,10 @@ window.App = window.App || {};
                 <div class="note-font-slider-track-wrap">
                     <input type="range" class="sticker-font-slider" min="0" max="3" step="1" value="${closestStepIdx}">
                     <div class="note-font-slider-ticks">
-                        <span class="note-font-tick-line ${closestStepIdx === 0 ? 'active' : ''}" data-step="0" title="12px"></span>
-                        <span class="note-font-tick-line ${closestStepIdx === 1 ? 'active' : ''}" data-step="1" title="16px"></span>
-                        <span class="note-font-tick-line ${closestStepIdx === 2 ? 'active' : ''}" data-step="2" title="24px"></span>
-                        <span class="note-font-tick-line ${closestStepIdx === 3 ? 'active' : ''}" data-step="3" title="32px"></span>
+                        <span class="note-font-tick-line ${closestStepIdx === 0 ? 'active' : ''}" data-step="0" title="S"></span>
+                        <span class="note-font-tick-line ${closestStepIdx === 1 ? 'active' : ''}" data-step="1" title="M"></span>
+                        <span class="note-font-tick-line ${closestStepIdx === 2 ? 'active' : ''}" data-step="2" title="L"></span>
+                        <span class="note-font-tick-line ${closestStepIdx === 3 ? 'active' : ''}" data-step="3" title="XL"></span>
                     </div>
                 </div>
                 <span class="slider-max-icon">A</span>
@@ -121,11 +122,11 @@ window.App = window.App || {};
 
             const applySize = (stepIdx) => {
                 const newSize = FONT_SIZES[stepIdx];
-                fontSizeValueBadge.textContent = `${newSize}px`;
+                fontSizeValueBadge.textContent = FONT_LABELS[stepIdx];
                 tickLines.forEach((t, i) => t.classList.toggle('active', i === stepIdx));
 
                 if (card) {
-                    // Застосовуємо динамічний розмір безпосередньо до картки
+                    card.dataset.fontStep = stepIdx;
                     card.style.setProperty('--custom-content-font-size', `${newSize}px`);
                     card.style.setProperty('--custom-title-font-size', `${Math.round(newSize * 1.5)}px`);
                     card.style.setProperty('--custom-line-height', `${Math.max(26, Math.round(newSize * 1.7))}px`);

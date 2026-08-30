@@ -51,8 +51,38 @@ window.App = window.App || {};
                 els.sidebarNewBoardInput.value = '';
             });
 
+            // Відкриття та закриття мобільного сайдбару
+            if (els.mobileMenuBtn) {
+                els.mobileMenuBtn.addEventListener('click', () => this.openMobileSidebar());
+            }
+            if (els.sidebarCloseBtn) {
+                els.sidebarCloseBtn.addEventListener('click', () => this.closeMobileSidebar());
+            }
+            if (els.sidebarOverlay) {
+                els.sidebarOverlay.addEventListener('click', () => this.closeMobileSidebar());
+            }
+
             // Додавання нотатки з сайдбару
-            els.addNoteBtn.addEventListener('click', () => window.App.noteManager.createNewNote(null, true));
+            els.addNoteBtn.addEventListener('click', () => {
+                window.App.noteManager.createNewNote(null, true);
+                if (window.innerWidth <= 768) {
+                    this.closeMobileSidebar();
+                }
+            });
+        },
+
+        openMobileSidebar() {
+            const els = window.App.getElements();
+            if (els.sidebar) els.sidebar.classList.add('mobile-open');
+            if (els.sidebarOverlay) els.sidebarOverlay.classList.add('active');
+            document.body.classList.add('mobile-sidebar-active');
+        },
+
+        closeMobileSidebar() {
+            const els = window.App.getElements();
+            if (els.sidebar) els.sidebar.classList.remove('mobile-open');
+            if (els.sidebarOverlay) els.sidebarOverlay.classList.remove('active');
+            document.body.classList.remove('mobile-sidebar-active');
         },
 
         render() {
@@ -191,6 +221,9 @@ window.App = window.App || {};
                     if (e.target.closest('.board-actions') || textSpan.contentEditable === 'true') return;
                     if (state.activeBoardId !== board.id) {
                         window.App.boardManager.switchBoard(board.id);
+                    }
+                    if (window.innerWidth <= 768) {
+                        this.closeMobileSidebar();
                     }
                 });
 

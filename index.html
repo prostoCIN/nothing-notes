@@ -40,12 +40,16 @@
 
     <!-- Основний додаток -->
     <div id="app-container" class="app-container" style="display: none;">
+        <!-- Затемнення для мобільного сайдбару -->
+        <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
         <!-- Бокова панель -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <!-- Брендовий хедер (Логотип + NothingNotes) -->
             <div class="sidebar-brand">
                 <img src="img/Logo.svg" alt="NothingNotes Logo" class="sidebar-brand-logo">
                 <span class="sidebar-brand-title">Nothing<span class="brand-title-accent">Notes</span></span>
+                <button id="sidebar-close-btn" class="sidebar-close-btn" title="Закрити меню">✕</button>
             </div>
 
             <!-- Секція Блокнотів -->
@@ -79,148 +83,167 @@
             <!-- Фіксований тонкий верхній хедер над колонками (Workspace Top Header) -->
             <header class="workspace-top-header" id="workspace-top-header">
                 <div class="workspace-header-left">
+                    <button id="mobile-menu-btn" class="mobile-menu-btn" title="Меню блокнотів">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
                     <span class="workspace-header-board-icon" id="workspace-header-board-icon">🗒️</span>
                     <h1 class="workspace-header-board-title" id="workspace-header-board-title">Блокнот</h1>
                 </div>
 
                 <div class="workspace-header-right">
-                    <!-- 1. Блок історії дій Undo / Redo -->
-                    <div class="header-tools-pill" id="header-history-pill">
-                        <div class="header-btn-wrap">
-                            <button class="header-action-icon-btn disabled" id="workspace-undo-btn" disabled>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M3 7v6h6"></path>
-                                    <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path>
-                                </svg>
-                            </button>
-                            <div class="header-tooltip">
-                                <b>Скасувати</b> (Ctrl+Z)
-                            </div>
-                        </div>
+                    <!-- Мобільна кнопка виклику додаткових інструментів -->
+                    <button id="mobile-tools-toggle-btn" class="mobile-tools-toggle-btn" title="Інструменти">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="1.5"></circle>
+                            <circle cx="19" cy="12" r="1.5"></circle>
+                            <circle cx="5" cy="12" r="1.5"></circle>
+                        </svg>
+                    </button>
 
-                        <div class="header-btn-wrap">
-                            <button class="header-action-icon-btn disabled" id="workspace-redo-btn" disabled>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M21 7v6h-6"></path>
-                                    <path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"></path>
-                                </svg>
-                            </button>
-                            <div class="header-tooltip">
-                                <b>Повторити</b> (Ctrl+Y)
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="header-divider"></div>
-
-                    <!-- 2. Блок маркерів (Швидкий пензель та Гумка) -->
-                    <div class="header-tools-pill" id="header-markers-pill">
-                        <div class="header-brush-group">
-                            <button class="header-action-icon-btn" id="workspace-brush-btn">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M18.37 2.63 14 7l-1.59-1.59a2 2 0 0 0-2.82 0L8 7l9 9 1.59-1.59a2 2 0 0 0 0-2.82L17 10l4.37-4.37a2.12 2.12 0 1 0-3-3Z"></path>
-                                    <path d="M9 8c-2 3-4 3.5-7 4l8 8c.5-3 1-5 4-7"></path>
-                                </svg>
-                            </button>
-                            <button class="header-brush-color-trigger" id="workspace-brush-color-btn">
-                                <span class="brush-color-dot" id="workspace-brush-color-dot" style="background-color: #bbf7d0;"></span>
-                            </button>
-
-                            <!-- Спливаюча підказка для пензля -->
-                            <div class="header-tooltip header-brush-tooltip">
-                                <b>Швидкий маркер</b>: фарбує слова по виділенню (вимкнення — <b>Esc</b>)
-                            </div>
-
-                            <!-- Випадаюча палітра кольорів пензля -->
-                            <div class="header-brush-dropdown" id="workspace-brush-dropdown">
-                                <button class="brush-palette-item active" data-color="hl-green" style="background-color: #bbf7d0;" title="Зелений маркер"></button>
-                                <button class="brush-palette-item" data-color="hl-yellow" style="background-color: #fef08a;" title="Жовтий маркер"></button>
-                                <button class="brush-palette-item" data-color="hl-blue" style="background-color: #bae6fd;" title="Блакитний маркер"></button>
-                                <button class="brush-palette-item" data-color="hl-pink" style="background-color: #fbcfe8;" title="Рожевий маркер"></button>
-                                <button class="brush-palette-item" data-color="hl-orange" style="background-color: #fed7aa;" title="Помаранчевий маркер"></button>
-                                <button class="brush-palette-item" data-color="hl-purple" style="background-color: #e9d5ff;" title="Фіолетовий маркер"></button>
-                            </div>
-                        </div>
-
-                        <!-- Швидка гумка (Eraser mode) -->
-                        <div class="header-btn-wrap">
-                            <button class="header-action-icon-btn" id="workspace-eraser-btn">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"></path>
-                                    <path d="M22 21H7"></path>
-                                    <path d="m5 11 9 9"></path>
-                                </svg>
-                            </button>
-                            <div class="header-tooltip">
-                                <b>Швидка гумка</b>: стирає маркери по виділенню (вимкнення — <b>Esc</b>)
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="header-divider"></div>
-
-                    <!-- 3. Панель швидких інструментів робочого простору -->
-                    <div class="header-tools-pill" id="header-tools-pill">
-                        <!-- Швидкий пошук / фільтр слів (Ctrl+F) -->
-                        <div class="header-search-wrap" id="workspace-search-wrap">
-                            <button class="header-action-icon-btn" id="workspace-search-btn">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <circle cx="11" cy="11" r="8"></circle>
-                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                                </svg>
-                            </button>
-                            <div class="header-tooltip">
-                                <b>Пошук на дошці</b> (Ctrl+F)
-                            </div>
-                            <div class="header-search-bar" id="workspace-search-bar" style="display: none;">
-                                <input type="text" id="workspace-search-input" placeholder="Знайти слово..." autocomplete="off">
-                                <span class="header-search-count" id="workspace-search-count" style="display: none;">0/0</span>
-                                <div class="header-search-nav-btns" id="workspace-search-nav" style="display: none;">
-                                    <button class="header-search-nav-btn" id="workspace-search-prev" title="Попередній збіг (Shift+Enter або ↑)">
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                            <polyline points="18 15 12 9 6 15"></polyline>
-                                        </svg>
-                                    </button>
-                                    <button class="header-search-nav-btn" id="workspace-search-next" title="Наступний збіг (Enter або ↓)">
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                            <polyline points="6 9 12 15 18 9"></polyline>
-                                        </svg>
-                                    </button>
+                    <!-- Контейнер додаткових інструментів (на десктопі відкритий, на мобільному ховається у випадаючу панель) -->
+                    <div class="header-extra-tools-wrap" id="header-extra-tools-wrap">
+                        <!-- 1. Блок історії дій Undo / Redo -->
+                        <div class="header-tools-pill" id="header-history-pill">
+                            <div class="header-btn-wrap">
+                                <button class="header-action-icon-btn disabled" id="workspace-undo-btn" disabled>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M3 7v6h6"></path>
+                                        <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path>
+                                    </svg>
+                                </button>
+                                <div class="header-tooltip">
+                                    <b>Скасувати</b> (Ctrl+Z)
                                 </div>
-                                <button class="header-search-close" id="workspace-search-close" title="Закрити пошук (Esc)">×</button>
+                            </div>
+
+                            <div class="header-btn-wrap">
+                                <button class="header-action-icon-btn disabled" id="workspace-redo-btn" disabled>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 7v6h-6"></path>
+                                        <path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"></path>
+                                    </svg>
+                                </button>
+                                <div class="header-tooltip">
+                                    <b>Повторити</b> (Ctrl+Y)
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Згорнути всі ланцюжки піднотаток -->
-                        <div class="header-btn-wrap">
-                            <button class="header-action-icon-btn" id="workspace-collapse-btn">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="4 14 10 14 10 20"></polyline>
-                                    <polyline points="20 10 14 10 14 4"></polyline>
-                                    <line x1="14" y1="10" x2="21" y2="3"></line>
-                                    <line x1="3" y1="21" x2="10" y2="14"></line>
-                                </svg>
-                            </button>
-                            <div class="header-tooltip">
-                                <b>Згорнути піднотатки</b> (до кореня)
+                        <div class="header-divider"></div>
+
+                        <!-- 2. Блок маркерів (Швидкий пензель та Гумка) -->
+                        <div class="header-tools-pill" id="header-markers-pill">
+                            <div class="header-brush-group">
+                                <button class="header-action-icon-btn" id="workspace-brush-btn">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M18.37 2.63 14 7l-1.59-1.59a2 2 0 0 0-2.82 0L8 7l9 9 1.59-1.59a2 2 0 0 0 0-2.82L17 10l4.37-4.37a2.12 2.12 0 1 0-3-3Z"></path>
+                                        <path d="M9 8c-2 3-4 3.5-7 4l8 8c.5-3 1-5 4-7"></path>
+                                    </svg>
+                                </button>
+                                <button class="header-brush-color-trigger" id="workspace-brush-color-btn">
+                                    <span class="brush-color-dot" id="workspace-brush-color-dot" style="background-color: #bbf7d0;"></span>
+                                </button>
+
+                                <!-- Спливаюча підказка для пензля -->
+                                <div class="header-tooltip header-brush-tooltip">
+                                    <b>Швидкий маркер</b>: фарбує слова по виділенню (вимкнення — <b>Esc</b>)
+                                </div>
+
+                                <!-- Випадаюча палітра кольорів пензля -->
+                                <div class="header-brush-dropdown" id="workspace-brush-dropdown">
+                                    <button class="brush-palette-item active" data-color="hl-green" style="background-color: #bbf7d0;" title="Зелений маркер"></button>
+                                    <button class="brush-palette-item" data-color="hl-yellow" style="background-color: #fef08a;" title="Жовтий маркер"></button>
+                                    <button class="brush-palette-item" data-color="hl-blue" style="background-color: #bae6fd;" title="Блакитний маркер"></button>
+                                    <button class="brush-palette-item" data-color="hl-pink" style="background-color: #fbcfe8;" title="Рожевий маркер"></button>
+                                    <button class="brush-palette-item" data-color="hl-orange" style="background-color: #fed7aa;" title="Помаранчевий маркер"></button>
+                                    <button class="brush-palette-item" data-color="hl-purple" style="background-color: #e9d5ff;" title="Фіолетовий маркер"></button>
+                                </div>
+                            </div>
+
+                            <!-- Швидка гумка (Eraser mode) -->
+                            <div class="header-btn-wrap">
+                                <button class="header-action-icon-btn" id="workspace-eraser-btn">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"></path>
+                                        <path d="M22 21H7"></path>
+                                        <path d="m5 11 9 9"></path>
+                                    </svg>
+                                </button>
+                                <div class="header-tooltip">
+                                    <b>Швидка гумка</b>: стирає маркери по виділенню (вимкнення — <b>Esc</b>)
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Режим Фокусу (Clean Zen View) -->
-                        <div class="header-btn-wrap">
-                            <button class="header-action-icon-btn" id="workspace-zen-btn">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
-                                    <circle cx="12" cy="12" r="3"></circle>
-                                </svg>
-                            </button>
-                            <div class="header-tooltip">
-                                <b>Режим фокусу</b> (без панелей)
+                        <div class="header-divider"></div>
+
+                        <!-- 3. Панель швидких інструментів робочого простору -->
+                        <div class="header-tools-pill" id="header-tools-pill">
+                            <!-- Швидкий пошук / фільтр слів (Ctrl+F) -->
+                            <div class="header-search-wrap" id="workspace-search-wrap">
+                                <button class="header-action-icon-btn" id="workspace-search-btn">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                    </svg>
+                                </button>
+                                <div class="header-tooltip">
+                                    <b>Пошук на дошці</b> (Ctrl+F)
+                                </div>
+                                <div class="header-search-bar" id="workspace-search-bar" style="display: none;">
+                                    <input type="text" id="workspace-search-input" placeholder="Знайти слово..." autocomplete="off">
+                                    <span class="header-search-count" id="workspace-search-count" style="display: none;">0/0</span>
+                                    <div class="header-search-nav-btns" id="workspace-search-nav" style="display: none;">
+                                        <button class="header-search-nav-btn" id="workspace-search-prev" title="Попередній збіг (Shift+Enter або ↑)">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="18 15 12 9 6 15"></polyline>
+                                            </svg>
+                                        </button>
+                                        <button class="header-search-nav-btn" id="workspace-search-next" title="Наступний збіг (Enter або ↓)">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="6 9 12 15 18 9"></polyline>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <button class="header-search-close" id="workspace-search-close" title="Закрити пошук (Esc)">×</button>
+                                </div>
+                            </div>
+
+                            <!-- Згорнути всі ланцюжки піднотаток -->
+                            <div class="header-btn-wrap">
+                                <button class="header-action-icon-btn" id="workspace-collapse-btn">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="4 14 10 14 10 20"></polyline>
+                                        <polyline points="20 10 14 10 14 4"></polyline>
+                                        <line x1="14" y1="10" x2="21" y2="3"></line>
+                                        <line x1="3" y1="21" x2="10" y2="14"></line>
+                                    </svg>
+                                </button>
+                                <div class="header-tooltip">
+                                    <b>Згорнути піднотатки</b> (до кореня)
+                                </div>
+                            </div>
+
+                            <!-- Режим Фокусу (Clean Zen View) -->
+                            <div class="header-btn-wrap">
+                                <button class="header-action-icon-btn" id="workspace-zen-btn">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </button>
+                                <div class="header-tooltip">
+                                    <b>Режим фокусу</b> (без панелей)
+                                </div>
                             </div>
                         </div>
+
+                        <div class="header-divider"></div>
                     </div>
-
-                    <div class="header-divider"></div>
 
                     <div class="header-segment-control">
                         <button class="header-segment-btn active" id="island-view-columns-btn" title="Колонковий режим стікерів">

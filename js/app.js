@@ -39,6 +39,9 @@ document.addEventListener('DOMContentLoaded', () => {
     sidebarView.init({
         onSelectNote: (noteId) => {
             workspaceView.scrollToNote(noteId);
+            if (window.innerWidth <= 768 && window.App.sidebarView.closeMobileSidebar) {
+                window.App.sidebarView.closeMobileSidebar();
+            }
         }
     });
 

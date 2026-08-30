@@ -27,6 +27,8 @@ window.App = window.App || {};
             // Застосовуємо збережений або дефолтний розмір шрифту
             const rawFontSize = note.fontSize;
             if (typeof rawFontSize === 'number') {
+                const stepIdx = rawFontSize <= 12 ? 0 : rawFontSize <= 16 ? 1 : rawFontSize <= 24 ? 2 : 3;
+                card.dataset.fontStep = stepIdx;
                 card.style.setProperty('--custom-content-font-size', `${rawFontSize}px`);
                 card.style.setProperty('--custom-title-font-size', `${Math.round(rawFontSize * 1.85)}px`);
                 card.style.setProperty('--custom-line-height', `${Math.round(rawFontSize * 1.9)}px`);
