@@ -1,4 +1,4 @@
-﻿// js/welcomeView.js - Екран першого знайомства (створення першої дошки)
+// js/welcomeView.js - Екран першого знайомства (створення першої дошки)
 window.App = window.App || {};
 
 (function() {
@@ -15,6 +15,14 @@ window.App = window.App || {};
                 const name = els.welcomeBoardInput.value.trim();
                 if (name) window.App.boardManager.createBoard(name);
             });
+
+            if (els.welcomeLoginBtn) {
+                els.welcomeLoginBtn.addEventListener('click', () => {
+                    if (window.App.authModal) {
+                        window.App.authModal.open();
+                    }
+                });
+            }
 
             els.welcomeBoardInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {

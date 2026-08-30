@@ -1,4 +1,4 @@
-﻿// js/dom.js - Отримання DOM елементів
+// js/dom.js - Отримання DOM елементів
 window.App = window.App || {};
 
 window.App.getElements = function() {
@@ -10,6 +10,7 @@ window.App.getElements = function() {
         // Екран привітання
         welcomeBoardInput: document.getElementById('welcome-board-input'),
         createFirstBoardBtn: document.getElementById('create-first-board-btn'),
+        welcomeLoginBtn: document.getElementById('welcome-login-btn'),
 
         // Сайдбар
         sidebarAddBoardBtn: document.getElementById('sidebar-add-board-btn'),
