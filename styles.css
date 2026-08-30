@@ -124,7 +124,7 @@
     .header-extra-tools-wrap {
         display: none;
         position: absolute;
-        top: 52px;
+        top: calc(52px + env(safe-area-inset-top, 0px));
         right: 12px;
         background: #18181a;
         border: 1px solid rgba(255, 255, 255, 0.14);
@@ -145,7 +145,7 @@
     /* Красиве адаптивне оформлення випадаючого поля пошуку на мобільних пристроях */
     .header-search-bar {
         position: fixed !important;
-        top: 54px !important;
+        top: calc(54px + env(safe-area-inset-top, 0px)) !important;
         left: 12px !important;
         right: 12px !important;
         width: calc(100vw - 24px) !important;
@@ -174,7 +174,7 @@
         to { opacity: 1; transform: translateY(0); }
     }
 
-    /* 3. Сайдбар перетворюється на висувну шторку */
+    /* 3. Сайдбар перетворюється на висувну шторку з урахуванням "чубчика" (Safe Area) */
     .sidebar {
         position: fixed;
         top: 0;
@@ -183,6 +183,8 @@
         max-width: 320px;
         height: 100vh;
         height: 100dvh;
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
         z-index: 999;
         transform: translateX(-100%);
         transition: transform 0.28s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.28s ease;
@@ -201,11 +203,15 @@
         overflow: hidden;
     }
 
-    /* 3. Хедер робочої області */
+    /* 3. Хедер робочої області (з відступом від годинника, Dynamic Island та батареї iPhone) */
     .workspace-top-header {
-        padding: 0 10px;
-        height: 48px;
-        min-height: 48px;
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-left: max(10px, env(safe-area-inset-left, 0px));
+        padding-right: max(10px, env(safe-area-inset-right, 0px));
+        padding-bottom: 6px;
+        height: auto;
+        min-height: calc(48px + env(safe-area-inset-top, 0px));
+        box-sizing: border-box;
     }
 
     /* Приховуємо блок заголовка блокнота на мобільних, оскільки назва вже є в самій кореневій колонці */
