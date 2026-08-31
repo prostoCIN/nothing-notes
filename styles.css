@@ -552,16 +552,103 @@
         box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
     }
 
-    /* 7. Модальні вікна */
+    /* 7. Модальні вікна та діалоги дій (Mobile Modals & Selection Bar) */
+    .confirm-modal-box {
+        width: calc(100vw - 32px) !important;
+        max-width: none !important;
+        padding: 20px 18px !important;
+        border-radius: 16px !important;
+        gap: 14px !important;
+        margin: auto !important;
+    }
+
+    .confirm-modal-header {
+        gap: 10px !important;
+    }
+
+    .confirm-modal-icon-badge {
+        width: 32px !important;
+        height: 32px !important;
+    }
+
+    .confirm-modal-title {
+        font-size: 16px !important;
+    }
+
+    .confirm-modal-body {
+        font-size: 13px !important;
+        line-height: 1.4 !important;
+    }
+
+    .confirm-modal-actions {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 8px !important;
+        margin-top: 6px !important;
+        width: 100% !important;
+    }
+
+    .modal-cancel-btn {
+        flex: 1 1 0px !important;
+        padding: 10px 8px !important;
+        font-size: 13px !important;
+        text-align: center !important;
+    }
+
+    .hold-delete-btn {
+        flex: 1.6 1 0px !important;
+        padding: 10px 8px !important;
+        font-size: 13px !important;
+        text-align: center !important;
+    }
+
+    .hold-btn-text {
+        font-size: 12px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    /* Адаптив плаваючої нижньої панелі масового вибору (iOS Selection Bar) */
+    .workspace-selection-bar {
+        width: calc(100vw - 20px) !important;
+        max-width: none !important;
+        bottom: max(env(safe-area-inset-bottom, 0px), 12px) !important;
+        padding: 8px 10px !important;
+        gap: 8px !important;
+        border-radius: 14px !important;
+    }
+
+    .selection-bar-info {
+        font-size: 11px !important;
+    }
+
+    .selection-action-btn {
+        padding: 6px 8px !important;
+        font-size: 11px !important;
+        border-radius: 8px !important;
+    }
+
+    .selection-action-btn span:not(.selection-tag-color-dot) {
+        display: none !important; /* На мобільному лишаємо тільки іконки дій */
+    }
+
+    .selection-submenu-dropdown {
+        width: calc(100vw - 32px) !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+    }
+
     .auth-modal-card {
-        width: 92vw;
-        max-width: 380px;
-        padding: 28px 20px 24px 20px;
+        width: calc(100vw - 32px) !important;
+        max-width: none !important;
+        padding: 24px 18px !important;
+        border-radius: 16px !important;
     }
 
     .welcome-content {
-        width: 92vw;
-        padding: 32px 20px;
+        width: calc(100vw - 32px) !important;
+        padding: 28px 16px !important;
     }
 
     .board-creation-form {
