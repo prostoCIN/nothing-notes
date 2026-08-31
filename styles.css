@@ -425,7 +425,9 @@
         font-size: 11px !important; 
         line-height: 22px !important; 
         background-size: 100% 22px !important;
-        background-image: repeating-linear-gradient(
+        background-position: left top !important;
+        background-repeat: repeat !important;
+        background-image: linear-gradient(
             to bottom,
             transparent 0px,
             transparent 21px,
@@ -441,7 +443,9 @@
         font-size: 14px !important; 
         line-height: 26px !important; 
         background-size: 100% 26px !important;
-        background-image: repeating-linear-gradient(
+        background-position: left top !important;
+        background-repeat: repeat !important;
+        background-image: linear-gradient(
             to bottom,
             transparent 0px,
             transparent 25px,
@@ -455,7 +459,9 @@
         font-size: 17px !important; 
         line-height: 30px !important; 
         background-size: 100% 30px !important;
-        background-image: repeating-linear-gradient(
+        background-position: left top !important;
+        background-repeat: repeat !important;
+        background-image: linear-gradient(
             to bottom,
             transparent 0px,
             transparent 29px,
@@ -469,7 +475,9 @@
         font-size: 20px !important; 
         line-height: 34px !important; 
         background-size: 100% 34px !important;
-        background-image: repeating-linear-gradient(
+        background-position: left top !important;
+        background-repeat: repeat !important;
+        background-image: linear-gradient(
             to bottom,
             transparent 0px,
             transparent 33px,
