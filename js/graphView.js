@@ -519,12 +519,10 @@ window.App = window.App || {};
 
                 // 3. Емодзі нотатки по центру кружка
                 const icon = node.icon || (node.isRoot ? '🗒️' : '📄');
-                // Оптимальний розмір шрифту емодзі строго за внутрішнім діаметром кружечка
-                const emojiSize = Math.max(12, Math.round(node.radius * 1.05));
-                ctx.font = `${emojiSize}px -apple-system, BlinkMacSystemFont, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
+                const emojiSize = Math.round(node.radius * 1.1);
+                ctx.font = `${emojiSize}px/1 "Apple Color Emoji", "Segoe UI Emoji", sans-serif`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                // В iOS Safari textBaseline = 'middle' для системних емодзі вже ідеально центрований
                 ctx.fillText(icon, node.x, node.y);
 
                 // 4. Підпис назви вершини (Text Label під кружком)
@@ -536,7 +534,7 @@ window.App = window.App || {};
 
                     // Підкладка для читабельності тексту
                     const text = node.title;
-                    const textY = node.y + node.radius + 6;
+                    const textY = node.y + node.radius + 8;
 
                     ctx.fillStyle = isHovered ? '#34d399' : (isMatch && searchQuery ? '#fbbf24' : 'rgba(255, 255, 255, 0.85)');
                     ctx.fillText(text, node.x, textY);
