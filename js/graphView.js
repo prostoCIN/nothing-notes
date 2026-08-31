@@ -30,6 +30,8 @@ window.App = window.App || {};
     let hoveredNode = null;
     let startMousePos = { x: 0, y: 0 };
     let lastMousePos = { x: 0, y: 0 };
+    let searchQuery = '';
+
     // Кольорова палітра вузлів (зі збереженням теми стікерів)
     const colorMap = {
         yellow: '#fef08a',
