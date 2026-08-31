@@ -154,6 +154,7 @@ window.App = window.App || {};
                             icon: n.icon || '',
                             images: n.images || [],
                             isCollapsed: !!n.is_collapsed,
+                            tags: Array.isArray(n.tags) ? n.tags : [],
                             createdAt: new Date(n.created_at).getTime() || Date.now()
                         };
                     });
@@ -277,6 +278,7 @@ window.App = window.App || {};
                 icon: note.icon || '',
                 images: note.images || [],
                 is_collapsed: !!note.isCollapsed,
+                tags: Array.isArray(note.tags) ? note.tags : [],
                 updated_at: new Date().toISOString()
             };
 
