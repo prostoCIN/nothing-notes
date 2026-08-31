@@ -154,16 +154,23 @@ window.App = window.App || {};
                 if (cloudNotes && cloudNotes.length > 0) {
                     const firstBoardId = (state.boards && state.boards[0]) ? state.boards[0].id : null;
                     const localMap = new Map(state.notes.map(n => [n.id, n]));
-                    let hasChanges = false;
+                    const notesToPushBack = [];
 
                     const formattedNotes = cloudNotes.map(n => {
                         const localNote = localMap.get(n.id);
-                        // Якщо в базі board_id був null (стара нотатка), беремо її локальний boardId або перший блокнот
                         const resolvedBoardId = n.board_id || (localNote ? localNote.boardId : null) || firstBoardId;
 
-                        // Якщо в базі не було board_id, оновлюємо його в хмарі раз і назавжди!
                         if (!n.board_id && resolvedBoardId) {
                             supabase.from('notes').update({ board_id: resolvedBoardId }).eq('id', n.id);
+                        }
+
+                        const cloudUpdatedAt = n.updated_at ? new Date(n.updated_at).getTime() : 0;
+                        const localUpdatedAt = localNote && localNote.updatedAt ? localNote.updatedAt : 0;
+
+                        // Якщо локальна версія новіша за хмарну (редагували в офлайні) — зберігаємо локальну і ставимо в чергу на вивантаження
+                        if (localNote && localUpdatedAt > (cloudUpdatedAt + 500)) {
+                            notesToPushBack.push(localNote);
+                            return localNote;
                         }
 
                         return {
@@ -178,11 +185,21 @@ window.App = window.App || {};
                             images: n.images || [],
                             isCollapsed: !!n.is_collapsed,
                             tags: Array.isArray(n.tags) ? n.tags : [],
-                            createdAt: new Date(n.created_at).getTime() || Date.now()
+                            createdAt: new Date(n.created_at).getTime() || Date.now(),
+                            updatedAt: cloudUpdatedAt || Date.now()
                         };
                     });
 
-                    // Повна синхронізація: стан нотаток стає ідентичним до хмари (хмара — єдине джерело правди)
+                    // Якщо локально були створені нові нотатки, яких ще взагалі немає в хмарі
+                    const cloudIds = new Set(cloudNotes.map(n => n.id));
+                    state.notes.forEach(localNote => {
+                        if (!cloudIds.has(localNote.id)) {
+                            formattedNotes.push(localNote);
+                            notesToPushBack.push(localNote);
+                        }
+                    });
+
+                    // Зберігаємо актуальний об'єднаний стан
                     state.notes = formattedNotes;
                     window.App.storage.saveNotes(state.notes, true);
 
@@ -190,14 +207,25 @@ window.App = window.App || {};
                     if (window.App.sidebarView) window.App.sidebarView.render();
                     if (window.App.workspaceView) window.App.workspaceView.render();
 
+                    // Якщо були офлайн-правки — вивантажуємо їх у хмару
+                    if (notesToPushBack.length > 0) {
+                        console.log(`[CloudSync] 🔄 Syncing ${notesToPushBack.length} newer offline edits back to cloud...`);
+                        notesToPushBack.forEach(note => this.syncNote(note));
+                    }
+
                     // Вивантажуємо фото з IndexedDB, якщо є локальні
                     await this.uploadMissingLocalImages();
                 } else {
-                    // Якщо в хмарі пусто, а користувач видалив усі нотатки
-                    state.notes = [];
-                    window.App.storage.saveNotes(state.notes, true);
-                    if (window.App.sidebarView) window.App.sidebarView.render();
-                    if (window.App.workspaceView) window.App.workspaceView.render();
+                    // Якщо в хмарі пусто, але локально є нотатки (офлайн створення) — вивантажуємо їх у хмару
+                    if (state.notes.length > 0) {
+                        console.log('[CloudSync] Pushing local notes to empty cloud...');
+                        await this.pushAllToCloud();
+                    } else {
+                        state.notes = [];
+                        window.App.storage.saveNotes(state.notes, true);
+                        if (window.App.sidebarView) window.App.sidebarView.render();
+                        if (window.App.workspaceView) window.App.workspaceView.render();
+                    }
                 }
             } catch (err) {
                 console.error('[CloudSync] Pull exception:', err);
