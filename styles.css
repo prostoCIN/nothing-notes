@@ -384,6 +384,26 @@
         margin-bottom: 14px;
         padding: 16px 16px 16px 42px !important;
         box-sizing: border-box !important;
+        -webkit-tap-highlight-color: transparent !important;
+        outline: none !important;
+    }
+
+    .note-sticker *,
+    .sticker-title,
+    .sticker-content {
+        -webkit-tap-highlight-color: transparent !important;
+        outline: none !important;
+    }
+
+    .sticker-content {
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+    }
+
+    .sticker-content::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
     }
 
     /* Адаптивна шкала шрифтів для мобільних екранів (S / M / L / XL) з ідеальною синхронізацією ліній блокнота */
