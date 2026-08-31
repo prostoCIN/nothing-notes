@@ -88,6 +88,11 @@ window.App = window.App || {};
                 }
             }
 
+            const currentLevelNotes = this.getNotesForColumn(parentId);
+            const nextOrderIndex = currentLevelNotes.length > 0
+                ? Math.max(...currentLevelNotes.map(n => typeof n.orderIndex === 'number' ? n.orderIndex : 0), 0) + 1
+                : 0;
+
             const newNote = {
                 id: 'note_' + Date.now().toString() + '_' + Math.random().toString(36).substr(2, 4),
                 boardId: state.activeBoardId,
@@ -95,6 +100,7 @@ window.App = window.App || {};
                 title: '',
                 content: '',
                 color: inheritedColor,
+                orderIndex: nextOrderIndex,
                 updatedAt: Date.now()
             };
 

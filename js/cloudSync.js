@@ -195,6 +195,7 @@ window.App = window.App || {};
                             images: n.images || [],
                             isCollapsed: !!n.is_collapsed,
                             tags: Array.isArray(n.tags) ? n.tags : [],
+                            orderIndex: typeof n.order_index === 'number' ? n.order_index : 0,
                             gridCol: localNote && localNote.gridCol ? localNote.gridCol : undefined,
                             createdAt: new Date(n.created_at).getTime() || Date.now(),
                             updatedAt: cloudUpdatedAt || Date.now()
@@ -342,7 +343,10 @@ window.App = window.App || {};
             const state = window.App.state;
 
             const payloads = notes.map(note => {
-                const noteIndex = state.notes.findIndex(n => n.id === note.id);
+                const noteIndex = typeof note.orderIndex === 'number'
+                    ? note.orderIndex
+                    : state.notes.findIndex(n => n.id === note.id);
+
                 return {
                     id: note.id,
                     user_id: currentUser.id,
@@ -381,7 +385,9 @@ window.App = window.App || {};
             if (!supabase || !currentUser) return;
             const state = window.App.state;
 
-            const noteIndex = state.notes.findIndex(n => n.id === note.id);
+            const noteIndex = typeof note.orderIndex === 'number'
+                ? note.orderIndex
+                : state.notes.findIndex(n => n.id === note.id);
 
             const payload = {
                 id: note.id,
