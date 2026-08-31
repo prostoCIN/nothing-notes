@@ -308,6 +308,9 @@
 }
 
 .sticker-title {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    background-clip: padding-box !important;
     background: transparent !important;
     border: none !important;
     outline: none !important;
@@ -651,6 +654,9 @@
     outline: none !important;
     border: none !important;
     box-shadow: none !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    background-clip: padding-box !important;
 }
 
 /* ==========================================================================
@@ -951,7 +957,7 @@
     font-size: 12.5px !important;
     line-height: 24px !important;
     background-size: 100% 24px !important;
-    background-image: repeating-linear-gradient(
+    background-image: linear-gradient(
         to bottom,
         transparent 0px,
         transparent 23px,
@@ -975,7 +981,7 @@
     font-size: 17px !important;
     line-height: 32px !important;
     background-size: 100% 32px !important;
-    background-image: repeating-linear-gradient(
+    background-image: linear-gradient(
         to bottom,
         transparent 0px,
         transparent 31px,
@@ -993,7 +999,7 @@
     font-size: var(--custom-content-font-size, 14.5px) !important;
     line-height: var(--custom-line-height, 28px) !important;
     background-size: 100% var(--custom-line-height, 28px) !important;
-    background-image: repeating-linear-gradient(
+    background-image: linear-gradient(
         to bottom,
         transparent 0px,
         transparent calc(var(--custom-line-height, 28px) - 1px),
