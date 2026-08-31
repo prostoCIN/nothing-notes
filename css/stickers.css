@@ -619,8 +619,11 @@
 .sticker-content {
     min-height: 90px;
     height: auto;
-    outline: none;
-    border: none;
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-user-modify: read-write-plaintext-only;
     font-size: 16px;
     line-height: 30px;
     color: #292524;
@@ -628,7 +631,7 @@
     word-break: break-word;
     white-space: pre-wrap;
     /* Чіткі тонкі горизонтальні лінії блокнота під кожним рядком тексту як у Moleskine */
-    background-image: repeating-linear-gradient(
+    background-image: linear-gradient(
         to bottom,
         transparent 0px,
         transparent 29px,
@@ -636,8 +639,18 @@
         rgba(0, 0, 0, 0.08) 30px
     );
     background-size: 100% 30px;
-    background-attachment: local;
+    background-repeat: repeat;
+    background-position: left top;
+    background-attachment: scroll;
     padding-bottom: 4px;
+}
+
+.sticker-content:focus,
+.sticker-content:focus-visible,
+.sticker-content:active {
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 
 /* ==========================================================================

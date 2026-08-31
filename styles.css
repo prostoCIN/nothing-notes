@@ -416,8 +416,13 @@
         -ms-overflow-style: none !important;
         border: none !important;
         box-shadow: none !important;
+        -webkit-appearance: none !important;
+        appearance: none !important;
+        -webkit-user-modify: read-write-plaintext-only !important;
         background-clip: padding-box !important;
-        background-repeat: repeat-y !important;
+        background-repeat: repeat !important;
+        background-position: left top !important;
+        background-attachment: scroll !important;
         caret-color: #292524 !important;
     }
 
@@ -427,6 +432,7 @@
         outline: none !important;
         border: none !important;
         box-shadow: none !important;
+        -webkit-appearance: none !important;
     }
 
     .sticker-content::-webkit-scrollbar {
