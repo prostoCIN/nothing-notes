@@ -5,6 +5,7 @@ window.App = window.App || {};
     let currentUser = null;
     let syncDebounceTimer = null;
     let isSyncing = false;
+    let lastLocalEditTimestamps = new Map(); // id -> timestamp
 
     window.App.cloudSync = {
         init() {
@@ -36,6 +37,22 @@ window.App = window.App || {};
                     .channel('notes-realtime-channel')
                     .on('postgres_changes', { event: '*', schema: 'public', table: 'notes' }, (payload) => {
                         console.log('[CloudSync] ⚡ Realtime change detected from cloud:', payload.eventType, payload);
+
+                        // Якщо зміна стосується нотатки, яку щойно редагували на цьому ж пристрої (менше 2.5 сек тому) - ігноруємо власне "відлуння"
+                        if (payload.new && payload.new.id) {
+                            const lastEdit = lastLocalEditTimestamps.get(payload.new.id);
+                            if (lastEdit && (Date.now() - lastEdit < 2500)) {
+                                return;
+                            }
+                        }
+
+                        // Якщо користувач прямо зараз тримає фокус і друкує в якійсь нотатці - не робимо агресивний повний рендер
+                        const activeEl = document.activeElement;
+                        const isTyping = activeEl && (activeEl.classList.contains('sticker-content') || activeEl.classList.contains('sticker-title'));
+                        if (isTyping && payload.new && activeEl.closest(`[data-note-id="${payload.new.id}"]`)) {
+                            return; // Не перебиваємо активний ввід користувача
+                        }
+
                         this.pullFromCloud();
                     })
                     .subscribe((status, err) => {
@@ -267,6 +284,7 @@ window.App = window.App || {};
         syncNote(note) {
             if (!currentUser || !window.App.supabase || !note) return;
 
+            lastLocalEditTimestamps.set(note.id, Date.now());
             this._pendingSyncNote = note;
 
             clearTimeout(syncDebounceTimer);
