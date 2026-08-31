@@ -18,7 +18,7 @@ window.App = window.App || {};
             tagsContainer.className = 'sticker-tags-container';
 
             // Отримуємо актуальні теги нотатки через єдиний оптимізований метод
-            const noteTags = noteManager.getNoteTags ? noteManager.getNoteTags(note) : [];
+            let noteTags = noteManager.getNoteTags ? noteManager.getNoteTags(note) : [];
 
             // Якщо тегів немає — приховуємо контейнер, поки користувач не відкриє його з меню
             if (noteTags.length === 0) {
@@ -116,6 +116,11 @@ window.App = window.App || {};
 
                         if (notesUpdated) {
                             storage.saveNotes(state.notes);
+                            if (window.App.cloudSync && window.App.cloudSync.isLoggedIn()) {
+                                state.notes.filter(n => n.boardId === currentBoardId).forEach(n => {
+                                    window.App.cloudSync.syncNote(n);
+                                });
+                            }
                         }
 
                         // 3. Оновлюємо список тегів поточної картки локально

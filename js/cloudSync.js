@@ -346,7 +346,8 @@ window.App = window.App || {};
                 icon: note.icon || '',
                 images: note.images || [],
                 is_collapsed: !!note.isCollapsed,
-                order_index: idx,
+                  tags: Array.isArray(note.tags) ? note.tags : [],
+                  order_index: idx,
                 updated_at: new Date().toISOString()
             }));
 
