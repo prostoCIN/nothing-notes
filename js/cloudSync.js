@@ -161,7 +161,8 @@ window.App = window.App || {};
                 const { data: cloudNotes, error } = await supabase
                     .from('notes')
                     .select('*')
-                    .order('order_index', { ascending: true, nullsFirst: false });
+                    .order('order_index', { ascending: true, nullsFirst: false })
+                    .order('created_at', { ascending: true });
 
                 if (error) {
                     console.error('[CloudSync] Error pulling notes:', error);
@@ -340,21 +341,25 @@ window.App = window.App || {};
             if (!supabase || !currentUser || !notes || notes.length === 0) return;
             const state = window.App.state;
 
-            const payloads = notes.map(note => ({
-                id: note.id,
-                user_id: currentUser.id,
-                board_id: note.boardId || state.activeBoardId || null,
-                parent_id: note.parentId || null,
-                title: note.title || '',
-                content: note.content || '',
-                color: note.color || 'yellow',
-                font_size: typeof note.fontSize === 'number' ? note.fontSize : 16,
-                icon: note.icon || '',
-                images: note.images || [],
-                is_collapsed: !!note.isCollapsed,
-                tags: Array.isArray(note.tags) ? note.tags : [],
-                updated_at: new Date(note.updatedAt || Date.now()).toISOString()
-            }));
+            const payloads = notes.map(note => {
+                const noteIndex = state.notes.findIndex(n => n.id === note.id);
+                return {
+                    id: note.id,
+                    user_id: currentUser.id,
+                    board_id: note.boardId || state.activeBoardId || null,
+                    parent_id: note.parentId || null,
+                    title: note.title || '',
+                    content: note.content || '',
+                    color: note.color || 'yellow',
+                    font_size: typeof note.fontSize === 'number' ? note.fontSize : 16,
+                    icon: note.icon || '',
+                    images: note.images || [],
+                    is_collapsed: !!note.isCollapsed,
+                    tags: Array.isArray(note.tags) ? note.tags : [],
+                    order_index: noteIndex !== -1 ? noteIndex : state.notes.length,
+                    updated_at: new Date(note.updatedAt || Date.now()).toISOString()
+                };
+            });
 
             try {
                 const { error } = await supabase
@@ -376,6 +381,8 @@ window.App = window.App || {};
             if (!supabase || !currentUser) return;
             const state = window.App.state;
 
+            const noteIndex = state.notes.findIndex(n => n.id === note.id);
+
             const payload = {
                 id: note.id,
                 user_id: currentUser.id,
@@ -389,6 +396,7 @@ window.App = window.App || {};
                 images: note.images || [],
                 is_collapsed: !!note.isCollapsed,
                 tags: Array.isArray(note.tags) ? note.tags : [],
+                order_index: noteIndex !== -1 ? noteIndex : state.notes.length,
                 updated_at: new Date(note.updatedAt || Date.now()).toISOString()
             };
 
