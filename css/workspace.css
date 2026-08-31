@@ -15,10 +15,11 @@
 .workspace-top-header {
     height: 48px;
     min-height: 48px;
-    background: rgba(26, 26, 28, 0.95);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: rgba(22, 22, 26, 0.75);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
     border-bottom: 1px solid var(--border-color);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
     padding: 0 24px;
     display: flex;
     align-items: center;
@@ -70,12 +71,15 @@
 }
 
 .header-action-icon-btn {
-    background: transparent;
-    border: none;
+    background: rgba(255, 255, 255, 0.055);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 2px 8px rgba(0, 0, 0, 0.12);
     color: var(--text-muted);
-    width: 24px;
-    height: 24px;
-    border-radius: 5px;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -85,9 +89,25 @@
     flex-shrink: 0;
 }
 
+/* Всередині згрупованих блоків (header-tools-pill) кнопки є компактними елементами групи */
+.header-tools-pill .header-action-icon-btn {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 5px;
+}
+
 .header-action-icon-btn:hover {
     color: var(--text-main);
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.18);
+}
+
+.header-tools-pill .header-action-icon-btn:hover {
     background: rgba(255, 255, 255, 0.08);
+    border-color: transparent;
 }
 
 .header-action-icon-btn:disabled,
@@ -104,30 +124,49 @@
 }
 
 .header-action-icon-btn.active {
-    background: #10b981 !important;
-    color: #ffffff !important;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+    background: var(--emerald-gradient) !important;
+    color: #062419 !important;
+    box-shadow: 0 4px 14px rgba(22, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
 }
 
-/* Група швидкого пензля з палітрою */
+.header-action-icon-btn.active svg {
+    stroke: #062419 !important;
+}
+
+/* Група швидкого пензля з палітрою (єдина капсула) */
 .header-brush-group {
     position: relative;
     display: inline-flex;
     align-items: center;
-    gap: 2px;
+    background: rgba(255, 255, 255, 0.055);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 2px 8px rgba(0, 0, 0, 0.12);
+    border-radius: 8px;
+    padding: 0 3px 0 0;
+    gap: 1px;
+    height: 28px;
+    box-sizing: border-box;
+}
+
+.header-brush-group .header-action-icon-btn {
+    background: transparent;
+    border: none;
+    box-shadow: none;
 }
 
 .header-brush-color-trigger {
     background: transparent;
     border: none;
     padding: 0;
-    height: 24px;
-    width: 18px;
+    height: 28px;
+    width: 28px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    border-radius: 5px;
+    border-radius: 8px;
     transition: background 0.15s ease;
     flex-shrink: 0;
 }
@@ -137,11 +176,11 @@
 }
 
 .brush-color-dot {
-    width: 9px;
-    height: 9px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
-    border: 1.5px solid rgba(255, 255, 255, 0.4);
-    box-shadow: 0 0 4px rgba(0, 0, 0, 0.4);
+    border: 1.5px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
     transition: transform 0.15s ease, border-color 0.15s ease;
 }
 
@@ -298,9 +337,12 @@
 .header-history-control {
     display: inline-flex;
     align-items: center;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.055);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 9px;
     padding: 2px 4px;
     gap: 3px;
     position: relative;
@@ -468,9 +510,14 @@ body.zen-mode-active .board-workspace {
 }
 
 body.zen-mode-active #workspace-zen-btn {
-    background: #10b981 !important;
-    color: #ffffff !important;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+    background: var(--emerald-gradient) !important;
+    border-color: transparent !important;
+    color: #062419 !important;
+    box-shadow: 0 4px 14px rgba(22, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+}
+
+body.zen-mode-active #workspace-zen-btn svg {
+    stroke: #062419 !important;
 }
 
 /* Швидка гумка активна */
@@ -520,10 +567,14 @@ body.global-eraser-active #workspace-eraser-btn {
 }
 
 .header-segment-btn.active {
-    background: #10b981 !important;
-    color: #ffffff !important;
+    background: var(--emerald-gradient) !important;
+    color: #062419 !important;
     font-weight: 700;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+    box-shadow: 0 4px 14px rgba(22, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+}
+
+.header-segment-btn.active svg {
+    stroke: #062419 !important;
 }
 
 .header-divider {
@@ -556,11 +607,15 @@ body.global-eraser-active #workspace-eraser-btn {
 }
 
 .header-select-btn.active {
-    background: #10b981 !important;
-    border-color: #10b981 !important;
-    color: #ffffff !important;
-    font-weight: 700;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+    background: var(--emerald-gradient) !important;
+    border-color: transparent !important;
+    color: #062419 !important;
+    font-weight: 800;
+    box-shadow: 0 4px 14px rgba(22, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+}
+
+.header-select-btn.active svg {
+    stroke: #062419 !important;
 }
 
 .columns-container {
@@ -588,13 +643,15 @@ body.global-eraser-active #workspace-eraser-btn {
     height: 100%;
     display: flex;
     flex-direction: column;
-    background-color: rgba(255, 255, 255, 0.02);
-    border: 1px solid var(--border-color);
-    border-radius: 16px;
+    background-color: rgba(26, 26, 30, 0.45);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
     padding: 22px 24px 20px 24px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    box-shadow: var(--glass-specular);
     box-sizing: border-box;
-    transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+    transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 /* Коли колонок 3 і більше — кожна колонка займає рівно 50% ширини екрана (calc((100% - 14px) / 2)) */
@@ -816,21 +873,21 @@ body.global-eraser-active #workspace-eraser-btn {
     bottom: 24px;
     left: 50%;
     transform: translateX(-50%) translateY(100px);
-    background-color: rgba(30, 30, 30, 0.92);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 20px;
+    background: rgba(26, 26, 30, 0.78);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 22px;
     padding: 8px 14px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 20px;
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 0 0 1px rgba(255, 255, 255, 0.04);
     z-index: 1000;
     opacity: 0;
     pointer-events: none;
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease, box-shadow 0.25s ease;
     max-width: calc(100vw - 48px);
     box-sizing: border-box;
 }
@@ -936,10 +993,14 @@ body.global-eraser-active #workspace-eraser-btn {
 }
 
 .selection-action-btn.active {
-    background: #10b981 !important;
-    border-color: #10b981 !important;
-    color: #ffffff !important;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+    background: var(--emerald-gradient) !important;
+    border-color: transparent !important;
+    color: #062419 !important;
+    box-shadow: 0 4px 14px rgba(22, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.selection-action-btn.active svg {
+    stroke: #062419 !important;
 }
 
 .selection-action-delete-btn {

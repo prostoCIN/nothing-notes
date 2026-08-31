@@ -1,15 +1,28 @@
 :root {
     /* Кольорова палітра Notion у темній темі */
-    --bg-color: #191919;
-    --sidebar-bg: #202020;
-    --modal-bg: #252525;
-    --text-main: rgba(255, 255, 255, 0.9);
-    --text-muted: rgba(255, 255, 255, 0.5);
-    --border-color: rgba(255, 255, 255, 0.1);
-    --hover-bg: rgba(255, 255, 255, 0.05);
-    --active-bg: rgba(255, 255, 255, 0.1);
-    --accent-color: #10b981;
+    --bg-color: #141416;
+    --sidebar-bg: #1a1a1d;
+    --modal-bg: rgba(26, 26, 30, 0.85);
+    --text-main: rgba(255, 255, 255, 0.94);
+    --text-muted: rgba(255, 255, 255, 0.55);
+    --border-color: rgba(255, 255, 255, 0.08);
+    --hover-bg: rgba(255, 255, 255, 0.06);
+    --active-bg: rgba(255, 255, 255, 0.12);
+    --accent-color: #16b981;
     --danger-color: #ff6b6b;
+
+    /* Фірмовий смарагдовий градієнт з точками з палітри */
+    --emerald-gradient: linear-gradient(135deg, #B3CD9D 0%, #16B981 30%, #ACF9DF 65%, #16B981 85%, #B3CD9D 100%);
+    --emerald-gradient-text: linear-gradient(120deg, #B3CD9D 0%, #16B981 35%, #ACF9DF 70%, #16B981 100%);
+    --emerald-glow: 0 8px 32px rgba(22, 185, 129, 0.22), 0 0 0 1px rgba(172, 249, 223, 0.15);
+
+    /* Apple Liquid Glass змінні */
+    --glass-bg: rgba(24, 24, 28, 0.72);
+    --glass-bg-subtle: rgba(255, 255, 255, 0.035);
+    --glass-border: rgba(255, 255, 255, 0.12);
+    --glass-specular: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 8px 24px rgba(0, 0, 0, 0.35);
+    --glass-blur: blur(24px) saturate(180%);
+    --glass-card-shadow: 0 12px 36px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.14);
 
     /* Єдина система кривих та таймінгів анімацій */
     --ease-out-smooth: cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -17,6 +30,7 @@
     --transition-fast: 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
     --transition-normal: 0.2s cubic-bezier(0.2, 0, 0, 1);
     --transition-fade: opacity 0.2s cubic-bezier(0.2, 0, 0, 1), transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+
     /* Стандартизована 4-рівнева типографічна сітка */
     --font-xs: 12px; /* Бейджі, підказки, другорядні підписи, теги, заголовки меню */
     --font-sm: 16px; /* Основний текст, рядки списків, кнопки, інпути, вміст нотатки */

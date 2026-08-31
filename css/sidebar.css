@@ -45,8 +45,12 @@
 }
 
 .brand-title-accent {
-    color: #10b981;
+    background: var(--emerald-gradient-text);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
     margin-left: 1px;
+    font-weight: 800;
+    text-shadow: 0 0 20px rgba(172, 249, 223, 0.3);
 }
 
 .sidebar-section {

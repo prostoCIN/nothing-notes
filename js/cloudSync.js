@@ -656,7 +656,7 @@ window.App = window.App || {};
                     <div class="user-avatar">${initial}</div>
                     <div class="user-info">
                         <div class="user-email" title="${user.email}">${nickname}</div>
-                        <div class="user-status-badge">Хмара підключена 🟢</div>
+                        <div class="user-status-badge">Хмара підключена</div>
                     </div>
                     <button class="user-logout-btn" id="user-logout-btn" title="Вийти з акаунта (${user.email})">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
