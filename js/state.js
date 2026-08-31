@@ -79,6 +79,9 @@ window.App.storage = {
         const allBoardsTags = JSON.parse(localStorage.getItem('minimal_board_tag_options')) || {};
         allBoardsTags[targetBoardId] = options;
         localStorage.setItem('minimal_board_tag_options', JSON.stringify(allBoardsTags));
+        if (window.App && window.App.cloudSync && window.App.cloudSync.syncTagOptions) {
+            window.App.cloudSync.syncTagOptions();
+        }
     },
     getColumnLayouts() {
         return JSON.parse(localStorage.getItem('minimal_column_layouts')) || {};

@@ -118,6 +118,12 @@ window.App = window.App || {};
                     await this.syncBoards();
                 }
 
+                // Синхронізація доступних варіантів тегів
+                const savedTagOptions = currentUser?.user_metadata?.board_tag_options;
+                if (savedTagOptions && typeof savedTagOptions === 'object') {
+                    localStorage.setItem('minimal_board_tag_options', JSON.stringify(savedTagOptions));
+                }
+
                 const { data: cloudNotes, error } = await supabase
                     .from('notes')
                     .select('*')
@@ -196,6 +202,24 @@ window.App = window.App || {};
                 }
             } catch (e) {
                 console.warn('[CloudSync] syncBoards error:', e);
+            }
+        },
+
+        // Синхронізація списку створених користувачем тегів
+        async syncTagOptions() {
+            if (!currentUser || !window.App.supabase) return;
+            try {
+                const allBoardsTags = JSON.parse(localStorage.getItem('minimal_board_tag_options')) || {};
+                const { data, error } = await window.App.supabase.auth.updateUser({
+                    data: {
+                        board_tag_options: allBoardsTags
+                    }
+                });
+                if (data && data.user) {
+                    currentUser = data.user;
+                }
+            } catch (e) {
+                console.warn('[CloudSync] syncTagOptions error:', e);
             }
         },
 

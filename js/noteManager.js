@@ -39,8 +39,6 @@ window.App = window.App || {};
         // Універсальний метод отримання валідних тегів нотатки (з підтримкою як масивів, так і legacy об'єктів)
         getNoteTags(note) {
             if (!note) return [];
-            const storage = window.App.storage;
-            const globalOptions = storage && storage.getTagOptions ? storage.getTagOptions(note.boardId) : [];
 
             let rawTags = [];
             if (Array.isArray(note.tags)) {
@@ -53,7 +51,7 @@ window.App = window.App || {};
 
             return rawTags
                 .map(t => (typeof t === 'string' ? t.trim() : ''))
-                .filter(t => t !== '' && (globalOptions.length === 0 || globalOptions.includes(t)));
+                .filter(t => t !== '');
         },
 
         getChildNotesCount(noteId) {
