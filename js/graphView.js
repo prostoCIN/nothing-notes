@@ -253,7 +253,7 @@ window.App = window.App || {};
                 });
             }
 
-            // Шорткат '/' або Escape
+            // Шорткат '/' або Escape / Enter
             window.addEventListener('keydown', (e) => {
                 if (e.key === '/' && document.activeElement !== searchInput && !document.activeElement.isContentEditable && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
                     if (window.App.state.isGraphView) {
@@ -261,7 +261,7 @@ window.App = window.App || {};
                         searchInput.focus();
                         searchInput.select();
                     }
-                } else if (e.key === 'Escape' && document.activeElement === searchInput) {
+                } else if ((e.key === 'Escape' || e.key === 'Enter') && document.activeElement === searchInput) {
                     searchInput.blur();
                 }
             });

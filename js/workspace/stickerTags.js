@@ -117,9 +117,7 @@ window.App = window.App || {};
                         if (notesUpdated) {
                             storage.saveNotes(state.notes);
                             if (window.App.cloudSync && window.App.cloudSync.isLoggedIn()) {
-                                state.notes.filter(n => n.boardId === currentBoardId).forEach(n => {
-                                    window.App.cloudSync.syncNote(n);
-                                });
+                                window.App.cloudSync.pushAllToCloud();
                             }
                         }
 

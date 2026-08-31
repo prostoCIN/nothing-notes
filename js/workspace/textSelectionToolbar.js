@@ -762,11 +762,7 @@ window.App = window.App || {};
                 searchInput.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter') {
                         e.preventDefault();
-                        if (e.shiftKey) {
-                            goToPrevMatch();
-                        } else {
-                            goToNextMatch();
-                        }
+                        closeSearch();
                     } else if (e.key === 'ArrowDown') {
                         e.preventDefault();
                         goToNextMatch();
