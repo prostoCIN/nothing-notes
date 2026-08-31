@@ -43,27 +43,77 @@ window.App = window.App || {};
         gray: '#cbd5e1'
     };
 
-    // Кеш для відрендерених емодзі-іконок (гарантує 100% піксельне центрування на iOS Safari)
+    // Кеш для ідеально центрованих емодзі-спрайтів (аналіз реальних пікселів)
     const emojiCache = new Map();
 
-    function getEmojiSprite(icon, size) {
-        const key = `${icon}_${size}`;
-        if (emojiCache.has(key)) return emojiCache.get(key);
+    function getPerfectEmojiSprite(icon, baseFontSize) {
+        if (emojiCache.has(icon)) return emojiCache.get(icon);
 
-        const canvasOffscreen = document.createElement('canvas');
-        const dpr = 2; // Висока чіткість для Retina-екранів iPhone
-        canvasOffscreen.width = size * dpr;
-        canvasOffscreen.height = size * dpr;
-        const offCtx = canvasOffscreen.getContext('2d');
-        offCtx.scale(dpr, dpr);
+        const tempCanvas = document.createElement('canvas');
+        const tempSize = baseFontSize * 3; // З запасом для будь-яких шрифтових відступів
+        tempCanvas.width = tempSize;
+        tempCanvas.height = tempSize;
+        const tempCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
 
-        offCtx.font = `${Math.round(size * 0.72)}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
-        offCtx.textAlign = 'center';
-        offCtx.textBaseline = 'middle';
-        offCtx.fillText(icon, size / 2, size / 2);
+        tempCtx.font = `${baseFontSize}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
+        tempCtx.textBaseline = 'top';
+        tempCtx.textAlign = 'left';
+        
+        // Малюємо десь посередині з запасом
+        const startX = baseFontSize;
+        const startY = baseFontSize;
+        tempCtx.fillText(icon, startX, startY);
 
-        emojiCache.set(key, canvasOffscreen);
-        return canvasOffscreen;
+        // Аналізуємо реальні пікселі
+        const imgData = tempCtx.getImageData(0, 0, tempSize, tempSize);
+        const data = imgData.data;
+
+        let minX = tempSize, minY = tempSize, maxX = 0, maxY = 0;
+        let hasPixels = false;
+
+        for (let y = 0; y < tempSize; y++) {
+            for (let x = 0; x < tempSize; x++) {
+                const alpha = data[(y * tempSize + x) * 4 + 3];
+                if (alpha > 5) { // Відкидаємо артефакти антиаліасингу
+                    hasPixels = true;
+                    if (x < minX) minX = x;
+                    if (x > maxX) maxX = x;
+                    if (y < minY) minY = y;
+                    if (y > maxY) maxY = y;
+                }
+            }
+        }
+
+        if (!hasPixels) {
+            minX = startX; maxX = startX + baseFontSize;
+            minY = startY; maxY = startY + baseFontSize;
+        }
+
+        const exactWidth = maxX - minX + 1;
+        const exactHeight = maxY - minY + 1;
+
+        // Створюємо фінальний спрайт (обрізаний точно по краях емодзі)
+        const dpr = window.devicePixelRatio || 2;
+        const spriteCanvas = document.createElement('canvas');
+        spriteCanvas.width = exactWidth * dpr;
+        spriteCanvas.height = exactHeight * dpr;
+        const spriteCtx = spriteCanvas.getContext('2d');
+        spriteCtx.scale(dpr, dpr);
+
+        spriteCtx.drawImage(
+            tempCanvas, 
+            minX, minY, exactWidth, exactHeight, 
+            0, 0, exactWidth, exactHeight
+        );
+
+        const result = {
+            canvas: spriteCanvas,
+            width: exactWidth,
+            height: exactHeight
+        };
+        
+        emojiCache.set(icon, result);
+        return result;
     }
 
     window.App.graphView = {
@@ -520,22 +570,30 @@ window.App = window.App || {};
                 const opacity = (searchQuery && !isMatch) ? 0.2 : (hoveredNode && !isHovered && !isConnected ? 0.35 : 1);
 
                 ctx.save();
-                // 3. Адаптивне малювання кружечка та емодзі через спрайт
+                // 3. Беремо емодзі і нарощуємо навколо нього вузол
                 const icon = node.icon || (node.isRoot ? '🗒️' : '📄');
-                const radius = node.isRoot ? 22 : 16;
-                node.radius = radius;
+                const baseFontSize = node.isRoot ? 26 : 20; // Трохи збільшено для Retina чіткості
+                
+                // Отримуємо ідеально обрізаний спрайт
+                const sprite = getPerfectEmojiSprite(icon, baseFontSize);
+                
+                // Нарощуємо радіус кружка навколо реальних розмірів емодзі
+                const maxEmojiDim = Math.max(sprite.width, sprite.height);
+                const padding = node.isRoot ? 11 : 8;
+                const dynamicRadius = Math.max(node.radius || 15, Math.round((maxEmojiDim / 2) + padding));
+                node.radius = dynamicRadius;
 
                 // Зовнішнє світіння для активних зв'язків
                 if (isHovered || isConnected) {
                     ctx.beginPath();
-                    ctx.arc(node.x, node.y, radius + 6, 0, Math.PI * 2);
+                    ctx.arc(node.x, node.y, dynamicRadius + 6, 0, Math.PI * 2);
                     ctx.fillStyle = isHovered ? 'rgba(16, 185, 129, 0.4)' : 'rgba(16, 185, 129, 0.2)';
                     ctx.fill();
                 }
 
                 // Тіло кружечка
                 ctx.beginPath();
-                ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
+                ctx.arc(node.x, node.y, dynamicRadius, 0, Math.PI * 2);
                 ctx.fillStyle = node.isRoot ? '#eab308' : (node.color || '#10b981');
                 ctx.fill();
 
@@ -543,10 +601,14 @@ window.App = window.App || {};
                 ctx.strokeStyle = isHovered ? '#ffffff' : (node.isRoot ? '#ca8a04' : 'rgba(255, 255, 255, 0.4)');
                 ctx.stroke();
 
-                // Малюємо емодзі-спрайт строго в центрі кружечка (без багів шрифтових метрик WebKit)
-                const spriteSize = radius * 2;
-                const emojiSprite = getEmojiSprite(icon, spriteSize);
-                ctx.drawImage(emojiSprite, node.x - radius, node.y - radius, spriteSize, spriteSize);
+                // Малюємо емодзі рівно по фізичному центру кружечка
+                ctx.drawImage(
+                    sprite.canvas, 
+                    node.x - sprite.width / 2, 
+                    node.y - sprite.height / 2, 
+                    sprite.width, 
+                    sprite.height
+                );
 
                 // 4. Підпис назви вершини (Text Label під кружком)
                 if (camera.zoom > 0.45 || isHovered || isMatch) {
@@ -557,7 +619,7 @@ window.App = window.App || {};
 
                     // Підкладка для читабельності тексту
                     const text = node.title;
-                    const textY = node.y + radius + 8;
+                    const textY = node.y + dynamicRadius + 8;
 
                     ctx.fillStyle = isHovered ? '#34d399' : (isMatch && searchQuery ? '#fbbf24' : 'rgba(255, 255, 255, 0.85)');
                     ctx.fillText(text, node.x, textY);
