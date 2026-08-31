@@ -198,11 +198,14 @@ window.App = window.App || {};
                 }
             }
 
+            // Зберігаємо позицію горизонтального скролу контейнера колонок (особливо важливо на мобільних при свайпах)
+            const prevContainerScrollLeft = els.columnsContainer.scrollLeft;
+
             // Зберігаємо позиції скролу колонок, щоб вони не стрибали нагору при Undo/Redo чи оновленні
             const scrollPositions = new Map();
             els.columnsContainer.querySelectorAll('.board-column').forEach(col => {
                 const parentKey = col.dataset.parentId || 'root';
-                const scrollList = col.querySelector('.board-column-notes-list');
+                const scrollList = col.querySelector('.column-notes-list, .board-column-notes-list');
                 if (scrollList) {
                     scrollPositions.set(parentKey, scrollList.scrollTop);
                 }
@@ -471,6 +474,11 @@ window.App = window.App || {};
                     notesScrollList.scrollTop = scrollPositions.get(parentKey);
                 }
             });
+
+            // Відновлюємо горизонтальну позицію скролу (щоб користувача не викидало на початок при зміні порядку)
+            if (prevContainerScrollLeft > 0) {
+                els.columnsContainer.scrollLeft = prevContainerScrollLeft;
+            }
 
             // FLIP-анімація плавного ковзання стікерів на робочій області при зміні порядку
             if (prevStickerRects.size > 0) {
