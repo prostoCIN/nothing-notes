@@ -342,15 +342,34 @@
         height: 14px !important;
     }
 
-    /* Повнорозмірний вертикальний скрол списку нотаток на мобільному */
+    /* Повнорозмірний вертикальний скрол списку нотаток на мобільному (з прихованою смугою скролу) */
     .column-notes-list {
         flex: 1 1 auto !important;
         height: 100% !important;
         min-height: 0 !important;
         overflow-y: auto !important;
         -webkit-overflow-scrolling: touch !important;
+        scrollbar-width: none !important; /* Firefox */
+        -ms-overflow-style: none !important;  /* IE and Edge */
         padding: 4px 0 110px 0 !important; /* Забезпечує вільний простір унизу під кнопкою */
         box-sizing: border-box !important;
+    }
+
+    .column-notes-list::-webkit-scrollbar {
+        display: none !important; /* Safari and Chrome */
+        width: 0 !important;
+        height: 0 !important;
+    }
+
+    .columns-container {
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+    }
+
+    .columns-container::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
     }
 
     .add-note-bottom-container {
@@ -363,23 +382,68 @@
     .note-sticker {
         width: 100%;
         margin-bottom: 14px;
-        padding: 16px 16px 16px 28px !important;
+        padding: 16px 16px 16px 42px !important;
+        box-sizing: border-box !important;
     }
 
-    /* Адаптивна шкала шрифтів для мобільних екранів (S / M / L / XL) */
+    /* Адаптивна шкала шрифтів для мобільних екранів (S / M / L / XL) з ідеальною синхронізацією ліній блокнота */
     .note-sticker[data-font-step="0"] .sticker-title { font-size: 14px !important; }
-    .note-sticker[data-font-step="0"] .sticker-content { font-size: 11px !important; line-height: 22px !important; }
+    .note-sticker[data-font-step="0"] .sticker-content { 
+        font-size: 11px !important; 
+        line-height: 22px !important; 
+        background-size: 100% 22px !important;
+        background-image: repeating-linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 21px,
+            rgba(0, 0, 0, 0.08) 21px,
+            rgba(0, 0, 0, 0.08) 22px
+        ) !important;
+    }
 
     .note-sticker[data-font-step="1"] .sticker-title,
     .note-sticker:not([data-font-step]) .sticker-title { font-size: 18px !important; }
     .note-sticker[data-font-step="1"] .sticker-content,
-    .note-sticker:not([data-font-step]) .sticker-content { font-size: 14px !important; line-height: 26px !important; }
+    .note-sticker:not([data-font-step]) .sticker-content { 
+        font-size: 14px !important; 
+        line-height: 26px !important; 
+        background-size: 100% 26px !important;
+        background-image: repeating-linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 25px,
+            rgba(0, 0, 0, 0.08) 25px,
+            rgba(0, 0, 0, 0.08) 26px
+        ) !important;
+    }
 
     .note-sticker[data-font-step="2"] .sticker-title { font-size: 22px !important; }
-    .note-sticker[data-font-step="2"] .sticker-content { font-size: 17px !important; line-height: 28px !important; }
+    .note-sticker[data-font-step="2"] .sticker-content { 
+        font-size: 17px !important; 
+        line-height: 30px !important; 
+        background-size: 100% 30px !important;
+        background-image: repeating-linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 29px,
+            rgba(0, 0, 0, 0.08) 29px,
+            rgba(0, 0, 0, 0.08) 30px
+        ) !important;
+    }
 
     .note-sticker[data-font-step="3"] .sticker-title { font-size: 26px !important; }
-    .note-sticker[data-font-step="3"] .sticker-content { font-size: 20px !important; line-height: 32px !important; }
+    .note-sticker[data-font-step="3"] .sticker-content { 
+        font-size: 20px !important; 
+        line-height: 34px !important; 
+        background-size: 100% 34px !important;
+        background-image: repeating-linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 33px,
+            rgba(0, 0, 0, 0.08) 33px,
+            rgba(0, 0, 0, 0.08) 34px
+        ) !important;
+    }
 
     /* Адаптив Polaroid-карток під ширину смартфона */
     .sticker-images-gallery {
@@ -407,23 +471,44 @@
         gap: 14px;
     }
 
-    /* 6. Плаваючий острівець дій (Top Island) унизу екрана для великого пальця */
-    .workspace-top-island {
-        bottom: 18px;
-        top: auto;
+    /* 6. Мобільний індикатор пагінації колонок (iOS Dots Pagination) */
+    .mobile-columns-pagination {
+        display: none;
+        position: fixed;
+        bottom: max(env(safe-area-inset-bottom, 0px), 14px);
         left: 50%;
         transform: translateX(-50%);
-        padding: 4px 6px;
-        background: rgba(22, 22, 24, 0.94);
+        background: rgba(22, 22, 26, 0.88);
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-        z-index: 200;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        padding: 5px 10px;
+        border-radius: 20px;
+        z-index: 100;
+        align-items: center;
+        gap: 6px;
+        transition: opacity 0.25s ease;
     }
 
-    .island-btn {
-        padding: 6px 10px;
-        font-size: 12px;
+    .mobile-columns-pagination.visible {
+        display: flex;
+    }
+
+    .mobile-pagination-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .mobile-pagination-dot.active {
+        width: 20px;
+        border-radius: 10px;
+        background: #10b981;
+        box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
     }
 
     /* 7. Модальні вікна */

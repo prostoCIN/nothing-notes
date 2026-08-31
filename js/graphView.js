@@ -52,6 +52,13 @@ window.App = window.App || {};
             const els = window.App.getElements();
             if (!els.columnsContainer) return;
 
+            // Ховаємо мобільний індикатор пагінації колонок у режимі Графу
+            const pagination = document.getElementById('mobile-columns-pagination');
+            if (pagination) {
+                pagination.classList.remove('visible');
+                pagination.innerHTML = '';
+            }
+
             // Очищаємо робочу область
             els.columnsContainer.innerHTML = '';
 
