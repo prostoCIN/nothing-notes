@@ -27,11 +27,7 @@ window.App = window.App || {};
 
             // 1. Рендеримо всі прикріплені Washi-стрічки
             noteTags.forEach(tagText => {
-                let hash = 0;
-                for (let i = 0; i < tagText.length; i++) {
-                    hash = tagText.charCodeAt(i) + ((hash << 5) - hash);
-                }
-                const colorIndex = Math.abs(hash) % 6;
+                const colorIndex = window.App.getTagColorIndex ? window.App.getTagColorIndex(tagText) : 0;
 
                 const badge = document.createElement('div');
                 badge.className = `sticker-tag-badge tag-tape-color-${colorIndex}`;

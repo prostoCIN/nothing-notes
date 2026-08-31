@@ -1,6 +1,30 @@
 // js/state.js - Глобальний стан додатку та сховище LocalStorage
 window.App = window.App || {};
 
+// Загальні константи для стікерів, палітр та типографіки
+window.App.NOTE_COLORS = [
+    { id: 'yellow', hex: '#fef08a', name: 'Жовтий' },
+    { id: 'green',  hex: '#bbf7d0', name: 'Зелений' },
+    { id: 'blue',   hex: '#bae6fd', name: 'Блакитний' },
+    { id: 'purple', hex: '#e9d5ff', name: 'Фіолетовий' },
+    { id: 'pink',   hex: '#fbcfe8', name: 'Рожевий' },
+    { id: 'orange', hex: '#fed7aa', name: 'Помаранчевий' },
+    { id: 'gray',   hex: '#e2e8f0', name: 'Сірий' }
+];
+
+window.App.FONT_SIZES = [12, 16, 24, 32];
+window.App.FONT_LABELS = ['S (12px)', 'M (16px)', 'L (24px)', 'XL (32px)'];
+
+// Єдиний хелпер генерації колірного індексу Washi-тегу (0..5)
+window.App.getTagColorIndex = function(tagText) {
+    if (!tagText) return 0;
+    let hash = 0;
+    for (let i = 0; i < tagText.length; i++) {
+        hash = tagText.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return Math.abs(hash) % 6;
+};
+
 window.App.storage = {
     _notesSaveTimer: null,
     _pendingNotes: null,

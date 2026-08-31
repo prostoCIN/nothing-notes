@@ -290,6 +290,9 @@ window.App = window.App || {};
                 if (idsSet.has(note.id)) {
                     Object.assign(note, updates, { updatedAt: Date.now() });
                     hasChanges = true;
+                    if (window.App.cloudSync) {
+                        window.App.cloudSync.syncNote(note);
+                    }
                 }
             });
 

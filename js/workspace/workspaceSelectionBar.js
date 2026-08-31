@@ -170,7 +170,7 @@ window.App = window.App || {};
             const storage = window.App.storage;
             const noteManager = window.App.noteManager;
 
-            const colors = [
+            const colors = window.App.NOTE_COLORS || [
                 { id: 'yellow', hex: '#fef08a', name: 'Жовтий' },
                 { id: 'green',  hex: '#bbf7d0', name: 'Зелений' },
                 { id: 'blue',   hex: '#bae6fd', name: 'Блакитний' },
@@ -207,8 +207,8 @@ window.App = window.App || {};
             populateColors(barElement.querySelector('#ws-more-colors'));
 
             // Налаштування слайдерів шрифту (Десктоп і Мобільний) зі стандартною шкалою S / M / L / XL
-            const FONT_SIZES = [12, 16, 24, 32];
-            const FONT_LABELS = ['S (12px)', 'M (16px)', 'L (24px)', 'XL (32px)'];
+            const FONT_SIZES = window.App.FONT_SIZES || [12, 16, 24, 32];
+            const FONT_LABELS = window.App.FONT_LABELS || ['S (12px)', 'M (16px)', 'L (24px)', 'XL (32px)'];
 
             const setupFontSlider = (sliderId, badgeId) => {
                 const slider = barElement.querySelector(sliderId);
@@ -301,11 +301,7 @@ window.App = window.App || {};
                         const item = document.createElement('button');
                         item.className = 'selection-tag-item';
 
-                        let hash = 0;
-                        for (let i = 0; i < tagText.length; i++) {
-                            hash = tagText.charCodeAt(i) + ((hash << 5) - hash);
-                        }
-                        const colorIndex = Math.abs(hash) % 6;
+                        const colorIndex = window.App.getTagColorIndex ? window.App.getTagColorIndex(tagText) : 0;
 
                         const countWithTag = selectedNotes.filter(note => {
                             const tags = Array.isArray(note.tags) ? note.tags : (note.tag ? [note.tag.text || note.tag] : []);

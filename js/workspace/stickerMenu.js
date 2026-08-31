@@ -30,7 +30,7 @@ window.App = window.App || {};
             const colorPalette = document.createElement('div');
             colorPalette.className = 'sticker-color-palette';
 
-            const colors = [
+            const colors = window.App.NOTE_COLORS || [
                 { id: 'yellow', hex: '#fef08a', name: 'Жовтий' },
                 { id: 'green',  hex: '#bbf7d0', name: 'Зелений' },
                 { id: 'blue',   hex: '#bae6fd', name: 'Блакитний' },
@@ -71,7 +71,8 @@ window.App = window.App || {};
             menuDropdown.appendChild(colorPalette);
 
             // Секція: Розмір шрифту (повзунок з 4 шкалами: 12, 16, 24, 32)
-            const FONT_SIZES = [12, 16, 24, 32];
+            const FONT_SIZES = window.App.FONT_SIZES || [12, 16, 24, 32];
+            const FONT_LABELS = window.App.FONT_LABELS || ['S (12px)', 'M (16px)', 'L (24px)', 'XL (32px)'];
             const rawSizePx = typeof note.fontSize === 'number' ? note.fontSize : (note.fontSize === 'small' ? 12 : (note.fontSize === 'large' ? 24 : 16));
             
             let closestStepIdx = 1; // 16px за замовчуванням
@@ -85,7 +86,6 @@ window.App = window.App || {};
             });
 
             const currentSizePx = FONT_SIZES[closestStepIdx];
-            const FONT_LABELS = ['S (12px)', 'M (16px)', 'L (24px)', 'XL (32px)'];
 
             const fontSizeHeader = document.createElement('div');
             fontSizeHeader.className = 'sticker-menu-section-title sticker-font-size-header';
