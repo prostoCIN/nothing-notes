@@ -82,6 +82,23 @@
 }
 
 @media screen and (max-width: 768px) {
+    /* 0. Заборона паразитного виділення UI на мобільних пристроях (дозволено тільки для тексту нотаток та полів вводу) */
+    *, *::before, *::after {
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+    }
+
+    .sticker-content,
+    .sticker-title,
+    input,
+    textarea,
+    [contenteditable="true"] {
+        -webkit-user-select: text !important;
+        user-select: text !important;
+        -webkit-touch-callout: default !important;
+    }
+
     /* 1. Показ кнопок мобільного меню */
     .mobile-menu-btn {
         display: inline-flex;
