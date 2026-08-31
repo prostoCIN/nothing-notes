@@ -6,6 +6,7 @@ window.App = window.App || {};
     let syncDebounceTimer = null;
     let isSyncing = false;
     let lastLocalEditTimestamps = new Map(); // id -> timestamp
+    let locallyDeletedNoteIds = new Set(); // Захист від воскресіння видалених нотаток через Realtime
 
     window.App.cloudSync = {
         init() {
@@ -144,7 +145,7 @@ window.App = window.App || {};
                 const { data: cloudNotes, error } = await supabase
                     .from('notes')
                     .select('*')
-                    .order('order_index', { ascending: true });
+                    .order('order_index', { ascending: true, nullsFirst: false });
 
                 if (error) {
                     console.error('[CloudSync] Error pulling notes:', error);
@@ -167,7 +168,7 @@ window.App = window.App || {};
                         const cloudUpdatedAt = n.updated_at ? new Date(n.updated_at).getTime() : 0;
                         const localUpdatedAt = localNote && localNote.updatedAt ? localNote.updatedAt : 0;
 
-                        // Якщо локальна версія новіша за хмарну (редагували в офлайні) — зберігаємо локальну і ставимо в чергу на вивантаження
+                        // Якщо локальну версію редагували в офлайні і вона новіша — зберігаємо локальну
                         if (localNote && localUpdatedAt > (cloudUpdatedAt + 500)) {
                             notesToPushBack.push(localNote);
                             return localNote;
@@ -185,15 +186,16 @@ window.App = window.App || {};
                             images: n.images || [],
                             isCollapsed: !!n.is_collapsed,
                             tags: Array.isArray(n.tags) ? n.tags : [],
+                            gridCol: localNote && localNote.gridCol ? localNote.gridCol : undefined,
                             createdAt: new Date(n.created_at).getTime() || Date.now(),
                             updatedAt: cloudUpdatedAt || Date.now()
                         };
                     });
 
-                    // Якщо локально були створені нові нотатки, яких ще взагалі немає в хмарі
+                    // Якщо локально були створені НОВІ нотатки (і вони НЕ були щойно видалені)
                     const cloudIds = new Set(cloudNotes.map(n => n.id));
                     state.notes.forEach(localNote => {
-                        if (!cloudIds.has(localNote.id)) {
+                        if (!cloudIds.has(localNote.id) && !locallyDeletedNoteIds.has(localNote.id)) {
                             formattedNotes.push(localNote);
                             notesToPushBack.push(localNote);
                         }
@@ -412,7 +414,11 @@ window.App = window.App || {};
 
         // 3. Видалення нотаток з хмари (пакетне або поодиноке)
         async deleteNoteFromCloud(noteId) {
-            if (!currentUser || !window.App.supabase || !noteId) return;
+            if (!noteId) return;
+            locallyDeletedNoteIds.add(noteId);
+            if (this._pendingSyncNotesMap) this._pendingSyncNotesMap.delete(noteId);
+
+            if (!currentUser || !window.App.supabase) return;
             const supabase = window.App.supabase;
 
             try {
@@ -423,7 +429,13 @@ window.App = window.App || {};
         },
 
         async deleteNotesFromCloud(noteIds) {
-            if (!currentUser || !window.App.supabase || !noteIds || noteIds.length === 0) return;
+            if (!noteIds || noteIds.length === 0) return;
+            noteIds.forEach(id => {
+                locallyDeletedNoteIds.add(id);
+                if (this._pendingSyncNotesMap) this._pendingSyncNotesMap.delete(id);
+            });
+
+            if (!currentUser || !window.App.supabase) return;
             const supabase = window.App.supabase;
 
             try {
