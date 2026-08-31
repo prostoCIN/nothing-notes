@@ -177,20 +177,8 @@
 
                         <!-- Згортання піднотаток та Zen-режим (тільки для ПК) -->
                         <div class="header-tools-pill">
-                            <div class="header-btn-wrap">
-                                <button class="header-action-icon-btn" id="workspace-collapse-btn">
-                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                        <polyline points="4 14 10 14 10 20"></polyline>
-                                        <polyline points="20 10 14 10 14 4"></polyline>
-                                        <line x1="14" y1="10" x2="21" y2="3"></line>
-                                        <line x1="3" y1="21" x2="10" y2="14"></line>
-                                    </svg>
-                                </button>
-                                <div class="header-tooltip">
-                                    <b>Згорнути піднотатки</b> (до кореня)
-                                </div>
-                            </div>
-
+                        <!-- Zen-режим (тільки для ПК) -->
+                        <div class="header-tools-pill">
                             <div class="header-btn-wrap">
                                 <button class="header-action-icon-btn" id="workspace-zen-btn">
                                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -234,6 +222,21 @@
                                 </button>
                             </div>
                             <button class="header-search-close" id="workspace-search-close" title="Закрити пошук (Esc)">×</button>
+                        </div>
+                    </div>
+
+                    <!-- Згорнути всі ланцюжки піднотаток (доступний і на ПК, і на смартфонах) -->
+                    <div class="header-btn-wrap" id="workspace-collapse-wrap">
+                        <button class="header-action-icon-btn" id="workspace-collapse-btn" title="Згорнути всі піднотатки">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="4 14 10 14 10 20"></polyline>
+                                <polyline points="20 10 14 10 14 4"></polyline>
+                                <line x1="14" y1="10" x2="21" y2="3"></line>
+                                <line x1="3" y1="21" x2="10" y2="14"></line>
+                            </svg>
+                        </button>
+                        <div class="header-tooltip">
+                            <b>Згорнути піднотатки</b> (до кореня)
                         </div>
                     </div>
 
