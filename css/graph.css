@@ -26,6 +26,88 @@
     cursor: grabbing;
 }
 
+/* Шар з HTML-вузлами поверх Canvas */
+.graph-nodes-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Пропускає кліки на Canvas для фізики */
+    z-index: 2;
+    transform-origin: 0 0;
+    will-change: transform;
+}
+
+/* HTML Вузол графа */
+.graph-html-node {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform: translate(-50%, -50%);
+    will-change: transform, opacity;
+    transition: opacity 0.2s ease;
+}
+
+.graph-html-node-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #10b981;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    width: 32px;
+    height: 32px;
+    font-size: 20px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    /* Ідеальне центрування емодзі системним Flexbox */
+}
+
+.graph-html-node.is-root .graph-html-node-circle {
+    background: #eab308;
+    border-color: #ca8a04;
+    width: 44px;
+    height: 44px;
+    font-size: 26px;
+}
+
+.graph-html-node-label {
+    margin-top: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', sans-serif;
+    color: rgba(255, 255, 255, 0.85);
+    background: transparent;
+    text-align: center;
+    white-space: nowrap;
+    transition: color 0.2s;
+}
+
+/* Стани (Hover, Active, Search Match) */
+.graph-html-node.is-hovered .graph-html-node-circle,
+.graph-html-node.is-connected .graph-html-node-circle {
+    border-color: #ffffff;
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.4);
+}
+
+.graph-html-node.is-root.is-hovered .graph-html-node-circle,
+.graph-html-node.is-root.is-connected .graph-html-node-circle {
+    box-shadow: 0 0 0 6px rgba(234, 179, 8, 0.4);
+}
+
+.graph-html-node.is-hovered .graph-html-node-label {
+    color: #34d399;
+}
+
+.graph-html-node.is-match .graph-html-node-label {
+    color: #fbbf24;
+}
+
+.graph-html-node.is-faded {
+    opacity: 0.25;
+}
+
 /* Верхній плаваючий тулбар управління графом */
 .graph-toolbar {
     position: absolute;

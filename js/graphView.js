@@ -6,6 +6,7 @@ window.App = window.App || {};
     let canvas = null;
     let ctx = null;
     let tooltip = null;
+    let nodesLayer = null;
     let searchInput = null;
 
     // Стан симуляції та перегляду
@@ -171,6 +172,7 @@ window.App = window.App || {};
                 </div>
 
                 <canvas class="graph-canvas" id="graph-canvas"></canvas>
+                <div class="graph-nodes-layer" id="graph-nodes-layer"></div>
 
                 <div class="graph-controls-panel">
                     <button class="graph-ctrl-btn" id="graph-zoom-in" title="Наблизити (+)">
@@ -204,7 +206,7 @@ window.App = window.App || {};
                     <span class="graph-legend-hint">Клік по вершині відкриває нотатку</span>
                 </div>
 
-                <div class="graph-node-tooltip" id="graph-node-tooltip">
+                <div class="graph-node-tooltip" id="graph-node-tooltip" style="display: none;">
                     <div class="graph-tooltip-header">
                         <span class="graph-tooltip-icon" id="graph-tooltip-icon">📄</span>
                         <span class="graph-tooltip-title" id="graph-tooltip-title">Заголовок</span>
@@ -221,6 +223,7 @@ window.App = window.App || {};
 
             canvas = container.querySelector('#graph-canvas');
             ctx = canvas.getContext('2d');
+            nodesLayer = container.querySelector('#graph-nodes-layer');
             tooltip = container.querySelector('#graph-node-tooltip');
             searchInput = container.querySelector('#graph-search-input');
 
@@ -341,7 +344,34 @@ window.App = window.App || {};
                     childCount: 0
                 };
 
+                
+                if (nodesLayer) {
+                    const el = document.createElement('div');
+                    el.className = 'graph-html-node' + (isRoot ? ' is-root' : '');
+                    el.title = node.title + '\n\n' + node.content.substring(0, 100) + '...';
+                    
+                    const circle = document.createElement('div');
+                    circle.className = 'graph-html-node-circle';
+                    if (!isRoot && node.color) {
+                        circle.style.backgroundColor = colorMap[node.color] || '#10b981';
+                    } else if (!isRoot && note.color) {
+                        circle.style.backgroundColor = colorMap[note.color] || '#10b981';
+                    }
+                    circle.innerHTML = node.icon;
+                    
+                    const label = document.createElement('div');
+                    label.className = 'graph-html-node-label';
+                    label.textContent = node.title;
+                    
+                    el.appendChild(circle);
+                    el.appendChild(label);
+                    nodesLayer.appendChild(el);
+                    
+                    node.element = el;
+                }
+
                 nodes.push(node);
+
                 notesMap.set(note.id, node);
             });
 
@@ -562,72 +592,27 @@ window.App = window.App || {};
             });
 
             // 2. Малювання вершин (Nodes)
+            // 2. Оновлення стану та позицій HTML-вершин
             nodes.forEach(node => {
+                if (!node.element) return;
+                
                 const isMatch = searchQuery === '' || node.title.toLowerCase().includes(searchQuery) || node.content.toLowerCase().includes(searchQuery);
                 const isHovered = (hoveredNode === node);
                 const isConnected = hoveredNode && edges.some(e => (e.source === hoveredNode && e.target === node) || (e.target === hoveredNode && e.source === node));
 
-                const opacity = (searchQuery && !isMatch) ? 0.2 : (hoveredNode && !isHovered && !isConnected ? 0.35 : 1);
+                node.element.classList.toggle('is-hovered', isHovered);
+                node.element.classList.toggle('is-connected', isConnected);
+                node.element.classList.toggle('is-match', isMatch && searchQuery !== '');
+                node.element.classList.toggle('is-faded', searchQuery ? !isMatch : (hoveredNode && !isHovered && !isConnected));
 
-                ctx.save();
-                // 3. Беремо емодзі і нарощуємо навколо нього вузол
-                const icon = node.icon || (node.isRoot ? '🗒️' : '📄');
-                const baseFontSize = node.isRoot ? 26 : 20; // Трохи збільшено для Retina чіткості
-                
-                // Отримуємо ідеально обрізаний спрайт
-                const sprite = getPerfectEmojiSprite(icon, baseFontSize);
-                
-                // Нарощуємо радіус кружка навколо реальних розмірів емодзі
-                const maxEmojiDim = Math.max(sprite.width, sprite.height);
-                const padding = node.isRoot ? 11 : 8;
-                const dynamicRadius = Math.max(node.radius || 15, Math.round((maxEmojiDim / 2) + padding));
-                node.radius = dynamicRadius;
-
-                // Зовнішнє світіння для активних зв'язків
-                if (isHovered || isConnected) {
-                    ctx.beginPath();
-                    ctx.arc(node.x, node.y, dynamicRadius + 6, 0, Math.PI * 2);
-                    ctx.fillStyle = isHovered ? 'rgba(16, 185, 129, 0.4)' : 'rgba(16, 185, 129, 0.2)';
-                    ctx.fill();
-                }
-
-                // Тіло кружечка
-                ctx.beginPath();
-                ctx.arc(node.x, node.y, dynamicRadius, 0, Math.PI * 2);
-                ctx.fillStyle = node.isRoot ? '#eab308' : (node.color || '#10b981');
-                ctx.fill();
-
-                ctx.lineWidth = 2 / camera.zoom;
-                ctx.strokeStyle = isHovered ? '#ffffff' : (node.isRoot ? '#ca8a04' : 'rgba(255, 255, 255, 0.4)');
-                ctx.stroke();
-
-                // Малюємо емодзі рівно по фізичному центру кружечка
-                ctx.drawImage(
-                    sprite.canvas, 
-                    node.x - sprite.width / 2, 
-                    node.y - sprite.height / 2, 
-                    sprite.width, 
-                    sprite.height
-                );
-
-                // 4. Підпис назви вершини (Text Label під кружком)
-                if (camera.zoom > 0.45 || isHovered || isMatch) {
-                    const fontSize = Math.max(10, Math.min(14, 12 / camera.zoom));
-                    ctx.font = `600 ${fontSize}px "JetBrains Mono", sans-serif`;
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'top';
-
-                    // Підкладка для читабельності тексту
-                    const text = node.title;
-                    const textY = node.y + dynamicRadius + 8;
-
-                    ctx.fillStyle = isHovered ? '#34d399' : (isMatch && searchQuery ? '#fbbf24' : 'rgba(255, 255, 255, 0.85)');
-                    ctx.fillText(text, node.x, textY);
-                }
-
-                ctx.restore();
+                node.element.style.left = node.x + 'px';
+                node.element.style.top = node.y + 'px';
             });
 
+            if (nodesLayer) {
+                nodesLayer.style.transform = 'translate(' + camera.x + 'px, ' + camera.y + 'px) scale(' + camera.zoom + ') translate(' + (-width / 2) + 'px, ' + (-height / 2) + 'px)';
+            }
+            
             ctx.restore();
         },
 
@@ -642,9 +627,7 @@ window.App = window.App || {};
                 this.draw();
 
                 // Якщо є активний hover на вершину (або її перетягують) — тултип синхронно рухається разом з нею
-                if (hoveredNode) {
-                    this.positionTooltip(hoveredNode);
-                }
+                
 
                 animationFrameId = requestAnimationFrame(loop);
             };
@@ -696,7 +679,7 @@ window.App = window.App || {};
                 isDraggingNode = true;
                 draggedNode = targetNode;
                 hoveredNode = targetNode;
-                this.updateTooltip(hoveredNode);
+                
             } else {
                 isDraggingCanvas = true;
             }
@@ -715,23 +698,18 @@ window.App = window.App || {};
                 draggedNode.y = world.y;
                 draggedNode.vx = 0;
                 draggedNode.vy = 0;
-                this.positionTooltip(draggedNode);
+                
             } else if (isDraggingCanvas) {
                 camera.x += dx;
                 camera.y += dy;
-                if (hoveredNode) {
-                    this.positionTooltip(hoveredNode);
-                }
+                
             } else {
                 // Перевірка hover на вершину
                 const hovered = this.getNodeAt(e.clientX, e.clientY);
                 if (hovered !== hoveredNode) {
                     hoveredNode = hovered;
-                    this.updateTooltip(hoveredNode);
-                } else if (hoveredNode) {
-                    this.positionTooltip(hoveredNode);
-                }
-            }
+                    
+                } }
         },
 
         onPointerUp(e) {
@@ -775,49 +753,6 @@ window.App = window.App || {};
             return { x: screenX, y: screenY };
         },
 
-        updateTooltip(node) {
-            if (!tooltip) return;
-
-            if (!node) {
-                tooltip.classList.remove('active');
-                return;
-            }
-
-            const titleEl = tooltip.querySelector('#graph-tooltip-title');
-            const iconEl = tooltip.querySelector('#graph-tooltip-icon');
-            const contentEl = tooltip.querySelector('#graph-tooltip-content');
-            const badgeEl = tooltip.querySelector('#graph-tooltip-badge');
-
-            titleEl.textContent = node.title;
-            iconEl.textContent = node.icon;
-            
-            // Чистий текст з перетворенням нових рядків/блоків у комфортні пробіли
-            let cleanText = (node.content || '')
-                .replace(/<br\s*[\/]?>/gi, ' ')
-                .replace(/<\/(div|p|li|h[1-6])>/gi, ' ')
-                .replace(/<[^>]*>/g, ' ')
-                .replace(/&nbsp;/gi, ' ')
-                .replace(/\s+/g, ' ')
-                .trim();
-
-            contentEl.textContent = cleanText || 'Немає вмісту нотатки...';
-            badgeEl.textContent = node.isRoot ? `Головна нотатка (${node.childCount} піднотаток)` : `Піднотатка`;
-
-            this.positionTooltip(node);
-            tooltip.classList.add('active');
-        },
-
-        positionTooltip(node) {
-            if (!tooltip || !node) return;
-            const screenPos = this.worldToScreen(node.x, node.y);
-
-            // Розміщуємо тултип строго над вершиною з відступом від її радіуса та тексту
-            const offsetY = (node.radius + 12) * camera.zoom;
-            tooltip.style.left = `${screenPos.x}px`;
-            tooltip.style.top = `${screenPos.y - offsetY}px`;
-        },
-
-        // Відкриття ланцюжка нотатки при кліку на вершину графа
         openNoteInWorkspace(noteId) {
             const state = window.App.state;
             const noteManager = window.App.noteManager;
