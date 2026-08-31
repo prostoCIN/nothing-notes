@@ -30,7 +30,16 @@ window.App = window.App || {};
     let hoveredNode = null;
     let startMousePos = { x: 0, y: 0 };
     let lastMousePos = { x: 0, y: 0 };
-    let searchQuery = '';
+    // Кольорова палітра вузлів (зі збереженням теми стікерів)
+    const colorMap = {
+        yellow: '#fef08a',
+        green: '#bbf7d0',
+        blue: '#bae6fd',
+        purple: '#e9d5ff',
+        pink: '#fbcfe8',
+        orange: '#fed7aa',
+        gray: '#cbd5e1'
+    };
 
     // Кеш для відрендерених емодзі-іконок (гарантує 100% піксельне центрування на iOS Safari)
     const emojiCache = new Map();
