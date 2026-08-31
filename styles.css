@@ -279,14 +279,14 @@
         overflow: hidden;
     }
 
-    /* 3. Хедер робочої області (Ідеальний відступ під усі моделі iPhone: з чубчиком або Dynamic Island) */
+    /* 3. Хедер робочої області (Компактний мобільний формат) */
     .workspace-top-header {
-        padding-top: max(env(safe-area-inset-top, 0px), 48px) !important;
+        padding-top: max(env(safe-area-inset-top, 0px), 6px) !important;
         padding-left: max(14px, env(safe-area-inset-left, 0px)) !important;
         padding-right: max(14px, env(safe-area-inset-right, 0px)) !important;
-        padding-bottom: 10px !important;
+        padding-bottom: 6px !important;
         height: auto !important;
-        min-height: max(calc(48px + env(safe-area-inset-top, 0px)), 88px) !important;
+        min-height: auto !important;
         box-sizing: border-box !important;
     }
 

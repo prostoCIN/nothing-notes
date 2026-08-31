@@ -148,7 +148,6 @@
     white-space: nowrap;
     flex-shrink: 0;
 }
-}
 
 .hold-delete-btn:active {
     transform: scale(0.98);
