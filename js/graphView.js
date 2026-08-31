@@ -502,14 +502,14 @@ window.App = window.App || {};
                 const baseFontSize = node.isRoot ? 22 : 16;
                 ctx.font = `${baseFontSize}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
                 ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
+                ctx.textBaseline = 'alphabetic';
 
-                // Вимірюємо реальні розміри гліфа емодзі в пікселях
+                // Вимірюємо реальні геометричні межі гліфа емодзі в Canvas
                 const metrics = ctx.measureText(icon);
+                const ascent = metrics.actualBoundingBoxAscent || (baseFontSize * 0.8);
+                const descent = metrics.actualBoundingBoxDescent || (baseFontSize * 0.2);
                 const actualWidth = metrics.width || baseFontSize;
-                const actualHeight = (metrics.actualBoundingBoxAscent && metrics.actualBoundingBoxDescent) 
-                    ? (metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent)
-                    : baseFontSize;
+                const actualHeight = ascent + descent;
 
                 // Беремо найбільшу сторону + затишний padding (відступ) навколо іконки
                 const maxDim = Math.max(actualWidth, actualHeight);
@@ -535,8 +535,10 @@ window.App = window.App || {};
                 ctx.strokeStyle = isHovered ? '#ffffff' : (node.isRoot ? '#ca8a04' : 'rgba(255, 255, 255, 0.4)');
                 ctx.stroke();
 
-                // Малюємо саме емодзі строго в центрі кружечка
-                ctx.fillText(icon, node.x, node.y);
+                // Малюємо саме емодзі зі зміщенням baseline до абсолютного центру кружечка
+                // (При alphabetic baseline центр гліфа знаходиться рівно в node.y + (ascent - descent)/2)
+                const emojiOffsetY = (ascent - descent) / 2;
+                ctx.fillText(icon, node.x, node.y + emojiOffsetY);
 
                 // 4. Підпис назви вершини (Text Label під кружком)
                 if (camera.zoom > 0.45 || isHovered || isMatch) {
