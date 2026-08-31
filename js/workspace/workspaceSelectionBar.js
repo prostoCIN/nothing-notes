@@ -81,12 +81,20 @@ window.App = window.App || {};
                         </button>
                         <div class="selection-submenu-dropdown selection-font-dropdown" id="ws-submenu-font">
                             <div class="selection-submenu-title">
-                                <span>Розмір шрифту:</span>
-                                <span class="font-size-value-badge" id="ws-sel-font-badge-desktop">16px</span>
+                                <span>Розмір тексту:</span>
+                                <span class="font-size-value-badge" id="ws-sel-font-badge-desktop">M (16px)</span>
                             </div>
                             <div class="sticker-font-slider-container">
                                 <span class="slider-min-icon">A</span>
-                                <input type="range" class="sticker-font-slider" id="ws-sel-font-slider-desktop" min="11" max="22" step="1" value="16">
+                                <div class="note-font-slider-track-wrap">
+                                    <input type="range" class="sticker-font-slider" id="ws-sel-font-slider-desktop" min="0" max="3" step="1" value="1">
+                                    <div class="note-font-slider-ticks">
+                                        <span class="note-font-tick-line" data-step="0" title="S"></span>
+                                        <span class="note-font-tick-line active" data-step="1" title="M"></span>
+                                        <span class="note-font-tick-line" data-step="2" title="L"></span>
+                                        <span class="note-font-tick-line" data-step="3" title="XL"></span>
+                                    </div>
+                                </div>
                                 <span class="slider-max-icon">A</span>
                             </div>
                         </div>
@@ -108,12 +116,20 @@ window.App = window.App || {};
                             </div>
                             <div class="selection-more-section">
                                 <div class="selection-more-sec-title">
-                                    <span>🔤 Розмір шрифту</span>
-                                    <span class="font-size-value-badge" id="ws-sel-font-badge">16px</span>
+                                    <span>🔤 Розмір тексту</span>
+                                    <span class="font-size-value-badge" id="ws-sel-font-badge">M (16px)</span>
                                 </div>
                                 <div class="sticker-font-slider-container">
                                     <span class="slider-min-icon">A</span>
-                                    <input type="range" class="sticker-font-slider" id="ws-sel-font-slider" min="11" max="22" step="1" value="16">
+                                    <div class="note-font-slider-track-wrap">
+                                        <input type="range" class="sticker-font-slider" id="ws-sel-font-slider" min="0" max="3" step="1" value="1">
+                                        <div class="note-font-slider-ticks">
+                                            <span class="note-font-tick-line" data-step="0" title="S"></span>
+                                            <span class="note-font-tick-line active" data-step="1" title="M"></span>
+                                            <span class="note-font-tick-line" data-step="2" title="L"></span>
+                                            <span class="note-font-tick-line" data-step="3" title="XL"></span>
+                                        </div>
+                                    </div>
                                     <span class="slider-max-icon">A</span>
                                 </div>
                             </div>
@@ -190,16 +206,22 @@ window.App = window.App || {};
             populateColors(barElement.querySelector('#ws-desktop-colors'));
             populateColors(barElement.querySelector('#ws-more-colors'));
 
-            // Налаштування слайдерів шрифту (Десктоп і Мобільний)
+            // Налаштування слайдерів шрифту (Десктоп і Мобільний) зі стандартною шкалою S / M / L / XL
+            const FONT_SIZES = [12, 16, 24, 32];
+            const FONT_LABELS = ['S (12px)', 'M (16px)', 'L (24px)', 'XL (32px)'];
+
             const setupFontSlider = (sliderId, badgeId) => {
                 const slider = barElement.querySelector(sliderId);
                 const badge = barElement.querySelector(badgeId);
                 if (!slider || !badge) return;
 
-                slider.addEventListener('input', (e) => {
-                    e.stopPropagation();
-                    const newSize = parseInt(e.target.value, 10);
-                    badge.textContent = `${newSize}px`;
+                const sliderContainer = slider.closest('.sticker-font-slider-container');
+                const tickLines = sliderContainer ? sliderContainer.querySelectorAll('.note-font-tick-line') : [];
+
+                const applyStep = (stepIdx) => {
+                    const newSize = FONT_SIZES[stepIdx];
+                    badge.textContent = FONT_LABELS[stepIdx];
+                    tickLines.forEach((t, i) => t.classList.toggle('active', i === stepIdx));
 
                     const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
                     if (selectedIds.length === 0) return;
@@ -207,20 +229,40 @@ window.App = window.App || {};
                     selectedIds.forEach(id => {
                         const card = document.querySelector(`.note-sticker[data-note-id="${id}"]`);
                         if (card) {
+                            card.dataset.fontStep = stepIdx;
                             card.style.setProperty('--custom-content-font-size', `${newSize}px`);
-                            card.style.setProperty('--custom-title-font-size', `${Math.round(newSize * 1.85)}px`);
-                            card.style.setProperty('--custom-line-height', `${Math.round(newSize * 1.9)}px`);
+                            card.style.setProperty('--custom-title-font-size', `${Math.round(newSize * 1.5)}px`);
+                            card.style.setProperty('--custom-line-height', `${Math.max(26, Math.round(newSize * 1.7))}px`);
                             card.classList.add('has-custom-font-size');
                         }
                     });
 
                     noteManager.updateMultipleNotes(selectedIds, { fontSize: newSize }, false);
+                };
+
+                slider.addEventListener('input', (e) => {
+                    e.stopPropagation();
+                    const stepIdx = Math.max(0, Math.min(3, parseInt(e.target.value, 10) || 0));
+                    applyStep(stepIdx);
                 });
 
-                slider.addEventListener('change', () => {
-                    const newSize = parseInt(slider.value, 10);
+                slider.addEventListener('change', (e) => {
+                    const stepIdx = Math.max(0, Math.min(3, parseInt(e.target.value, 10) || 0));
+                    const newSize = FONT_SIZES[stepIdx];
                     const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
                     noteManager.updateMultipleNotes(selectedIds, { fontSize: newSize }, true);
+                });
+
+                tickLines.forEach(tick => {
+                    tick.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const stepIdx = parseInt(tick.dataset.step, 10);
+                        slider.value = stepIdx;
+                        applyStep(stepIdx);
+                        const newSize = FONT_SIZES[stepIdx];
+                        const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
+                        noteManager.updateMultipleNotes(selectedIds, { fontSize: newSize }, true);
+                    });
                 });
             };
 
