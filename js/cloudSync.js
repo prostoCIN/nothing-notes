@@ -308,26 +308,71 @@ window.App = window.App || {};
             }
         },
 
-        // 2. Відправка однієї нотатки в хмару (з дебаунсом 600мс)
+        // 2. Відправка нотатки в хмару (пакетна черга Map для кількох нотаток одночасно)
         syncNote(note) {
             if (!currentUser || !window.App.supabase || !note) return;
 
             lastLocalEditTimestamps.set(note.id, Date.now());
-            this._pendingSyncNote = note;
+            
+            if (!this._pendingSyncNotesMap) {
+                this._pendingSyncNotesMap = new Map();
+            }
+            this._pendingSyncNotesMap.set(note.id, note);
 
             clearTimeout(syncDebounceTimer);
             syncDebounceTimer = setTimeout(async () => {
-                await this.flushPendingNote();
-            }, 600);
+                await this.flushPendingNotes();
+            }, 300);
         },
 
-        async flushPendingNote() {
-            if (this._pendingSyncNote) {
-                const noteToPush = this._pendingSyncNote;
-                this._pendingSyncNote = null;
-                clearTimeout(syncDebounceTimer);
-                syncDebounceTimer = null;
-                await this._pushNoteToCloud(noteToPush);
+        async flushPendingNotes() {
+            if (!this._pendingSyncNotesMap || this._pendingSyncNotesMap.size === 0) return;
+
+            const notesToPush = Array.from(this._pendingSyncNotesMap.values());
+            this._pendingSyncNotesMap.clear();
+            clearTimeout(syncDebounceTimer);
+            syncDebounceTimer = null;
+
+            if (notesToPush.length === 1) {
+                await this._pushNoteToCloud(notesToPush[0]);
+            } else {
+                await this._pushMultipleNotesToCloud(notesToPush);
+            }
+        },
+
+        async _pushMultipleNotesToCloud(notes) {
+            const supabase = window.App.supabase;
+            if (!supabase || !currentUser || !notes || notes.length === 0) return;
+            const state = window.App.state;
+
+            const payloads = notes.map(note => ({
+                id: note.id,
+                user_id: currentUser.id,
+                board_id: note.boardId || state.activeBoardId || null,
+                parent_id: note.parentId || null,
+                title: note.title || '',
+                content: note.content || '',
+                color: note.color || 'yellow',
+                font_size: typeof note.fontSize === 'number' ? note.fontSize : 16,
+                icon: note.icon || '',
+                images: note.images || [],
+                is_collapsed: !!note.isCollapsed,
+                tags: Array.isArray(note.tags) ? note.tags : [],
+                updated_at: new Date(note.updatedAt || Date.now()).toISOString()
+            }));
+
+            try {
+                const { error } = await supabase
+                    .from('notes')
+                    .upsert(payloads, { onConflict: 'id' });
+
+                if (error) {
+                    console.warn('[CloudSync] Bulk note upsert error:', error.message);
+                } else {
+                    console.log(`[CloudSync] ⚡ Successfully batch synced ${notes.length} notes to cloud.`);
+                }
+            } catch (err) {
+                console.warn('[CloudSync] Bulk upsert exception:', err);
             }
         },
 
@@ -349,7 +394,7 @@ window.App = window.App || {};
                 images: note.images || [],
                 is_collapsed: !!note.isCollapsed,
                 tags: Array.isArray(note.tags) ? note.tags : [],
-                updated_at: new Date().toISOString()
+                updated_at: new Date(note.updatedAt || Date.now()).toISOString()
             };
 
             try {
@@ -365,7 +410,7 @@ window.App = window.App || {};
             }
         },
 
-        // 3. Видалення нотатки з хмари
+        // 3. Видалення нотаток з хмари (пакетне або поодиноке)
         async deleteNoteFromCloud(noteId) {
             if (!currentUser || !window.App.supabase || !noteId) return;
             const supabase = window.App.supabase;
@@ -374,6 +419,18 @@ window.App = window.App || {};
                 await supabase.from('notes').delete().eq('id', noteId);
             } catch (err) {
                 console.warn('[CloudSync] Delete exception:', err);
+            }
+        },
+
+        async deleteNotesFromCloud(noteIds) {
+            if (!currentUser || !window.App.supabase || !noteIds || noteIds.length === 0) return;
+            const supabase = window.App.supabase;
+
+            try {
+                await supabase.from('notes').delete().in('id', noteIds);
+                console.log(`[CloudSync] 🗑️ Batch deleted ${noteIds.length} notes from cloud.`);
+            } catch (err) {
+                console.warn('[CloudSync] Batch delete exception:', err);
             }
         },
 

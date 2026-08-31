@@ -184,7 +184,12 @@ window.App = window.App || {};
                 state.notes = state.notes.filter(note => !toDeleteIds.has(note.id));
 
                 if (window.App.cloudSync) {
-                    toDeleteIds.forEach(delId => window.App.cloudSync.deleteNoteFromCloud(delId));
+                    const idsArr = Array.from(toDeleteIds);
+                    if (window.App.cloudSync.deleteNotesFromCloud) {
+                        window.App.cloudSync.deleteNotesFromCloud(idsArr);
+                    } else {
+                        idsArr.forEach(delId => window.App.cloudSync.deleteNoteFromCloud(delId));
+                    }
                 }
 
                 // Якщо у ланцюжку відкритих колонок була видалена нотатка - закриваємо відповідні колонки
