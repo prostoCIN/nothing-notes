@@ -91,55 +91,96 @@
         display: inline-flex;
     }
 
-    /* 2. Мобільна панель інструментів (кнопка з трьома крапками •••) */
-    .mobile-tools-toggle-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid var(--border-color);
-        color: var(--text-main);
-        width: 32px;
-        height: 32px;
-        border-radius: 6px;
-        cursor: pointer;
-        padding: 0;
-        margin-right: 4px;
-        flex-shrink: 0;
-        transition: background 0.15s ease;
-    }
-
-    .mobile-tools-toggle-btn.active {
-        background: rgba(255, 255, 255, 0.15);
-        border-color: rgba(255, 255, 255, 0.3);
-    }
-
-    /* Ховаємо кнопку Режиму фокусу (Zen mode) на мобільних, оскільки на телефоні екран і так у повному фокусі */
-    #workspace-zen-btn,
-    .header-btn-wrap:has(#workspace-zen-btn) {
+    /* 2. Ховаємо складні десктопні інструменти на мобільних пристроях (маркери, гумка, історія дій, zen-режим) */
+    .header-extra-tools-wrap {
         display: none !important;
     }
 
-    /* Ховаємо панель другорядних інструментів у компактне випадаюче меню */
-    .header-extra-tools-wrap {
-        display: none;
-        position: absolute;
-        top: calc(52px + env(safe-area-inset-top, 0px));
-        right: 12px;
-        background: #18181a;
-        border: 1px solid rgba(255, 255, 255, 0.14);
-        border-radius: 10px;
-        padding: 8px;
-        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7);
-        z-index: 500;
-        flex-direction: row;
-        align-items: center;
-        gap: 6px;
+    /* 3. Єдиний преміальний стиль для всіх кнопок мобільного хедера */
+    .mobile-menu-btn,
+    .header-search-wrap .header-action-icon-btn,
+    .header-select-btn {
+        width: 36px !important;
+        height: 36px !important;
+        min-width: 36px !important;
+        padding: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 8px !important;
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: var(--text-main) !important;
+        transition: all 0.15s ease !important;
     }
 
-    .header-extra-tools-wrap.active {
-        display: flex;
-        animation: fadeInDown 0.15s ease;
+    .mobile-menu-btn:active,
+    .header-search-wrap .header-action-icon-btn:active,
+    .header-select-btn:active {
+        background: rgba(255, 255, 255, 0.12) !important;
+        transform: scale(0.95);
+    }
+
+    /* Ховаємо текст "Вибрати" на мобільному, залишаючи тільки лаконічну іконку з галочкою */
+    #island-select-text {
+        display: none !important;
+    }
+
+    .header-select-btn svg {
+        width: 16px !important;
+        height: 16px !important;
+    }
+
+    .header-select-btn.active {
+        background: #10b981 !important;
+        border-color: #10b981 !important;
+        color: #ffffff !important;
+        box-shadow: 0 2px 10px rgba(16, 185, 129, 0.4) !important;
+    }
+
+    /* Компактний перемикач режимів "Колонки / Граф" тільки з іконками */
+    .header-segment-control {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 8px !important;
+        padding: 2px !important;
+        height: 36px !important;
+        box-sizing: border-box !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 2px !important;
+    }
+
+    .header-segment-btn {
+        width: 32px !important;
+        height: 30px !important;
+        padding: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 6px !important;
+        color: var(--text-muted) !important;
+    }
+
+    .header-segment-btn span {
+        display: none !important; /* Ховаємо підписи "Колонки" та "Граф" */
+    }
+
+    .header-segment-btn svg {
+        width: 16px !important;
+        height: 16px !important;
+    }
+
+    .header-segment-btn.active {
+        background: #10b981 !important;
+        color: #ffffff !important;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35) !important;
+    }
+
+    .header-divider {
+        margin: 0 1px !important;
+        height: 16px !important;
+        opacity: 0.5;
     }
 
     /* Красиве адаптивне оформлення випадаючого поля пошуку на мобільних пристроях */
@@ -203,14 +244,14 @@
         overflow: hidden;
     }
 
-    /* 3. Хедер робочої області (з фіксованим відступом від годинника та Dynamic Island iPhone) */
+    /* 3. Хедер робочої області (Ідеальний відступ під усі моделі iPhone: з чубчиком або Dynamic Island) */
     .workspace-top-header {
-        padding-top: max(env(safe-area-inset-top, 0px), 24px) !important;
-        padding-left: max(12px, env(safe-area-inset-left, 0px)) !important;
-        padding-right: max(12px, env(safe-area-inset-right, 0px)) !important;
-        padding-bottom: 8px !important;
+        padding-top: max(env(safe-area-inset-top, 0px), 48px) !important;
+        padding-left: max(14px, env(safe-area-inset-left, 0px)) !important;
+        padding-right: max(14px, env(safe-area-inset-right, 0px)) !important;
+        padding-bottom: 10px !important;
         height: auto !important;
-        min-height: calc(54px + env(safe-area-inset-top, 0px)) !important;
+        min-height: max(calc(48px + env(safe-area-inset-top, 0px)), 88px) !important;
         box-sizing: border-box !important;
     }
 
@@ -228,6 +269,8 @@
         -webkit-overflow-scrolling: touch;
         gap: 0;
         padding: 0;
+        height: calc(100vh - 88px);
+        height: calc(100dvh - 88px);
     }
 
     /* Приховуємо кнопку перемикання списку/сітки (Pinterest) на мобільних, оскільки на телефоні завжди зручний 1-колонковий список */
@@ -245,13 +288,53 @@
         border-radius: 0 !important;
         box-shadow: none !important;
         background: transparent !important;
-        padding: 12px 14px 20px 14px !important;
-        height: calc(100vh - 48px);
-        height: calc(100dvh - 48px);
+        padding: 8px 14px 20px 14px !important;
+        height: 100% !important;
+    }
+
+    /* Адаптивна шапка колонки: компактний заголовок та іконка фільтра без тексту */
+    .column-header {
+        padding-bottom: 10px !important;
+        margin-bottom: 12px !important;
+        gap: 8px !important;
+    }
+
+    .column-header-icon {
+        font-size: 18px !important;
+    }
+
+    .column-title {
+        font-size: 17px !important;
+        font-weight: 700 !important;
+        letter-spacing: -0.3px;
+    }
+
+    .column-count-badge {
+        font-size: 11px !important;
+        padding: 1px 6px !important;
+    }
+
+    /* Кнопка фільтра колонки на мобільному стає компактною квадратною іконкою */
+    .column-filter-btn {
+        padding: 5px 8px !important;
+        height: 28px !important;
+        border-radius: 6px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    .column-filter-btn span {
+        display: none !important; /* Ховаємо напис "Фільтр" на телефоні */
+    }
+
+    .column-filter-btn svg {
+        width: 14px !important;
+        height: 14px !important;
     }
 
     .board-column-notes-list {
-        padding: 12px 14px 90px 14px;
+        padding: 4px 0 90px 0 !important;
     }
 
     /* 5. Картки стікерів та адаптивна типографіка на телефоні */

@@ -98,16 +98,7 @@
                 </div>
 
                 <div class="workspace-header-right">
-                    <!-- Мобільна кнопка виклику додаткових інструментів -->
-                    <button id="mobile-tools-toggle-btn" class="mobile-tools-toggle-btn" title="Інструменти">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="1.5"></circle>
-                            <circle cx="19" cy="12" r="1.5"></circle>
-                            <circle cx="5" cy="12" r="1.5"></circle>
-                        </svg>
-                    </button>
-
-                    <!-- Контейнер додаткових інструментів (на десктопі відкритий, на мобільному ховається у випадаючу панель) -->
+                    <!-- Контейнер десктопних інструментів (на ПК відкритий, на мобільних прихований) -->
                     <div class="header-extra-tools-wrap" id="header-extra-tools-wrap">
                         <!-- 1. Блок історії дій Undo / Redo -->
                         <div class="header-tools-pill" id="header-history-pill">
@@ -184,39 +175,8 @@
 
                         <div class="header-divider"></div>
 
-                        <!-- 3. Панель швидких інструментів робочого простору -->
-                        <div class="header-tools-pill" id="header-tools-pill">
-                            <!-- Швидкий пошук / фільтр слів (Ctrl+F) -->
-                            <div class="header-search-wrap" id="workspace-search-wrap">
-                                <button class="header-action-icon-btn" id="workspace-search-btn">
-                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                        <circle cx="11" cy="11" r="8"></circle>
-                                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                                    </svg>
-                                </button>
-                                <div class="header-tooltip">
-                                    <b>Пошук на дошці</b> (Ctrl+F)
-                                </div>
-                                <div class="header-search-bar" id="workspace-search-bar" style="display: none;">
-                                    <input type="text" id="workspace-search-input" placeholder="Знайти слово..." autocomplete="off">
-                                    <span class="header-search-count" id="workspace-search-count" style="display: none;">0/0</span>
-                                    <div class="header-search-nav-btns" id="workspace-search-nav" style="display: none;">
-                                        <button class="header-search-nav-btn" id="workspace-search-prev" title="Попередній збіг (Shift+Enter або ↑)">
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                                <polyline points="18 15 12 9 6 15"></polyline>
-                                            </svg>
-                                        </button>
-                                        <button class="header-search-nav-btn" id="workspace-search-next" title="Наступний збіг (Enter або ↓)">
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                                <polyline points="6 9 12 15 18 9"></polyline>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    <button class="header-search-close" id="workspace-search-close" title="Закрити пошук (Esc)">×</button>
-                                </div>
-                            </div>
-
-                            <!-- Згорнути всі ланцюжки піднотаток -->
+                        <!-- Згортання піднотаток та Zen-режим (тільки для ПК) -->
+                        <div class="header-tools-pill">
                             <div class="header-btn-wrap">
                                 <button class="header-action-icon-btn" id="workspace-collapse-btn">
                                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -231,7 +191,6 @@
                                 </div>
                             </div>
 
-                            <!-- Режим Фокусу (Clean Zen View) -->
                             <div class="header-btn-wrap">
                                 <button class="header-action-icon-btn" id="workspace-zen-btn">
                                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -247,6 +206,38 @@
 
                         <div class="header-divider"></div>
                     </div>
+
+                    <!-- Швидкий пошук (доступний і на ПК, і на смартфонах) -->
+                    <div class="header-search-wrap" id="workspace-search-wrap">
+                        <button class="header-action-icon-btn" id="workspace-search-btn" title="Пошук слів">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                        </button>
+                        <div class="header-tooltip">
+                            <b>Пошук на дошці</b> (Ctrl+F)
+                        </div>
+                        <div class="header-search-bar" id="workspace-search-bar" style="display: none;">
+                            <input type="text" id="workspace-search-input" placeholder="Знайти слово..." autocomplete="off">
+                            <span class="header-search-count" id="workspace-search-count" style="display: none;">0/0</span>
+                            <div class="header-search-nav-btns" id="workspace-search-nav" style="display: none;">
+                                <button class="header-search-nav-btn" id="workspace-search-prev" title="Попередній збіг (Shift+Enter або ↑)">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="18 15 12 9 6 15"></polyline>
+                                    </svg>
+                                </button>
+                                <button class="header-search-nav-btn" id="workspace-search-next" title="Наступний збіг (Enter або ↓)">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </button>
+                            </div>
+                            <button class="header-search-close" id="workspace-search-close" title="Закрити пошук (Esc)">×</button>
+                        </div>
+                    </div>
+
+                    <div class="header-divider"></div>
 
                     <div class="header-segment-control">
                         <button class="header-segment-btn active" id="island-view-columns-btn" title="Колонковий режим стікерів">

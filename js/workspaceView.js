@@ -26,8 +26,6 @@ window.App = window.App || {};
                     e.target.closest('.sticker-tag-dropdown') ||
                     e.target.closest('.column-filter-dropdown') ||
                     e.target.closest('.sidebar-context-menu') ||
-                    e.target.closest('.mobile-tools-toggle-btn') ||
-                    e.target.closest('.header-extra-tools-wrap') ||
                     e.target.closest('.sticker-more-btn') ||
                     e.target.closest('.sticker-emoji-btn') ||
                     e.target.closest('.sticker-add-tag-btn') ||
@@ -39,21 +37,10 @@ window.App = window.App || {};
                     d.classList.remove('active', 'open-upward');
                     if (d.classList.contains('sidebar-context-menu')) d.remove();
                 });
-                document.querySelectorAll('.sticker-add-tag-btn.active, .column-filter-btn.active, .mobile-tools-toggle-btn.active, .header-extra-tools-wrap.active').forEach(b => {
+                document.querySelectorAll('.sticker-add-tag-btn.active, .column-filter-btn.active').forEach(b => {
                     b.classList.remove('active');
                 });
             };
-
-            // Мобільна кнопка виклику панелі інструментів
-            const mobileToolsBtn = document.getElementById('mobile-tools-toggle-btn');
-            const extraToolsWrap = document.getElementById('header-extra-tools-wrap');
-            if (mobileToolsBtn && extraToolsWrap) {
-                mobileToolsBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    mobileToolsBtn.classList.toggle('active');
-                    extraToolsWrap.classList.toggle('active');
-                });
-            }
 
             document.addEventListener('pointerdown', handleOutsideClose, true);
             document.addEventListener('click', handleOutsideClose, true);
