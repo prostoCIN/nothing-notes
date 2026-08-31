@@ -593,6 +593,15 @@
         box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
     }
 
+    /* Приховуємо тулбар виділеного тексту на мобільних пристроях */
+    .text-selection-toolbar,
+    .text-selection-toolbar.active {
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+        opacity: 0 !important;
+    }
+
     /* Адаптація контекстного меню нотатки "три крапки" на мобільних пристроях */
     .sticker-menu-dropdown {
         width: 250px !important;
