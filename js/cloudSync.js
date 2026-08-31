@@ -39,6 +39,22 @@ window.App = window.App || {};
                     .on('postgres_changes', { event: '*', schema: 'public', table: 'notes' }, (payload) => {
                         console.log('[CloudSync] ⚡ Realtime change detected from cloud:', payload.eventType, payload);
 
+                        // Якщо це подія ВИДАЛЕННЯ (DELETE)
+                        if (payload.eventType === 'DELETE' && payload.old && payload.old.id) {
+                            const deletedId = payload.old.id;
+                            locallyDeletedNoteIds.add(deletedId);
+                            
+                            // Якщо нотатка все ще є у локальному стані (прийшло з іншого пристрою) — видаляємо її
+                            const state = window.App.state;
+                            if (state.notes.some(n => n.id === deletedId)) {
+                                state.notes = state.notes.filter(n => n.id !== deletedId);
+                                window.App.storage.saveNotes(state.notes, true);
+                                if (window.App.sidebarView) window.App.sidebarView.render();
+                                if (window.App.workspaceView) window.App.workspaceView.render();
+                            }
+                            return;
+                        }
+
                         // Якщо зміна стосується нотатки, яку щойно редагували на цьому ж пристрої (менше 2.5 сек тому) - ігноруємо власне "відлуння"
                         if (payload.new && payload.new.id) {
                             const lastEdit = lastLocalEditTimestamps.get(payload.new.id);
@@ -75,7 +91,7 @@ window.App = window.App || {};
 
             // Гарантуємо відправку незбережених змін перед закриттям вкладки або згортанням браузера
             const flushOnExit = () => {
-                this.flushPendingNote();
+                this.flushPendingNotes();
             };
 
             window.addEventListener('beforeunload', flushOnExit);
@@ -152,10 +168,9 @@ window.App = window.App || {};
                     return;
                 }
 
-                if (cloudNotes && cloudNotes.length > 0) {
+                if (cloudNotes) {
                     const firstBoardId = (state.boards && state.boards[0]) ? state.boards[0].id : null;
                     const localMap = new Map(state.notes.map(n => [n.id, n]));
-                    const notesToPushBack = [];
 
                     const formattedNotes = cloudNotes.map(n => {
                         const localNote = localMap.get(n.id);
@@ -166,13 +181,6 @@ window.App = window.App || {};
                         }
 
                         const cloudUpdatedAt = n.updated_at ? new Date(n.updated_at).getTime() : 0;
-                        const localUpdatedAt = localNote && localNote.updatedAt ? localNote.updatedAt : 0;
-
-                        // Якщо локальну версію редагували в офлайні і вона новіша — зберігаємо локальну
-                        if (localNote && localUpdatedAt > (cloudUpdatedAt + 500)) {
-                            notesToPushBack.push(localNote);
-                            return localNote;
-                        }
 
                         return {
                             id: n.id,
@@ -192,28 +200,13 @@ window.App = window.App || {};
                         };
                     });
 
-                    // Якщо локально були створені НОВІ нотатки (і вони НЕ були щойно видалені)
-                    const cloudIds = new Set(cloudNotes.map(n => n.id));
-                    state.notes.forEach(localNote => {
-                        if (!cloudIds.has(localNote.id) && !locallyDeletedNoteIds.has(localNote.id)) {
-                            formattedNotes.push(localNote);
-                            notesToPushBack.push(localNote);
-                        }
-                    });
-
-                    // Зберігаємо актуальний об'єднаний стан
+                    // Зберігаємо актуальний стан (строго такий, як у базі)
                     state.notes = formattedNotes;
                     window.App.storage.saveNotes(state.notes, true);
 
                     if (window.App.welcomeView) window.App.welcomeView.hide();
                     if (window.App.sidebarView) window.App.sidebarView.render();
                     if (window.App.workspaceView) window.App.workspaceView.render();
-
-                    // Якщо були офлайн-правки — вивантажуємо їх у хмару
-                    if (notesToPushBack.length > 0) {
-                        console.log(`[CloudSync] 🔄 Syncing ${notesToPushBack.length} newer offline edits back to cloud...`);
-                        notesToPushBack.forEach(note => this.syncNote(note));
-                    }
 
                     // Вивантажуємо фото з IndexedDB, якщо є локальні
                     await this.uploadMissingLocalImages();
