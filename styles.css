@@ -298,10 +298,12 @@
         display: none !important;
     }
 
-    .board-column {
-        min-width: 100vw !important;
-        max-width: 100vw !important;
-        width: 100vw !important;
+    .board-column,
+    .columns-container.has-many-columns .board-column {
+        flex: 0 0 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+        width: 100% !important;
         scroll-snap-align: start;
         scroll-snap-stop: always;
         border: none !important;
