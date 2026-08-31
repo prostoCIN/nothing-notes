@@ -82,6 +82,27 @@
 }
 
 @media screen and (max-width: 768px) {
+    /* 0. Фіксація вікна Safari проти паразитного зсуву сторінки під час тапу на інпут/нотатку */
+    html, body {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        height: 100dvh;
+        overflow: hidden;
+    }
+
+    .app-container {
+        height: 100%;
+        height: 100dvh;
+        overflow: hidden;
+    }
+
+    .board-workspace {
+        height: 100%;
+        height: 100dvh;
+        overflow: hidden;
+    }
+
     /* 0. Заборона паразитного виділення UI на мобільних пристроях (дозволено тільки для тексту нотаток та полів вводу) */
     *, *::before, *::after {
         -webkit-user-select: none;
