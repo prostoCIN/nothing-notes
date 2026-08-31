@@ -398,6 +398,19 @@
     .sticker-content {
         scrollbar-width: none !important;
         -ms-overflow-style: none !important;
+        border: none !important;
+        box-shadow: none !important;
+        background-clip: padding-box !important;
+        background-repeat: repeat-y !important;
+        caret-color: #292524 !important;
+    }
+
+    .sticker-content:focus,
+    .sticker-content:focus-visible,
+    .sticker-content:active {
+        outline: none !important;
+        border: none !important;
+        box-shadow: none !important;
     }
 
     .sticker-content::-webkit-scrollbar {
