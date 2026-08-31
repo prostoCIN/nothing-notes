@@ -232,7 +232,7 @@ window.App = window.App || {};
             // 1. Формуємо вершини (Nodes) навколо реального центру полотна
             boardNotes.forEach((note) => {
                 const isRoot = !note.parentId;
-                const radius = isRoot ? 18 : 13;
+                const radius = isRoot ? 20 : 15;
                 
                 // Перетворюємо всі типи розривів рядків, списки та блоки у пробіли
                 const rawContent = (note.content || '');
@@ -519,11 +519,13 @@ window.App = window.App || {};
 
                 // 3. Емодзі нотатки по центру кружка
                 const icon = node.icon || (node.isRoot ? '🗒️' : '📄');
-                const emojiSize = Math.max(10, Math.round(node.radius * 1.15));
-                ctx.font = `${emojiSize}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
+                // Оптимальний розмір шрифту емодзі строго за внутрішнім діаметром кружечка
+                const emojiSize = Math.max(12, Math.round(node.radius * 1.05));
+                ctx.font = `${emojiSize}px -apple-system, BlinkMacSystemFont, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(icon, node.x, node.y + (emojiSize * 0.05));
+                // В iOS Safari textBaseline = 'middle' для системних емодзі вже ідеально центрований
+                ctx.fillText(icon, node.x, node.y);
 
                 // 4. Підпис назви вершини (Text Label під кружком)
                 if (camera.zoom > 0.45 || isHovered || isMatch) {

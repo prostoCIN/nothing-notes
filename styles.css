@@ -668,9 +668,83 @@
         border-radius: 16px !important;
     }
 
-    .welcome-content {
-        width: calc(100vw - 32px) !important;
-        padding: 28px 16px !important;
+    /* 8. Адаптив режиму Графу зв'язків (Mobile Obsidian Graph View) */
+    .graph-view-wrapper {
+        height: 100% !important;
+        width: 100% !important;
+    }
+
+    .graph-toolbar {
+        top: 10px !important;
+        left: 12px !important;
+        right: 12px !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+    }
+
+    .graph-title-pill {
+        padding: 6px 10px !important;
+        border-radius: 10px !important;
+        justify-content: space-between !important;
+    }
+
+    .graph-title-text {
+        font-size: 11px !important;
+        max-width: 140px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .graph-nodes-count {
+        font-size: 10px !important;
+        padding: 1px 6px !important;
+    }
+
+    .graph-top-actions {
+        width: 100% !important;
+    }
+
+    .graph-search-box {
+        width: 100% !important;
+    }
+
+    .graph-search-input {
+        width: 100% !important;
+        font-size: 12px !important;
+        padding: 6px 30px 6px 10px !important;
+        height: 32px !important;
+    }
+
+    /* Кнопки зуму в правому нижньому кутку */
+    .graph-controls-panel {
+        bottom: max(env(safe-area-inset-bottom, 0px), 14px) !important;
+        right: 12px !important;
+        padding: 3px !important;
+        gap: 3px !important;
+        border-radius: 10px !important;
+    }
+
+    .graph-ctrl-btn {
+        width: 30px !important;
+        height: 30px !important;
+    }
+
+    /* Нижня легенда графу */
+    .graph-legend-pill {
+        bottom: max(env(safe-area-inset-bottom, 0px), 14px) !important;
+        left: 12px !important;
+        right: auto !important;
+        max-width: calc(100vw - 70px) !important;
+        padding: 6px 10px !important;
+        border-radius: 10px !important;
+        gap: 8px !important;
+        font-size: 10px !important;
+    }
+
+    .graph-legend-hint {
+        display: none !important; /* Ховаємо довгу підказку "Клік по вершині відкриває...", лишаємо тільки кружечки */
     }
 
     .board-creation-form {
