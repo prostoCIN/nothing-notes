@@ -384,6 +384,10 @@ window.App = window.App || {};
             state.notes = [...sortedLevelNotes, ...otherNotes];
             storage.saveNotes(state.notes);
 
+            if (window.App.cloudSync && window.App.cloudSync.isLoggedIn()) {
+                window.App.cloudSync.pushAllToCloud();
+            }
+
             if (onNotesChangeCallback) {
                 onNotesChangeCallback();
             }
