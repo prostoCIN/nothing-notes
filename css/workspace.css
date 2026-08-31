@@ -874,7 +874,7 @@ body.global-eraser-active #workspace-eraser-btn {
     font-size: var(--font-xs);
 }
 
-.selection-bar-count {
+.selection-bar-count-desktop {
     font-weight: 700;
     color: #ffffff;
     letter-spacing: -0.2px;
@@ -953,6 +953,15 @@ body.global-eraser-active #workspace-eraser-btn {
     border-color: #ef4444 !important;
     color: #ffffff !important;
     box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+/* Дефолтні класи видимості для десктопу/мобільного */
+.mobile-only {
+    display: none !important;
+}
+
+.desktop-only {
+    display: inline-flex !important;
 }
 
 /* Випадаючі субменю (Колір, Теги, Шрифт) над панеллю */

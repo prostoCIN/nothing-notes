@@ -27,63 +27,119 @@ window.App = window.App || {};
                         </svg>
                     </button>
                     <div class="selection-bar-info">
-                        <span class="selection-bar-count" id="ws-sel-count">Вибрано 0</span>
-                        <span class="selection-bar-divider">|</span>
-                        <button class="selection-bar-text-btn" id="ws-sel-all-btn">Вибрати всі</button>
-                        <button class="selection-bar-text-btn" id="ws-sel-clear-btn">Зняти всі</button>
+                        <span class="selection-bar-count-desktop desktop-only" id="ws-sel-count-desktop">Вибрано 0</span>
+                        <span class="selection-bar-count-badge mobile-only" id="ws-sel-count-mobile">0</span>
+                        <span class="selection-bar-divider desktop-only">|</span>
+                        <button class="selection-bar-text-btn desktop-only" id="ws-sel-all-btn-desktop">Вибрати всі</button>
+                        <button class="selection-bar-text-btn desktop-only" id="ws-sel-clear-btn-desktop">Зняти всі</button>
+                        <div class="selection-bar-quick-btns mobile-only">
+                            <button class="selection-bar-icon-btn" id="ws-sel-all-btn-mobile" title="Вибрати всі нотатки">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M9 11l3 3L22 4"></path>
+                                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                                </svg>
+                            </button>
+                            <button class="selection-bar-icon-btn" id="ws-sel-clear-btn-mobile" title="Зняти всі виділення">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
                 <div class="selection-bar-actions">
-                    <!-- 1. Колір -->
-                    <div class="selection-action-item" id="ws-action-color-wrap">
+                    <!-- ДЕСКТОП: Окремі кнопки Колір, Теги, Шрифт -->
+                    <div class="selection-action-item desktop-only" id="ws-action-color-wrap">
                         <button class="selection-action-btn" id="ws-action-color-btn" title="Змінити колір">
                             <span class="selection-btn-icon">🎨</span>
                             <span class="selection-btn-label">Колір</span>
                         </button>
                         <div class="selection-submenu-dropdown selection-color-dropdown" id="ws-submenu-color">
-                            <!-- Палітра кольорів -->
+                            <div class="selection-submenu-title">Обрати колір для виділених:</div>
+                            <div class="selection-color-swatches" id="ws-desktop-colors"></div>
                         </div>
                     </div>
 
-                    <!-- 2. Теги -->
-                    <div class="selection-action-item" id="ws-action-tag-wrap">
+                    <div class="selection-action-item desktop-only" id="ws-action-tag-wrap">
                         <button class="selection-action-btn" id="ws-action-tag-btn" title="Прикріпити теги">
                             <span class="selection-btn-icon">🏷️</span>
                             <span class="selection-btn-label">Теги</span>
                         </button>
                         <div class="selection-submenu-dropdown selection-tag-dropdown" id="ws-submenu-tag">
-                            <!-- Список тегів -->
+                            <div class="selection-submenu-title">Прикріпити тег:</div>
+                            <div id="ws-desktop-tags"></div>
                         </div>
                     </div>
 
-                    <!-- 3. Розмір шрифту -->
-                    <div class="selection-action-item" id="ws-action-font-wrap">
+                    <div class="selection-action-item desktop-only" id="ws-action-font-wrap">
                         <button class="selection-action-btn" id="ws-action-font-btn" title="Розмір шрифту">
                             <span class="selection-btn-icon">🔤</span>
                             <span class="selection-btn-label">Шрифт</span>
                         </button>
                         <div class="selection-submenu-dropdown selection-font-dropdown" id="ws-submenu-font">
-                            <!-- Слайдер розміру шрифту -->
+                            <div class="selection-submenu-title">
+                                <span>Розмір шрифту:</span>
+                                <span class="font-size-value-badge" id="ws-sel-font-badge-desktop">16px</span>
+                            </div>
+                            <div class="sticker-font-slider-container">
+                                <span class="slider-min-icon">A</span>
+                                <input type="range" class="sticker-font-slider" id="ws-sel-font-slider-desktop" min="11" max="22" step="1" value="16">
+                                <span class="slider-max-icon">A</span>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- 4. Дублювати -->
+                    <!-- МОБІЛЬНИЙ: Єдине меню '...' (Колір, Розмір, Теги) -->
+                    <div class="selection-action-item mobile-only" id="ws-action-more-wrap">
+                        <button class="selection-action-btn" id="ws-action-more-btn" title="Оформлення та теги">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <circle cx="12" cy="12" r="2.2"></circle>
+                                <circle cx="19" cy="12" r="2.2"></circle>
+                                <circle cx="5" cy="12" r="2.2"></circle>
+                            </svg>
+                        </button>
+                        <div class="selection-submenu-dropdown selection-more-dropdown" id="ws-submenu-more">
+                            <div class="selection-more-section">
+                                <div class="selection-more-sec-title">🎨 Колір</div>
+                                <div class="selection-color-swatches" id="ws-more-colors"></div>
+                            </div>
+                            <div class="selection-more-section">
+                                <div class="selection-more-sec-title">
+                                    <span>🔤 Розмір шрифту</span>
+                                    <span class="font-size-value-badge" id="ws-sel-font-badge">16px</span>
+                                </div>
+                                <div class="sticker-font-slider-container">
+                                    <span class="slider-min-icon">A</span>
+                                    <input type="range" class="sticker-font-slider" id="ws-sel-font-slider" min="11" max="22" step="1" value="16">
+                                    <span class="slider-max-icon">A</span>
+                                </div>
+                            </div>
+                            <div class="selection-more-section">
+                                <div class="selection-more-sec-title">🏷️ Теги</div>
+                                <div id="ws-more-tags"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Дублювати -->
                     <button class="selection-action-btn" id="ws-action-duplicate-btn" title="Дублювати виділені">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                         </svg>
-                        <span class="selection-btn-label">Дублювати</span>
+                        <span class="selection-btn-label desktop-only">Дублювати</span>
                     </button>
 
-                    <!-- 5. Видалити -->
+                    <!-- 3. Видалити -->
                     <button class="selection-action-btn selection-action-delete-btn" id="ws-action-delete-btn" title="Видалити виділені">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M3 6h18"></path>
                             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                         </svg>
-                        <span class="selection-btn-label">Видалити</span>
+                        <span class="selection-btn-label desktop-only">Видалити</span>
                     </button>
                 </div>
             `;
@@ -98,8 +154,6 @@ window.App = window.App || {};
             const storage = window.App.storage;
             const noteManager = window.App.noteManager;
 
-            // 1. Палітра кольорів
-            const colorContainer = barElement.querySelector('#ws-submenu-color');
             const colors = [
                 { id: 'yellow', hex: '#fef08a', name: 'Жовтий' },
                 { id: 'green',  hex: '#bbf7d0', name: 'Зелений' },
@@ -110,85 +164,71 @@ window.App = window.App || {};
                 { id: 'gray',   hex: '#e2e8f0', name: 'Сірий' }
             ];
 
-            const colorTitle = document.createElement('div');
-            colorTitle.className = 'selection-submenu-title';
-            colorTitle.textContent = 'Обрати колір для виділених:';
-            colorContainer.appendChild(colorTitle);
+            const populateColors = (containerEl) => {
+                if (!containerEl) return;
+                containerEl.innerHTML = '';
+                colors.forEach(c => {
+                    const swatch = document.createElement('button');
+                    swatch.className = 'color-swatch-btn';
+                    swatch.style.backgroundColor = c.hex;
+                    swatch.title = c.name;
 
-            const paletteWrap = document.createElement('div');
-            paletteWrap.className = 'selection-color-swatches';
+                    swatch.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
+                        if (selectedIds.length === 0) return;
 
-            colors.forEach(c => {
-                const swatch = document.createElement('button');
-                swatch.className = 'color-swatch-btn';
-                swatch.style.backgroundColor = c.hex;
-                swatch.title = c.name;
+                        noteManager.updateMultipleNotes(selectedIds, { color: c.id });
+                        this.closeSubmenus();
+                    });
 
-                swatch.addEventListener('click', (e) => {
+                    containerEl.appendChild(swatch);
+                });
+            };
+
+            // Заповнюємо кольори для Десктопу та Мобільного
+            populateColors(barElement.querySelector('#ws-desktop-colors'));
+            populateColors(barElement.querySelector('#ws-more-colors'));
+
+            // Налаштування слайдерів шрифту (Десктоп і Мобільний)
+            const setupFontSlider = (sliderId, badgeId) => {
+                const slider = barElement.querySelector(sliderId);
+                const badge = barElement.querySelector(badgeId);
+                if (!slider || !badge) return;
+
+                slider.addEventListener('input', (e) => {
                     e.stopPropagation();
+                    const newSize = parseInt(e.target.value, 10);
+                    badge.textContent = `${newSize}px`;
+
                     const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
                     if (selectedIds.length === 0) return;
 
-                    noteManager.updateMultipleNotes(selectedIds, { color: c.id });
-                    this.closeSubmenus();
+                    selectedIds.forEach(id => {
+                        const card = document.querySelector(`.note-sticker[data-note-id="${id}"]`);
+                        if (card) {
+                            card.style.setProperty('--custom-content-font-size', `${newSize}px`);
+                            card.style.setProperty('--custom-title-font-size', `${Math.round(newSize * 1.85)}px`);
+                            card.style.setProperty('--custom-line-height', `${Math.round(newSize * 1.9)}px`);
+                            card.classList.add('has-custom-font-size');
+                        }
+                    });
+
+                    noteManager.updateMultipleNotes(selectedIds, { fontSize: newSize }, false);
                 });
 
-                paletteWrap.appendChild(swatch);
-            });
+                slider.addEventListener('change', () => {
+                    const newSize = parseInt(slider.value, 10);
+                    const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
+                    noteManager.updateMultipleNotes(selectedIds, { fontSize: newSize }, true);
+                });
+            };
 
-            colorContainer.appendChild(paletteWrap);
+            setupFontSlider('#ws-sel-font-slider-desktop', '#ws-sel-font-badge-desktop');
+            setupFontSlider('#ws-sel-font-slider', '#ws-sel-font-badge');
 
-            // 2. Теги меню
-            const tagContainer = barElement.querySelector('#ws-submenu-tag');
+            // Теги
             this.refreshTagSubmenu();
-
-            // 3. Слайдер шрифту
-            const fontContainer = barElement.querySelector('#ws-submenu-font');
-            const fontTitle = document.createElement('div');
-            fontTitle.className = 'selection-submenu-title';
-            fontTitle.innerHTML = '<span>Розмір шрифту:</span> <span class="font-size-value-badge" id="ws-sel-font-badge">16px</span>';
-            fontContainer.appendChild(fontTitle);
-
-            const sliderWrap = document.createElement('div');
-            sliderWrap.className = 'sticker-font-slider-container';
-            sliderWrap.innerHTML = `
-                <span class="slider-min-icon">A</span>
-                <input type="range" class="sticker-font-slider" id="ws-sel-font-slider" min="11" max="22" step="1" value="16">
-                <span class="slider-max-icon">A</span>
-            `;
-
-            const fontSlider = sliderWrap.querySelector('#ws-sel-font-slider');
-            const fontBadge = fontTitle.querySelector('#ws-sel-font-badge');
-
-            fontSlider.addEventListener('input', (e) => {
-                e.stopPropagation();
-                const newSize = parseInt(e.target.value, 10);
-                fontBadge.textContent = `${newSize}px`;
-
-                const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
-                if (selectedIds.length === 0) return;
-
-                // Оновлюємо стилі нальоту
-                selectedIds.forEach(id => {
-                    const card = document.querySelector(`.note-sticker[data-note-id="${id}"]`);
-                    if (card) {
-                        card.style.setProperty('--custom-content-font-size', `${newSize}px`);
-                        card.style.setProperty('--custom-title-font-size', `${Math.round(newSize * 1.85)}px`);
-                        card.style.setProperty('--custom-line-height', `${Math.round(newSize * 1.9)}px`);
-                        card.classList.add('has-custom-font-size');
-                    }
-                });
-
-                noteManager.updateMultipleNotes(selectedIds, { fontSize: newSize }, false);
-            });
-
-            fontSlider.addEventListener('change', () => {
-                const newSize = parseInt(fontSlider.value, 10);
-                const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
-                noteManager.updateMultipleNotes(selectedIds, { fontSize: newSize }, true);
-            });
-
-            fontContainer.appendChild(sliderWrap);
         },
 
         refreshTagSubmenu() {
@@ -196,124 +236,121 @@ window.App = window.App || {};
             const state = window.App.state;
             const storage = window.App.storage;
             const noteManager = window.App.noteManager;
-            const tagContainer = barElement.querySelector('#ws-submenu-tag');
-            if (!tagContainer) return;
 
-            tagContainer.innerHTML = '';
+            const populateTagContainer = (containerEl) => {
+                if (!containerEl) return;
+                containerEl.innerHTML = '';
 
-            const tagTitle = document.createElement('div');
-            tagTitle.className = 'selection-submenu-title';
-            tagTitle.textContent = 'Прикріпити тег:';
-            tagContainer.appendChild(tagTitle);
+                const options = storage.getTagOptions ? storage.getTagOptions() : [];
 
-            const options = storage.getTagOptions ? storage.getTagOptions() : [];
+                if (options.length === 0) {
+                    const emptyText = document.createElement('div');
+                    emptyText.className = 'selection-submenu-empty';
+                    emptyText.textContent = 'Немає створених тегів';
+                    containerEl.appendChild(emptyText);
+                } else {
+                    const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
+                    const selectedNotes = selectedIds.map(id => noteManager.getNoteById(id)).filter(Boolean);
 
-            if (options.length === 0) {
-                const emptyText = document.createElement('div');
-                emptyText.className = 'selection-submenu-empty';
-                emptyText.textContent = 'Немає створених тегів';
-                tagContainer.appendChild(emptyText);
-            } else {
-                const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
-                const selectedNotes = selectedIds.map(id => noteManager.getNoteById(id)).filter(Boolean);
+                    const tagList = document.createElement('div');
+                    tagList.className = 'selection-tag-list';
 
-                const tagList = document.createElement('div');
-                tagList.className = 'selection-tag-list';
+                    options.forEach(tagText => {
+                        const item = document.createElement('button');
+                        item.className = 'selection-tag-item';
 
-                options.forEach(tagText => {
-                    const item = document.createElement('button');
-                    item.className = 'selection-tag-item';
+                        let hash = 0;
+                        for (let i = 0; i < tagText.length; i++) {
+                            hash = tagText.charCodeAt(i) + ((hash << 5) - hash);
+                        }
+                        const colorIndex = Math.abs(hash) % 6;
 
-                    let hash = 0;
-                    for (let i = 0; i < tagText.length; i++) {
-                        hash = tagText.charCodeAt(i) + ((hash << 5) - hash);
-                    }
-                    const colorIndex = Math.abs(hash) % 6;
+                        const countWithTag = selectedNotes.filter(note => {
+                            const tags = Array.isArray(note.tags) ? note.tags : (note.tag ? [note.tag.text || note.tag] : []);
+                            return tags.includes(tagText);
+                        }).length;
 
-                    // Перевіряємо скільки з виділених нотаток мають цей тег
-                    const countWithTag = selectedNotes.filter(note => {
-                        const tags = Array.isArray(note.tags) ? note.tags : (note.tag ? [note.tag.text || note.tag] : []);
-                        return tags.includes(tagText);
-                    }).length;
+                        const allHaveTag = selectedNotes.length > 0 && countWithTag === selectedNotes.length;
+                        const someHaveTag = countWithTag > 0 && !allHaveTag;
 
-                    const allHaveTag = selectedNotes.length > 0 && countWithTag === selectedNotes.length;
-                    const someHaveTag = countWithTag > 0 && !allHaveTag;
+                        if (allHaveTag) {
+                            item.classList.add('active');
+                        } else if (someHaveTag) {
+                            item.classList.add('partial');
+                        }
 
-                    if (allHaveTag) {
-                        item.classList.add('active');
-                    } else if (someHaveTag) {
-                        item.classList.add('partial');
-                    }
+                        item.innerHTML = `
+                            <span class="selection-tag-color-dot tag-tape-color-${colorIndex}"></span>
+                            <span class="selection-tag-text">${tagText}</span>
+                            <span class="selection-tag-status-icon">${allHaveTag ? '✓' : (someHaveTag ? '–' : '')}</span>
+                        `;
 
-                    item.innerHTML = `
-                        <span class="selection-tag-color-dot tag-tape-color-${colorIndex}"></span>
-                        <span class="selection-tag-text">${tagText}</span>
-                        <span class="selection-tag-status-icon">${allHaveTag ? '✓' : (someHaveTag ? '–' : '')}</span>
-                    `;
+                        item.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            if (selectedIds.length === 0) return;
 
-                    item.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        if (selectedIds.length === 0) return;
+                            const shouldRemove = allHaveTag;
 
-                        // Якщо у всіх вже є цей тег — знімаємо його, інакше — додаємо всім
-                        const shouldRemove = allHaveTag;
-
-                        selectedIds.forEach(id => {
-                            const note = noteManager.getNoteById(id);
-                            if (!note) return;
-                            let currentTags = Array.isArray(note.tags) ? [...note.tags] : (note.tag ? [note.tag.text || note.tag] : []);
-                            
-                            if (shouldRemove) {
-                                currentTags = currentTags.filter(t => t !== tagText);
-                            } else {
-                                if (!currentTags.includes(tagText)) {
-                                    currentTags.push(tagText);
+                            selectedIds.forEach(id => {
+                                const note = noteManager.getNoteById(id);
+                                if (!note) return;
+                                let currentTags = Array.isArray(note.tags) ? [...note.tags] : (note.tag ? [note.tag.text || note.tag] : []);
+                                
+                                if (shouldRemove) {
+                                    currentTags = currentTags.filter(t => t !== tagText);
+                                } else {
+                                    if (!currentTags.includes(tagText)) {
+                                        currentTags.push(tagText);
+                                    }
                                 }
-                            }
-                            note.tags = currentTags;
-                            delete note.tag;
+                                note.tags = currentTags;
+                                delete note.tag;
+                            });
+
+                            storage.saveNotes(state.notes);
+                            window.App.workspaceView.render();
+                            this.refreshTagSubmenu();
                         });
 
-                        storage.saveNotes(state.notes);
-                        window.App.workspaceView.render();
-                        this.refreshTagSubmenu();
+                        tagList.appendChild(item);
                     });
 
-                    tagList.appendChild(item);
+                    containerEl.appendChild(tagList);
+                }
+
+                // Опція зняти всі теги
+                const clearTagsBtn = document.createElement('button');
+                clearTagsBtn.className = 'selection-tag-clear-btn';
+                clearTagsBtn.innerHTML = `
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                    <span>Очистити всі теги</span>
+                `;
+                clearTagsBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
+                    if (selectedIds.length === 0) return;
+
+                    selectedIds.forEach(id => {
+                        const note = noteManager.getNoteById(id);
+                        if (note) {
+                            note.tags = [];
+                            delete note.tag;
+                        }
+                    });
+
+                    storage.saveNotes(state.notes);
+                    window.App.workspaceView.render();
+                    this.closeSubmenus();
                 });
 
-                tagContainer.appendChild(tagList);
-            }
+                containerEl.appendChild(clearTagsBtn);
+            };
 
-            // Опція зняти всі теги
-            const clearTagsBtn = document.createElement('button');
-            clearTagsBtn.className = 'selection-tag-clear-btn';
-            clearTagsBtn.innerHTML = `
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-                <span>Очистити всі теги</span>
-            `;
-            clearTagsBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
-                if (selectedIds.length === 0) return;
-
-                selectedIds.forEach(id => {
-                    const note = noteManager.getNoteById(id);
-                    if (note) {
-                        note.tags = [];
-                        delete note.tag;
-                    }
-                });
-
-                storage.saveNotes(state.notes);
-                window.App.workspaceView.render();
-                this.closeSubmenus();
-            });
-
-            tagContainer.appendChild(clearTagsBtn);
+            populateTagContainer(barElement.querySelector('#ws-desktop-tags'));
+            populateTagContainer(barElement.querySelector('#ws-more-tags'));
         },
 
         bindBarEvents() {
@@ -322,13 +359,14 @@ window.App = window.App || {};
 
             // Кнопка закриття режиму вибору
             const cancelBtn = barElement.querySelector('#ws-sel-cancel-btn');
-            cancelBtn.addEventListener('click', () => {
-                this.exitSelectMode();
-            });
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', () => {
+                    this.exitSelectMode();
+                });
+            }
 
             // Вибрати всі
-            const selectAllBtn = barElement.querySelector('#ws-sel-all-btn');
-            selectAllBtn.addEventListener('click', () => {
+            const selectAll = () => {
                 const allVisibleStickers = document.querySelectorAll('.note-sticker[data-note-id]');
                 allVisibleStickers.forEach(card => {
                     if (card.dataset.noteId) {
@@ -336,58 +374,87 @@ window.App = window.App || {};
                     }
                 });
                 this.updateUI();
-            });
+            };
+
+            const selAllDesktop = barElement.querySelector('#ws-sel-all-btn-desktop');
+            const selAllMobile = barElement.querySelector('#ws-sel-all-btn-mobile');
+            if (selAllDesktop) selAllDesktop.addEventListener('click', selectAll);
+            if (selAllMobile) selAllMobile.addEventListener('click', selectAll);
 
             // Зняти всі
-            const clearAllBtn = barElement.querySelector('#ws-sel-clear-btn');
-            clearAllBtn.addEventListener('click', () => {
+            const clearAll = () => {
                 state.selectedWorkspaceNoteIds.clear();
                 this.updateUI();
-            });
+            };
 
-            // Кнопки відкриття субменю
+            const clearAllDesktop = barElement.querySelector('#ws-sel-clear-btn-desktop');
+            const clearAllMobile = barElement.querySelector('#ws-sel-clear-btn-mobile');
+            if (clearAllDesktop) clearAllDesktop.addEventListener('click', clearAll);
+            if (clearAllMobile) clearAllMobile.addEventListener('click', clearAll);
+
+            // Кнопки субменю Десктоп
             const colorBtn = barElement.querySelector('#ws-action-color-btn');
-            colorBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.toggleSubmenu('color');
-            });
+            if (colorBtn) {
+                colorBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.toggleSubmenu('color');
+                });
+            }
 
             const tagBtn = barElement.querySelector('#ws-action-tag-btn');
-            tagBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.refreshTagSubmenu();
-                this.toggleSubmenu('tag');
-            });
+            if (tagBtn) {
+                tagBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.refreshTagSubmenu();
+                    this.toggleSubmenu('tag');
+                });
+            }
 
             const fontBtn = barElement.querySelector('#ws-action-font-btn');
-            fontBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.toggleSubmenu('font');
-            });
+            if (fontBtn) {
+                fontBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.toggleSubmenu('font');
+                });
+            }
+
+            // Кнопка відкриття меню "три крапки" (Мобільний)
+            const moreBtn = barElement.querySelector('#ws-action-more-btn');
+            if (moreBtn) {
+                moreBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.refreshTagSubmenu();
+                    this.toggleSubmenu('more');
+                });
+            }
 
             // Дублювати виділені
             const duplicateBtn = barElement.querySelector('#ws-action-duplicate-btn');
-            duplicateBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.closeSubmenus();
-                const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
-                if (selectedIds.length === 0) return;
+            if (duplicateBtn) {
+                duplicateBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.closeSubmenus();
+                    const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
+                    if (selectedIds.length === 0) return;
 
-                selectedIds.forEach(id => {
-                    noteManager.duplicateNote(id);
+                    selectedIds.forEach(id => {
+                        noteManager.duplicateNote(id);
+                    });
                 });
-            });
+            }
 
             // Видалити виділені (з модальним вікном підтвердження)
             const deleteBtn = barElement.querySelector('#ws-action-delete-btn');
-            deleteBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.closeSubmenus();
-                const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
-                if (selectedIds.length === 0) return;
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.closeSubmenus();
+                    const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
+                    if (selectedIds.length === 0) return;
 
-                noteManager.deleteNotes(selectedIds, e);
-            });
+                    noteManager.deleteNotes(selectedIds, e);
+                });
+            }
         },
 
         bindGlobalEvents() {
@@ -479,8 +546,10 @@ window.App = window.App || {};
             if (state.isWorkspaceSelectMode) {
                 barElement.classList.add('active');
                 const count = state.selectedWorkspaceNoteIds.size;
-                const countEl = barElement.querySelector('#ws-sel-count');
-                if (countEl) countEl.textContent = `Вибрано ${count}`;
+                const countDesktop = barElement.querySelector('#ws-sel-count-desktop');
+                const countMobile = barElement.querySelector('#ws-sel-count-mobile');
+                if (countDesktop) countDesktop.textContent = `Вибрано ${count}`;
+                if (countMobile) countMobile.textContent = count;
 
                 // Робимо кнопки дій активними або приглушеними, якщо нічого не вибрано
                 const actionBtns = barElement.querySelectorAll('.selection-action-btn');
