@@ -436,6 +436,8 @@ window.App = window.App || {};
             const sourceNote = this.getNoteById(sourceNoteId);
             if (!sourceNote) return null;
 
+            const clonedNotesList = [];
+
             // Рекурсивна функція копіювання нотатки та всіх її дочірніх нотаток
             const cloneNoteTree = (noteToClone, newParentId) => {
                 const newNote = {
@@ -449,11 +451,13 @@ window.App = window.App || {};
                     color: noteToClone.color || 'yellow',
                     icon: noteToClone.icon || null,
                     tags: Array.isArray(noteToClone.tags) ? [...noteToClone.tags] : (noteToClone.tag ? [noteToClone.tag.text || noteToClone.tag] : []),
+                    images: Array.isArray(noteToClone.images) ? JSON.parse(JSON.stringify(noteToClone.images)) : [],
                     fontSize: noteToClone.fontSize !== undefined ? noteToClone.fontSize : 16,
                     updatedAt: Date.now()
                 };
 
                 state.notes.push(newNote);
+                clonedNotesList.push(newNote);
 
                 // Знаходимо всіх прямих дітей та клонуємо їх
                 const directChildren = state.notes.filter(n => n.boardId === noteToClone.boardId && n.parentId === noteToClone.id);
@@ -467,6 +471,13 @@ window.App = window.App || {};
             const rootClonedNote = cloneNoteTree(sourceNote, sourceNote.parentId || null);
             storage.saveNotes(state.notes);
 
+            // Синхронізуємо всі клоновані нотатки з базою даних Supabase
+            if (window.App.cloudSync) {
+                clonedNotesList.forEach(clonedNote => {
+                    window.App.cloudSync.syncNote(clonedNote);
+                });
+            }
+
             if (onNotesChangeCallback) {
                 onNotesChangeCallback();
             }
@@ -479,9 +490,20 @@ window.App = window.App || {};
                     noteElement.classList.add('highlight-pulse');
                     setTimeout(() => noteElement.classList.remove('highlight-pulse'), 1200);
                 }
-            }, 80);
+            }, 100);
 
             return rootClonedNote;
+        },
+
+        duplicateNotes(sourceNoteIds) {
+            const targetIds = Array.isArray(sourceNoteIds) ? sourceNoteIds : [sourceNoteIds];
+            if (targetIds.length === 0) return [];
+            const results = [];
+            targetIds.forEach(id => {
+                const res = this.duplicateNote(id);
+                if (res) results.push(res);
+            });
+            return results;
         }
     };
 })();
