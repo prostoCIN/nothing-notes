@@ -33,26 +33,31 @@
     animation: menuFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.welcome-icon {
-    width: 68px;
-    height: 68px;
-    border-radius: 20px;
-    background: rgba(16, 185, 129, 0.12);
-    border: 1px solid rgba(16, 185, 129, 0.25);
-    color: #34d399;
+.welcome-brand {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 22px;
-    box-shadow: 0 8px 26px rgba(16, 185, 129, 0.2);
+    gap: 12px;
+    margin-bottom: 16px;
+    user-select: none;
 }
 
-.welcome-content h1 {
+.welcome-brand-logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    flex-shrink: 0;
+    filter: drop-shadow(0 6px 16px rgba(16, 185, 129, 0.35));
+}
+
+.welcome-brand-title {
     font-size: 24px;
     font-weight: 800;
-    color: #ffffff;
-    margin: 0 0 10px 0;
     letter-spacing: -0.5px;
+    color: var(--text-main);
+    font-family: inherit;
+    display: flex;
+    align-items: center;
 }
 
 .welcome-content p {
