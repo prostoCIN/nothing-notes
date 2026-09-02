@@ -119,13 +119,20 @@ window.App = window.App || {};
             // Позначаємо взаємодію з тулбаром, щоб сторонні кліки не закривали його
             toolbarEl.addEventListener('pointerdown', (e) => {
                 isInteracting = true;
+                e.preventDefault(); // Запобігає скиданню виділення тексту в Safari iOS/macOS
                 e.stopPropagation();
             });
 
             toolbarEl.addEventListener('mousedown', (e) => {
                 isInteracting = true;
+                e.preventDefault();
                 e.stopPropagation();
             });
+
+            toolbarEl.addEventListener('touchstart', (e) => {
+                isInteracting = true;
+                e.stopPropagation();
+            }, { passive: true });
 
             // Перемикач режиму "Всі слова"
             scopeBtn.addEventListener('click', (e) => {
