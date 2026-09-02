@@ -1192,15 +1192,30 @@ window.App = window.App || {};
                     }
                 });
 
+                const unwrappedNodes = [];
                 bTagsToUnwrap.forEach(bTag => {
                     const parent = bTag.parentNode;
                     if (parent) {
                         while (bTag.firstChild) {
-                            parent.insertBefore(bTag.firstChild, bTag);
+                            const child = bTag.firstChild;
+                            parent.insertBefore(child, bTag);
+                            unwrappedNodes.push(child);
                         }
                         parent.removeChild(bTag);
                     }
                 });
+
+                // Оновлюємо currentRange на розгорнутий текст, щоб виділення не злітало
+                if (unwrappedNodes.length > 0) {
+                    try {
+                        const first = unwrappedNodes[0];
+                        const last = unwrappedNodes[unwrappedNodes.length - 1];
+                        const newRange = document.createRange();
+                        newRange.setStartBefore(first);
+                        newRange.setEndAfter(last);
+                        currentRange = newRange;
+                    } catch (e) {}
+                }
                 return;
             }
 
