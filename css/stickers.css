@@ -458,18 +458,11 @@
 }
 
 .sticker-menu-header-date {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 11px;
-    color: var(--text-muted);
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.4);
     font-weight: 500;
     line-height: 1.2;
-}
-
-.sticker-menu-header-date svg {
-    color: #10b981;
-    flex-shrink: 0;
+    margin-top: 1px;
 }
 
 /* Відкриття меню "три крапки" вгору, якщо знизу недостатньо місця на екрані */

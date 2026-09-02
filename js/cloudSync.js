@@ -391,6 +391,7 @@ window.App = window.App || {};
                     is_collapsed: !!note.isCollapsed,
                     tags: Array.isArray(note.tags) ? note.tags : [],
                     order_index: noteIndex !== -1 ? noteIndex : state.notes.length,
+                    created_at: new Date(note.createdAt || Date.now()).toISOString(),
                     updated_at: new Date(note.updatedAt || Date.now()).toISOString()
                 };
             });
@@ -433,6 +434,7 @@ window.App = window.App || {};
                 is_collapsed: !!note.isCollapsed,
                 tags: Array.isArray(note.tags) ? note.tags : [],
                 order_index: noteIndex !== -1 ? noteIndex : state.notes.length,
+                created_at: new Date(note.createdAt || Date.now()).toISOString(),
                 updated_at: new Date(note.updatedAt || Date.now()).toISOString()
             };
 
