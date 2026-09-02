@@ -265,14 +265,20 @@ window.App = window.App || {};
                 setTimeout(() => inputEl.focus(), 60);
 
                 const boardTitleEl = document.getElementById('workspace-header-board-title');
-                if (boardTitleEl) boardTitleEl.textContent = 'Новий акаунт';
+                const boardIconEl = document.getElementById('workspace-header-board-icon');
+                if (boardTitleEl) boardTitleEl.textContent = '';
+                if (boardIconEl) boardIconEl.textContent = '';
                 return;
             }
 
             // Синхронізуємо стан верхнього хедера
             const boardTitleEl = document.getElementById('workspace-header-board-title');
+            const boardIconEl = document.getElementById('workspace-header-board-icon');
             if (boardTitleEl) {
-                boardTitleEl.textContent = currentBoard.name || 'Блокнот';
+                boardTitleEl.textContent = currentBoard.name || '';
+            }
+            if (boardIconEl) {
+                boardIconEl.textContent = currentBoard.icon || '';
             }
 
             const viewColumnsBtn = document.getElementById('island-view-columns-btn');
