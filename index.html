@@ -16,27 +16,40 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500&display=swap" rel="stylesheet">
 </head>
 <body spellcheck="false">
-    <!-- Екран привітання (коли немає блокнотів) -->
+    <!-- Екран привітання (новий користувач / немає блокнотів) -->
     <div id="welcome-screen" class="welcome-screen" style="display: none;">
         <div class="welcome-content">
-            <div class="welcome-icon">🗒️</div>
+            <div class="welcome-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                </svg>
+            </div>
             <h1>Вітаємо в NothingNotes</h1>
-            <p>Блокнот — це ваше сховище для нотаток. Створіть свій перший блокнот або увійдіть у свій акаунт, щоб завантажити існуючі нотатки.</p>
-            <div class="board-creation-form">
-                <input type="text" id="welcome-board-input" placeholder="Наприклад: Робота, Ідеї, Особисте..." autocomplete="off">
-                <button id="create-first-board-btn">Створити блокнот</button>
-            </div>
-            <div class="welcome-auth-divider">
-                <span>або</span>
-            </div>
-            <div class="welcome-auth-action">
-                <button id="welcome-login-btn" class="welcome-login-btn">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <p>Ваш персональний простір для думок, ідей та нотаток з синхронізацією між усіма пристроями.</p>
+            
+            <div class="welcome-actions">
+                <!-- Головний варіант: Увійти або зареєструватися -->
+                <button id="welcome-login-btn" class="welcome-primary-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
                         <polyline points="10 17 15 12 10 7"></polyline>
                         <line x1="15" y1="12" x2="3" y2="12"></line>
                     </svg>
-                    <span>Увійти в існуючий акаунт</span>
+                    <span>Увійти / Зареєструватися</span>
+                </button>
+
+                <div class="welcome-auth-divider">
+                    <span>або</span>
+                </div>
+
+                <!-- Другий варіант: Продовжити без збереження в хмарі -->
+                <button id="welcome-guest-btn" class="welcome-guest-btn">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path>
+                        <line x1="1" y1="1" x2="23" y2="23"></line>
+                    </svg>
+                    <span>Продовжити без збереження в хмарі</span>
                 </button>
             </div>
         </div>

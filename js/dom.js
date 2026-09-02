@@ -8,9 +8,8 @@ window.App.getElements = function() {
         appContainer: document.getElementById('app-container'),
 
         // Екран привітання
-        welcomeBoardInput: document.getElementById('welcome-board-input'),
-        createFirstBoardBtn: document.getElementById('create-first-board-btn'),
         welcomeLoginBtn: document.getElementById('welcome-login-btn'),
+        welcomeGuestBtn: document.getElementById('welcome-guest-btn'),
 
         // Сайдбар
         sidebar: document.getElementById('sidebar'),

@@ -1,89 +1,111 @@
-/* Привітальне вікно */
+/* css/welcome.css - Сучасний дизайн Liquid Glass для екрану першого входу */
+
 .welcome-screen {
-    width: 100%;
-    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--bg-color);
-    z-index: 100;
+    background: radial-gradient(circle at 50% 30%, rgba(16, 185, 129, 0.08) 0%, rgba(14, 14, 18, 0.95) 70%, #0c0c0e 100%);
+    padding: 20px;
+    box-sizing: border-box;
+    z-index: 9999;
 }
 
 .welcome-content {
-    max-width: 560px;
-    width: 90%;
+    max-width: 480px;
+    width: 100%;
     text-align: center;
-    padding: 48px 44px;
-    background-color: var(--sidebar-bg);
-    border-radius: 16px;
-    border: 1px solid var(--border-color);
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+    padding: 44px 36px 38px 36px;
+    background: rgba(26, 26, 30, 0.65);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 28px 60px rgba(0, 0, 0, 0.65), var(--glass-specular);
+    border-radius: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+    animation: menuFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .welcome-icon {
-    font-size: 48px;
-    margin-bottom: 16px;
+    width: 68px;
+    height: 68px;
+    border-radius: 20px;
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    color: #34d399;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 22px;
+    box-shadow: 0 8px 26px rgba(16, 185, 129, 0.2);
 }
 
 .welcome-content h1 {
-    font-size: 28px;
-    margin-bottom: 12px;
-    font-weight: 700;
+    font-size: 24px;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0 0 10px 0;
+    letter-spacing: -0.5px;
 }
 
 .welcome-content p {
     color: var(--text-muted);
-    font-size: 15px;
+    font-size: 14px;
     line-height: 1.6;
-    margin-bottom: 32px;
+    margin: 0 0 28px 0;
+    max-width: 380px;
 }
 
-.board-creation-form {
+.welcome-actions {
+    width: 100%;
     display: flex;
+    flex-direction: column;
     gap: 12px;
 }
 
-.board-creation-form input {
-    flex-grow: 1;
-    background-color: var(--bg-color);
-    border: 1px solid var(--border-color);
-    color: var(--text-main);
-    padding: 12px 16px;
-    border-radius: 6px;
-    font-size: 15px;
-    outline: none;
-    transition: border-color 0.2s;
-    font-family: inherit;
-}
-
-.board-creation-form input:focus {
-    border-color: var(--accent-color);
-}
-
-#create-first-board-btn {
-    background-color: var(--text-main);
-    color: var(--bg-color);
+/* Головна кнопка: Увійти / Зареєструватися */
+.welcome-primary-btn {
+    width: 100%;
+    background: var(--emerald-gradient);
     border: none;
-    padding: 12px 20px;
-    border-radius: 6px;
-    font-size: 15px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: opacity 0.2s;
+    border-radius: 12px;
+    padding: 14px 20px;
+    color: #062419;
+    font-size: 14.5px;
+    font-weight: 800;
     font-family: inherit;
-    white-space: nowrap;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 6px 20px rgba(22, 185, 129, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    transition: all 0.2s ease;
 }
 
-#create-first-board-btn:hover {
-    opacity: 0.9;
+.welcome-primary-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 28px rgba(22, 185, 129, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+.welcome-primary-btn:active {
+    transform: scale(0.985);
 }
 
 .welcome-auth-divider {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 20px 0 16px 0;
+    margin: 4px 0;
     position: relative;
+    width: 100%;
 }
 
 .welcome-auth-divider::before {
@@ -99,31 +121,55 @@
 .welcome-auth-divider span {
     position: relative;
     z-index: 1;
-    background: var(--sidebar-bg);
+    background: rgba(26, 26, 30, 0.95);
     padding: 0 12px;
-    font-size: 12px;
+    font-size: 11.5px;
     color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.welcome-login-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
+/* Другорядна кнопка: Продовжити без збереження в хмарі */
+.welcome-guest-btn {
+    width: 100%;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.12);
     color: var(--text-main);
-    padding: 10px 20px;
-    border-radius: 6px;
-    font-size: 13px;
+    border-radius: 12px;
+    padding: 13px 20px;
+    font-size: 13.5px;
     font-weight: 600;
-    cursor: pointer;
     font-family: inherit;
-    transition: background 0.15s ease, border-color 0.15s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.2s ease;
 }
 
-.welcome-login-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
+.welcome-guest-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.22);
+    transform: translateY(-1px);
+}
+
+.welcome-guest-btn:active {
+    transform: scale(0.985);
+}
+
+@media (max-width: 480px) {
+    .welcome-content {
+        padding: 36px 22px 30px 22px;
+        border-radius: 20px;
+    }
+    .welcome-content h1 {
+        font-size: 21px;
+    }
+    .welcome-content p {
+        font-size: 13px;
+        margin-bottom: 22px;
+    }
 }
 
