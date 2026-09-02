@@ -136,6 +136,8 @@
 
     /* 3. Єдиний преміальний стиль для всіх кнопок мобільного хедера */
     .mobile-menu-btn,
+    #workspace-undo-wrap .header-action-icon-btn,
+    #workspace-redo-wrap .header-action-icon-btn,
     .header-search-wrap .header-action-icon-btn,
     #workspace-collapse-wrap .header-action-icon-btn,
     .header-select-btn {
@@ -154,11 +156,20 @@
     }
 
     .mobile-menu-btn:active,
+    #workspace-undo-wrap .header-action-icon-btn:not(:disabled):active,
+    #workspace-redo-wrap .header-action-icon-btn:not(:disabled):active,
     .header-search-wrap .header-action-icon-btn:active,
     #workspace-collapse-wrap .header-action-icon-btn:active,
     .header-select-btn:active {
         background: rgba(255, 255, 255, 0.12) !important;
         transform: scale(0.95);
+    }
+
+    #workspace-undo-wrap .header-action-icon-btn:disabled,
+    #workspace-redo-wrap .header-action-icon-btn:disabled {
+        opacity: 0.3 !important;
+        cursor: default !important;
+        pointer-events: none !important;
     }
 
     /* Ховаємо текст "Вибрати" на мобільному, залишаючи тільки лаконічну іконку з галочкою */

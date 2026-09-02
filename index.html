@@ -125,33 +125,33 @@
                 </div>
 
                 <div class="workspace-header-right">
-                    <!-- Контейнер десктопних інструментів (на ПК відкритий, на мобільних прихований) -->
+                    <!-- 1. Блок історії дій Undo / Redo (доступний і на ПК, і на смартфонах) -->
+                    <div class="header-btn-wrap" id="workspace-undo-wrap">
+                        <button class="header-action-icon-btn disabled" id="workspace-undo-btn" disabled title="Скасувати (Ctrl+Z)">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 7v6h6"></path>
+                                <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path>
+                            </svg>
+                        </button>
+                        <div class="header-tooltip">
+                            <b>Скасувати</b> (Ctrl+Z)
+                        </div>
+                    </div>
+
+                    <div class="header-btn-wrap" id="workspace-redo-wrap">
+                        <button class="header-action-icon-btn disabled" id="workspace-redo-btn" disabled title="Повторити (Ctrl+Y)">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 7v6h-6"></path>
+                                <path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"></path>
+                            </svg>
+                        </button>
+                        <div class="header-tooltip">
+                            <b>Повторити</b> (Ctrl+Y)
+                        </div>
+                    </div>
+
+                    <!-- Контейнер додаткових десктопних інструментів (маркери, гумка, zen-режим) -->
                     <div class="header-extra-tools-wrap" id="header-extra-tools-wrap">
-                        <!-- 1. Блок історії дій Undo / Redo -->
-                        <div class="header-btn-wrap">
-                            <button class="header-action-icon-btn disabled" id="workspace-undo-btn" disabled>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M3 7v6h6"></path>
-                                    <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path>
-                                </svg>
-                            </button>
-                            <div class="header-tooltip">
-                                <b>Скасувати</b> (Ctrl+Z)
-                            </div>
-                        </div>
-
-                        <div class="header-btn-wrap">
-                            <button class="header-action-icon-btn disabled" id="workspace-redo-btn" disabled>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M21 7v6h-6"></path>
-                                    <path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"></path>
-                                </svg>
-                            </button>
-                            <div class="header-tooltip">
-                                <b>Повторити</b> (Ctrl+Y)
-                            </div>
-                        </div>
-
                         <div class="header-divider"></div>
 
                         <!-- 2. Блок маркерів (Швидкий пензель та Гумка) -->
