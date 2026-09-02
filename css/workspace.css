@@ -693,9 +693,32 @@ body.global-eraser-active #workspace-eraser-btn {
     position: relative;
 }
 
-.column-icon {
-    font-size: var(--font-md);
+.column-header-emoji-picker {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
+}
+
+.column-header-emoji-picker .sticker-emoji-btn {
+    font-size: 20px;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    transition: background-color 0.15s ease, transform 0.15s ease, opacity 0.15s ease;
+}
+
+.column-header-emoji-picker .sticker-emoji-btn:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.column-header-emoji-picker .sticker-emoji-btn.empty-icon {
+    opacity: 0.35;
+}
+
+.column-header-emoji-picker .sticker-emoji-btn.empty-icon:hover {
+    opacity: 0.85;
 }
 
 .column-title {

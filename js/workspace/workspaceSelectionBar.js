@@ -54,7 +54,15 @@ window.App = window.App || {};
                     <!-- ДЕСКТОП: Окремі кнопки Колір, Теги, Шрифт -->
                     <div class="selection-action-item desktop-only" id="ws-action-color-wrap">
                         <button class="selection-action-btn" id="ws-action-color-btn" title="Змінити колір">
-                            <span class="selection-btn-icon">🎨</span>
+                            <span class="selection-btn-icon">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle>
+                                    <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle>
+                                    <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle>
+                                    <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle>
+                                    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+                                </svg>
+                            </span>
                             <span class="selection-btn-label">Колір</span>
                         </button>
                         <div class="selection-submenu-dropdown selection-color-dropdown" id="ws-submenu-color">
@@ -65,7 +73,12 @@ window.App = window.App || {};
 
                     <div class="selection-action-item desktop-only" id="ws-action-tag-wrap">
                         <button class="selection-action-btn" id="ws-action-tag-btn" title="Прикріпити теги">
-                            <span class="selection-btn-icon">🏷️</span>
+                            <span class="selection-btn-icon">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                                    <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                                </svg>
+                            </span>
                             <span class="selection-btn-label">Теги</span>
                         </button>
                         <div class="selection-submenu-dropdown selection-tag-dropdown" id="ws-submenu-tag">
@@ -76,7 +89,13 @@ window.App = window.App || {};
 
                     <div class="selection-action-item desktop-only" id="ws-action-font-wrap">
                         <button class="selection-action-btn" id="ws-action-font-btn" title="Розмір шрифту">
-                            <span class="selection-btn-icon">🔤</span>
+                            <span class="selection-btn-icon">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="4 7 4 4 20 4 20 7"></polyline>
+                                    <line x1="9" y1="20" x2="15" y2="20"></line>
+                                    <line x1="12" y1="4" x2="12" y2="20"></line>
+                                </svg>
+                            </span>
                             <span class="selection-btn-label">Шрифт</span>
                         </button>
                         <div class="selection-submenu-dropdown selection-font-dropdown" id="ws-submenu-font">
@@ -111,12 +130,30 @@ window.App = window.App || {};
                         </button>
                         <div class="selection-submenu-dropdown selection-more-dropdown" id="ws-submenu-more">
                             <div class="selection-more-section">
-                                <div class="selection-more-sec-title">🎨 Колір</div>
+                                <div class="selection-more-sec-title">
+                                    <span class="selection-sec-title-left">
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle>
+                                            <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle>
+                                            <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle>
+                                            <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle>
+                                            <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+                                        </svg>
+                                        <span>Колір</span>
+                                    </span>
+                                </div>
                                 <div class="selection-color-swatches" id="ws-more-colors"></div>
                             </div>
                             <div class="selection-more-section">
                                 <div class="selection-more-sec-title">
-                                    <span>🔤 Розмір тексту</span>
+                                    <span class="selection-sec-title-left">
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="4 7 4 4 20 4 20 7"></polyline>
+                                            <line x1="9" y1="20" x2="15" y2="20"></line>
+                                            <line x1="12" y1="4" x2="12" y2="20"></line>
+                                        </svg>
+                                        <span>Розмір тексту</span>
+                                    </span>
                                     <span class="font-size-value-badge" id="ws-sel-font-badge">M (16px)</span>
                                 </div>
                                 <div class="sticker-font-slider-container">
@@ -134,7 +171,15 @@ window.App = window.App || {};
                                 </div>
                             </div>
                             <div class="selection-more-section">
-                                <div class="selection-more-sec-title">🏷️ Теги</div>
+                                <div class="selection-more-sec-title">
+                                    <span class="selection-sec-title-left">
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                                            <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                                        </svg>
+                                        <span>Теги</span>
+                                    </span>
+                                </div>
                                 <div id="ws-more-tags"></div>
                             </div>
                         </div>

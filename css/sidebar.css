@@ -108,6 +108,19 @@
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sidebar-header-icon {
+    flex-shrink: 0;
+    opacity: 0.75;
+    transition: opacity 0.2s ease;
+}
+
+.sidebar-header:hover .sidebar-header-icon {
+    opacity: 1;
 }
 
 .header-add-btn {

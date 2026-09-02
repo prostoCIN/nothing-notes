@@ -844,6 +844,12 @@
         justify-content: space-between !important;
     }
 
+    .selection-sec-title-left {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+    }
+
     .selection-color-swatches {
         display: flex !important;
         flex-direction: row !important;

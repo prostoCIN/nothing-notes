@@ -313,9 +313,16 @@ window.App = window.App || {};
                 titleWrap.className = 'column-title-wrap';
 
                 if (colIndex === 0) {
-                    const iconSpan = document.createElement('span');
-                    iconSpan.className = 'column-header-icon';
-                    iconSpan.textContent = '🗒️';
+                    const boardIconPicker = window.App.emojiPicker.createEmojiPicker(
+                        { icon: currentBoard.icon || null },
+                        (newEmoji) => {
+                            window.App.boardManager.updateBoardIcon(currentBoard.id, newEmoji);
+                        },
+                        () => {
+                            window.App.boardManager.updateBoardIcon(currentBoard.id, null);
+                        }
+                    );
+                    boardIconPicker.classList.add('column-header-emoji-picker');
 
                     const titleH2 = document.createElement('h2');
                     titleH2.className = 'column-title';
@@ -325,17 +332,27 @@ window.App = window.App || {};
                     badgeSpan.className = 'column-count-badge';
                     badgeSpan.textContent = totalNoteCount;
 
-                    titleWrap.appendChild(iconSpan);
+                    titleWrap.appendChild(boardIconPicker);
                     titleWrap.appendChild(titleH2);
                     titleWrap.appendChild(badgeSpan);
                 } else {
                     const parentNote = noteManager.getNoteById(parentNoteId);
                     const parentTitle = parentNote ? parentNote.title.trim() : 'Без назви';
-                    const parentIcon = (parentNote && parentNote.icon) ? parentNote.icon : '📄';
 
-                    const iconSpan = document.createElement('span');
-                    iconSpan.className = 'column-header-icon';
-                    iconSpan.textContent = parentIcon;
+                    let noteIconPicker;
+                    if (parentNote) {
+                        noteIconPicker = window.App.emojiPicker.createEmojiPicker(
+                            parentNote,
+                            (newEmoji) => {
+                                this.render();
+                            }
+                        );
+                    } else {
+                        noteIconPicker = document.createElement('span');
+                        noteIconPicker.className = 'column-header-icon';
+                        noteIconPicker.textContent = '📄';
+                    }
+                    noteIconPicker.classList.add('column-header-emoji-picker');
 
                     const titleH2 = document.createElement('h2');
                     titleH2.className = 'column-title';
@@ -345,7 +362,7 @@ window.App = window.App || {};
                     badgeSpan.className = 'column-count-badge';
                     badgeSpan.textContent = totalNoteCount;
 
-                    titleWrap.appendChild(iconSpan);
+                    titleWrap.appendChild(noteIconPicker);
                     titleWrap.appendChild(titleH2);
                     titleWrap.appendChild(badgeSpan);
                 }

@@ -76,6 +76,33 @@ window.App = window.App || {};
             return true;
         },
 
+        updateBoardIcon(id, newIcon) {
+            const state = window.App.state;
+            const storage = window.App.storage;
+
+            const board = state.boards.find(b => b.id === id);
+            if (!board) return false;
+
+            board.icon = newIcon || null;
+            storage.saveBoards(state.boards);
+
+            if (window.App.cloudSync) {
+                window.App.cloudSync.syncBoards();
+            }
+
+            // Оновлюємо сайдбар якщо там є елемент
+            if (window.App.sidebarView) {
+                window.App.sidebarView.renderBoardsList();
+            }
+
+            // Оновлюємо шапку робочого простору
+            if (window.App.workspaceView) {
+                window.App.workspaceView.render();
+            }
+
+            return true;
+        },
+
         switchBoard(id) {
             const state = window.App.state;
             const storage = window.App.storage;

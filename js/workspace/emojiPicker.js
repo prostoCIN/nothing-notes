@@ -1,19 +1,20 @@
-﻿// js/workspace/emojiPicker.js - Модуль інтерактивного вибору Notion-емодзі
+// js/workspace/emojiPicker.js - Модуль інтерактивного вибору Notion-емодзі
 window.App = window.App || {};
 
 (function() {
     window.App.emojiPicker = {
-        createEmojiPicker(note, onIconChange) {
-            const noteManager = window.App.noteManager;
-            const sidebarView = window.App.sidebarView;
+        createEmojiPicker(targetItem, onIconChange, customRemoveHandler) {
+            const isNote = targetItem && targetItem.id && typeof targetItem.content !== 'undefined';
+            const currentIcon = isNote ? targetItem.icon : (targetItem ? targetItem.icon : null);
+            const defaultEmptyIcon = isNote ? '📄' : '📁';
 
             const emojiWrap = document.createElement('div');
             emojiWrap.className = 'sticker-emoji-wrap';
 
             const emojiBtn = document.createElement('button');
-            emojiBtn.className = `sticker-emoji-btn ${!note.icon ? 'empty-icon' : ''}`;
-            emojiBtn.title = note.icon ? 'Змінити емодзі' : 'Додати емодзі';
-            emojiBtn.textContent = note.icon || '📄';
+            emojiBtn.className = `sticker-emoji-btn ${!currentIcon ? 'empty-icon' : ''}`;
+            emojiBtn.title = currentIcon ? 'Змінити емодзі' : 'Додати емодзі';
+            emojiBtn.textContent = currentIcon || defaultEmptyIcon;
 
             // Випадаюче вікно вибору Notion-емодзі з повною клавіатурою категорій
             const emojiDropdown = document.createElement('div');
@@ -32,19 +33,27 @@ window.App = window.App || {};
             removeBtn.className = 'emoji-remove-btn';
             removeBtn.textContent = 'Видалити';
             removeBtn.title = 'Прибрати іконку';
-            removeBtn.style.display = note.icon ? 'block' : 'none';
+            removeBtn.style.display = currentIcon ? 'block' : 'none';
 
             removeBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                noteManager.updateNote(note.id, { icon: null });
-                note.icon = null;
-                emojiBtn.textContent = '📄';
+                if (isNote) {
+                    window.App.noteManager.updateNote(targetItem.id, { icon: null });
+                    targetItem.icon = null;
+                }
+                emojiBtn.textContent = defaultEmptyIcon;
                 emojiBtn.classList.add('empty-icon');
                 emojiBtn.title = 'Додати емодзі';
                 removeBtn.style.display = 'none';
                 emojiDropdown.classList.remove('active');
-                if (onIconChange) onIconChange(null);
-                sidebarView.renderNotesList();
+                if (customRemoveHandler) {
+                    customRemoveHandler();
+                } else if (onIconChange) {
+                    onIconChange(null);
+                }
+                if (isNote && window.App.sidebarView) {
+                    window.App.sidebarView.renderNotesList();
+                }
             });
 
             pickerHeader.appendChild(searchInput);
@@ -75,15 +84,19 @@ window.App = window.App || {};
                     itemBtn.textContent = emoji;
                     itemBtn.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        noteManager.updateNote(note.id, { icon: emoji });
-                        note.icon = emoji;
+                        if (isNote) {
+                            window.App.noteManager.updateNote(targetItem.id, { icon: emoji });
+                            targetItem.icon = emoji;
+                        }
                         emojiBtn.textContent = emoji;
                         emojiBtn.classList.remove('empty-icon');
                         emojiBtn.title = 'Змінити емодзі';
                         removeBtn.style.display = 'block';
                         emojiDropdown.classList.remove('active');
                         if (onIconChange) onIconChange(emoji);
-                        sidebarView.renderNotesList();
+                        if (isNote && window.App.sidebarView) {
+                            window.App.sidebarView.renderNotesList();
+                        }
                     });
                     grid.appendChild(itemBtn);
                 });

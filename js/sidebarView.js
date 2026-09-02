@@ -104,10 +104,6 @@ window.App = window.App || {};
                 const nameSpan = document.createElement('span');
                 nameSpan.className = 'board-item-name';
 
-                const iconSpan = document.createElement('span');
-                iconSpan.className = 'board-item-icon';
-                iconSpan.textContent = '🗒️';
-
                 const textSpan = document.createElement('span');
                 textSpan.className = 'board-item-text';
                 textSpan.textContent = board.name;
@@ -171,7 +167,13 @@ window.App = window.App || {};
                     }
                 });
 
-                nameSpan.appendChild(iconSpan);
+                if (board.icon) {
+                    const iconSpan = document.createElement('span');
+                    iconSpan.className = 'board-item-icon';
+                    iconSpan.textContent = board.icon;
+                    nameSpan.appendChild(iconSpan);
+                }
+
                 nameSpan.appendChild(textSpan);
 
                 // Лічильник загальної кількості нотаток у цій дошці
