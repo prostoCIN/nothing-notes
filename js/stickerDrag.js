@@ -35,6 +35,8 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
             card.parentNode.insertBefore(placeholder, card);
 
             card.classList.add('is-dragging');
+            card.style.transition = 'none';
+            card.style.transform = 'none';
             card.style.width = `${initialRect.width}px`;
             card.style.height = `${initialRect.height}px`; // Початкова висота перед плавною анімацією
             card.style.left = `${e.clientX - shiftX}px`;
@@ -44,6 +46,7 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
 
             // На наступному кадрі плавно анімуємо висоту самої картки в руці до базової
             requestAnimationFrame(() => {
+                card.style.transition = 'height 0.22s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s ease, opacity 0.2s ease';
                 card.style.height = `${dragHeight}px`;
             });
 
