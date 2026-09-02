@@ -112,6 +112,7 @@ window.App = window.App || {};
         },
 
         async handleAuthChange(user) {
+            const wasLoggedIn = !!currentUser;
             currentUser = user;
             this.updateAuthUI(user);
 
@@ -122,7 +123,36 @@ window.App = window.App || {};
                 // Запускаємо фоновий збирач сміття для звільнення пам'яті в Storage
                 setTimeout(() => this.cleanupOrphanedImages(), 2000);
             } else {
-                console.log('[CloudSync] Guest mode (local storage)');
+                console.log('[CloudSync] Logged out / Guest mode');
+                // Якщо користувач щойно вийшов з акаунта — повністю очищаємо локальний стан, кеш та медіа
+                if (wasLoggedIn) {
+                    const state = window.App.state;
+                    state.boards = [];
+                    state.notes = [];
+                    state.activeBoardId = null;
+                    state.activeChain = [null];
+                    state.expandedSidebarNoteIds.clear();
+                    state.selectedSidebarNoteIds.clear();
+                    state.selectedWorkspaceNoteIds.clear();
+                    state.isWorkspaceSelectMode = false;
+
+                    if (window.App.storage) {
+                        window.App.storage.clearAll();
+                    }
+                    if (window.App.imageDb) {
+                        await window.App.imageDb.clearAll();
+                    }
+                    if (window.App.historyManager) {
+                        window.App.historyManager.reset();
+                    }
+
+                    if (window.App.sidebarView) {
+                        window.App.sidebarView.render();
+                    }
+                    if (window.App.workspaceView) {
+                        window.App.workspaceView.render();
+                    }
+                }
             }
         },
 
@@ -656,7 +686,7 @@ window.App = window.App || {};
                     <div class="user-avatar">${initial}</div>
                     <div class="user-info">
                         <div class="user-email" title="${user.email}">${nickname}</div>
-                        <div class="user-status-badge">Хмара підключена</div>
+                        <div class="user-status-badge">Зберігається в хмарі</div>
                     </div>
                     <button class="user-logout-btn" id="user-logout-btn" title="Вийти з акаунта (${user.email})">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

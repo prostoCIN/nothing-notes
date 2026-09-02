@@ -96,5 +96,24 @@ window.App.imageDb = {
                 resolve(false);
             }
         });
+    },
+
+    // Повністю очистити локальну базу фотографій
+    async clearAll() {
+        const db = await this.init();
+        if (!db) return false;
+
+        return new Promise((resolve) => {
+            try {
+                const transaction = db.transaction(['images'], 'readwrite');
+                const store = transaction.objectStore('images');
+                const request = store.clear();
+
+                request.onsuccess = () => resolve(true);
+                request.onerror = () => resolve(false);
+            } catch (e) {
+                resolve(false);
+            }
+        });
     }
 };

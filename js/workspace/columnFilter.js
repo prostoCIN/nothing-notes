@@ -1,4 +1,4 @@
-﻿// js/workspace/columnFilter.js - Модуль фільтрації нотаток за тегами в шапці колонки
+// js/workspace/columnFilter.js - Модуль фільтрації нотаток за тегами в шапці колонки
 window.App = window.App || {};
 
 (function() {
@@ -68,8 +68,19 @@ window.App = window.App || {};
                         const item = document.createElement('div');
                         item.className = `column-filter-item ${isChecked ? 'active' : ''}`;
                         item.innerHTML = `
-                            <span>🏷️ ${tagName}</span>
-                            <span>${isChecked ? '✓' : ''}</span>
+                            <span class="column-filter-item-name">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="column-filter-tag-icon">
+                                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                                    <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                                </svg>
+                                <span>${tagName}</span>
+                            </span>
+                            <span class="column-filter-item-check">
+                                ${isChecked ? `
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>` : ''}
+                            </span>
                         `;
                         item.addEventListener('click', (e) => {
                             e.stopPropagation();

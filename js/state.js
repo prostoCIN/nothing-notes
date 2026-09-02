@@ -118,6 +118,17 @@ window.App.storage = {
     },
     saveGraphViewMode(enabled) {
         localStorage.setItem('minimal_graph_view_mode', enabled ? 'true' : 'false');
+    },
+    clearAll() {
+        clearTimeout(this._notesSaveTimer);
+        this._notesSaveTimer = null;
+        this._pendingNotes = null;
+        localStorage.removeItem('minimal_boards');
+        localStorage.removeItem('minimal_notes');
+        localStorage.removeItem('minimal_active_board_id');
+        localStorage.removeItem('minimal_board_tag_options');
+        localStorage.removeItem('minimal_column_layouts');
+        localStorage.removeItem('minimal_graph_view_mode');
     }
 };
 

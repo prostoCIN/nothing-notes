@@ -629,13 +629,48 @@
         box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
     }
 
-    /* Приховуємо тулбар виділеного тексту на мобільних пристроях */
-    .text-selection-toolbar,
+    /* Компактний тулбар виділеного тексту на смартфонах (тільки перемикач Regular / Bold) */
+    .text-selection-toolbar {
+        padding: 4px 6px !important;
+        border-radius: 12px !important;
+        gap: 0 !important;
+        min-width: 0 !important;
+        width: auto !important;
+        background: rgba(24, 24, 28, 0.95) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.16) !important;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.08) !important;
+        z-index: 10000 !important;
+    }
+
     .text-selection-toolbar.active {
+        display: flex !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+        opacity: 1 !important;
+    }
+
+    /* На мобільних пристроях ховаємо слайдер розміру, палітру маркерів, кнопку "Всі" та кнопку ресету */
+    .text-selection-toolbar .text-sel-slider-wrap,
+    .text-selection-toolbar .text-sel-colors-wrap,
+    .text-selection-toolbar .text-sel-scope-wrap,
+    .text-selection-toolbar .text-sel-reset-all-btn,
+    .text-selection-toolbar .text-sel-divider {
         display: none !important;
-        visibility: hidden !important;
-        pointer-events: none !important;
-        opacity: 0 !important;
+    }
+
+    .text-selection-toolbar .text-sel-weight-wrap {
+        background: transparent !important;
+        padding: 0 !important;
+        gap: 4px !important;
+    }
+
+    .text-selection-toolbar .text-sel-weight-btn {
+        width: 32px !important;
+        height: 30px !important;
+        font-size: 13.5px !important;
+        border-radius: 8px !important;
     }
 
     /* Адаптація контекстного меню нотатки "три крапки" на мобільних пристроях */
@@ -962,6 +997,15 @@
 
     .graph-legend-hint {
         display: none !important; /* Ховаємо довгу підказку "Клік по вершині відкриває...", лишаємо тільки кружечки */
+    }
+
+    .workspace-top-header.graph-mode-active #workspace-search-wrap,
+    .workspace-top-header.graph-mode-active #workspace-collapse-wrap,
+    .workspace-top-header.graph-mode-active .header-select-btn {
+        opacity: 0.22 !important;
+        pointer-events: none !important;
+        user-select: none !important;
+        filter: grayscale(0.85) !important;
     }
 
     .board-creation-form {

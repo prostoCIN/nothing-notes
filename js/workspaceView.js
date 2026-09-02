@@ -220,7 +220,54 @@ window.App = window.App || {};
             els.columnsContainer.innerHTML = '';
 
             const currentBoard = window.App.boardManager.getActiveBoard();
-            if (!currentBoard) return;
+            if (!currentBoard) {
+                // Відображаємо гарний порожній стан для чистого акаунту з можливістю створити перший блокнот
+                const emptyWorkspace = document.createElement('div');
+                emptyWorkspace.className = 'workspace-empty-state';
+                emptyWorkspace.innerHTML = `
+                    <div class="workspace-empty-card">
+                        <div class="workspace-empty-icon">
+                            <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                            </svg>
+                        </div>
+                        <h2 class="workspace-empty-title">Створіть свій перший блокнот</h2>
+                        <p class="workspace-empty-desc">Блокнот допомагає організувати ваші нотатки, ідеї та вкладені піднотатки в зручні мультиколонки.</p>
+                        <div class="workspace-create-board-form">
+                            <input type="text" class="workspace-create-board-input" placeholder="Назва блокнота (наприклад: Робота, Особисте)..." autocomplete="off">
+                            <button class="workspace-create-board-btn">
+                                <span class="btn-plus-icon">+</span>
+                                <span>Створити блокнот</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                const inputEl = emptyWorkspace.querySelector('.workspace-create-board-input');
+                const btnEl = emptyWorkspace.querySelector('.workspace-create-board-btn');
+
+                const submitNewBoard = () => {
+                    const name = inputEl.value.trim();
+                    if (name) {
+                        window.App.boardManager.createBoard(name);
+                    } else {
+                        inputEl.focus();
+                    }
+                };
+
+                btnEl.addEventListener('click', submitNewBoard);
+                inputEl.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') submitNewBoard();
+                });
+
+                els.columnsContainer.appendChild(emptyWorkspace);
+                setTimeout(() => inputEl.focus(), 60);
+
+                const boardTitleEl = document.getElementById('workspace-header-board-title');
+                if (boardTitleEl) boardTitleEl.textContent = 'Новий акаунт';
+                return;
+            }
 
             // Синхронізуємо стан верхнього хедера
             const boardTitleEl = document.getElementById('workspace-header-board-title');

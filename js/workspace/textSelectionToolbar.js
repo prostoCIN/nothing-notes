@@ -799,11 +799,11 @@ window.App = window.App || {};
         },
 
         isMobileDevice() {
-            return window.innerWidth <= 768 || window.matchMedia('(max-width: 768px)').matches || ('ontouchstart' in window && window.innerWidth <= 1024);
+            return window.innerWidth <= 768 || window.matchMedia('(max-width: 768px)').matches;
         },
 
         checkSelection() {
-            if (isInteracting || this.isMobileDevice()) return;
+            if (isInteracting) return;
 
             const selection = window.getSelection();
             if (!selection || selection.isCollapsed || selection.rangeCount === 0) {
@@ -847,7 +847,7 @@ window.App = window.App || {};
         },
 
         show(range) {
-            if (!toolbarEl || this.isMobileDevice()) return;
+            if (!toolbarEl) return;
 
             const rect = range.getBoundingClientRect();
             if (rect.width === 0 && rect.height === 0) {
