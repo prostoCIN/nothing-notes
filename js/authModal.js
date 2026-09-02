@@ -38,7 +38,21 @@ window.App = window.App || {};
 
                         <div class="auth-input-group">
                             <label for="auth-password">Пароль</label>
-                            <input type="password" id="auth-password" required minlength="6" placeholder="Мінімум 6 символів" autocomplete="current-password">
+                            <div class="auth-password-wrapper">
+                                <input type="password" id="auth-password" required minlength="6" placeholder="Мінімум 6 символів" autocomplete="current-password">
+                                <button type="button" class="auth-password-toggle-btn" id="auth-password-toggle-btn" title="Показати/приховати пароль" tabindex="-1">
+                                    <svg class="icon-eye" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                    <svg class="icon-eye-off" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                                        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path>
+                                        <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path>
+                                        <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path>
+                                        <line x1="2" y1="2" x2="22" y2="22"></line>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
 
                         <div id="auth-error-msg" class="auth-error-msg" style="display: none;"></div>
@@ -62,6 +76,9 @@ window.App = window.App || {};
             const form = modalEl.querySelector('#auth-form');
             const emailInput = modalEl.querySelector('#auth-email');
             const passInput = modalEl.querySelector('#auth-password');
+            const passToggleBtn = modalEl.querySelector('#auth-password-toggle-btn');
+            const iconEye = passToggleBtn.querySelector('.icon-eye');
+            const iconEyeOff = passToggleBtn.querySelector('.icon-eye-off');
             const submitBtn = modalEl.querySelector('#auth-submit-btn');
             const btnText = modalEl.querySelector('#auth-btn-text');
             const toggleBtn = modalEl.querySelector('#auth-toggle-mode-btn');
@@ -70,6 +87,21 @@ window.App = window.App || {};
             const successMsg = modalEl.querySelector('#auth-success-msg');
             const closeBtn = modalEl.querySelector('#auth-close-btn');
             const backdrop = modalEl.querySelector('.auth-modal-backdrop');
+
+            // Перемикач видимості пароля
+            if (passToggleBtn && passInput) {
+                passToggleBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const isPass = passInput.type === 'password';
+                    passInput.type = isPass ? 'text' : 'password';
+                    if (iconEye && iconEyeOff) {
+                        iconEye.style.display = isPass ? 'none' : 'block';
+                        iconEyeOff.style.display = isPass ? 'block' : 'none';
+                    }
+                    passInput.focus();
+                });
+            }
 
             const setMode = (signUp) => {
                 isSignUpMode = signUp;
