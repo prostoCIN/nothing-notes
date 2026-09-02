@@ -678,10 +678,13 @@ window.App = window.App || {};
             if (targetNode) {
                 isDraggingNode = true;
                 draggedNode = targetNode;
-                hoveredNode = targetNode;
-                
+                const isTouchDevice = e.pointerType === 'touch' || window.matchMedia('(hover: none)').matches || window.innerWidth <= 768;
+                if (!isTouchDevice) {
+                    hoveredNode = targetNode;
+                }
             } else {
                 isDraggingCanvas = true;
+                hoveredNode = null;
             }
         },
 
@@ -704,12 +707,17 @@ window.App = window.App || {};
                 camera.y += dy;
                 
             } else {
-                // Перевірка hover на вершину
-                const hovered = this.getNodeAt(e.clientX, e.clientY);
-                if (hovered !== hoveredNode) {
-                    hoveredNode = hovered;
-                    
-                } }
+                // Перевірка hover на вершину (тільки для миші на десктопі, щоб на телефонах не лишалося затемнення)
+                const isTouchDevice = e.pointerType === 'touch' || window.matchMedia('(hover: none)').matches || window.innerWidth <= 768;
+                if (!isTouchDevice) {
+                    const hovered = this.getNodeAt(e.clientX, e.clientY);
+                    if (hovered !== hoveredNode) {
+                        hoveredNode = hovered;
+                    }
+                } else {
+                    if (hoveredNode) hoveredNode = null;
+                }
+            }
         },
 
         onPointerUp(e) {

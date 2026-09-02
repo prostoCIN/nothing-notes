@@ -85,19 +85,21 @@
 }
 
 /* Стани (Hover, Active, Search Match) */
-.graph-html-node.is-hovered .graph-html-node-circle,
-.graph-html-node.is-connected .graph-html-node-circle {
-    border-color: #ffffff;
-    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.4);
-}
+@media (hover: hover) and (min-width: 769px) {
+    .graph-html-node.is-hovered .graph-html-node-circle,
+    .graph-html-node.is-connected .graph-html-node-circle {
+        border-color: #ffffff;
+        box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.4);
+    }
 
-.graph-html-node.is-root.is-hovered .graph-html-node-circle,
-.graph-html-node.is-root.is-connected .graph-html-node-circle {
-    box-shadow: 0 0 0 6px rgba(234, 179, 8, 0.4);
-}
+    .graph-html-node.is-root.is-hovered .graph-html-node-circle,
+    .graph-html-node.is-root.is-connected .graph-html-node-circle {
+        box-shadow: 0 0 0 6px rgba(234, 179, 8, 0.4);
+    }
 
-.graph-html-node.is-hovered .graph-html-node-label {
-    color: #34d399;
+    .graph-html-node.is-hovered .graph-html-node-label {
+        color: #34d399;
+    }
 }
 
 .graph-html-node.is-match .graph-html-node-label {
