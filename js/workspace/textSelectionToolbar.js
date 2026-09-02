@@ -271,17 +271,11 @@ window.App = window.App || {};
 
                 if (isApplyToAll && textTarget && activeContentDiv) {
                     this.resetAllFormattingFromAllOccurrences(textTarget);
-                    if (valLabel) valLabel.textContent = '16px';
-                    if (slider) slider.value = 1;
-                    updateTicks(1);
                     regularBtn.classList.add('active');
                     boldBtn.classList.remove('active');
                     return;
                 }
                 this.executeAction((range) => this.resetAllFormattingFromRange(range));
-                if (valLabel) valLabel.textContent = '16px';
-                if (slider) slider.value = 1; // Індекс 1 відповідає 16px
-                updateTicks(1);
                 regularBtn.classList.add('active');
                 boldBtn.classList.remove('active');
             });
@@ -1487,6 +1481,10 @@ window.App = window.App || {};
 
             if (noteId && window.App.noteManager) {
                 window.App.noteManager.updateNote(noteId, { content: activeContentDiv.innerHTML });
+            }
+
+            if (window.App.cloudSync && typeof window.App.cloudSync.flushPendingNotes === 'function') {
+                window.App.cloudSync.flushPendingNotes();
             }
         }
     };
