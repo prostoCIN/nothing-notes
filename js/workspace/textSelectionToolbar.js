@@ -48,24 +48,7 @@ window.App = window.App || {};
             }).join('');
 
             toolbarEl.innerHTML = `
-                <!-- 1. Розмір шрифту з 4 фіксованими шкалами -->
-                <div class="text-sel-slider-wrap">
-                    <span class="text-sel-slider-icon">A</span>
-                    <div class="text-sel-slider-track-wrap">
-                        <input type="range" class="text-sel-slider" id="text-sel-size-slider" min="0" max="3" step="1" value="1">
-                        <div class="text-sel-slider-ticks">
-                            <span class="text-sel-tick-line" data-step="0" title="12px"></span>
-                            <span class="text-sel-tick-line active" data-step="1" title="16px"></span>
-                            <span class="text-sel-tick-line" data-step="2" title="24px"></span>
-                            <span class="text-sel-tick-line" data-step="3" title="32px"></span>
-                        </div>
-                    </div>
-                    <span class="text-sel-slider-value" id="text-sel-size-val">16px</span>
-                </div>
-
-                <div class="text-sel-divider"></div>
-
-                <!-- 2. Кегель Regular / Bold -->
+                <!-- 1. Кегель Regular / Bold -->
                 <div class="text-sel-weight-wrap">
                     <button class="text-sel-weight-btn active" id="text-sel-weight-regular" title="Звичайний шрифт (Regular)">R</button>
                     <button class="text-sel-weight-btn" id="text-sel-weight-bold" title="Жирний шрифт (Bold)"><b>B</b></button>
@@ -73,7 +56,7 @@ window.App = window.App || {};
 
                 <div class="text-sel-divider"></div>
 
-                <!-- 3. Маркери виділення (Тег <mark>) -->
+                <!-- 2. Маркери виділення (Тег <mark>) -->
                 <div class="text-sel-colors-wrap">
                     <div class="text-sel-colors-list">
                         ${colorsHtml}
@@ -82,7 +65,7 @@ window.App = window.App || {};
 
                 <div class="text-sel-divider"></div>
 
-                <!-- 4. Кнопка "Всі однакові слова" з окремою спливаючою підказкою -->
+                <!-- 3. Кнопка "Всі однакові слова" з окремою спливаючою підказкою -->
                 <div class="text-sel-scope-wrap">
                     <button class="text-sel-scope-btn" id="text-sel-scope-btn">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
@@ -98,7 +81,7 @@ window.App = window.App || {};
 
                 <div class="text-sel-divider"></div>
 
-                <!-- 5. Кнопка повного ресету (скидання всіх стилів до чистого тексту) -->
+                <!-- 4. Кнопка повного ресету (скидання всіх стилів до чистого тексту) -->
                 <button class="text-sel-btn text-sel-reset-all-btn" id="text-sel-reset-btn" title="Скинути ВСЕ форматування виділеного тексту">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="1 4 1 10 7 10"></polyline>
@@ -109,8 +92,6 @@ window.App = window.App || {};
 
             document.body.appendChild(toolbarEl);
 
-            const slider = toolbarEl.querySelector('#text-sel-size-slider');
-            const valLabel = toolbarEl.querySelector('#text-sel-size-val');
             const resetBtn = toolbarEl.querySelector('#text-sel-reset-btn');
             const regularBtn = toolbarEl.querySelector('#text-sel-weight-regular');
             const boldBtn = toolbarEl.querySelector('#text-sel-weight-bold');
@@ -209,15 +190,6 @@ window.App = window.App || {};
                 });
             }
 
-            const FONT_SIZES = [12, 16, 24, 32];
-            const ticks = toolbarEl.querySelectorAll('.text-sel-tick-line');
-
-            const updateTicks = (idx) => {
-                ticks.forEach((tick, i) => {
-                    tick.classList.toggle('active', i === idx);
-                });
-            };
-
             const getTargetWord = () => {
                 let text = savedSelectedText;
                 if (!text && currentRange) {
@@ -231,63 +203,6 @@ window.App = window.App || {};
                 }
                 return text || '';
             };
-
-            // Повзунок розміру шрифту з фіксованими кроками
-            slider.addEventListener('input', (e) => {
-                const stepIdx = Math.max(0, Math.min(3, parseInt(e.target.value, 10) || 0));
-                const newSize = FONT_SIZES[stepIdx];
-                if (valLabel) valLabel.textContent = `${newSize}px`;
-                updateTicks(stepIdx);
-                if (!activeContentDiv) return;
-
-                const textTarget = getTargetWord();
-                console.log('[TextToolbar] Slider input:', { isApplyToAll, textTarget, newSize, activeContentDiv });
-
-                if (isApplyToAll && textTarget) {
-                    this.applyFontSizeToAllOccurrences(textTarget, `${newSize}px`);
-                    return;
-                }
-
-                if (currentRange) {
-                    this.applyFontSizeToRange(currentRange, `${newSize}px`);
-                    this.syncChanges();
-                }
-            });
-
-            // Клік по засічках під слайдером
-            ticks.forEach((tick) => {
-                tick.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const stepIdx = parseInt(tick.dataset.step, 10);
-                    slider.value = stepIdx;
-                    const newSize = FONT_SIZES[stepIdx];
-                    if (valLabel) valLabel.textContent = `${newSize}px`;
-                    updateTicks(stepIdx);
-                    if (!activeContentDiv) return;
-
-                    const textTarget = getTargetWord();
-                    console.log('[TextToolbar] Tick click:', { isApplyToAll, textTarget, newSize });
-
-                    if (isApplyToAll && textTarget) {
-                        this.applyFontSizeToAllOccurrences(textTarget, `${newSize}px`);
-                        return;
-                    }
-
-                    if (currentRange) {
-                        this.applyFontSizeToRange(currentRange, `${newSize}px`);
-                        this.syncChanges();
-                    }
-                    if (window.App.historyManager) {
-                        window.App.historyManager.recordState('change_font_size');
-                    }
-                });
-            });
-
-            slider.addEventListener('change', () => {
-                if (window.App.historyManager) {
-                    window.App.historyManager.recordState('change_font_size');
-                }
-            });
 
             // Regular / Bold
             regularBtn.addEventListener('click', (e) => {
@@ -911,29 +826,8 @@ window.App = window.App || {};
                 }
             }
 
-            const slider = toolbarEl.querySelector('#text-sel-size-slider');
-            const valLabel = toolbarEl.querySelector('#text-sel-size-val');
             const regularBtn = toolbarEl.querySelector('#text-sel-weight-regular');
             const boldBtn = toolbarEl.querySelector('#text-sel-weight-bold');
-            const ticks = toolbarEl.querySelectorAll('.text-sel-tick-line');
-
-            const FONT_SIZES = [12, 16, 24, 32];
-            // Знаходимо найближчий фіксований крок
-            let closestStepIdx = 1; // За замовчуванням 16px
-            let minDiff = Infinity;
-            FONT_SIZES.forEach((size, idx) => {
-                const diff = Math.abs(size - currentFontSize);
-                if (diff < minDiff) {
-                    minDiff = diff;
-                    closestStepIdx = idx;
-                }
-            });
-
-            if (slider) slider.value = closestStepIdx;
-            if (valLabel) valLabel.textContent = `${FONT_SIZES[closestStepIdx]}px`;
-            if (ticks) {
-                ticks.forEach((tick, i) => tick.classList.toggle('active', i === closestStepIdx));
-            }
 
             if (isBold) {
                 boldBtn.classList.add('active');
