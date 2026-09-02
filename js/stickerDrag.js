@@ -32,7 +32,11 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
             placeholder.style.height = `${dragHeight}px`;
             placeholder.style.minHeight = `${dragHeight}px`;
 
-            card.parentNode.insertBefore(placeholder, card);
+            const originalParent = card.parentNode;
+            originalParent.insertBefore(placeholder, card);
+
+            // Переміщуємо картку безпосередньо в body, щоб уникнути зсувів координат від батьківських backdrop-filter/transform
+            document.body.appendChild(card);
 
             card.classList.add('is-dragging');
             card.style.transition = 'none';
@@ -42,6 +46,7 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
             card.style.left = `${e.clientX - shiftX}px`;
             card.style.top = `${e.clientY - shiftY}px`;
             card.style.position = 'fixed';
+            card.style.zIndex = '999999';
             card.style.margin = '0';
 
             // На наступному кадрі плавно анімуємо висоту самої картки в руці до базової
