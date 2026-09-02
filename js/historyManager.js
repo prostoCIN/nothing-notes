@@ -23,8 +23,8 @@ window.App = window.App || {};
             const state = window.App.state;
             if (!state || !state.activeBoardId) return;
 
-            // Створюємо чисту копію масиву об'єктів (структурне клонування)
-            const snapshot = state.notes.map(n => ({ ...n }));
+            // Глибока копія стану з усіма масивами тегів та зображень
+            const snapshot = JSON.parse(JSON.stringify(state.notes));
 
             undoStack.push(snapshot);
             if (undoStack.length > MAX_HISTORY_STEPS) {
@@ -46,7 +46,7 @@ window.App = window.App || {};
 
             // Якщо це початок нової серії набору тексту — зберігаємо стан "ДО" введення
             if (!preTypingSnapshot) {
-                preTypingSnapshot = state.notes.map(n => ({ ...n }));
+                preTypingSnapshot = JSON.parse(JSON.stringify(state.notes));
                 undoStack.push(preTypingSnapshot);
                 if (undoStack.length > MAX_HISTORY_STEPS) {
                     undoStack.shift();
@@ -57,7 +57,7 @@ window.App = window.App || {};
             // Завершення блоку набору тексту після паузи у 600 мс
             clearTimeout(textInputDebounceTimer);
             textInputDebounceTimer = setTimeout(() => {
-                const currentSnapshot = state.notes.map(n => ({ ...n }));
+                const currentSnapshot = JSON.parse(JSON.stringify(state.notes));
                 undoStack.push(currentSnapshot);
                 if (undoStack.length > MAX_HISTORY_STEPS) {
                     undoStack.shift();
@@ -80,14 +80,14 @@ window.App = window.App || {};
             const state = window.App.state;
 
             // Зберігаємо поточний стан у Redo перед відкатом
-            const currentSnapshot = state.notes.map(n => ({ ...n }));
+            const currentSnapshot = JSON.parse(JSON.stringify(state.notes));
             redoStack.push(currentSnapshot);
 
             const previousSnapshot = undoStack.pop();
             if (previousSnapshot) {
                 isExecutingHistoryAction = true;
                 try {
-                    this.applyStateUpdate(previousSnapshot.map(n => ({ ...n })));
+                    this.applyStateUpdate(JSON.parse(JSON.stringify(previousSnapshot)));
                 } catch (e) {
                     console.error('Помилка при Undo:', e);
                 } finally {
@@ -104,14 +104,14 @@ window.App = window.App || {};
             const state = window.App.state;
 
             // Поточний стан переносимо в Undo
-            const currentSnapshot = state.notes.map(n => ({ ...n }));
+            const currentSnapshot = JSON.parse(JSON.stringify(state.notes));
             undoStack.push(currentSnapshot);
 
             const nextSnapshot = redoStack.pop();
             if (nextSnapshot) {
                 isExecutingHistoryAction = true;
                 try {
-                    this.applyStateUpdate(nextSnapshot.map(n => ({ ...n })));
+                    this.applyStateUpdate(JSON.parse(JSON.stringify(nextSnapshot)));
                 } catch (e) {
                     console.error('Помилка при Redo:', e);
                 } finally {
@@ -122,53 +122,49 @@ window.App = window.App || {};
             this.updateButtonsState();
         },
 
-        // Розумне безшовне застосування змін стану (In-Place DOM Sync)
+        // Розумне безшовне застосування змін стану
         applyStateUpdate(newNotes) {
             const state = window.App.state;
             const storage = window.App.storage;
 
-            // Перевіряємо, чи змінилася кількість нотаток або їхні ID
-            const currentIds = state.notes.map(n => n.id).join(',');
-            const newIds = newNotes.map(n => n.id).join(',');
-            const isStructuralChange = currentIds !== newIds;
+            const previousNotes = state.notes || [];
+            const newIdsSet = new Set(newNotes.map(n => n.id));
+            const deletedNotes = previousNotes.filter(n => !newIdsSet.has(n.id));
+
+            // Оновлюємо timestamp для всіх змінених або відновлених нотаток
+            const now = Date.now();
+            newNotes.forEach(note => {
+                note.updatedAt = now;
+            });
 
             state.notes = newNotes;
             storage.saveNotes(state.notes);
 
-            if (isStructuralChange) {
-                // Якщо нотатку було створено чи видалено — повний рендер
-                if (window.App.sidebarView) window.App.sidebarView.renderNotesList();
-                if (window.App.workspaceView) window.App.workspaceView.render();
-            } else {
-                // Якщо це лише редагування тексту, розміру чи кольору — оновлюємо безпосередньо в DOM без знищення елементів
-                newNotes.forEach(note => {
-                    const card = document.querySelector(`.note-sticker[data-note-id="${note.id}"]`);
-                    if (card) {
-                        const titleEl = card.querySelector('.sticker-title');
-                        if (titleEl && titleEl.innerText.trim() !== (note.title || '').trim()) {
-                            titleEl.innerText = note.title || '';
-                        }
+            // 1. Якщо при Undo відкотилося створення нотатки (вона зникла) — видаляємо її з хмари
+            if (deletedNotes.length > 0 && window.App.cloudSync) {
+                const deletedIds = deletedNotes.map(n => n.id);
+                if (typeof window.App.cloudSync.deleteNotesFromCloud === 'function') {
+                    window.App.cloudSync.deleteNotesFromCloud(deletedIds);
+                } else {
+                    deletedIds.forEach(id => window.App.cloudSync.deleteNoteFromCloud(id));
+                }
+            }
 
-                        const contentEl = card.querySelector('.sticker-content');
-                        if (contentEl && contentEl.innerHTML !== (note.content || '')) {
-                            contentEl.innerHTML = note.content || '';
-                            if (!note.content || !note.content.trim()) {
-                                contentEl.setAttribute('data-empty', 'true');
-                            } else {
-                                contentEl.removeAttribute('data-empty');
-                            }
-                        }
+            // 2. Якщо нотатки були відновлені або змінені — миттєво пушимо їх у хмару
+            if (window.App.cloudSync && typeof window.App.cloudSync.syncNote === 'function') {
+                newNotes.forEach(note => window.App.cloudSync.syncNote(note));
+                if (typeof window.App.cloudSync.flushPendingNotes === 'function') {
+                    window.App.cloudSync.flushPendingNotes();
+                }
+            }
 
-                        if (card.dataset.color !== note.color) {
-                            card.dataset.color = note.color || 'yellow';
-                        }
-                    }
+            // Оновлюємо інтерфейс
+            if (window.App.sidebarView) window.App.sidebarView.render();
+            if (window.App.workspaceView) window.App.workspaceView.render();
 
-                    // Синхронізуємо сайдбар
-                    if (window.App.sidebarView) {
-                        window.App.sidebarView.updateNoteListItem(note.id, note.title, note.icon);
-                    }
-                });
+            if (window.App.workspaceSelectionBar && typeof window.App.workspaceSelectionBar.refreshTagSubmenu === 'function') {
+                window.App.workspaceSelectionBar.refreshTagSubmenu();
+                window.App.workspaceSelectionBar.updateUI();
             }
         },
 

@@ -372,6 +372,10 @@ window.App = window.App || {};
                             e.stopPropagation();
                             if (selectedIds.length === 0) return;
 
+                            if (window.App.historyManager) {
+                                window.App.historyManager.recordState('batch_tags_change');
+                            }
+
                             const shouldRemove = allHaveTag;
 
                             selectedIds.forEach(id => {
@@ -387,7 +391,11 @@ window.App = window.App || {};
                                     }
                                 }
                                 note.tags = currentTags;
+                                note.updatedAt = Date.now();
                                 delete note.tag;
+                                if (window.App.cloudSync) {
+                                    window.App.cloudSync.syncNote(note);
+                                }
                             });
 
                             storage.saveNotes(state.notes);
@@ -416,11 +424,19 @@ window.App = window.App || {};
                     const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
                     if (selectedIds.length === 0) return;
 
+                    if (window.App.historyManager) {
+                        window.App.historyManager.recordState('batch_tags_clear');
+                    }
+
                     selectedIds.forEach(id => {
                         const note = noteManager.getNoteById(id);
                         if (note) {
                             note.tags = [];
+                            note.updatedAt = Date.now();
                             delete note.tag;
+                            if (window.App.cloudSync) {
+                                window.App.cloudSync.syncNote(note);
+                            }
                         }
                     });
 
