@@ -325,6 +325,8 @@
 
 .workspace-top-header.graph-mode-active .header-extra-tools-wrap,
 .workspace-top-header.graph-mode-active .header-tools-pill,
+.workspace-top-header.graph-mode-active #workspace-undo-wrap,
+.workspace-top-header.graph-mode-active #workspace-redo-wrap,
 .workspace-top-header.graph-mode-active #workspace-search-wrap,
 .workspace-top-header.graph-mode-active #workspace-collapse-wrap,
 .workspace-top-header.graph-mode-active #island-select-toggle-btn {
