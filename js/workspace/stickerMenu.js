@@ -22,6 +22,47 @@ window.App = window.App || {};
             const menuDropdown = document.createElement('div');
             menuDropdown.className = 'sticker-menu-dropdown';
 
+            // 0. Заголовок нотатки та дата додавання
+            const headerInfo = document.createElement('div');
+            headerInfo.className = 'sticker-menu-header-info';
+
+            const rawTitle = (note.title && note.title.trim()) ? note.title.trim() : 'Без назви';
+            const noteIcon = note.icon || '';
+            const timestamp = note.createdAt || (note.id.startsWith('note_') ? parseInt(note.id.split('_')[1], 10) : note.updatedAt) || Date.now();
+            
+            let dateStr = '';
+            try {
+                const d = new Date(timestamp);
+                const day = String(d.getDate()).padStart(2, '0');
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const year = d.getFullYear();
+                const hours = String(d.getHours()).padStart(2, '0');
+                const minutes = String(d.getMinutes()).padStart(2, '0');
+                dateStr = `${day}.${month}.${year}, ${hours}:${minutes}`;
+            } catch (e) {
+                dateStr = 'Нещодавно';
+            }
+
+            headerInfo.innerHTML = `
+                <div class="sticker-menu-header-title">
+                    ${noteIcon ? `<span class="sticker-menu-header-icon">${noteIcon}</span>` : ''}
+                    <span class="sticker-menu-header-text" title="${rawTitle}">${rawTitle}</span>
+                </div>
+                <div class="sticker-menu-header-date">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    <span>Створено: ${dateStr}</span>
+                </div>
+            `;
+
+            menuDropdown.appendChild(headerInfo);
+
+            const divider0 = document.createElement('div');
+            divider0.className = 'sticker-menu-divider';
+            menuDropdown.appendChild(divider0);
+
             // Секція: Палітра кольорів
             const colorTitle = document.createElement('div');
             colorTitle.className = 'sticker-menu-section-title';

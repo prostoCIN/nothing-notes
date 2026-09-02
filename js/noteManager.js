@@ -93,15 +93,17 @@ window.App = window.App || {};
                 ? Math.max(...currentLevelNotes.map(n => typeof n.orderIndex === 'number' ? n.orderIndex : 0), 0) + 1
                 : 0;
 
+            const now = Date.now();
             const newNote = {
-                id: 'note_' + Date.now().toString() + '_' + Math.random().toString(36).substr(2, 4),
+                id: 'note_' + now.toString() + '_' + Math.random().toString(36).substr(2, 4),
                 boardId: state.activeBoardId,
                 parentId: parentId,
                 title: '',
                 content: '',
                 color: inheritedColor,
                 orderIndex: nextOrderIndex,
-                updatedAt: Date.now()
+                createdAt: now,
+                updatedAt: now
             };
 
             if (window.App.historyManager) {
