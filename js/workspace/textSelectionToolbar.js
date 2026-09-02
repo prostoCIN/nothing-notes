@@ -843,6 +843,17 @@ window.App = window.App || {};
             actionFn(currentRange);
 
             this.syncChanges();
+
+            // Відновлюємо візуальне синє виділення в браузері (особливо на телефонах)
+            if (currentRange) {
+                try {
+                    const sel = window.getSelection();
+                    if (sel) {
+                        sel.removeAllRanges();
+                        sel.addRange(currentRange);
+                    }
+                } catch (e) {}
+            }
             // Залишаємо тулбар відкритим для зручного комбінування параметрів (розмір, колір, жирність)
         },
 
