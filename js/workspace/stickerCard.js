@@ -86,10 +86,6 @@ window.App = window.App || {};
             const titleWrap = document.createElement('div');
             titleWrap.className = 'sticker-title-wrap';
 
-            // Перевіряємо чи нотатка належить до спільного (тільки для читання) блокнота
-            const currentBoard = window.App.boardManager.getActiveBoard();
-            const isReadOnly = !!note.isReadOnly || !!(currentBoard && currentBoard.isReadOnly) || (note.boardId && note.boardId.startsWith('shared_'));
-
             // 1. Notion-емодзі пікер (тільки для редагованих нотаток)
             let emojiWrap;
             if (!isReadOnly) {
