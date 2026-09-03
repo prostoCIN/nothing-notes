@@ -184,6 +184,32 @@ window.App = window.App || {};
                     await this.syncBoards();
                 }
 
+                // Синхронізація спільних блокнотів для читання (Shared Read-Only Boards)
+                const savedSharedTokens = currentUser?.user_metadata?.shared_board_tokens;
+                if (Array.isArray(savedSharedTokens) && savedSharedTokens.length > 0 && window.App.shareManager) {
+                    const loadedSharedBoards = [];
+                    const loadedSharedNotes = [];
+
+                    for (const token of savedSharedTokens) {
+                        try {
+                            const info = await window.App.shareManager.fetchShareInfo(token);
+                            if (info && info.board && info.notes) {
+                                loadedSharedBoards.push(info.board);
+                                loadedSharedNotes.push(...info.notes);
+                            }
+                        } catch (e) {
+                            console.warn('[CloudSync] Failed to fetch shared board for token:', token, e);
+                        }
+                    }
+
+                    if (loadedSharedBoards.length > 0) {
+                        state.readOnlyBoards = loadedSharedBoards;
+                        state.readOnlyNotes = loadedSharedNotes;
+                        window.App.storage.saveReadOnlyBoards(state.readOnlyBoards);
+                        window.App.storage.saveReadOnlyNotes(state.readOnlyNotes);
+                    }
+                }
+
                 // Синхронізація доступних варіантів тегів
                 const savedTagOptions = currentUser?.user_metadata?.board_tag_options;
                 if (savedTagOptions && typeof savedTagOptions === 'object') {
@@ -294,6 +320,28 @@ window.App = window.App || {};
                 }
             } catch (e) {
                 console.warn('[CloudSync] syncTagOptions error:', e);
+            }
+        },
+
+        // Синхронізація підключених спільних блокнотів у хмару акаунта
+        async syncSharedTokens() {
+            if (!currentUser || !window.App.supabase) return;
+            const state = window.App.state;
+            try {
+                const tokens = (state.readOnlyBoards || [])
+                    .map(b => b.shareToken)
+                    .filter(Boolean);
+
+                const { data, error } = await window.App.supabase.auth.updateUser({
+                    data: {
+                        shared_board_tokens: tokens
+                    }
+                });
+                if (data && data.user) {
+                    currentUser = data.user;
+                }
+            } catch (e) {
+                console.warn('[CloudSync] syncSharedTokens error:', e);
             }
         },
 

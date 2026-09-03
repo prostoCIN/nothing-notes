@@ -187,6 +187,11 @@ window.App = window.App || {};
             // Оновлюємо інтерфейс
             if (window.App.sidebarView) window.App.sidebarView.render();
             if (window.App.workspaceView) window.App.workspaceView.render();
+
+            // Синхронізуємо токени підключених блокнотів у хмару поточного акаунта
+            if (window.App.cloudSync && window.App.cloudSync.syncSharedTokens) {
+                window.App.cloudSync.syncSharedTokens();
+            }
         },
 
         /**
@@ -210,6 +215,11 @@ window.App = window.App || {};
 
             if (window.App.sidebarView) window.App.sidebarView.render();
             if (window.App.workspaceView) window.App.workspaceView.render();
+
+            // Синхронізуємо видалення токена в хмару
+            if (window.App.cloudSync && window.App.cloudSync.syncSharedTokens) {
+                window.App.cloudSync.syncSharedTokens();
+            }
         },
 
         /**
