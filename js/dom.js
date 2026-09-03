@@ -20,6 +20,8 @@ window.App.getElements = function() {
         sidebarNewBoardForm: document.getElementById('sidebar-new-board-form'),
         sidebarNewBoardInput: document.getElementById('sidebar-new-board-input'),
         sidebarBoardsList: document.getElementById('sidebar-boards-list'),
+        sharedBoardsSection: document.getElementById('shared-boards-section'),
+        sidebarSharedBoardsList: document.getElementById('sidebar-shared-boards-list'),
         addNoteBtn: document.getElementById('add-note-btn'),
         notesList: document.getElementById('notes-list'),
 

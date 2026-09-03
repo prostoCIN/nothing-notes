@@ -100,12 +100,62 @@ function initApp() {
         }
 
         // Перевіряємо чи активна дошка існує, якщо ні - беремо першу
-        if (!state.activeBoardId || !state.boards.find(b => b.id === state.activeBoardId)) {
+        const activeExists = state.boards.some(b => b.id === state.activeBoardId) || (state.readOnlyBoards && state.readOnlyBoards.some(b => b.id === state.activeBoardId));
+        if (!state.activeBoardId || !activeExists) {
             state.activeBoardId = state.boards[0].id;
             storage.saveActiveBoardId(state.activeBoardId);
         }
         welcomeView.hide();
         sidebarView.render();
         workspaceView.render();
+    }
+
+    // Перевіряємо, чи перейшов користувач за посиланням спільного доступу ?share_board=...
+    handleShareUrlParams();
+}
+
+async function handleShareUrlParams() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const shareToken = urlParams.get('share_board');
+    if (!shareToken) return;
+
+    // Очищаємо URL параметр, щоб не спамити модалкою при ручному оновленні F5
+    const cleanUrl = window.location.pathname + window.location.hash;
+    window.history.replaceState({}, document.title, cleanUrl);
+
+    if (!window.App.shareManager) return;
+
+    try {
+        const info = await window.App.shareManager.fetchShareInfo(shareToken);
+        if (!info || !info.board) {
+            window.App.confirmModal.show({
+                title: 'Посилання недійсне',
+                message: 'Це посилання на спільний блокнот застаріло або було вимкнено власником.',
+                confirmText: 'Зрозуміло',
+                type: 'danger',
+                onConfirm: () => {}
+            });
+            return;
+        }
+
+        const isSpecificNotes = Array.isArray(info.share.note_ids) && info.share.note_ids.length > 0;
+        const ownerTitle = info.share.owner_email ? `<b>${info.share.owner_email}</b>` : 'інший користувач';
+        const notesCountText = info.notes.length === 1 ? '1 нотаткою' : `${info.notes.length} нотатками`;
+
+        const messageHtml = isSpecificNotes 
+            ? `Користувач ${ownerTitle} поділився з вами ${notesCountText} із блокнота <span class="confirm-modal-highlight">"${info.board.name}"</span> у режимі читання.<br><br>Додати цей блокнот до списку ваших блокнотів для читання?`
+            : `Користувач ${ownerTitle} поділився з вами блокнотом <span class="confirm-modal-highlight">"${info.board.name}"</span> (${info.notes.length} нотаток) у режимі читання.<br><br>Додати його до списку ваших блокнотів для читання?`;
+
+        window.App.confirmModal.show({
+            title: '📖 Спільний блокнот',
+            message: messageHtml,
+            confirmText: 'Додати для читання',
+            type: 'info',
+            onConfirm: () => {
+                window.App.shareManager.addSharedBoardToState(info.board, info.notes);
+            }
+        });
+    } catch (err) {
+        console.error('[App] Error handling share param:', err);
     }
 }

@@ -13,7 +13,19 @@ window.App = window.App || {};
 
         getActiveBoard() {
             const state = window.App.state;
-            return state.boards.find(b => b.id === state.activeBoardId) || null;
+            if (!state.activeBoardId) return null;
+            const ownBoard = state.boards.find(b => b.id === state.activeBoardId);
+            if (ownBoard) return ownBoard;
+            const readOnlyBoards = state.readOnlyBoards || [];
+            return readOnlyBoards.find(b => b.id === state.activeBoardId) || null;
+        },
+
+        getBoardById(id) {
+            const state = window.App.state;
+            const ownBoard = state.boards.find(b => b.id === id);
+            if (ownBoard) return ownBoard;
+            const readOnlyBoards = state.readOnlyBoards || [];
+            return readOnlyBoards.find(b => b.id === id) || null;
         },
 
         createBoard(name) {

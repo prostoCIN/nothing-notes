@@ -119,12 +119,26 @@ window.App.storage = {
     saveGraphViewMode(enabled) {
         localStorage.setItem('minimal_graph_view_mode', enabled ? 'true' : 'false');
     },
+    getReadOnlyBoards() {
+        return JSON.parse(localStorage.getItem('minimal_readonly_boards')) || [];
+    },
+    saveReadOnlyBoards(boards) {
+        localStorage.setItem('minimal_readonly_boards', JSON.stringify(boards));
+    },
+    getReadOnlyNotes() {
+        return JSON.parse(localStorage.getItem('minimal_readonly_notes')) || [];
+    },
+    saveReadOnlyNotes(notes) {
+        localStorage.setItem('minimal_readonly_notes', JSON.stringify(notes));
+    },
     clearAll() {
         clearTimeout(this._notesSaveTimer);
         this._notesSaveTimer = null;
         this._pendingNotes = null;
         localStorage.removeItem('minimal_boards');
         localStorage.removeItem('minimal_notes');
+        localStorage.removeItem('minimal_readonly_boards');
+        localStorage.removeItem('minimal_readonly_notes');
         localStorage.removeItem('minimal_active_board_id');
         localStorage.removeItem('minimal_board_tag_options');
         localStorage.removeItem('minimal_column_layouts');
@@ -134,7 +148,9 @@ window.App.storage = {
 
 window.App.state = {
     boards: window.App.storage.getBoards(),
+    readOnlyBoards: window.App.storage.getReadOnlyBoards(),
     notes: window.App.storage.getNotes(),
+    readOnlyNotes: window.App.storage.getReadOnlyNotes(),
     activeBoardId: window.App.storage.getActiveBoardId(),
     activeChain: [null], // Масив ID батьківських нотаток [null, noteId1, noteId2...]
     expandedSidebarNoteIds: new Set(), // ID розгорнутих нотаток у сайдбарі

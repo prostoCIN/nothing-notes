@@ -185,6 +185,18 @@ window.App = window.App || {};
                         </div>
                     </div>
 
+                    <!-- 1.5. Поділитись виділеними -->
+                    <button class="selection-action-btn" id="ws-action-share-btn" title="Поділитись виділеними нотатками">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="18" cy="5" r="3"></circle>
+                            <circle cx="6" cy="12" r="3"></circle>
+                            <circle cx="18" cy="19" r="3"></circle>
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                        </svg>
+                        <span class="selection-btn-label desktop-only">Поділитись</span>
+                    </button>
+
                     <!-- 2. Дублювати -->
                     <button class="selection-action-btn" id="ws-action-duplicate-btn" title="Дублювати виділені">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -524,6 +536,21 @@ window.App = window.App || {};
                     e.stopPropagation();
                     this.refreshTagSubmenu();
                     this.toggleSubmenu('more');
+                });
+            }
+
+            // Поділитись виділеними
+            const shareBtn = barElement.querySelector('#ws-action-share-btn');
+            if (shareBtn) {
+                shareBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.closeSubmenus();
+                    const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
+                    if (selectedIds.length === 0) return;
+
+                    if (window.App.shareManager) {
+                        window.App.shareManager.showShareModal(state.activeBoardId, selectedIds);
+                    }
                 });
             }
 

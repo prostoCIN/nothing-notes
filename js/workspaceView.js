@@ -307,6 +307,15 @@ window.App = window.App || {};
             }
 
             const topHeader = document.getElementById('workspace-top-header');
+            const boardWorkspace = document.getElementById('board-workspace');
+            const isBoardReadOnly = !!currentBoard.isReadOnly;
+
+            if (boardWorkspace) {
+                boardWorkspace.classList.toggle('is-board-readonly', isBoardReadOnly);
+            }
+            if (topHeader) {
+                topHeader.classList.toggle('is-board-readonly', isBoardReadOnly);
+            }
 
             // Якщо увімкнено режим карти нотаток (Obsidian Graph View)
             if (state.isGraphView && window.App.graphView) {
@@ -322,7 +331,7 @@ window.App = window.App || {};
                 window.App.graphView.render();
                 return;
             } else {
-                if (topHeader) topHeader.classList.remove('graph-mode-active');
+                if (topHeader && !isBoardReadOnly) topHeader.classList.remove('graph-mode-active');
                 if (window.App.graphView) {
                     window.App.graphView.stopSimulation();
                 }
@@ -483,12 +492,14 @@ window.App = window.App || {};
                         </div>
                     `;
 
-                    const createFirstBtn = document.createElement('button');
-                    createFirstBtn.className = 'btn-create-first-note';
-                    createFirstBtn.innerHTML = `<span class="btn-plus-icon">+</span> ${colIndex === 0 ? 'Створити першу нотатку' : 'Додати першу піднотатку'}`;
-                    createFirstBtn.addEventListener('click', () => noteManager.createNewNote(parentNoteId, true));
+                    if (!isBoardReadOnly) {
+                        const createFirstBtn = document.createElement('button');
+                        createFirstBtn.className = 'btn-create-first-note';
+                        createFirstBtn.innerHTML = `<span class="btn-plus-icon">+</span> ${colIndex === 0 ? 'Створити першу нотатку' : 'Додати першу піднотатку'}`;
+                        createFirstBtn.addEventListener('click', () => noteManager.createNewNote(parentNoteId, true));
+                        emptyState.appendChild(createFirstBtn);
+                    }
 
-                    emptyState.appendChild(createFirstBtn);
                     notesScrollList.appendChild(emptyState);
                 } else {
                     if (currentLayout === 'grid') {
@@ -523,17 +534,19 @@ window.App = window.App || {};
                         });
                     }
 
-                    // Кнопка додавання внизу колонки
-                    const bottomBtnContainer = document.createElement('div');
-                    bottomBtnContainer.className = 'add-note-bottom-container';
+                    // Кнопка додавання внизу колонки (тільки для власних блокнотів)
+                    if (!isBoardReadOnly) {
+                        const bottomBtnContainer = document.createElement('div');
+                        bottomBtnContainer.className = 'add-note-bottom-container';
 
-                    const addBtn = document.createElement('button');
-                    addBtn.className = 'bottom-add-note-btn';
-                    addBtn.innerHTML = `<span class="btn-plus-icon">+</span> Додати ${colIndex === 0 ? 'нотатку' : 'піднотатку'}`;
-                    addBtn.addEventListener('click', () => noteManager.createNewNote(parentNoteId, true));
+                        const addBtn = document.createElement('button');
+                        addBtn.className = 'bottom-add-note-btn';
+                        addBtn.innerHTML = `<span class="btn-plus-icon">+</span> Додати ${colIndex === 0 ? 'нотатку' : 'піднотатку'}`;
+                        addBtn.addEventListener('click', () => noteManager.createNewNote(parentNoteId, true));
 
-                    bottomBtnContainer.appendChild(addBtn);
-                    notesScrollList.appendChild(bottomBtnContainer);
+                        bottomBtnContainer.appendChild(addBtn);
+                        notesScrollList.appendChild(bottomBtnContainer);
+                    }
                 }
 
                 columnEl.appendChild(notesScrollList);

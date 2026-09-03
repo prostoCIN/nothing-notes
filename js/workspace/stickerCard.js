@@ -83,17 +83,20 @@ window.App = window.App || {};
                 sidebarView.updateNoteListItem(note.id, note.title, newIcon);
             });
 
+            const isReadOnly = !!note.isReadOnly;
+
             // 2. Заголовок нотатки
             const titleDiv = document.createElement('div');
             titleDiv.className = 'sticker-title';
-            titleDiv.contentEditable = 'true';
+            titleDiv.contentEditable = isReadOnly ? 'false' : 'true';
             titleDiv.spellcheck = false;
             titleDiv.autocapitalize = 'off';
             titleDiv.autocomplete = 'off';
-            titleDiv.dataset.placeholder = 'Заголовок...';
+            titleDiv.dataset.placeholder = isReadOnly ? '' : 'Заголовок...';
             titleDiv.innerText = note.title || '';
 
             function updateTitlePlaceholder() {
+                if (isReadOnly) return;
                 if (titleDiv.textContent.trim() === '') {
                     titleDiv.setAttribute('data-empty', 'true');
                 } else {
@@ -103,15 +106,17 @@ window.App = window.App || {};
 
             updateTitlePlaceholder();
 
-            titleDiv.addEventListener('input', () => {
-                updateTitlePlaceholder();
-                const text = titleDiv.innerText.replace(/\r?\n|\r/g, ' ').trim();
-                noteManager.updateNote(note.id, { title: text });
-                sidebarView.updateNoteListItem(note.id, text, note.icon);
-            });
+            if (!isReadOnly) {
+                titleDiv.addEventListener('input', () => {
+                    updateTitlePlaceholder();
+                    const text = titleDiv.innerText.replace(/\r?\n|\r/g, ' ').trim();
+                    noteManager.updateNote(note.id, { title: text });
+                    sidebarView.updateNoteListItem(note.id, text, note.icon);
+                });
 
-            titleDiv.addEventListener('focus', updateTitlePlaceholder);
-            titleDiv.addEventListener('blur', updateTitlePlaceholder);
+                titleDiv.addEventListener('focus', updateTitlePlaceholder);
+                titleDiv.addEventListener('blur', updateTitlePlaceholder);
+            }
 
             titleWrap.appendChild(emojiWrap);
             titleWrap.appendChild(titleDiv);
@@ -129,7 +134,10 @@ window.App = window.App || {};
             }
 
             // Меню "три крапки"
-            const menuDropdownWrap = window.App.stickerMenu.createMenu(note, card, colIndex, isChainOpen);
+            let menuDropdownWrap = null;
+            if (!isReadOnly) {
+                menuDropdownWrap = window.App.stickerMenu.createMenu(note, card, colIndex, isChainOpen);
+            }
 
             // Ручка перетягування (Drag Handle)
             const dragHandle = document.createElement('div');
@@ -158,20 +166,22 @@ window.App = window.App || {};
             `;
             deleteBtn.addEventListener('click', (e) => noteManager.deleteNote(note.id, e));
 
-            actions.appendChild(menuDropdownWrap);
-            actions.appendChild(dragHandle);
-            actions.appendChild(deleteBtn);
+            if (menuDropdownWrap) actions.appendChild(menuDropdownWrap);
+            if (!isReadOnly) {
+                actions.appendChild(dragHandle);
+                actions.appendChild(deleteBtn);
+            }
             header.appendChild(titleWrap);
             header.appendChild(actions);
 
             // 4. Текст нотатки (Content)
             const contentDiv = document.createElement('div');
             contentDiv.className = 'sticker-content';
-            contentDiv.contentEditable = 'true';
+            contentDiv.contentEditable = isReadOnly ? 'false' : 'true';
             contentDiv.spellcheck = false;
             contentDiv.autocapitalize = 'off';
             contentDiv.autocomplete = 'off';
-            contentDiv.dataset.placeholder = 'Напишіть текст нотатки...';
+            contentDiv.dataset.placeholder = isReadOnly ? '' : 'Напишіть текст нотатки...';
 
             // Очищаємо контент від старих вбудованих зображень (щоб вони жили ТІЛЬКИ в галереї)
             let initialContent = note.content || '';
@@ -201,6 +211,7 @@ window.App = window.App || {};
             contentDiv.innerHTML = initialContent;
 
             function updateContentPlaceholder() {
+                if (isReadOnly) return;
                 const text = contentDiv.innerText.replace(/\u200B/g, '').trim();
                 const hasImg = contentDiv.querySelector('img');
                 if (!text && !hasImg) {
@@ -212,36 +223,38 @@ window.App = window.App || {};
 
             updateContentPlaceholder();
 
-            contentDiv.addEventListener('input', () => {
-                const text = contentDiv.innerText.replace(/\u200B/g, '').trim();
-                if (!text) {
-                    contentDiv.innerHTML = '';
-                    contentDiv.setAttribute('data-empty', 'true');
-                    noteManager.updateNote(note.id, { content: '' });
-                } else {
-                    // Якщо весь текст видалено, але браузер зберіг порожні теги <mark></mark> чи <span></span>
-                    if (contentDiv.textContent.trim() === '') {
+            if (!isReadOnly) {
+                contentDiv.addEventListener('input', () => {
+                    const text = contentDiv.innerText.replace(/\u200B/g, '').trim();
+                    if (!text) {
                         contentDiv.innerHTML = '';
                         contentDiv.setAttribute('data-empty', 'true');
                         noteManager.updateNote(note.id, { content: '' });
                     } else {
-                        contentDiv.removeAttribute('data-empty');
-                        noteManager.updateNote(note.id, { content: contentDiv.innerHTML });
+                        // Якщо весь текст видалено, але браузер зберіг порожні теги <mark></mark> чи <span></span>
+                        if (contentDiv.textContent.trim() === '') {
+                            contentDiv.innerHTML = '';
+                            contentDiv.setAttribute('data-empty', 'true');
+                            noteManager.updateNote(note.id, { content: '' });
+                        } else {
+                            contentDiv.removeAttribute('data-empty');
+                            noteManager.updateNote(note.id, { content: contentDiv.innerHTML });
+                        }
                     }
-                }
-            });
+                });
 
-            contentDiv.addEventListener('focus', updateContentPlaceholder);
-            contentDiv.addEventListener('blur', () => {
-                const text = contentDiv.innerText.replace(/\u200B/g, '').trim();
-                if (!text) {
-                    contentDiv.innerHTML = '';
-                }
-                updateContentPlaceholder();
-                if (window.App.storage && window.App.storage.flushNotes) {
-                    window.App.storage.flushNotes();
-                }
-            });
+                contentDiv.addEventListener('focus', updateContentPlaceholder);
+                contentDiv.addEventListener('blur', () => {
+                    const text = contentDiv.innerText.replace(/\u200B/g, '').trim();
+                    if (!text) {
+                        contentDiv.innerHTML = '';
+                    }
+                    updateContentPlaceholder();
+                    if (window.App.storage && window.App.storage.flushNotes) {
+                        window.App.storage.flushNotes();
+                    }
+                });
+            }
 
             // Перед введенням нового символу (beforeinput): якщо нотатка візуально порожня — гарантуємо чистий корінь без залишкових тегів
             contentDiv.addEventListener('beforeinput', (e) => {
@@ -490,8 +503,8 @@ window.App = window.App || {};
                 }
             });
 
-            // Ініціалізація перетягування (Drag & Drop) стікера на робочому просторі
-            if (window.App.initStickerDrag) {
+            // Ініціалізація перетягування (Drag & Drop) стікера на робочому просторі (тільки для власних редагованих нотаток)
+            if (!isReadOnly && window.App.initStickerDrag) {
                 window.App.initStickerDrag(card, [perforationHandle, dragHandle], note.parentId || null);
             }
 

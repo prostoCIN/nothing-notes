@@ -87,6 +87,24 @@
                 </ul>
             </div>
 
+            <!-- Секція Спільних Блокнотів (Тільки для читання) -->
+            <div class="sidebar-section shared-boards-section" id="shared-boards-section" style="display: none;">
+                <div class="sidebar-header shared-boards-header">
+                    <h2>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-header-icon">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                        <span>Спільні для читання</span>
+                    </h2>
+                </div>
+                <ul id="sidebar-shared-boards-list" class="sidebar-list boards-list-sidebar">
+                    <!-- Список підключених спільних блокнотів -->
+                </ul>
+            </div>
+
             <!-- Секція Нотаток -->
             <div class="sidebar-section notes-section">
                 <div class="sidebar-header notes-header">
@@ -337,6 +355,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabaseClient.js"></script>
     <script src="js/cloudSync.js"></script>
+    <script src="js/shareManager.js"></script>
     <script src="js/authModal.js"></script>
 
     <!-- Головна ініціалізація додатку -->

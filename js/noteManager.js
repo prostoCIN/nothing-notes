@@ -31,9 +31,16 @@ window.App = window.App || {};
             return text.replace(/[<>]/g, '');
         },
 
+        getAllNotes() {
+            const state = window.App.state;
+            const readOnly = state.readOnlyNotes || [];
+            return [...state.notes, ...readOnly];
+        },
+
         getNotesForColumn(parentId) {
             const state = window.App.state;
-            return state.notes.filter(n => n.boardId === state.activeBoardId && (n.parentId || null) === parentId);
+            const allNotes = this.getAllNotes();
+            return allNotes.filter(n => n.boardId === state.activeBoardId && (n.parentId || null) === parentId);
         },
 
         // Універсальний метод отримання валідних тегів нотатки (з підтримкою як масивів, так і legacy об'єктів)
@@ -56,12 +63,13 @@ window.App = window.App || {};
 
         getChildNotesCount(noteId) {
             const state = window.App.state;
-            return state.notes.filter(n => n.boardId === state.activeBoardId && n.parentId === noteId).length;
+            const allNotes = this.getAllNotes();
+            return allNotes.filter(n => n.boardId === state.activeBoardId && n.parentId === noteId).length;
         },
 
         getDescendantIds(noteId) {
-            const state = window.App.state;
-            const directChildren = state.notes.filter(n => n.parentId === noteId);
+            const allNotes = this.getAllNotes();
+            const directChildren = allNotes.filter(n => n.parentId === noteId);
             let ids = directChildren.map(c => c.id);
             directChildren.forEach(c => {
                 ids = ids.concat(this.getDescendantIds(c.id));
@@ -70,8 +78,8 @@ window.App = window.App || {};
         },
 
         getNoteById(id) {
-            const state = window.App.state;
-            return state.notes.find(n => n.id === id) || null;
+            const allNotes = this.getAllNotes();
+            return allNotes.find(n => n.id === id) || null;
         },
 
         createNewNote(parentId = null, shouldFocus = true) {
