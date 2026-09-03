@@ -129,6 +129,8 @@ window.App = window.App || {};
                     const state = window.App.state;
                     state.boards = [];
                     state.notes = [];
+                    state.readOnlyBoards = [];
+                    state.readOnlyNotes = [];
                     state.activeBoardId = null;
                     state.activeChain = [null];
                     state.expandedSidebarNoteIds.clear();
