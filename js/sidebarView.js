@@ -263,7 +263,13 @@ window.App = window.App || {};
             const state = window.App.state;
             if (!els.sharedBoardsSection || !els.sidebarSharedBoardsList) return;
 
-            const readOnlyBoards = state.readOnlyBoards || [];
+            // Фільтруємо спільні блокноти: відсікаємо власні блокноти автора
+            const ownBoardIds = new Set(state.boards.map(b => b.id));
+            const readOnlyBoards = (state.readOnlyBoards || []).filter(b => {
+                const origId = b.originalBoardId || (b.id && b.id.replace('shared_', ''));
+                return !ownBoardIds.has(origId) && !ownBoardIds.has(b.id);
+            });
+
             if (readOnlyBoards.length === 0) {
                 els.sharedBoardsSection.style.display = 'none';
                 els.sidebarSharedBoardsList.innerHTML = '';
