@@ -9,7 +9,7 @@ window.App = window.App || {};
          * @param {HTMLElement} card - DOM-елемент картки
          * @returns {HTMLElement} - DOM елемент tagsContainer
          */
-        createTagsContainer(note, card) {
+        createTagsContainer(note, card, isReadOnly = false) {
             const state = window.App.state;
             const storage = window.App.storage;
             const noteManager = window.App.noteManager;
@@ -35,21 +35,27 @@ window.App = window.App || {};
                 const textSpan = document.createElement('span');
                 textSpan.className = 'sticker-tag-badge-text';
                 textSpan.textContent = tagText;
-
-                const removeBadgeBtn = document.createElement('button');
-                removeBadgeBtn.className = 'sticker-tag-badge-remove';
-                removeBadgeBtn.title = 'Відкріпити тег від цієї нотатки';
-                removeBadgeBtn.innerHTML = '×';
-                removeBadgeBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const updatedTags = noteTags.filter(t => t !== tagText);
-                    noteManager.updateNote(note.id, { tags: updatedTags, tag: null }, true);
-                });
-
                 badge.appendChild(textSpan);
-                badge.appendChild(removeBadgeBtn);
+
+                if (!isReadOnly) {
+                    const removeBadgeBtn = document.createElement('button');
+                    removeBadgeBtn.className = 'sticker-tag-badge-remove';
+                    removeBadgeBtn.title = 'Відкріпити тег від цієї нотатки';
+                    removeBadgeBtn.innerHTML = '×';
+                    removeBadgeBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const updatedTags = noteTags.filter(t => t !== tagText);
+                        noteManager.updateNote(note.id, { tags: updatedTags, tag: null }, true);
+                    });
+                    badge.appendChild(removeBadgeBtn);
+                }
+
                 tagsContainer.appendChild(badge);
             });
+
+            if (isReadOnly) {
+                return tagsContainer;
+            }
 
             // 2. Кнопка "+ Тег" та випадаючий список тегів
             const addTagBtn = document.createElement('button');

@@ -78,12 +78,23 @@ window.App = window.App || {};
             const titleWrap = document.createElement('div');
             titleWrap.className = 'sticker-title-wrap';
 
-            // 1. Notion-емодзі пікер
-            const emojiWrap = window.App.emojiPicker.createEmojiPicker(note, (newIcon) => {
-                sidebarView.updateNoteListItem(note.id, note.title, newIcon);
-            });
+            // Перевіряємо чи нотатка належить до спільного (тільки для читання) блокнота
+            const currentBoard = window.App.boardManager.getActiveBoard();
+            const isReadOnly = !!note.isReadOnly || !!(currentBoard && currentBoard.isReadOnly) || (note.boardId && note.boardId.startsWith('shared_'));
 
-            const isReadOnly = !!note.isReadOnly;
+            // 1. Notion-емодзі пікер (тільки для редагованих нотаток)
+            let emojiWrap;
+            if (!isReadOnly) {
+                emojiWrap = window.App.emojiPicker.createEmojiPicker(note, (newIcon) => {
+                    sidebarView.updateNoteListItem(note.id, note.title, newIcon);
+                });
+            } else {
+                emojiWrap = document.createElement('span');
+                emojiWrap.className = 'sticker-header-icon';
+                emojiWrap.textContent = note.icon || '📄';
+                emojiWrap.style.marginRight = '6px';
+                emojiWrap.style.fontSize = '15px';
+            }
 
             // 2. Заголовок нотатки
             const titleDiv = document.createElement('div');
@@ -383,6 +394,7 @@ window.App = window.App || {};
                     imgWrap.className = `sticker-image-wrapper size-${imgData.size || 'm'}`;
                     imgWrap.dataset.imgId = imgData.id;
                     imgWrap.innerHTML = `
+                        ${!isReadOnly ? `
                         <div class="sticker-image-toolbar">
                             <div class="sticker-img-size-group">
                                 <button class="img-size-btn ${imgData.size === 's' ? 'active' : ''}" data-size="s" title="Малий розмір (S)">S</button>
@@ -390,7 +402,7 @@ window.App = window.App || {};
                                 <button class="img-size-btn ${imgData.size === 'l' ? 'active' : ''}" data-size="l" title="Повний розмір (L)">L</button>
                             </div>
                             <button class="sticker-image-remove-btn" title="Видалити фото">×</button>
-                        </div>
+                        </div>` : ''}
                         <img src="${imgData.url || ''}" class="sticker-embedded-img" alt="Attached image" loading="lazy">
                     `;
 
@@ -404,7 +416,7 @@ window.App = window.App || {};
                         });
                     }
 
-                    if (window.App.stickerMenu && window.App.stickerMenu.initGalleryImageControls) {
+                    if (!isReadOnly && window.App.stickerMenu && window.App.stickerMenu.initGalleryImageControls) {
                         window.App.stickerMenu.initGalleryImageControls(imgWrap, note.id);
                     }
                     galleryContainer.appendChild(imgWrap);
@@ -416,7 +428,7 @@ window.App = window.App || {};
             card.appendChild(galleryContainer);
 
             // 5. Washi Tape теги
-            const tagsContainer = window.App.stickerTags.createTagsContainer(note, card);
+            const tagsContainer = window.App.stickerTags.createTagsContainer(note, card, isReadOnly);
             card.appendChild(tagsContainer);
 
             // 6. Інтерактивний блок списку піднотаток (якщо є)
@@ -476,32 +488,34 @@ window.App = window.App || {};
                 card.appendChild(subnotesBox);
             }
 
-            // Виклик тулбоксу/меню нотатки на ПКМ (Правий клік мишкою)
-            card.addEventListener('contextmenu', (e) => {
-                // Якщо користувач виділив текст у нотатці — не блокуємо виділення
-                const selection = window.getSelection();
-                if (selection && !selection.isCollapsed && selection.toString().trim().length > 0) {
-                    return;
-                }
-
-                e.preventDefault();
-                e.stopPropagation();
-
-                const moreBtn = card.querySelector('.sticker-more-btn');
-                const menuDropdown = card.querySelector('.sticker-menu-dropdown');
-
-                // Закриваємо всі інші відкриті меню
-                document.querySelectorAll('.sticker-menu-dropdown.active, .sticker-emoji-picker-dropdown.active, .sticker-tag-dropdown.active, .column-filter-dropdown.active, .sidebar-context-menu').forEach(d => {
-                    if (d !== menuDropdown) d.classList.remove('active', 'open-upward');
-                });
-
-                if (menuDropdown && moreBtn) {
-                    if (window.App.smartPositionDropdown) {
-                        window.App.smartPositionDropdown(moreBtn, menuDropdown, 160);
+            // Виклик тулбоксу/меню нотатки на ПКМ (Правий клік мишкою) - Тільки для власних редагованих нотаток
+            if (!isReadOnly) {
+                card.addEventListener('contextmenu', (e) => {
+                    // Якщо користувач виділив текст у нотатці — не блокуємо виділення
+                    const selection = window.getSelection();
+                    if (selection && !selection.isCollapsed && selection.toString().trim().length > 0) {
+                        return;
                     }
-                    menuDropdown.classList.add('active');
-                }
-            });
+
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const moreBtn = card.querySelector('.sticker-more-btn');
+                    const menuDropdown = card.querySelector('.sticker-menu-dropdown');
+
+                    // Закриваємо всі інші відкриті меню
+                    document.querySelectorAll('.sticker-menu-dropdown.active, .sticker-emoji-picker-dropdown.active, .sticker-tag-dropdown.active, .column-filter-dropdown.active, .sidebar-context-menu').forEach(d => {
+                        if (d !== menuDropdown) d.classList.remove('active', 'open-upward');
+                    });
+
+                    if (menuDropdown && moreBtn) {
+                        if (window.App.smartPositionDropdown) {
+                            window.App.smartPositionDropdown(moreBtn, menuDropdown, 160);
+                        }
+                        menuDropdown.classList.add('active');
+                    }
+                });
+            }
 
             // Ініціалізація перетягування (Drag & Drop) стікера на робочому просторі (тільки для власних редагованих нотаток)
             if (!isReadOnly && window.App.initStickerDrag) {
