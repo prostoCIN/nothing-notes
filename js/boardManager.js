@@ -164,6 +164,10 @@ window.App = window.App || {};
                 if (window.App.cloudSync) {
                     window.App.cloudSync.syncBoards();
                     deletedNotes.forEach(dn => window.App.cloudSync.deleteNoteFromCloud(dn.id));
+                    // Видаляємо посилання шерингу цього блокнота, щоб не лишати «мертвих» записів у базі
+                    if (window.App.supabase) {
+                        window.App.supabase.from('board_shares').delete().eq('board_id', id).then(() => {});
+                    }
                 }
 
                 if (state.boards.length === 0) {
