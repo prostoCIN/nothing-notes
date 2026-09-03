@@ -127,13 +127,36 @@ async function handleShareUrlParams() {
 
     try {
         const info = await window.App.shareManager.fetchShareInfo(shareToken);
-        if (!info || !info.board) {
+        if (!info || !info.board || !info.share) {
             window.App.confirmModal.show({
                 title: 'Посилання недійсне',
                 message: 'Це посилання на спільний блокнот застаріло або було вимкнено власником.',
                 confirmText: 'Зрозуміло',
                 type: 'danger',
                 onConfirm: () => {}
+            });
+            return;
+        }
+
+        // Перевіряємо, чи користувач не є власником цього блокнота
+        const state = window.App.state;
+        const isOwnBoard = state.boards.some(b => b.id === info.share.board_id);
+        const supabase = window.App.supabase;
+        const { data: authData } = supabase ? await supabase.auth.getUser() : { data: {} };
+        const isCurrentUserOwner = authData && authData.user && authData.user.id === info.share.owner_id;
+
+        if (isOwnBoard || isCurrentUserOwner) {
+            window.App.confirmModal.show({
+                title: 'Ваш власний блокнот',
+                message: `Ви є власником блокнота <span class="confirm-modal-highlight">"${info.board.name}"</span>. Він уже є у списку ваших блокнотів із повними правами редагування.`,
+                confirmText: 'Перейти до блокнота',
+                type: 'info',
+                onConfirm: () => {
+                    // Просто перемикаємо на власний блокнот
+                    if (window.App.boardManager) {
+                        window.App.boardManager.switchBoard(info.share.board_id);
+                    }
+                }
             });
             return;
         }
