@@ -731,7 +731,13 @@ window.App = window.App || {};
             const commonAncestor = range.commonAncestorContainer;
             const contentDiv = (commonAncestor.nodeType === Node.ELEMENT_NODE ? commonAncestor : commonAncestor.parentElement)?.closest('.sticker-content');
 
-            if (!contentDiv) {
+            if (!contentDiv || contentDiv.contentEditable === 'false' || contentDiv.getAttribute('contenteditable') === 'false') {
+                this.hide();
+                return;
+            }
+
+            const parentCard = contentDiv.closest('.note-sticker');
+            if (parentCard && document.getElementById('board-workspace')?.classList.contains('is-board-readonly')) {
                 this.hide();
                 return;
             }

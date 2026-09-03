@@ -267,117 +267,119 @@ window.App = window.App || {};
                 });
             }
 
-            // Перед введенням нового символу (beforeinput): якщо нотатка візуально порожня — гарантуємо чистий корінь без залишкових тегів
-            contentDiv.addEventListener('beforeinput', (e) => {
-                const cleanText = contentDiv.innerText.replace(/\u200B/g, '').trim();
-                const hasImg = contentDiv.querySelector('img');
+            if (!isReadOnly) {
+                // Перед введенням нового символу (beforeinput): якщо нотатка візуально порожня — гарантуємо чистий корінь без залишкових тегів
+                contentDiv.addEventListener('beforeinput', (e) => {
+                    const cleanText = contentDiv.innerText.replace(/\u200B/g, '').trim();
+                    const hasImg = contentDiv.querySelector('img');
 
-                // Якщо текст порожній, або користувач виділив весь текст перед заміною
-                const selection = window.getSelection();
-                const isAllSelected = selection && !selection.isCollapsed && selection.toString().trim() === cleanText;
+                    // Якщо текст порожній, або користувач виділив весь текст перед заміною
+                    const selection = window.getSelection();
+                    const isAllSelected = selection && !selection.isCollapsed && selection.toString().trim() === cleanText;
 
-                if ((!cleanText && !hasImg) || isAllSelected) {
-                    // Якщо є залишкові теги mark, span, b
-                    if (contentDiv.querySelector('mark, span, b, strong, font')) {
-                        contentDiv.innerHTML = '';
-                        contentDiv.removeAttribute('data-empty');
-                    }
-                }
-            });
-
-            // Перехоплення вставки (Paste Ctrl+V): якщо вставляється зображення — автоматично додаємо його в Polaroid-галерею нотатки
-            const handlePaste = async (e) => {
-                const clipboardData = e.clipboardData || window.clipboardData;
-                if (!clipboardData) return;
-
-                const items = Array.from(clipboardData.items || []);
-                const imageFiles = [];
-
-                for (const item of items) {
-                    if (item.type && item.type.indexOf('image') !== -1) {
-                        const file = item.getAsFile();
-                        if (file) imageFiles.push(file);
-                    }
-                }
-
-                // Якщо файлів напряму в items не було, перевіримо clipboardData.files
-                if (imageFiles.length === 0 && clipboardData.files && clipboardData.files.length > 0) {
-                    for (const file of clipboardData.files) {
-                        if (file.type && file.type.startsWith('image/')) {
-                            imageFiles.push(file);
-                        }
-                    }
-                }
-
-                if (imageFiles.length > 0) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (window.App.stickerMenu && window.App.stickerMenu.attachImagesToNote) {
-                        await window.App.stickerMenu.attachImagesToNote(note.id, imageFiles, card);
-                    }
-                }
-            };
-
-            contentDiv.addEventListener('paste', handlePaste);
-            titleDiv.addEventListener('paste', handlePaste);
-
-            // При Backspace/Delete якщо нотатка порожня або виділено все — гарантуємо видалення тегів mark
-            contentDiv.addEventListener('keydown', (e) => {
-                if (e.key === 'Backspace' || e.key === 'Delete') {
-                    setTimeout(() => {
-                        const cleanText = contentDiv.innerText.replace(/\u200B/g, '').trim();
-                        const hasImg = contentDiv.querySelector('img');
-                        if (!cleanText && !hasImg) {
+                    if ((!cleanText && !hasImg) || isAllSelected) {
+                        // Якщо є залишкові теги mark, span, b
+                        if (contentDiv.querySelector('mark, span, b, strong, font')) {
                             contentDiv.innerHTML = '';
-                            contentDiv.setAttribute('data-empty', 'true');
-                            noteManager.updateNote(note.id, { content: '' });
+                            contentDiv.removeAttribute('data-empty');
                         }
-                    }, 0);
-                }
-            });
+                    }
+                });
 
-            // При переході на новий рядок (Enter) в кінці маркера створюємо чистий абзац
-            contentDiv.addEventListener('keydown', (e) => {
-                const selection = window.getSelection();
-                if (!selection || !selection.isCollapsed || selection.rangeCount === 0) return;
+                // Перехоплення вставки (Paste Ctrl+V): якщо вставляється зображення — автоматично додаємо його в Polaroid-галерею нотатки
+                const handlePaste = async (e) => {
+                    const clipboardData = e.clipboardData || window.clipboardData;
+                    if (!clipboardData) return;
 
-                const range = selection.getRangeAt(0);
-                let markNode = range.startContainer;
-                if (markNode.nodeType === Node.TEXT_NODE) {
-                    markNode = markNode.parentElement;
-                }
-                const markEl = markNode ? markNode.closest('mark.note-marker') : null;
+                    const items = Array.from(clipboardData.items || []);
+                    const imageFiles = [];
 
-                if (!markEl || !contentDiv.contains(markEl)) return;
-
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    const br = document.createElement('br');
-                    const textNode = document.createTextNode('\u200B');
-                    
-                    if (markEl.nextSibling) {
-                        markEl.parentNode.insertBefore(br, markEl.nextSibling);
-                        markEl.parentNode.insertBefore(textNode, br.nextSibling);
-                    } else {
-                        markEl.parentNode.appendChild(br);
-                        markEl.parentNode.appendChild(textNode);
+                    for (const item of items) {
+                        if (item.type && item.type.indexOf('image') !== -1) {
+                            const file = item.getAsFile();
+                            if (file) imageFiles.push(file);
+                        }
                     }
 
-                    const newRange = document.createRange();
-                    newRange.setStartAfter(br);
-                    newRange.collapse(true);
-                    selection.removeAllRanges();
-                    selection.addRange(newRange);
-                    contentDiv.dispatchEvent(new Event('input'));
-                }
-            });
+                    // Якщо файлів напряму в items не було, перевіримо clipboardData.files
+                    if (imageFiles.length === 0 && clipboardData.files && clipboardData.files.length > 0) {
+                        for (const file of clipboardData.files) {
+                            if (file.type && file.type.startsWith('image/')) {
+                                imageFiles.push(file);
+                            }
+                        }
+                    }
 
-            titleDiv.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    contentDiv.focus();
-                }
-            });
+                    if (imageFiles.length > 0) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (window.App.stickerMenu && window.App.stickerMenu.attachImagesToNote) {
+                            await window.App.stickerMenu.attachImagesToNote(note.id, imageFiles, card);
+                        }
+                    }
+                };
+
+                contentDiv.addEventListener('paste', handlePaste);
+                titleDiv.addEventListener('paste', handlePaste);
+
+                // При Backspace/Delete якщо нотатка порожня або виділено все — гарантуємо видалення тегів mark
+                contentDiv.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' || e.key === 'Delete') {
+                        setTimeout(() => {
+                            const cleanText = contentDiv.innerText.replace(/\u200B/g, '').trim();
+                            const hasImg = contentDiv.querySelector('img');
+                            if (!cleanText && !hasImg) {
+                                contentDiv.innerHTML = '';
+                                contentDiv.setAttribute('data-empty', 'true');
+                                noteManager.updateNote(note.id, { content: '' });
+                            }
+                        }, 0);
+                    }
+                });
+
+                // При переході на новий рядок (Enter) в кінці маркера створюємо чистий абзац
+                contentDiv.addEventListener('keydown', (e) => {
+                    const selection = window.getSelection();
+                    if (!selection || !selection.isCollapsed || selection.rangeCount === 0) return;
+
+                    const range = selection.getRangeAt(0);
+                    let markNode = range.startContainer;
+                    if (markNode.nodeType === Node.TEXT_NODE) {
+                        markNode = markNode.parentElement;
+                    }
+                    const markEl = markNode ? markNode.closest('mark.note-marker') : null;
+
+                    if (!markEl || !contentDiv.contains(markEl)) return;
+
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const br = document.createElement('br');
+                        const textNode = document.createTextNode('\u200B');
+                        
+                        if (markEl.nextSibling) {
+                            markEl.parentNode.insertBefore(br, markEl.nextSibling);
+                            markEl.parentNode.insertBefore(textNode, br.nextSibling);
+                        } else {
+                            markEl.parentNode.appendChild(br);
+                            markEl.parentNode.appendChild(textNode);
+                        }
+
+                        const newRange = document.createRange();
+                        newRange.setStartAfter(br);
+                        newRange.collapse(true);
+                        selection.removeAllRanges();
+                        selection.addRange(newRange);
+                        contentDiv.dispatchEvent(new Event('input'));
+                    }
+                });
+
+                titleDiv.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        contentDiv.focus();
+                    }
+                });
+            }
 
             card.appendChild(header);
             card.appendChild(contentDiv);
