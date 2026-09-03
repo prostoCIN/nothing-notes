@@ -666,7 +666,6 @@
     border: none !important;
     box-shadow: none !important;
     -webkit-tap-highlight-color: transparent !important;
-    -webkit-user-modify: read-write-plaintext-only;
     font-size: 16px;
     line-height: 30px;
     color: #292524;
@@ -686,6 +685,18 @@
     background-position: left top;
     background-attachment: scroll;
     padding-bottom: 4px;
+}
+
+.sticker-content[contenteditable="true"] {
+    -webkit-user-modify: read-write-plaintext-only;
+}
+
+.sticker-content[contenteditable="false"],
+.note-sticker.is-readonly .sticker-content {
+    -webkit-user-modify: read-only !important;
+    user-modify: read-only !important;
+    cursor: default !important;
+    caret-color: transparent !important;
 }
 
 .sticker-content:focus,

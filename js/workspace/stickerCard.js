@@ -20,6 +20,14 @@ window.App = window.App || {};
             card.dataset.noteId = note.id;
             card.dataset.parentId = note.parentId || 'root';
 
+            // Перевіряємо чи нотатка належить до спільного (тільки для читання) блокнота
+            const currentBoard = window.App.boardManager.getActiveBoard();
+            const isReadOnly = !!note.isReadOnly || !!(currentBoard && currentBoard.isReadOnly) || (note.boardId && note.boardId.startsWith('shared_'));
+
+            if (isReadOnly) {
+                card.classList.add('is-readonly');
+            }
+
             // Застосовуємо збережений або дефолтний колір стікера
             const noteColor = note.color || 'yellow';
             card.classList.add(`color-${noteColor}`);
