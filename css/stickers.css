@@ -1705,8 +1705,9 @@
     display: flex;
     flex-direction: column;
     gap: 3px;
-    max-height: 180px;
+    max-height: 155px; /* Рівно ~5 рядків тегів */
     overflow-y: auto;
+    padding-right: 2px;
 }
 
 .tag-option-item {

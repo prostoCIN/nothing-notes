@@ -985,7 +985,7 @@ body.global-eraser-active #workspace-eraser-btn {
     display: flex;
     flex-direction: column;
     gap: 2px;
-    max-height: 180px;
+    max-height: 155px;
     overflow-y: auto;
     padding-right: 2px;
 }
@@ -1337,7 +1337,7 @@ body.global-eraser-active #workspace-eraser-btn {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    max-height: 180px;
+    max-height: 155px;
     overflow-y: auto;
     min-width: 170px;
 }
@@ -1513,7 +1513,7 @@ body.global-eraser-active #workspace-eraser-btn {
     display: flex;
     flex-direction: column;
     gap: 2px;
-    max-height: 200px;
+    max-height: 155px; /* Максимум 5 тегів, далі скрол */
     overflow-y: auto;
     padding-top: 4px;
 }
