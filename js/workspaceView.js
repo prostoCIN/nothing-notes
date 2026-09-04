@@ -377,6 +377,9 @@ window.App = window.App || {};
                 const titleWrap = document.createElement('div');
                 titleWrap.className = 'column-title-wrap';
 
+                let titleH2 = document.createElement('h2');
+                titleH2.className = 'column-title';
+
                 if (colIndex === 0) {
                     const boardIconPicker = window.App.emojiPicker.createEmojiPicker(
                         { icon: currentBoard.icon || null },
@@ -389,8 +392,6 @@ window.App = window.App || {};
                     );
                     boardIconPicker.classList.add('column-header-emoji-picker');
 
-                    const titleH2 = document.createElement('h2');
-                    titleH2.className = 'column-title';
                     titleH2.textContent = currentBoard.name;
 
                     const badgeSpan = document.createElement('span');
@@ -419,8 +420,6 @@ window.App = window.App || {};
                     }
                     noteIconPicker.classList.add('column-header-emoji-picker');
 
-                    const titleH2 = document.createElement('h2');
-                    titleH2.className = 'column-title';
                     titleH2.textContent = parentTitle || 'Без назви';
 
                     const badgeSpan = document.createElement('span');
