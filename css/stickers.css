@@ -1714,57 +1714,82 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 6px 8px;
-    font-size: 13.5px;
-    color: rgba(255, 255, 255, 0.9);
-    border-radius: 6px;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    color: var(--text-main);
+    padding: 3px 6px 3px 8px;
+    border-radius: 8px;
+    font-size: var(--font-xs);
+    font-weight: 600;
+    transition: all var(--transition-fast);
+    font-family: inherit;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.tag-option-main-action {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-grow: 1;
+    min-width: 0;
     cursor: pointer;
-    transition: background-color 0.15s ease, color 0.15s ease;
+    padding: 4px 0;
 }
 
 .tag-option-item:hover {
-    background-color: rgba(255, 255, 255, 0.09);
-    color: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
 }
 
 .tag-option-item.active {
-    background-color: rgba(16, 185, 129, 0.2);
+    background: rgba(16, 185, 129, 0.2);
+    border-color: #10b981;
+    color: #a7f3d0;
+}
+
+.tag-option-status-icon {
+    font-size: 11px;
+    font-weight: 700;
+    margin-left: auto;
     color: #34d399;
-    font-weight: 600;
 }
 
 .tag-option-text {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    flex-grow: 1;
+    font-size: 12.5px;
 }
 
 .tag-option-del-btn {
     background: none;
     border: none;
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 16px;
-    cursor: pointer;
-    opacity: 0.6;
-    padding: 2px 6px;
-    line-height: 1;
+    color: var(--text-muted);
+    width: 20px;
+    height: 20px;
     border-radius: 4px;
-    transition: opacity 0.15s, color 0.15s, background-color 0.15s, transform 0.15s;
-    margin-left: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    transition: all 0.15s ease;
+    opacity: 0.45;
     flex-shrink: 0;
+    padding: 0;
 }
 
 .tag-option-item:hover .tag-option-del-btn {
-    opacity: 0.85;
-    color: #ffffff;
+    opacity: 0.8;
 }
 
 .tag-option-del-btn:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
     opacity: 1 !important;
-    color: #ef4444 !important;
-    background-color: rgba(239, 68, 68, 0.2);
-    transform: scale(1.15);
 }
 
 .tag-add-option-row {

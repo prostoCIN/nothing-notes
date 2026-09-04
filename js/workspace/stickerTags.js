@@ -79,90 +79,103 @@ window.App = window.App || {};
                 const optionsList = document.createElement('div');
                 optionsList.className = 'tag-options-list';
 
-                availableOptions.forEach(opt => {
-                    const isAlreadyAttached = noteTags.includes(opt);
-                    const optItem = document.createElement('div');
-                    optItem.className = `tag-option-item ${isAlreadyAttached ? 'active' : ''}`;
+                if (availableOptions.length === 0) {
+                    const emptyText = document.createElement('div');
+                    emptyText.className = 'selection-submenu-empty';
+                    emptyText.textContent = 'Немає створених тегів';
+                    emptyText.style.padding = '6px 8px';
+                    emptyText.style.fontSize = '12px';
+                    emptyText.style.color = 'var(--text-muted)';
+                    optionsList.appendChild(emptyText);
+                } else {
+                    availableOptions.forEach(opt => {
+                        const isAlreadyAttached = noteTags.includes(opt);
+                        const colorIndex = window.App.getTagColorIndex ? window.App.getTagColorIndex(opt) : 0;
 
-                    const optText = document.createElement('span');
-                    optText.className = 'tag-option-text';
-                    optText.textContent = `${isAlreadyAttached ? '✓ ' : ''}${opt}`;
+                        const optItem = document.createElement('div');
+                        optItem.className = `tag-option-item ${isAlreadyAlreadyAttached ? 'active' : ''}`;
+                        optItem.className = `tag-option-item ${isAlreadyAttached ? 'active' : ''}`;
 
-                    const delOptBtn = document.createElement('button');
-                    delOptBtn.className = 'tag-option-del-btn';
-                    delOptBtn.innerHTML = '×';
-                    delOptBtn.title = 'Видалити цей варіант тегу зі списку та з усіх нотаток';
-                    delOptBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
+                        optItem.innerHTML = `
+                            <div class="tag-option-main-action">
+                                <span class="selection-tag-color-dot tag-tape-color-${colorIndex}"></span>
+                                <span class="tag-option-text">${opt}</span>
+                                <span class="tag-option-status-icon">${isAlreadyAttached ? '✓' : ''}</span>
+                            </div>
+                            <button class="tag-option-del-btn" title="Видалити цей тег з усіх нотаток та зі списку">×</button>
+                        `;
 
-                        // 1. Видаляємо тег із загального списку збережених опцій у сховищі
-                        const currentAvailable = (storage.getTagOptions ? storage.getTagOptions() : []).filter(o => o !== opt);
-                        if (storage.saveTagOptions) storage.saveTagOptions(currentAvailable);
+                        // Клік по основній області — додати / зняти тег
+                        const mainAction = optItem.querySelector('.tag-option-main-action');
+                        mainAction.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            if (isAlreadyAttached) {
+                                const updatedTags = noteTags.filter(t => t !== opt);
+                                noteManager.updateNote(note.id, { tags: updatedTags, tag: null }, true);
+                            } else {
+                                const updatedTags = [...noteTags, opt];
+                                noteManager.updateNote(note.id, { tags: updatedTags, tag: null }, true);
+                            }
+                            if (window.App.workspaceSelectionBar && window.App.workspaceSelectionBar.refreshTagSubmenu) {
+                                window.App.workspaceSelectionBar.refreshTagSubmenu();
+                            }
+                        });
 
-                        // 2. Каскадно видаляємо цей тег з нотаток ЦІЄЇ дошки у пам'яті
-                        let notesUpdated = false;
-                        const currentBoardId = note.boardId || state.activeBoardId;
-                        state.notes.forEach(n => {
-                            if (n.boardId === currentBoardId) {
+                        // Клік по хрестику — повне видалення тегу зі списку та з усіх нотаток
+                        const delOptBtn = optItem.querySelector('.tag-option-del-btn');
+                        delOptBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+
+                            // 1. Видаляємо тег із загального списку збережених опцій
+                            const currentAvailable = (storage.getTagOptions ? storage.getTagOptions() : []).filter(o => o !== opt);
+                            if (storage.saveTagOptions) storage.saveTagOptions(currentAvailable);
+
+                            // 2. Видаляємо цей тег з усіх нотаток у пам'яті
+                            state.notes.forEach(n => {
                                 if (Array.isArray(n.tags) && n.tags.includes(opt)) {
                                     n.tags = n.tags.filter(t => t !== opt);
-                                    notesUpdated = true;
+                                    n.updatedAt = Date.now();
+                                    if (window.App.cloudSync) window.App.cloudSync.syncNote(n);
                                 }
-                                if (n.tag && n.tag.text === opt) {
-                                    n.tag = null;
-                                    notesUpdated = true;
-                                }
-                            }
-                        });
+                            });
 
-                        if (notesUpdated) {
                             storage.saveNotes(state.notes);
-                            if (window.App.cloudSync && window.App.cloudSync.isLoggedIn()) {
-                                window.App.cloudSync.pushAllToCloud();
-                            }
-                        }
 
-                        // 3. Оновлюємо список тегів поточної картки локально
-                        noteTags = noteTags.filter(t => t !== opt);
-
-                        // 4. Оновлюємо ВСІ меню тегів, які зараз згенеровані на сторінці
-                        document.querySelectorAll('.sticker-tag-dropdown').forEach(dd => {
-                            if (typeof dd.refreshContent === 'function') {
-                                dd.refreshContent();
+                            // 3. Оновлюємо робочу область
+                            if (window.App.workspaceView) window.App.workspaceView.render();
+                            if (window.App.workspaceSelectionBar && window.App.workspaceSelectionBar.refreshTagSubmenu) {
+                                window.App.workspaceSelectionBar.refreshTagSubmenu();
                             }
                         });
 
-                        // 5. Миттєво видаляємо бейджі цього тегу зі ВСІХ нотаток на екрані (у всіх колонках)
-                        document.querySelectorAll('.sticker-tag-badge').forEach(badge => {
-                            const badgeText = badge.querySelector('.sticker-tag-badge-text')?.textContent;
-                            if (badgeText === opt) {
-                                badge.remove();
-                            }
-                        });
+                        optionsList.appendChild(optItem);
                     });
-
-                    optItem.appendChild(optText);
-                    optItem.appendChild(delOptBtn);
-
-                    optItem.addEventListener('click', (e) => {
-                        if (e.target.closest('.tag-option-del-btn')) return;
-                        e.stopPropagation();
-                        if (isAlreadyAttached) {
-                            // Знімаємо тег
-                            const updatedTags = noteTags.filter(t => t !== opt);
-                            noteManager.updateNote(note.id, { tags: updatedTags, tag: null }, true);
-                        } else {
-                            // Додаємо тег до нотатки
-                            const updatedTags = [...noteTags, opt];
-                            noteManager.updateNote(note.id, { tags: updatedTags, tag: null }, true);
-                        }
-                    });
-
-                    optionsList.appendChild(optItem);
-                });
+                }
 
                 tagDropdown.appendChild(optionsList);
+
+                // Опція зняти всі теги з цієї нотатки (якщо є хоча б один)
+                if (noteTags.length > 0) {
+                    const clearSingleNoteTagsBtn = document.createElement('button');
+                    clearSingleNoteTagsBtn.className = 'selection-tag-clear-btn';
+                    clearSingleNoteTagsBtn.style.margin = '4px 0 6px 0';
+                    clearSingleNoteTagsBtn.innerHTML = `
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                        <span>Очистити всі теги</span>
+                    `;
+                    clearSingleNoteTagsBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        noteManager.updateNote(note.id, { tags: [], tag: null }, true);
+                        if (window.App.workspaceSelectionBar && window.App.workspaceSelectionBar.refreshTagSubmenu) {
+                            window.App.workspaceSelectionBar.refreshTagSubmenu();
+                        }
+                    });
+                    tagDropdown.appendChild(clearSingleNoteTagsBtn);
+                }
 
                 // Рядок створення нового варіанту тегу
                 const addRow = document.createElement('div');
@@ -185,10 +198,9 @@ window.App = window.App || {};
                             const updatedTags = [...noteTags, newOpt];
                             noteManager.updateNote(note.id, { tags: updatedTags, tag: null }, true);
                         }
-                        // Оновлюємо всі випадаючі меню
-                        document.querySelectorAll('.sticker-tag-dropdown').forEach(dd => {
-                            if (typeof dd.refreshContent === 'function') dd.refreshContent();
-                        });
+                        if (window.App.workspaceSelectionBar && window.App.workspaceSelectionBar.refreshTagSubmenu) {
+                            window.App.workspaceSelectionBar.refreshTagSubmenu();
+                        }
                     }
                 };
 
