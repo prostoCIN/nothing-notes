@@ -33,16 +33,33 @@ window.App = window.App || {};
     let lastMousePos = { x: 0, y: 0 };
     let searchQuery = '';
 
-    // Кольорова палітра вузлів (зі збереженням теми стікерів)
-    const colorMap = {
-        yellow: '#fef08a',
-        green: '#bbf7d0',
-        blue: '#bae6fd',
-        purple: '#e9d5ff',
-        pink: '#fbcfe8',
-        orange: '#fed7aa',
-        gray: '#cbd5e1'
-    };
+    // Палітра насичених та виразних кольорів для різних гілок графу
+    const BRANCH_COLORS = [
+        '#10b981', // Смарагдовий зелений
+        '#3b82f6', // Насичений синій
+        '#a855f7', // Фіолетовий
+        '#ec4899', // Рожевий / Малиновий
+        '#f59e0b', // Бурштиновий / Оранжевий
+        '#06b6d4', // Бірюзовий / Cyan
+        '#84cc16', // Лаймовий
+        '#f43f5e', // Коралово-червоний
+        '#8b5cf6', // Індиго
+        '#14b8a6', // Тіловий (Teal)
+        '#eab308'  // Золотистий
+    ];
+
+    function getBranchColor(rootId, index) {
+        if (typeof index === 'number') {
+            return BRANCH_COLORS[index % BRANCH_COLORS.length];
+        }
+        let hash = 0;
+        const str = String(rootId || '');
+        for (let i = 0; i < str.length; i++) {
+            hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        const colorIdx = Math.abs(hash) % BRANCH_COLORS.length;
+        return BRANCH_COLORS[colorIdx];
+    }
 
     // Кеш для ідеально центрованих емодзі-спрайтів (аналіз реальних пікселів)
     const emojiCache = new Map();
@@ -305,11 +322,42 @@ window.App = window.App || {};
             const centerX = width / 2;
             const centerY = height / 2;
 
+            // Створюємо мапу нотаток для швидкого пошуку предків
+            const rawNotesById = new Map();
+            boardNotes.forEach(n => rawNotesById.set(n.id, n));
+
+            // Функція пошуку кореневої нотатки дерева
+            function getRootAncestor(noteId) {
+                let curr = rawNotesById.get(noteId);
+                const visited = new Set();
+                while (curr && curr.parentId && rawNotesById.has(curr.parentId) && !visited.has(curr.id)) {
+                    visited.add(curr.id);
+                    curr = rawNotesById.get(curr.parentId);
+                }
+                return curr || null;
+            }
+
+            // Збираємо список усіх унікальних коренів для призначення послідовних кольорів
+            const rootIds = [];
+            boardNotes.forEach(note => {
+                const root = getRootAncestor(note.id);
+                const rId = root ? root.id : note.id;
+                if (!rootIds.includes(rId)) {
+                    rootIds.push(rId);
+                }
+            });
+
             // 1. Формуємо вершини (Nodes) навколо реального центру полотна
             boardNotes.forEach((note) => {
                 const isRoot = !note.parentId;
                 const radius = isRoot ? 20 : 15;
                 
+                // Визначаємо колір гілки
+                const rootAncestor = getRootAncestor(note.id);
+                const rootId = rootAncestor ? rootAncestor.id : note.id;
+                const rootIndex = rootIds.indexOf(rootId);
+                const branchColor = getBranchColor(rootId, rootIndex >= 0 ? rootIndex : undefined);
+
                 // Перетворюємо всі типи розривів рядків, списки та блоки у пробіли
                 const rawContent = (note.content || '');
                 const cleanContent = rawContent
@@ -321,7 +369,8 @@ window.App = window.App || {};
                     .replace(/<[^>]*>/g, ' ')
                     .replace(/&nbsp;/gi, ' ')
                     .replace(/\r?\n+/g, ' ')
-                    .replace(/\s+/g, ' ')
+                    .replace(/\s+/g, ' ');
+
                 // Стартова позиція акуратно навколо реального центру полотна
                 const angle = Math.random() * Math.PI * 2;
                 const dist = 30 + Math.random() * (isRoot ? 80 : 150);
@@ -331,8 +380,7 @@ window.App = window.App || {};
                     title: (note.title && note.title.trim()) ? note.title.trim() : 'Без назви',
                     content: cleanContent,
                     icon: note.icon || (isRoot ? '🗒️' : '📄'),
-                    color: colorMap[note.color] || '#fef08a',
-                    rawColor: note.color || 'yellow',
+                    branchColor: branchColor,
                     isRoot: isRoot,
                     parentId: note.parentId || null,
                     tags: Array.isArray(note.tags) ? note.tags : (note.tag ? [note.tag.text || note.tag] : []),
@@ -344,7 +392,6 @@ window.App = window.App || {};
                     childCount: 0
                 };
 
-                
                 if (nodesLayer) {
                     const el = document.createElement('div');
                     el.className = 'graph-html-node' + (isRoot ? ' is-root' : '');
@@ -352,11 +399,9 @@ window.App = window.App || {};
                     
                     const circle = document.createElement('div');
                     circle.className = 'graph-html-node-circle';
-                    if (!isRoot && node.color) {
-                        circle.style.backgroundColor = colorMap[node.color] || '#10b981';
-                    } else if (!isRoot && note.color) {
-                        circle.style.backgroundColor = colorMap[note.color] || '#10b981';
-                    }
+                    circle.style.backgroundColor = branchColor;
+                    circle.style.borderColor = isRoot ? 'rgba(255, 255, 255, 0.85)' : 'rgba(255, 255, 255, 0.45)';
+                    circle.style.boxShadow = `0 0 12px ${branchColor}66`;
                     circle.innerHTML = node.icon;
                     
                     const label = document.createElement('div');
@@ -371,7 +416,6 @@ window.App = window.App || {};
                 }
 
                 nodes.push(node);
-
                 notesMap.set(note.id, node);
             });
 
@@ -385,6 +429,7 @@ window.App = window.App || {};
                     edges.push({
                         source: parentNode,
                         target: node,
+                        color: parentNode.branchColor || node.branchColor || '#10b981',
                         length: 90 + Math.random() * 20
                     });
                 }
@@ -571,18 +616,20 @@ window.App = window.App || {};
             // 1. Малювання зв'язків (Edges)
             edges.forEach(edge => {
                 const isHovered = hoveredNode && (edge.source === hoveredNode || edge.target === hoveredNode);
+                const branchColor = edge.color || edge.source.branchColor || '#10b981';
                 
                 ctx.beginPath();
                 ctx.moveTo(edge.source.x, edge.source.y);
                 ctx.lineTo(edge.target.x, edge.target.y);
 
                 if (isHovered) {
-                    ctx.strokeStyle = '#10b981';
-                    ctx.lineWidth = 2.2 / camera.zoom;
-                    ctx.shadowColor = '#10b981';
-                    ctx.shadowBlur = 10;
+                    ctx.strokeStyle = branchColor;
+                    ctx.lineWidth = 2.4 / camera.zoom;
+                    ctx.shadowColor = branchColor;
+                    ctx.shadowBlur = 12;
                 } else {
-                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+                    // Тонка напівпрозора лінія з відтінком своєї гілки
+                    ctx.strokeStyle = branchColor + '40'; // 25% opacity
                     ctx.lineWidth = 1.2 / camera.zoom;
                     ctx.shadowBlur = 0;
                 }
