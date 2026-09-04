@@ -93,7 +93,6 @@ window.App = window.App || {};
                         const colorIndex = window.App.getTagColorIndex ? window.App.getTagColorIndex(opt) : 0;
 
                         const optItem = document.createElement('div');
-                        optItem.className = `tag-option-item ${isAlreadyAlreadyAttached ? 'active' : ''}`;
                         optItem.className = `tag-option-item ${isAlreadyAttached ? 'active' : ''}`;
 
                         optItem.innerHTML = `
