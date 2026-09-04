@@ -25,19 +25,21 @@ window.App = window.App || {};
                     e.target.closest('.sticker-emoji-picker-dropdown') ||
                     e.target.closest('.sticker-tag-dropdown') ||
                     e.target.closest('.column-filter-dropdown') ||
+                    e.target.closest('.column-menu-dropdown') ||
                     e.target.closest('.sidebar-context-menu') ||
                     e.target.closest('.sticker-more-btn') ||
                     e.target.closest('.sticker-emoji-btn') ||
                     e.target.closest('.sticker-add-tag-btn') ||
-                    e.target.closest('.column-filter-btn')) {
+                    e.target.closest('.column-filter-btn') ||
+                    e.target.closest('.column-more-btn')) {
                     return;
                 }
 
-                document.querySelectorAll('.sticker-menu-dropdown.active, .sticker-emoji-picker-dropdown.active, .sticker-tag-dropdown.active, .column-filter-dropdown.active, .sidebar-context-menu').forEach(d => {
+                document.querySelectorAll('.sticker-menu-dropdown.active, .sticker-emoji-picker-dropdown.active, .sticker-tag-dropdown.active, .column-filter-dropdown.active, .column-menu-dropdown.active, .sidebar-context-menu').forEach(d => {
                     d.classList.remove('active', 'open-upward');
                     if (d.classList.contains('sidebar-context-menu')) d.remove();
                 });
-                document.querySelectorAll('.sticker-add-tag-btn.active, .column-filter-btn.active').forEach(b => {
+                document.querySelectorAll('.sticker-add-tag-btn.active, .column-filter-btn.active, .column-more-btn.active').forEach(b => {
                     b.classList.remove('active');
                 });
             };
@@ -48,10 +50,11 @@ window.App = window.App || {};
             // Закриття меню при натисканні Escape
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
-                    document.querySelectorAll('.sticker-menu-dropdown.active, .sticker-emoji-picker-dropdown.active, .sticker-tag-dropdown.active, .column-filter-dropdown.active, .sidebar-context-menu').forEach(d => {
+                    document.querySelectorAll('.sticker-menu-dropdown.active, .sticker-emoji-picker-dropdown.active, .sticker-tag-dropdown.active, .column-filter-dropdown.active, .column-menu-dropdown.active, .sidebar-context-menu').forEach(d => {
                         d.classList.remove('active', 'open-upward');
                         if (d.classList.contains('sidebar-context-menu')) d.remove();
                     });
+                    document.querySelectorAll('.column-more-btn.active').forEach(b => b.classList.remove('active'));
                 }
             });
 
@@ -429,11 +432,7 @@ window.App = window.App || {};
                     titleWrap.appendChild(badgeSpan);
                 }
 
-                // Кнопка та меню фільтрів тегів
-                const filterWrap = window.App.columnFilter.createFilter(parentNoteId, currentColumnFilter, () => this.render());
-                titleWrap.appendChild(filterWrap);
-
-                // Кнопка перемикання вигляду: Список (по порядку вниз) / Сітка 2 колонки (Pinterest Masonry)
+                // 1. Кнопка перемикання вигляду: Список (по порядку вниз) / Сітка 2 колонки (Pinterest Masonry)
                 const currentLayout = state.columnLayouts[parentKey] || 'list';
                 const layoutToggleBtn = document.createElement('button');
                 layoutToggleBtn.className = `column-layout-toggle-btn ${currentLayout === 'grid' ? 'active' : ''}`;
@@ -464,6 +463,20 @@ window.App = window.App || {};
                 });
 
                 titleWrap.appendChild(layoutToggleBtn);
+
+                // 2. Тулбар-меню "три крапки" (з фільтрами, перейменуванням та поширенням)
+                if (window.App.columnMenu) {
+                    const columnMenuWrap = window.App.columnMenu.createMenu({
+                        colIndex,
+                        parentNoteId,
+                        currentBoard,
+                        titleElement: titleH2,
+                        currentColumnFilter,
+                        onFilterChange: () => this.render()
+                    });
+                    titleWrap.appendChild(columnMenuWrap);
+                }
+
                 header.appendChild(titleWrap);
 
                 // Кнопка закриття для прив'язаних колонок
