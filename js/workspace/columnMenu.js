@@ -57,10 +57,12 @@ window.App = window.App || {};
                 // 1. Заголовок меню
                 const headerInfo = document.createElement('div');
                 headerInfo.className = 'column-menu-header-info';
-                const colTitle = isRoot ? (currentBoard?.name || 'Блокнот') : (noteManager.getNoteById(parentNoteId)?.title?.trim() || 'Піднотатки');
+                const parentNote = !isRoot ? noteManager.getNoteById(parentNoteId) : null;
+                const colTitle = isRoot ? (currentBoard?.name || 'Блокнот') : (parentNote?.title?.trim() || 'Піднотатки');
+                const colIcon = isRoot ? (currentBoard?.icon || '📁') : (parentNote?.icon || '📄');
                 headerInfo.innerHTML = `
                     <div class="column-menu-header-title">
-                        <span>${isRoot ? '📁' : '📄'}</span>
+                        <span class="column-menu-header-icon">${colIcon}</span>
                         <span class="column-menu-header-text">${colTitle}</span>
                     </div>
                 `;
