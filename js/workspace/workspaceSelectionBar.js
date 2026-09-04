@@ -355,7 +355,7 @@ window.App = window.App || {};
                     tagList.className = 'selection-tag-list';
 
                     options.forEach(tagText => {
-                        const item = document.createElement('button');
+                        const item = document.createElement('div');
                         item.className = 'selection-tag-item';
 
                         const colorIndex = window.App.getTagColorIndex ? window.App.getTagColorIndex(tagText) : 0;
@@ -375,12 +375,17 @@ window.App = window.App || {};
                         }
 
                         item.innerHTML = `
-                            <span class="selection-tag-color-dot tag-tape-color-${colorIndex}"></span>
-                            <span class="selection-tag-text">${tagText}</span>
-                            <span class="selection-tag-status-icon">${allHaveTag ? '✓' : (someHaveTag ? '–' : '')}</span>
+                            <div class="selection-tag-main-action">
+                                <span class="selection-tag-color-dot tag-tape-color-${colorIndex}"></span>
+                                <span class="selection-tag-text">${tagText}</span>
+                                <span class="selection-tag-status-icon">${allHaveTag ? '✓' : (someHaveTag ? '–' : '')}</span>
+                            </div>
+                            <button class="selection-tag-del-btn" title="Видалити цей тег з усіх нотаток та зі списку">×</button>
                         `;
 
-                        item.addEventListener('click', (e) => {
+                        // Клік по самому тегу — додати до виділених або зняти з них
+                        const mainAction = item.querySelector('.selection-tag-main-action');
+                        mainAction.addEventListener('click', (e) => {
                             e.stopPropagation();
                             if (selectedIds.length === 0) return;
 
@@ -388,7 +393,8 @@ window.App = window.App || {};
                                 window.App.historyManager.recordState('batch_tags_change');
                             }
 
-                            const shouldRemove = allHaveTag;
+                            // Якщо тег є у всіх — знімаємо його. Якщо немає або є лише в частини — призначаємо всім (або при повторному кліку знімаємо)
+                            const shouldRemove = allHaveTag || someHaveTag;
 
                             selectedIds.forEach(id => {
                                 const note = noteManager.getNoteById(id);
@@ -407,6 +413,27 @@ window.App = window.App || {};
                                 delete note.tag;
                                 if (window.App.cloudSync) {
                                     window.App.cloudSync.syncNote(note);
+                                }
+                            });
+
+                            storage.saveNotes(state.notes);
+                            window.App.workspaceView.render();
+                            this.refreshTagSubmenu();
+                        });
+
+                        // Клік по кнопці × — повне видалення тегу зі списку та з усіх нотаток
+                        const delBtn = item.querySelector('.selection-tag-del-btn');
+                        delBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+
+                            const currentOptions = (storage.getTagOptions ? storage.getTagOptions() : []).filter(o => o !== tagText);
+                            if (storage.saveTagOptions) storage.saveTagOptions(currentOptions);
+
+                            state.notes.forEach(n => {
+                                if (Array.isArray(n.tags) && n.tags.includes(tagText)) {
+                                    n.tags = n.tags.filter(t => t !== tagText);
+                                    n.updatedAt = Date.now();
+                                    if (window.App.cloudSync) window.App.cloudSync.syncNote(n);
                                 }
                             });
 

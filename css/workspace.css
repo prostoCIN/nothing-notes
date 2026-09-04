@@ -1346,26 +1346,33 @@ body.global-eraser-active #workspace-eraser-btn {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
+    gap: 6px;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.06);
     color: var(--text-main);
-    padding: 6px 10px;
+    padding: 3px 6px 3px 8px;
     border-radius: 8px;
     font-size: var(--font-xs);
     font-weight: 600;
-    cursor: pointer;
     transition: all var(--transition-fast);
-    text-align: left;
     font-family: inherit;
     width: 100%;
     box-sizing: border-box;
 }
 
+.selection-tag-main-action {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-grow: 1;
+    min-width: 0;
+    cursor: pointer;
+    padding: 4px 0;
+}
+
 .selection-tag-item:hover {
-    background: rgba(16, 185, 129, 0.15);
-    border-color: #10b981;
-    color: #34d399;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
 }
 
 .selection-tag-item.active {
@@ -1378,6 +1385,35 @@ body.global-eraser-active #workspace-eraser-btn {
     background: rgba(255, 255, 255, 0.08);
     border-color: rgba(255, 255, 255, 0.15);
     color: #d1d5db;
+}
+
+.selection-tag-del-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    transition: all 0.15s ease;
+    opacity: 0.45;
+    flex-shrink: 0;
+    padding: 0;
+}
+
+.selection-tag-item:hover .selection-tag-del-btn {
+    opacity: 0.8;
+}
+
+.selection-tag-del-btn:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    opacity: 1 !important;
 }
 
 .selection-tag-status-icon {
