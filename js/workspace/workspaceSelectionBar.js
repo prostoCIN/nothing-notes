@@ -485,6 +485,66 @@ window.App = window.App || {};
                 });
 
                 containerEl.appendChild(clearTagsBtn);
+
+                // Рядок створення нового тегу прямо з панелі вибору
+                const addRow = document.createElement('div');
+                addRow.className = 'tag-add-option-row';
+
+                const addInput = document.createElement('input');
+                addInput.type = 'text';
+                addInput.className = 'tag-add-input';
+                addInput.placeholder = 'Новий тег...';
+
+                const submitNewTag = () => {
+                    const newOpt = addInput.value.trim();
+                    if (newOpt) {
+                        const currentAvailable = storage.getTagOptions ? storage.getTagOptions() : [];
+                        if (!currentAvailable.includes(newOpt)) {
+                            currentAvailable.push(newOpt);
+                            if (storage.saveTagOptions) storage.saveTagOptions(currentAvailable);
+                        }
+
+                        // Автоматично додаємо створений тег до всіх вибраних нотаток
+                        const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
+                        selectedIds.forEach(id => {
+                            const note = noteManager.getNoteById(id);
+                            if (note) {
+                                let currentTags = Array.isArray(note.tags) ? [...note.tags] : (note.tag ? [note.tag.text || note.tag] : []);
+                                if (!currentTags.includes(newOpt)) {
+                                    currentTags.push(newOpt);
+                                    note.tags = currentTags;
+                                    note.updatedAt = Date.now();
+                                    delete note.tag;
+                                    if (window.App.cloudSync) window.App.cloudSync.syncNote(note);
+                                }
+                            }
+                        });
+
+                        storage.saveNotes(state.notes);
+                        window.App.workspaceView.render();
+                        this.refreshTagSubmenu();
+                    }
+                };
+
+                addInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        submitNewTag();
+                    }
+                });
+                addInput.addEventListener('click', (e) => e.stopPropagation());
+
+                const addBtnSubmit = document.createElement('button');
+                addBtnSubmit.className = 'tag-add-btn';
+                addBtnSubmit.textContent = '+ Створити';
+                addBtnSubmit.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    submitNewTag();
+                });
+
+                addRow.appendChild(addInput);
+                addRow.appendChild(addBtnSubmit);
+                containerEl.appendChild(addRow);
             };
 
             populateTagContainer(barElement.querySelector('#ws-desktop-tags'));
