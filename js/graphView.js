@@ -399,9 +399,12 @@ window.App = window.App || {};
                     
                     const circle = document.createElement('div');
                     circle.className = 'graph-html-node-circle';
+                    circle.style.setProperty('--node-branch-color', branchColor);
                     circle.style.backgroundColor = branchColor;
-                    circle.style.borderColor = isRoot ? 'rgba(255, 255, 255, 0.85)' : 'rgba(255, 255, 255, 0.45)';
-                    circle.style.boxShadow = `0 0 12px ${branchColor}66`;
+                    if (!isRoot) {
+                        circle.style.borderColor = 'rgba(255, 255, 255, 0.45)';
+                        circle.style.boxShadow = `0 0 10px ${branchColor}55`;
+                    }
                     circle.innerHTML = node.icon;
                     
                     const label = document.createElement('div');
