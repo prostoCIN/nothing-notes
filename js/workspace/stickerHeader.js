@@ -50,8 +50,21 @@ window.App = window.App || {};
 
             function updateTitlePlaceholder() {
                 if (isReadOnly) return;
-                if (titleDiv.textContent.trim() === '') {
+                const rawText = titleDiv.textContent.replace(/\u200B/g, '').trim();
+                if (rawText === '') {
                     titleDiv.setAttribute('data-empty', 'true');
+                    // Якщо елемент у фокусі і повністю порожній (0 вузлів), гарантуємо <br> для відмальовки каретки
+                    if (document.activeElement === titleDiv && titleDiv.childNodes.length === 0) {
+                        titleDiv.innerHTML = '<br>';
+                        const sel = window.getSelection();
+                        if (sel) {
+                            const range = document.createRange();
+                            range.setStart(titleDiv, 0);
+                            range.collapse(true);
+                            sel.removeAllRanges();
+                            sel.addRange(range);
+                        }
+                    }
                 } else {
                     titleDiv.removeAttribute('data-empty');
                 }
