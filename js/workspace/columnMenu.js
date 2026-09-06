@@ -120,75 +120,13 @@ window.App = window.App || {};
 
                         if (!titleElement) return;
 
-                        if (isRoot) {
-                            // Редагування назви блокнота інлайн прямо в заголовку колонки
-                            titleElement.contentEditable = 'true';
-                            titleElement.classList.add('editable-board-title');
-                            titleElement.focus();
-
-                            // Виділяємо весь текст для зручної заміни
-                            const sel = window.getSelection();
+                        titleElement.focus();
+                        const sel = window.getSelection();
+                        if (sel) {
                             const range = document.createRange();
                             range.selectNodeContents(titleElement);
                             sel.removeAllRanges();
                             sel.addRange(range);
-
-                            const finishEditing = () => {
-                                titleElement.contentEditable = 'false';
-                                titleElement.classList.remove('editable-board-title');
-                                const newName = titleElement.textContent.trim();
-                                if (newName && newName !== currentBoard.name) {
-                                    boardManager.renameBoard(currentBoard.id, newName);
-                                } else {
-                                    titleElement.textContent = currentBoard.name;
-                                }
-                            };
-
-                            titleElement.addEventListener('blur', finishEditing, { once: true });
-                            titleElement.addEventListener('keydown', (ke) => {
-                                if (ke.key === 'Enter') {
-                                    ke.preventDefault();
-                                    titleElement.blur();
-                                } else if (ke.key === 'Escape') {
-                                    titleElement.textContent = currentBoard.name;
-                                    titleElement.blur();
-                                }
-                            });
-                        } else {
-                            // Редагування назви батьківської нотатки інлайн
-                            const parentNote = noteManager.getNoteById(parentNoteId);
-                            if (!parentNote) return;
-
-                            titleElement.contentEditable = 'true';
-                            titleElement.classList.add('editable-board-title');
-                            titleElement.focus();
-
-                            const sel = window.getSelection();
-                            const range = document.createRange();
-                            range.selectNodeContents(titleElement);
-                            sel.removeAllRanges();
-                            sel.addRange(range);
-
-                            const finishEditingNote = () => {
-                                titleElement.contentEditable = 'false';
-                                titleElement.classList.remove('editable-board-title');
-                                const newTitle = titleElement.textContent.trim();
-                                noteManager.updateNote(parentNoteId, { title: newTitle });
-                                if (window.App.sidebarView) {
-                                    window.App.sidebarView.updateNoteListItem(parentNoteId, newTitle, parentNote.icon);
-                                }
-                            };
-
-                            titleElement.addEventListener('blur', finishEditingNote, { once: true });
-                            titleElement.addEventListener('keydown', (ke) => {
-                                if (ke.key === 'Enter') {
-                                    ke.preventDefault();
-                                    titleElement.blur();
-                                } else if (ke.key === 'Escape') {
-                                    titleElement.textContent = parentNote.title || 'Без назви';
-                                    titleElement.blur();
-                                }
-                            });
                         }
                     });
                     dropdown.appendChild(renameItem);

@@ -82,16 +82,20 @@ window.App = window.App || {};
             }
 
             // Синхронізуємо DOM назви блокнота в сайдбарі
-            const sidebarBoardText = document.querySelector(`.board-item[data-board-id="${id}"] .board-item-text`);
-            if (sidebarBoardText) {
-                sidebarBoardText.textContent = trimmedName;
-            }
+            document.querySelectorAll(`.board-item[data-board-id="${id}"] .board-item-text`).forEach(el => {
+                el.textContent = trimmedName;
+            });
 
-            // Синхронізуємо заголовок кореневої колонки, якщо це активний блокнот
+            // Синхронізуємо заголовок кореневої колонки та верхнього хедера воркспейсу, якщо це активний блокнот
             if (state.activeBoardId === id) {
                 const rootColTitle = document.querySelector('.board-column.root-column .column-title');
-                if (rootColTitle && rootColTitle.innerText !== trimmedName) {
+                if (rootColTitle && rootColTitle !== document.activeElement && rootColTitle.innerText !== trimmedName) {
                     rootColTitle.innerText = trimmedName;
+                }
+
+                const boardTitleEl = document.getElementById('workspace-header-board-title');
+                if (boardTitleEl && boardTitleEl.textContent !== trimmedName) {
+                    boardTitleEl.textContent = trimmedName;
                 }
             }
 

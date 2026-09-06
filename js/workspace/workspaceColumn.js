@@ -85,12 +85,85 @@ window.App = window.App || {};
 
                 titleH2.textContent = currentBoard.name || '';
 
+                if (!isBoardReadOnly) {
+                    titleH2.contentEditable = 'true';
+                    titleH2.classList.add('editable-board-title');
+                    titleH2.title = 'Натисніть для редагування назви блокнота';
+                    titleH2.spellcheck = false;
+                    titleH2.autocapitalize = 'off';
+                    titleH2.autocomplete = 'off';
+
+                    let originalBoardName = currentBoard.name || '';
+                    titleH2.addEventListener('focus', () => {
+                        originalBoardName = titleH2.textContent.trim();
+                    });
+
+                    titleH2.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            titleH2.blur();
+                        } else if (e.key === 'Escape') {
+                            e.preventDefault();
+                            titleH2.textContent = originalBoardName || currentBoard.name || 'Мій блокнот';
+                            titleH2.blur();
+                        }
+                    });
+
+                    titleH2.addEventListener('paste', (e) => {
+                        e.preventDefault();
+                        const text = (e.clipboardData || window.clipboardData)?.getData('text/plain') || '';
+                        const clean = text.replace(/\r?\n|\r/g, ' ').trim();
+                        if (clean && document.queryCommandSupported && document.queryCommandSupported('insertText')) {
+                            document.execCommand('insertText', false, clean);
+                        } else {
+                            titleH2.textContent = clean;
+                        }
+                    });
+
+                    titleH2.addEventListener('blur', () => {
+                        const newName = titleH2.textContent.replace(/\r?\n|\r/g, ' ').trim();
+                        if (newName && newName !== currentBoard.name) {
+                            originalBoardName = newName;
+                            if (window.App.boardManager) {
+                                window.App.boardManager.renameBoard(currentBoard.id, newName);
+                            }
+                        } else if (!newName) {
+                            titleH2.textContent = originalBoardName || currentBoard.name || 'Мій блокнот';
+                        }
+                    });
+                }
+
                 const badgeSpan = document.createElement('span');
                 badgeSpan.className = 'column-count-badge';
                 badgeSpan.textContent = totalNoteCount;
 
                 titleWrap.appendChild(boardIconPicker);
                 titleWrap.appendChild(titleH2);
+
+                if (!isBoardReadOnly) {
+                    const editHint = document.createElement('span');
+                    editHint.className = 'column-title-edit-hint';
+                    editHint.title = 'Редагувати назву блокнота';
+                    editHint.innerHTML = `
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 20h9"></path>
+                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                        </svg>
+                    `;
+                    editHint.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        titleH2.focus();
+                        const sel = window.getSelection();
+                        if (sel) {
+                            const range = document.createRange();
+                            range.selectNodeContents(titleH2);
+                            sel.removeAllRanges();
+                            sel.addRange(range);
+                        }
+                    });
+                    titleWrap.appendChild(editHint);
+                }
+
                 titleWrap.appendChild(badgeSpan);
             } else {
                 const parentNote = noteManager ? noteManager.getNoteById(parentNoteId) : null;
@@ -113,12 +186,91 @@ window.App = window.App || {};
 
                 titleH2.textContent = parentTitle || 'Без назви';
 
+                if (!isBoardReadOnly && parentNote) {
+                    titleH2.contentEditable = 'true';
+                    titleH2.classList.add('editable-board-title');
+                    titleH2.title = 'Натисніть для редагування назви нотатки';
+                    titleH2.spellcheck = false;
+                    titleH2.autocapitalize = 'off';
+                    titleH2.autocomplete = 'off';
+
+                    let originalNoteTitle = parentTitle || '';
+                    titleH2.addEventListener('focus', () => {
+                        originalNoteTitle = titleH2.textContent.trim();
+                    });
+
+                    titleH2.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            titleH2.blur();
+                        } else if (e.key === 'Escape') {
+                            e.preventDefault();
+                            titleH2.textContent = originalNoteTitle || parentNote.title || 'Без назви';
+                            titleH2.blur();
+                        }
+                    });
+
+                    titleH2.addEventListener('paste', (e) => {
+                        e.preventDefault();
+                        const text = (e.clipboardData || window.clipboardData)?.getData('text/plain') || '';
+                        const clean = text.replace(/\r?\n|\r/g, ' ').trim();
+                        if (clean && document.queryCommandSupported && document.queryCommandSupported('insertText')) {
+                            document.execCommand('insertText', false, clean);
+                        } else {
+                            titleH2.textContent = clean;
+                        }
+                        titleH2.dispatchEvent(new Event('input', { bubbles: true }));
+                    });
+
+                    titleH2.addEventListener('input', () => {
+                        const newTitle = titleH2.textContent.replace(/\r?\n|\r/g, ' ');
+                        if (noteManager && noteManager.updateNote) {
+                            noteManager.updateNote(parentNoteId, { title: newTitle.trim() });
+                        }
+                    });
+
+                    titleH2.addEventListener('blur', () => {
+                        const newTitle = titleH2.textContent.replace(/\r?\n|\r/g, ' ').trim();
+                        if (!newTitle) {
+                            titleH2.textContent = 'Без назви';
+                        }
+                        if (noteManager && noteManager.updateNote) {
+                            noteManager.updateNote(parentNoteId, { title: newTitle });
+                        }
+                    });
+                }
+
                 const badgeSpan = document.createElement('span');
                 badgeSpan.className = 'column-count-badge';
                 badgeSpan.textContent = totalNoteCount;
 
                 titleWrap.appendChild(noteIconPicker);
                 titleWrap.appendChild(titleH2);
+
+                if (!isBoardReadOnly && parentNote) {
+                    const editHint = document.createElement('span');
+                    editHint.className = 'column-title-edit-hint';
+                    editHint.title = 'Редагувати назву нотатки';
+                    editHint.innerHTML = `
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 20h9"></path>
+                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                        </svg>
+                    `;
+                    editHint.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        titleH2.focus();
+                        const sel = window.getSelection();
+                        if (sel) {
+                            const range = document.createRange();
+                            range.selectNodeContents(titleH2);
+                            sel.removeAllRanges();
+                            sel.addRange(range);
+                        }
+                    });
+                    titleWrap.appendChild(editHint);
+                }
+
                 titleWrap.appendChild(badgeSpan);
             }
 

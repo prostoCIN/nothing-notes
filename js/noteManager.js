@@ -288,11 +288,39 @@ window.App = window.App || {};
                     window.App.cloudSync.syncNote(state.notes[index]);
                 }
 
-                // Якщо оновлюється заголовок нотатки, до якої прив'язана колонка - оновлюємо заголовок колонки
+                // Якщо оновлюється заголовок нотатки - комплексно синхронізуємо всі пов'язані DOM-елементи
                 if (updates.title !== undefined) {
+                    const cleanTitle = updates.title.trim();
+                    const displayTitle = cleanTitle || 'Без назви';
+
+                    // 1. Заголовок прив'язаної дочірньої колонки
                     const linkedHeader = document.querySelector(`.board-column[data-parent-id="${id}"] .column-title`);
-                    if (linkedHeader) {
-                        linkedHeader.textContent = updates.title.trim() || 'Без назви';
+                    if (linkedHeader && linkedHeader !== document.activeElement && linkedHeader.textContent !== displayTitle) {
+                        linkedHeader.textContent = displayTitle;
+                    }
+
+                    // 2. Заголовок самої картки-стікера у робочій області
+                    const stickerCard = document.querySelector(`.note-sticker[data-note-id="${id}"]`);
+                    if (stickerCard) {
+                        const cardTitle = stickerCard.querySelector('.sticker-title');
+                        if (cardTitle && cardTitle !== document.activeElement && cardTitle.textContent !== updates.title) {
+                            cardTitle.textContent = updates.title;
+                            if (cleanTitle) {
+                                cardTitle.removeAttribute('data-empty');
+                            } else {
+                                cardTitle.setAttribute('data-empty', 'true');
+                            }
+                        }
+                    }
+
+                    // 3. Список прев'ю піднотаток всередині батьківських карток
+                    document.querySelectorAll(`.subnote-preview-item[data-subnote-id="${id}"] span:last-child`).forEach(span => {
+                        span.textContent = displayTitle;
+                    });
+
+                    // 4. Елемент нотатки в дереві сайдбара
+                    if (window.App.sidebarView && window.App.sidebarView.updateNoteListItem) {
+                        window.App.sidebarView.updateNoteListItem(id, updates.title, state.notes[index].icon);
                     }
                 }
 

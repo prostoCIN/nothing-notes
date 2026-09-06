@@ -751,21 +751,30 @@ body.global-eraser-active #workspace-eraser-btn {
 
 .column-title.editable-board-title:focus {
     background-color: var(--sidebar-bg);
-    box-shadow: 0 0 0 1px var(--accent-color);
+    box-shadow: 0 0 0 1.5px var(--accent-color);
+    text-overflow: clip;
 }
 
 .column-title-edit-hint {
     opacity: 0;
     color: var(--text-muted);
-    transition: opacity 0.2s ease;
+    cursor: pointer;
+    transition: opacity 0.2s ease, color 0.15s ease;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    padding: 2px;
+    border-radius: 4px;
+}
+
+.column-title-edit-hint:hover {
+    color: var(--text-main);
+    background-color: var(--hover-bg);
 }
 
 .column-title-wrap:hover .column-title-edit-hint {
-    opacity: 0.6;
+    opacity: 0.7;
 }
 
 .column-badge, .column-count-badge {
