@@ -6,7 +6,16 @@ window.App = window.App || {};
 
     window.App.noteManager = {
         init(callbacks) {
-            onNotesChangeCallback = callbacks.onNotesChange;
+            onNotesChangeCallback = callbacks ? callbacks.onNotesChange : null;
+        },
+
+        notifyNotesChanged(data) {
+            if (onNotesChangeCallback) {
+                onNotesChangeCallback(data);
+            }
+            if (window.App.events) {
+                window.App.events.emit('notes:changed', data);
+            }
         },
 
         // Санітизація контенту нотатки для запобігання XSS-атакам
@@ -125,9 +134,7 @@ window.App = window.App || {};
                 window.App.cloudSync.syncNote(newNote);
             }
 
-            if (onNotesChangeCallback) {
-                onNotesChangeCallback();
-            }
+            this.notifyNotesChanged({ type: 'create', note: newNote });
 
             if (shouldFocus) {
                 setTimeout(() => {
@@ -219,9 +226,7 @@ window.App = window.App || {};
 
                 storage.saveNotes(state.notes);
 
-                if (onNotesChangeCallback) {
-                    onNotesChangeCallback();
-                }
+                this.notifyNotesChanged({ type: 'delete', deletedIds: Array.from(toDeleteIds) });
             };
 
             if (window.App.confirmModal) {
@@ -291,8 +296,8 @@ window.App = window.App || {};
                     }
                 }
 
-                if (triggerReRender && onNotesChangeCallback) {
-                    onNotesChangeCallback();
+                if (triggerReRender) {
+                    this.notifyNotesChanged({ type: 'update', note: noteToUpdate });
                 }
             }
         },
@@ -319,8 +324,8 @@ window.App = window.App || {};
 
             if (hasChanges) {
                 storage.saveNotes(state.notes);
-                if (triggerReRender && onNotesChangeCallback) {
-                    onNotesChangeCallback();
+                if (triggerReRender) {
+                    this.notifyNotesChanged({ type: 'updateMultiple', noteIds });
                 }
             }
         },
@@ -389,9 +394,7 @@ window.App = window.App || {};
 
             storage.saveNotes(state.notes);
 
-            if (onNotesChangeCallback) {
-                onNotesChangeCallback();
-            }
+            this.notifyNotesChanged({ type: 'swap' });
         },
 
         reorderNotesByIds(newOrderIds, parentId) {
@@ -412,9 +415,7 @@ window.App = window.App || {};
                 window.App.cloudSync.pushAllToCloud();
             }
 
-            if (onNotesChangeCallback) {
-                onNotesChangeCallback();
-            }
+            this.notifyNotesChanged({ type: 'reorder' });
         },
 
         moveNoteToParent(noteId, newParentId) {
@@ -439,9 +440,7 @@ window.App = window.App || {};
 
             storage.saveNotes(state.notes);
 
-            if (onNotesChangeCallback) {
-                onNotesChangeCallback();
-            }
+            this.notifyNotesChanged({ type: 'move', noteId, newParentId });
 
             return true;
         },
@@ -494,9 +493,7 @@ window.App = window.App || {};
                 });
             }
 
-            if (onNotesChangeCallback) {
-                onNotesChangeCallback();
-            }
+            this.notifyNotesChanged({ type: 'duplicate', rootNote: rootClonedNote });
 
             // Підсвічування створеної дубльованої нотатки
             setTimeout(() => {

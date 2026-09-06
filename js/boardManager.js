@@ -7,8 +7,18 @@ window.App = window.App || {};
 
     window.App.boardManager = {
         init(callbacks) {
-            onBoardChangeCallback = callbacks.onBoardChange;
-            onWelcomeNeededCallback = callbacks.onWelcomeNeeded;
+            onBoardChangeCallback = callbacks ? callbacks.onBoardChange : null;
+            onWelcomeNeededCallback = callbacks ? callbacks.onWelcomeNeeded : null;
+        },
+
+        notifyBoardChanged(boardId) {
+            if (onBoardChangeCallback) onBoardChangeCallback(boardId);
+            if (window.App.events) window.App.events.emit('board:changed', boardId);
+        },
+
+        notifyWelcomeNeeded() {
+            if (onWelcomeNeededCallback) onWelcomeNeededCallback();
+            if (window.App.events) window.App.events.emit('welcome:needed');
         },
 
         getActiveBoard() {
@@ -124,9 +134,7 @@ window.App = window.App || {};
             state.activeChain = [null]; // Скидаємо ланцюжок відкритих колонок
             state.expandedSidebarNoteIds.clear();
 
-            if (onBoardChangeCallback) {
-                onBoardChangeCallback();
-            }
+            this.notifyBoardChanged(id);
         },
 
         deleteBoard(id, event) {
@@ -173,12 +181,12 @@ window.App = window.App || {};
                 if (state.boards.length === 0) {
                     state.activeBoardId = null;
                     storage.saveActiveBoardId(null);
-                    if (onWelcomeNeededCallback) onWelcomeNeededCallback();
+                    this.notifyWelcomeNeeded();
                 } else {
                     if (state.activeBoardId === id) {
                         this.switchBoard(state.boards[0].id);
-                    } else if (onBoardChangeCallback) {
-                        onBoardChangeCallback();
+                    } else {
+                        this.notifyBoardChanged(state.activeBoardId);
                     }
                 }
             };

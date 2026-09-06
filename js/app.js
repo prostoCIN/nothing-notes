@@ -15,26 +15,29 @@ document.addEventListener('DOMContentLoaded', () => {
         window.App.historyManager.init();
     }
 
-    boardManager.init({
-        onBoardChange: () => {
+    // Підписка на події через центральний EventBus
+    if (window.App.events) {
+        window.App.events.on('notes:changed', () => {
+            sidebarView.renderNotesList();
+            workspaceView.render();
+        });
+
+        window.App.events.on('board:changed', () => {
             if (window.App.historyManager) {
                 window.App.historyManager.reset();
             }
             welcomeView.hide();
             sidebarView.render();
             workspaceView.render();
-        },
-        onWelcomeNeeded: () => {
-            welcomeView.show();
-        }
-    });
+        });
 
-    noteManager.init({
-        onNotesChange: () => {
-            sidebarView.renderNotesList();
-            workspaceView.render();
-        }
-    });
+        window.App.events.on('welcome:needed', () => {
+            welcomeView.show();
+        });
+    }
+
+    boardManager.init();
+    noteManager.init();
 
     sidebarView.init({
         onSelectNote: (noteId) => {
@@ -51,6 +54,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (window.App.textSelectionToolbar) {
         window.App.textSelectionToolbar.init();
+    }
+    if (window.App.brushTool) {
+        window.App.brushTool.init();
+    }
+    if (window.App.eraserTool) {
+        window.App.eraserTool.init();
+    }
+    if (window.App.workspaceSearch) {
+        window.App.workspaceSearch.init();
     }
 
     if (window.App.authModal) {

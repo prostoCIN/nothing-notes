@@ -9,7 +9,6 @@ window.App = window.App || {};
     let isInteracting = false;
 
     let isApplyToAll = false; // Режим: тільки виділений фрагмент чи всі такі слова в нотатці
-    let activeBrushMarker = null; // Активний колір пензля швидкого маркування
 
     // Палітра маркерів хайлайтера (класи прив'язані до CSS стилів <mark>)
     const MARKER_COLORS = [
@@ -123,72 +122,6 @@ window.App = window.App || {};
                 console.log(`[TextToolbar] Режим "Всі слова": ${isApplyToAll ? 'УВІМКНЕНО' : 'ВИМКНЕНО'}`);
             });
 
-            // Підключення кнопки пензля у верхньому хедері (workspace-top-header)
-            const headerBrushBtn = document.getElementById('workspace-brush-btn');
-            const colorTriggerBtn = document.getElementById('workspace-brush-color-btn');
-            const colorDropdown = document.getElementById('workspace-brush-dropdown');
-            const colorDot = document.getElementById('workspace-brush-color-dot');
-
-            let currentBrushColorClass = 'hl-green';
-            const colorBgMap = {
-                'hl-green': '#bbf7d0',
-                'hl-yellow': '#fef08a',
-                'hl-blue': '#bae6fd',
-                'hl-pink': '#fbcfe8',
-                'hl-orange': '#fed7aa',
-                'hl-purple': '#e9d5ff'
-            };
-
-            if (headerBrushBtn) {
-                headerBrushBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    if (colorDropdown) colorDropdown.classList.remove('active');
-                    if (activeBrushMarker) {
-                        this.disableBrushMode();
-                    } else {
-                        this.enableBrushMode(currentBrushColorClass);
-                    }
-                });
-            }
-
-            if (colorTriggerBtn && colorDropdown) {
-                colorTriggerBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    colorDropdown.classList.toggle('active');
-                });
-
-                colorDropdown.querySelectorAll('.brush-palette-item').forEach(item => {
-                    item.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const colorClass = item.dataset.color;
-                        currentBrushColorClass = colorClass;
-
-                        // Оновлюємо активний стан елементів палітри
-                        colorDropdown.querySelectorAll('.brush-palette-item').forEach(i => i.classList.remove('active'));
-                        item.classList.add('active');
-
-                        // Оновлюємо колір крапки
-                        if (colorDot) {
-                            colorDot.style.backgroundColor = colorBgMap[colorClass] || '#bbf7d0';
-                        }
-
-                        // Якщо режим пензля вже увімкнений — оновлюємо його колір
-                        if (activeBrushMarker) {
-                            activeBrushMarker = colorClass;
-                        } else {
-                            this.enableBrushMode(colorClass);
-                        }
-
-                        colorDropdown.classList.remove('active');
-                    });
-                });
-
-                document.addEventListener('pointerdown', (e) => {
-                    if (!colorDropdown.contains(e.target) && !colorTriggerBtn.contains(e.target)) {
-                        colorDropdown.classList.remove('active');
-                    }
-                });
-            }
 
             const getTargetWord = () => {
                 let text = savedSelectedText;
@@ -287,30 +220,31 @@ window.App = window.App || {};
             });
         },
 
-        enableBrushMode(markerClass = 'hl-green') {
-            // Автоматично вимикаємо режим гумки, якщо він був активний
-            if (document.body.classList.contains('global-eraser-active')) {
-                document.body.classList.remove('global-eraser-active');
-                const eraserBtn = document.getElementById('workspace-eraser-btn');
-                if (eraserBtn) eraserBtn.classList.remove('active');
+        enableBrushMode(markerClass) {
+            if (window.App.brushTool) {
+                window.App.brushTool.enable(markerClass);
             }
-
-            activeBrushMarker = markerClass;
-            document.body.classList.add('highlighter-brush-active');
-            const brushBtn = document.getElementById('workspace-brush-btn');
-            if (brushBtn) brushBtn.classList.add('active');
         },
 
         disableBrushMode() {
-            activeBrushMarker = null;
-            document.body.classList.remove('highlighter-brush-active');
-            const brushBtn = document.getElementById('workspace-brush-btn');
-            if (brushBtn) brushBtn.classList.remove('active');
+            if (window.App.brushTool) {
+                window.App.brushTool.disable();
+            }
+        },
+
+        getActiveContentDiv() {
+            return activeContentDiv;
+        },
+
+        setActiveContentDiv(div) {
+            activeContentDiv = div;
         },
 
         bindEvents() {
             document.addEventListener('selectionchange', () => {
-                if (isInteracting || activeBrushMarker || document.body.classList.contains('global-eraser-active')) return;
+                const isBrush = window.App.brushTool && window.App.brushTool.isActive();
+                const isEraser = (window.App.eraserTool && window.App.eraserTool.isActive()) || document.body.classList.contains('global-eraser-active');
+                if (isInteracting || isBrush || isEraser) return;
                 this.checkSelection();
             });
 
@@ -318,398 +252,16 @@ window.App = window.App || {};
                 if (!isInteracting) this.hide();
             }, true);
 
-            // Клік у режимі пензля: швидке фарбування виділеного слова або репліки
-            document.addEventListener('mouseup', (e) => {
-                if (!activeBrushMarker) return;
-                const contentDiv = e.target.closest('.sticker-content');
-                if (!contentDiv) return;
-
-                const selection = window.getSelection();
-                if (selection && !selection.isCollapsed && selection.rangeCount > 0) {
-                    activeContentDiv = contentDiv;
-                    const range = selection.getRangeAt(0);
-                    if (window.App.historyManager) {
-                        window.App.historyManager.recordState('brush_highlight');
-                    }
-                    this.applyMarkerToRange(range, activeBrushMarker);
-                    this.syncChanges();
-                    selection.removeAllRanges();
-                }
-            });
-
             document.addEventListener('pointerdown', (e) => {
                 if (toolbarEl && !toolbarEl.contains(e.target) && !e.target.closest('.sticker-content')) {
                     this.hide();
                 }
             });
 
-            // Швидка глобальна гумка (Eraser mode)
-            const eraserBtn = document.getElementById('workspace-eraser-btn');
-
-            const toggleEraserMode = (enable) => {
-                const isCurrentlyActive = document.body.classList.contains('global-eraser-active');
-                const shouldBeActive = (typeof enable === 'boolean') ? enable : !isCurrentlyActive;
-
-                document.body.classList.toggle('global-eraser-active', shouldBeActive);
-                if (eraserBtn) eraserBtn.classList.toggle('active', shouldBeActive);
-
-                if (shouldBeActive) {
-                    this.disableBrushMode();
-                }
-            };
-
-            if (eraserBtn) {
-                eraserBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    toggleEraserMode();
-                });
-            }
-
-            // Робота гумки суворо по виділенню (1-в-1 як пензлик): виділили текст мишею -> маркер змивається
-            document.addEventListener('mouseup', (e) => {
-                if (!document.body.classList.contains('global-eraser-active')) return;
-                const contentDiv = e.target.closest('.sticker-content');
-                if (!contentDiv) return;
-
-                const selection = window.getSelection();
-                if (selection && !selection.isCollapsed && selection.rangeCount > 0) {
-                    activeContentDiv = contentDiv;
-                    const range = selection.getRangeAt(0);
-                    if (window.App.historyManager) {
-                        window.App.historyManager.recordState('eraser_selection');
-                    }
-                    this.clearMarkerFromRange(range);
-                    this.syncChanges();
-                    selection.removeAllRanges();
-                }
-            });
-
-            // Дзен / Фокус Режим
-            const zenBtn = document.getElementById('workspace-zen-btn');
-            if (zenBtn) {
-                zenBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    document.body.classList.toggle('zen-mode-active');
-                });
-            }
-
-            // Згорнути всі ланцюжки піднотаток (залишаючи лише базову головну колонку)
-            const collapseBtn = document.getElementById('workspace-collapse-btn');
-            if (collapseBtn) {
-                collapseBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const state = window.App.state;
-                    if (state && state.activeChain && state.activeChain.length > 1) {
-                        state.activeChain = [null];
-                        if (window.App.workspaceView) {
-                            window.App.workspaceView.render();
-                        }
-                    }
-                });
-            }
-
-            // Глобальний пошук та підсвічування на дошці (Ctrl + F)
-            const searchBtn = document.getElementById('workspace-search-btn');
-            const searchBar = document.getElementById('workspace-search-bar');
-            const searchInput = document.getElementById('workspace-search-input');
-            const searchCount = document.getElementById('workspace-search-count');
-            const searchClose = document.getElementById('workspace-search-close');
-
-            // Пошук по слову з перемиканням між збігами (PDF Style) та авто-розгортанням колонок піднотаток
-            const searchNav = document.getElementById('workspace-search-nav');
-            const searchPrevBtn = document.getElementById('workspace-search-prev');
-            const searchNextBtn = document.getElementById('workspace-search-next');
-
-            let searchMatches = []; // Масив об'єктів { noteId, isVisible } або DOM mark елементів
-            let currentMatchIndex = -1;
-
-            const clearSearchHighlights = () => {
-                document.querySelectorAll('mark.workspace-search-highlight').forEach(mark => {
-                    const parent = mark.parentNode;
-                    if (parent) {
-                        while (mark.firstChild) {
-                            parent.insertBefore(mark.firstChild, mark);
-                        }
-                        parent.removeChild(mark);
-                    }
-                });
-                document.querySelectorAll('.sticker-content, .sticker-title').forEach(el => el.normalize());
-                searchMatches = [];
-                currentMatchIndex = -1;
-                if (searchCount) searchCount.style.display = 'none';
-                if (searchNav) searchNav.style.display = 'none';
-            };
-
-            const highlightCurrentMatch = (index) => {
-                if (searchMatches.length === 0 || index < 0 || index >= searchMatches.length) return;
-
-                // Знімаємо клас active з усіх підсвічувань
-                document.querySelectorAll('mark.workspace-search-highlight.current-search-match').forEach(m => {
-                    m.classList.remove('current-search-match');
-                });
-
-                const targetMatch = searchMatches[index];
-                currentMatchIndex = index;
-
-                if (searchCount) {
-                    searchCount.textContent = `${index + 1}/${searchMatches.length}`;
-                    searchCount.style.display = 'inline-block';
-                }
-
-                // Перевіряємо чи картка цієї нотатки зараз присутня у відкритих колонках DOM
-                let card = document.querySelector(`.note-sticker[data-note-id="${targetMatch.noteId}"]`);
-
-                const focusAndScrollToMatch = (targetCard) => {
-                    if (!targetCard) return;
-                    // Знаходимо всі марковані елементи всередині цієї картки (і в title, і в content)
-                    const cardMarks = Array.from(targetCard.querySelectorAll('mark.workspace-search-highlight'));
-                    const matchEl = cardMarks[targetMatch.matchIndexInNote] || cardMarks[0] || targetCard;
-
-                    if (matchEl && matchEl.classList) {
-                        matchEl.classList.add('current-search-match');
-                        matchEl.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
-                    } else {
-                        targetCard.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
-                    }
-                };
-
-                if (!card) {
-                    // Нотатка схована в закритій піднотатці — відкриваємо ланцюжок колонок через scrollToNote
-                    if (window.App.workspaceView && window.App.workspaceView.scrollToNote) {
-                        window.App.workspaceView.scrollToNote(targetMatch.noteId);
-                        // Після рендерингу колонок знову накладаємо підсвічування тексту
-                        setTimeout(() => {
-                            applyHighlightsToDOM(searchInput.value.trim().toLowerCase());
-                            const newCard = document.querySelector(`.note-sticker[data-note-id="${targetMatch.noteId}"]`);
-                            focusAndScrollToMatch(newCard);
-                        }, 120);
-                    }
-                } else {
-                    focusAndScrollToMatch(card);
-                }
-            };
-
-            const applyHighlightsToDOM = (target) => {
-                if (!target || target.length < 1) return;
-                // Підсвічуємо і в заголовках .sticker-title, і в основному тексті .sticker-content
-                document.querySelectorAll('.sticker-title, .sticker-content').forEach(textContainer => {
-                    const card = textContainer.closest('.note-sticker');
-                    if (!card) return;
-
-                    const walker = document.createTreeWalker(textContainer, NodeFilter.SHOW_TEXT, null);
-                    const textNodes = [];
-                    let curr = walker.nextNode();
-                    while (curr) {
-                        textNodes.push(curr);
-                        curr = walker.nextNode();
-                    }
-
-                    textNodes.forEach(node => {
-                        const val = node.nodeValue;
-                        if (!val) return;
-                        const lower = val.toLowerCase();
-                        const idx = lower.indexOf(target);
-                        if (idx !== -1) {
-                            const parent = node.parentNode;
-                            if (!parent || parent.classList?.contains('workspace-search-highlight')) return;
-
-                            const parts = [];
-                            let lastIdx = 0;
-                            let pos = lower.indexOf(target, lastIdx);
-
-                            while (pos !== -1) {
-                                parts.push(val.substring(lastIdx, pos));
-                                parts.push(val.substring(pos, pos + target.length));
-                                lastIdx = pos + target.length;
-                                pos = lower.indexOf(target, lastIdx);
-                            }
-                            parts.push(val.substring(lastIdx));
-
-                            const fragment = document.createDocumentFragment();
-                            for (let i = 0; i < parts.length; i++) {
-                                if (i % 2 === 1) {
-                                    const mark = document.createElement('mark');
-                                    mark.className = 'workspace-search-highlight';
-                                    mark.textContent = parts[i];
-                                    fragment.appendChild(mark);
-                                } else if (parts[i]) {
-                                    fragment.appendChild(document.createTextNode(parts[i]));
-                                }
-                            }
-                            parent.replaceChild(fragment, node);
-                        }
-                    });
-                });
-            };
-
-            const performGlobalSearch = (query) => {
-                clearSearchHighlights();
-                if (!query || query.trim().length < 1) {
-                    return;
-                }
-
-                const target = query.trim().toLowerCase();
-                const state = window.App.state;
-
-                // 1. Спочатку шукаємо збіги в усіх нотатках активної дошки (включаючи закриті піднотатки)
-                const boardNotes = state.notes.filter(n => n.boardId === state.activeBoardId);
-                const matchesList = [];
-
-                boardNotes.forEach(note => {
-                    let countInThisNote = 0;
-
-                    // 1.1 Пошук у заголовку нотатки
-                    if (note.title) {
-                        const cleanTitle = note.title.toLowerCase();
-                        let pos = cleanTitle.indexOf(target);
-                        while (pos !== -1) {
-                            matchesList.push({
-                                noteId: note.id,
-                                matchIndexInNote: countInThisNote
-                            });
-                            countInThisNote++;
-                            pos = cleanTitle.indexOf(target, pos + target.length);
-                        }
-                    }
-
-                    // 1.2 Пошук у контенті нотатки
-                    if (note.content) {
-                        const temp = document.createElement('div');
-                        temp.innerHTML = note.content || '';
-                        const cleanContent = temp.textContent.toLowerCase();
-                        let pos = cleanContent.indexOf(target);
-                        while (pos !== -1) {
-                            matchesList.push({
-                                noteId: note.id,
-                                matchIndexInNote: countInThisNote
-                            });
-                            countInThisNote++;
-                            pos = cleanContent.indexOf(target, pos + target.length);
-                        }
-                    }
-                });
-
-                searchMatches = matchesList;
-
-                if (searchMatches.length === 0) {
-                    if (searchCount) {
-                        searchCount.textContent = '0/0';
-                        searchCount.style.display = 'inline-block';
-                    }
-                    if (searchNav) searchNav.style.display = 'none';
-                    return;
-                }
-
-                // 2. Накладаємо підсвічування на всі видимі картки на екрані
-                applyHighlightsToDOM(target);
-
-                // 3. Показуємо кнопки навігації та переходимо до 1-го збігу
-                if (searchNav) searchNav.style.display = 'inline-flex';
-                highlightCurrentMatch(0);
-            };
-
-            const goToNextMatch = () => {
-                if (searchMatches.length === 0) return;
-                const nextIndex = (currentMatchIndex + 1) % searchMatches.length;
-                highlightCurrentMatch(nextIndex);
-            };
-
-            const goToPrevMatch = () => {
-                if (searchMatches.length === 0) return;
-                const prevIndex = (currentMatchIndex - 1 + searchMatches.length) % searchMatches.length;
-                highlightCurrentMatch(prevIndex);
-            };
-
-            if (searchNextBtn) searchNextBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                goToNextMatch();
-            });
-
-            const searchWrap = document.getElementById('workspace-search-wrap');
-
-            const openSearch = () => {
-                if (searchBar) {
-                    searchBar.style.display = 'flex';
-                    if (searchInput) {
-                        searchInput.focus();
-                        searchInput.select();
-                        if (searchInput.value.trim()) {
-                            performGlobalSearch(searchInput.value);
-                        }
-                    }
-                }
-            };
-
-            const closeSearch = () => {
-                if (searchBar) searchBar.style.display = 'none';
-                if (searchInput) searchInput.value = '';
-                clearSearchHighlights();
-            };
-
-            if (searchBtn) {
-                searchBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    if (searchBar && searchBar.style.display === 'flex') {
-                        closeSearch();
-                    } else {
-                        openSearch();
-                    }
-                });
-            }
-
-            if (searchClose) searchClose.addEventListener('click', (e) => {
-                e.stopPropagation();
-                closeSearch();
-            });
-
-            // Закриття пошуку при кліку в будь-яке інше місце сторінки
-            document.addEventListener('pointerdown', (e) => {
-                if (searchWrap && !searchWrap.contains(e.target)) {
-                    if (searchBar && searchBar.style.display === 'flex') {
-                        closeSearch();
-                    }
-                }
-            });
-
-            if (searchInput) {
-                searchInput.addEventListener('input', (e) => {
-                    performGlobalSearch(e.target.value);
-                });
-                searchInput.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        closeSearch();
-                    } else if (e.key === 'ArrowDown') {
-                        e.preventDefault();
-                        goToNextMatch();
-                    } else if (e.key === 'ArrowUp') {
-                        e.preventDefault();
-                        goToPrevMatch();
-                    } else if (e.key === 'Escape') {
-                        closeSearch();
-                    }
-                });
-            }
-
-            // Глобальне перехоплення Ctrl+F на етапі захоплення (Capture Phase) та надійний вихід з режимів по Esc
+            // Закриття тулбара форматування по Escape
             window.addEventListener('keydown', (e) => {
-                if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'f' || e.code === 'KeyF')) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    e.stopImmediatePropagation();
-                    openSearch();
-                } else if (e.key === 'Escape') {
-                    // 1. Вимикаємо режим швидкого пензля
-                    this.disableBrushMode();
-                    // 2. Вимикаємо режим швидкої гумки
-                    toggleEraserMode(false);
-                    // 3. Закриваємо випадаючу палітру кольорів пензля
-                    const brushDropdown = document.getElementById('workspace-brush-dropdown');
-                    if (brushDropdown) brushDropdown.classList.remove('active');
-                    // 4. Закриваємо тулбар форматування
+                if (e.key === 'Escape') {
                     this.hide();
-                    // 5. Закриваємо пошук
-                    closeSearch();
                 }
             }, true);
         },

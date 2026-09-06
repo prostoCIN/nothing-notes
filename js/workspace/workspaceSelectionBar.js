@@ -251,7 +251,11 @@ window.App = window.App || {};
                         const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
                         if (selectedIds.length === 0) return;
 
-                        noteManager.updateMultipleNotes(selectedIds, { color: c.id });
+                        if (window.App.workspaceSelectionActions) {
+                            window.App.workspaceSelectionActions.changeColor(selectedIds, c.id);
+                        } else {
+                            noteManager.updateMultipleNotes(selectedIds, { color: c.id });
+                        }
                         this.closeSubmenus();
                     });
 
@@ -276,25 +280,15 @@ window.App = window.App || {};
                 const tickLines = sliderContainer ? sliderContainer.querySelectorAll('.note-font-tick-line') : [];
 
                 const applyStep = (stepIdx) => {
-                    const newSize = FONT_SIZES[stepIdx];
                     badge.textContent = FONT_LABELS[stepIdx];
                     tickLines.forEach((t, i) => t.classList.toggle('active', i === stepIdx));
 
                     const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
                     if (selectedIds.length === 0) return;
 
-                    selectedIds.forEach(id => {
-                        const card = document.querySelector(`.note-sticker[data-note-id="${id}"]`);
-                        if (card) {
-                            card.dataset.fontStep = stepIdx;
-                            card.style.setProperty('--custom-content-font-size', `${newSize}px`);
-                            card.style.setProperty('--custom-title-font-size', `${Math.round(newSize * 1.5)}px`);
-                            card.style.setProperty('--custom-line-height', `${Math.max(26, Math.round(newSize * 1.7))}px`);
-                            card.classList.add('has-custom-font-size');
-                        }
-                    });
-
-                    noteManager.updateMultipleNotes(selectedIds, { fontSize: newSize }, false);
+                    if (window.App.workspaceSelectionActions) {
+                        window.App.workspaceSelectionActions.changeFontSize(selectedIds, stepIdx, false);
+                    }
                 };
 
                 slider.addEventListener('input', (e) => {
@@ -305,9 +299,10 @@ window.App = window.App || {};
 
                 slider.addEventListener('change', (e) => {
                     const stepIdx = Math.max(0, Math.min(3, parseInt(e.target.value, 10) || 0));
-                    const newSize = FONT_SIZES[stepIdx];
                     const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
-                    noteManager.updateMultipleNotes(selectedIds, { fontSize: newSize }, true);
+                    if (window.App.workspaceSelectionActions) {
+                        window.App.workspaceSelectionActions.changeFontSize(selectedIds, stepIdx, true);
+                    }
                 });
 
                 tickLines.forEach(tick => {
@@ -316,9 +311,10 @@ window.App = window.App || {};
                         const stepIdx = parseInt(tick.dataset.step, 10);
                         slider.value = stepIdx;
                         applyStep(stepIdx);
-                        const newSize = FONT_SIZES[stepIdx];
                         const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
-                        noteManager.updateMultipleNotes(selectedIds, { fontSize: newSize }, true);
+                        if (window.App.workspaceSelectionActions) {
+                            window.App.workspaceSelectionActions.changeFontSize(selectedIds, stepIdx, true);
+                        }
                     });
                 });
             };
@@ -388,58 +384,18 @@ window.App = window.App || {};
                         mainAction.addEventListener('click', (e) => {
                             e.stopPropagation();
                             if (selectedIds.length === 0) return;
-
-                            if (window.App.historyManager) {
-                                window.App.historyManager.recordState('batch_tags_change');
+                            if (window.App.workspaceSelectionActions) {
+                                window.App.workspaceSelectionActions.toggleTag(selectedIds, tagText);
                             }
-
-                            // Якщо тег є у всіх — знімаємо його. Якщо немає або є лише в частини — призначаємо всім (або при повторному кліку знімаємо)
-                            const shouldRemove = allHaveTag || someHaveTag;
-
-                            selectedIds.forEach(id => {
-                                const note = noteManager.getNoteById(id);
-                                if (!note) return;
-                                let currentTags = Array.isArray(note.tags) ? [...note.tags] : (note.tag ? [note.tag.text || note.tag] : []);
-                                
-                                if (shouldRemove) {
-                                    currentTags = currentTags.filter(t => t !== tagText);
-                                } else {
-                                    if (!currentTags.includes(tagText)) {
-                                        currentTags.push(tagText);
-                                    }
-                                }
-                                note.tags = currentTags;
-                                note.updatedAt = Date.now();
-                                delete note.tag;
-                                if (window.App.cloudSync) {
-                                    window.App.cloudSync.syncNote(note);
-                                }
-                            });
-
-                            storage.saveNotes(state.notes);
-                            window.App.workspaceView.render();
-                            this.refreshTagSubmenu();
                         });
 
                         // Клік по кнопці × — повне видалення тегу зі списку та з усіх нотаток
                         const delBtn = item.querySelector('.selection-tag-del-btn');
                         delBtn.addEventListener('click', (e) => {
                             e.stopPropagation();
-
-                            const currentOptions = (storage.getTagOptions ? storage.getTagOptions() : []).filter(o => o !== tagText);
-                            if (storage.saveTagOptions) storage.saveTagOptions(currentOptions);
-
-                            state.notes.forEach(n => {
-                                if (Array.isArray(n.tags) && n.tags.includes(tagText)) {
-                                    n.tags = n.tags.filter(t => t !== tagText);
-                                    n.updatedAt = Date.now();
-                                    if (window.App.cloudSync) window.App.cloudSync.syncNote(n);
-                                }
-                            });
-
-                            storage.saveNotes(state.notes);
-                            window.App.workspaceView.render();
-                            this.refreshTagSubmenu();
+                            if (window.App.workspaceSelectionActions) {
+                                window.App.workspaceSelectionActions.deleteTagGlobally(tagText);
+                            }
                         });
 
                         tagList.appendChild(item);
@@ -462,26 +418,9 @@ window.App = window.App || {};
                     e.stopPropagation();
                     const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
                     if (selectedIds.length === 0) return;
-
-                    if (window.App.historyManager) {
-                        window.App.historyManager.recordState('batch_tags_clear');
+                    if (window.App.workspaceSelectionActions) {
+                        window.App.workspaceSelectionActions.clearAllTags(selectedIds);
                     }
-
-                    selectedIds.forEach(id => {
-                        const note = noteManager.getNoteById(id);
-                        if (note) {
-                            note.tags = [];
-                            note.updatedAt = Date.now();
-                            delete note.tag;
-                            if (window.App.cloudSync) {
-                                window.App.cloudSync.syncNote(note);
-                            }
-                        }
-                    });
-
-                    storage.saveNotes(state.notes);
-                    window.App.workspaceView.render();
-                    this.closeSubmenus();
                 });
 
                 containerEl.appendChild(clearTagsBtn);
@@ -498,31 +437,10 @@ window.App = window.App || {};
                 const submitNewTag = () => {
                     const newOpt = addInput.value.trim();
                     if (newOpt) {
-                        const currentAvailable = storage.getTagOptions ? storage.getTagOptions() : [];
-                        if (!currentAvailable.includes(newOpt)) {
-                            currentAvailable.push(newOpt);
-                            if (storage.saveTagOptions) storage.saveTagOptions(currentAvailable);
-                        }
-
-                        // Автоматично додаємо створений тег до всіх вибраних нотаток
                         const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
-                        selectedIds.forEach(id => {
-                            const note = noteManager.getNoteById(id);
-                            if (note) {
-                                let currentTags = Array.isArray(note.tags) ? [...note.tags] : (note.tag ? [note.tag.text || note.tag] : []);
-                                if (!currentTags.includes(newOpt)) {
-                                    currentTags.push(newOpt);
-                                    note.tags = currentTags;
-                                    note.updatedAt = Date.now();
-                                    delete note.tag;
-                                    if (window.App.cloudSync) window.App.cloudSync.syncNote(note);
-                                }
-                            }
-                        });
-
-                        storage.saveNotes(state.notes);
-                        window.App.workspaceView.render();
-                        this.refreshTagSubmenu();
+                        if (window.App.workspaceSelectionActions) {
+                            window.App.workspaceSelectionActions.createAndAssignTag(newOpt, selectedIds);
+                        }
                     }
                 };
 
@@ -635,7 +553,9 @@ window.App = window.App || {};
                     const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
                     if (selectedIds.length === 0) return;
 
-                    if (window.App.shareManager) {
+                    if (window.App.workspaceSelectionActions) {
+                        window.App.workspaceSelectionActions.shareNotes(selectedIds);
+                    } else if (window.App.shareManager) {
                         window.App.shareManager.showShareModal(state.activeBoardId, selectedIds);
                     }
                 });
@@ -650,9 +570,13 @@ window.App = window.App || {};
                     const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
                     if (selectedIds.length === 0) return;
 
-                    selectedIds.forEach(id => {
-                        noteManager.duplicateNote(id);
-                    });
+                    if (window.App.workspaceSelectionActions) {
+                        window.App.workspaceSelectionActions.duplicateNotes(selectedIds);
+                    } else {
+                        selectedIds.forEach(id => {
+                            noteManager.duplicateNote(id);
+                        });
+                    }
                 });
             }
 
@@ -665,7 +589,11 @@ window.App = window.App || {};
                     const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
                     if (selectedIds.length === 0) return;
 
-                    noteManager.deleteNotes(selectedIds, e);
+                    if (window.App.workspaceSelectionActions) {
+                        window.App.workspaceSelectionActions.deleteNotes(selectedIds, e);
+                    } else {
+                        noteManager.deleteNotes(selectedIds, e);
+                    }
                 });
             }
         },

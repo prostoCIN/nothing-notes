@@ -1,0 +1,1023 @@
+﻿/* ==========================================================================
+   📱 Мобільний адаптив (Mobile Responsive Styles)
+   ========================================================================== */
+
+/* На ПК панель інструментів завжди повністю відкрита горизонтально */
+.header-extra-tools-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Кнопка мобільного меню за замовчуванням прихована на ПК */
+.mobile-menu-btn,
+.mobile-tools-toggle-btn {
+    display: none;
+}
+
+.mobile-menu-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-main);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    align-items: center;
+    justify-content: center;
+    margin-right: 6px;
+    transition: background 0.15s ease;
+}
+
+.mobile-menu-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-close-btn {
+    display: none;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-left: auto;
+}
+
+.sidebar-close-btn:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 998;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+}
+
+.sidebar-overlay.active {
+    display: block;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+@media screen and (max-width: 768px) {
+    /* 0. Фіксація вікна Safari проти паразитного зсуву сторінки під час тапу на інпут/нотатку */
+    html, body {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        height: 100dvh;
+        overflow: hidden;
+    }
+
+    .app-container {
+        height: 100%;
+        height: 100dvh;
+        overflow: hidden;
+    }
+
+    .board-workspace {
+        height: 100%;
+        height: 100dvh;
+        overflow: hidden;
+    }
+
+    /* 0. Заборона паразитного виділення UI на мобільних пристроях (дозволено тільки для тексту нотаток та полів вводу) */
+    *, *::before, *::after {
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+    }
+
+    .sticker-content,
+    .sticker-title,
+    input,
+    textarea,
+    [contenteditable="true"] {
+        -webkit-user-select: text !important;
+        user-select: text !important;
+        -webkit-touch-callout: default !important;
+    }
+
+    /* 1. Показ кнопок мобільного меню */
+    .mobile-menu-btn {
+        display: inline-flex;
+    }
+
+    .sidebar-close-btn {
+        display: inline-flex;
+    }
+
+    /* 2. Ховаємо складні десктопні інструменти на мобільних пристроях (маркери, гумка, історія дій, zen-режим) */
+    .header-extra-tools-wrap {
+        display: none !important;
+    }
+
+    /* 3. Єдиний преміальний стиль для всіх кнопок мобільного хедера */
+    .mobile-menu-btn,
+    #workspace-undo-wrap .header-action-icon-btn,
+    #workspace-redo-wrap .header-action-icon-btn,
+    .header-search-wrap .header-action-icon-btn,
+    #workspace-collapse-wrap .header-action-icon-btn,
+    .header-select-btn {
+        width: 36px !important;
+        height: 36px !important;
+        min-width: 36px !important;
+        padding: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 8px !important;
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: var(--text-main) !important;
+        transition: all 0.15s ease !important;
+    }
+
+    .mobile-menu-btn:active,
+    #workspace-undo-wrap .header-action-icon-btn:not(:disabled):active,
+    #workspace-redo-wrap .header-action-icon-btn:not(:disabled):active,
+    .header-search-wrap .header-action-icon-btn:active,
+    #workspace-collapse-wrap .header-action-icon-btn:active,
+    .header-select-btn:active {
+        background: rgba(255, 255, 255, 0.12) !important;
+        transform: scale(0.95);
+    }
+
+    #workspace-undo-wrap .header-action-icon-btn:disabled,
+    #workspace-redo-wrap .header-action-icon-btn:disabled {
+        opacity: 0.3 !important;
+        cursor: default !important;
+        pointer-events: none !important;
+    }
+
+    /* Ховаємо текст "Вибрати" на мобільному, залишаючи тільки лаконічну іконку з галочкою */
+    #island-select-text {
+        display: none !important;
+    }
+
+    .header-select-btn svg {
+        width: 16px !important;
+        height: 16px !important;
+    }
+
+    .header-select-btn.active {
+        background: var(--emerald-gradient) !important;
+        border-color: transparent !important;
+        color: #062419 !important;
+        box-shadow: 0 4px 14px rgba(22, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+    }
+
+    .header-select-btn.active svg {
+        stroke: #062419 !important;
+    }
+
+    /* Компактний перемикач режимів "Колонки / Граф" тільки з іконками */
+    .header-segment-control {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 8px !important;
+        padding: 2px !important;
+        height: 36px !important;
+        box-sizing: border-box !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 2px !important;
+    }
+
+    .header-segment-btn {
+        width: 32px !important;
+        height: 30px !important;
+        padding: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 6px !important;
+        color: var(--text-muted) !important;
+    }
+
+    .header-segment-btn span {
+        display: none !important; /* Ховаємо підписи "Колонки" та "Граф" */
+    }
+
+    .header-segment-btn svg {
+        width: 16px !important;
+        height: 16px !important;
+    }
+
+    .header-segment-btn.active {
+        background: var(--emerald-gradient) !important;
+        color: #062419 !important;
+        box-shadow: 0 4px 14px rgba(22, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+    }
+
+    .header-segment-btn.active svg {
+        stroke: #062419 !important;
+    }
+
+    .header-divider {
+        margin: 0 1px !important;
+        height: 16px !important;
+        opacity: 0.5;
+    }
+
+    /* Красиве адаптивне оформлення випадаючого поля пошуку на мобільних пристроях */
+    .header-search-bar {
+        position: fixed !important;
+        top: calc(54px + env(safe-area-inset-top, 0px)) !important;
+        left: 12px !important;
+        right: 12px !important;
+        width: calc(100vw - 24px) !important;
+        max-width: none !important;
+        background: rgba(24, 24, 28, 0.98) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.18) !important;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(16, 185, 129, 0.3) !important;
+        border-radius: 12px !important;
+        padding: 10px 14px !important;
+        z-index: 10005 !important;
+        box-sizing: border-box !important;
+    }
+
+    .header-search-bar::before {
+        display: none !important;
+    }
+
+    .header-search-bar input {
+        font-size: 14px !important;
+    }
+
+    @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-6px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 3. Сайдбар перетворюється на висувну шторку з плавною анімацією ковзання в обидва боки */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 84vw;
+        max-width: 320px;
+        height: 100vh;
+        height: 100dvh;
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+        z-index: 999;
+        transform: translateX(-100%);
+        transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.32s ease, visibility 0.32s;
+        box-shadow: none;
+        border-right: 1px solid var(--border-color);
+        visibility: hidden;
+        pointer-events: none;
+    }
+
+    .sidebar.mobile-open {
+        transform: translateX(0);
+        visibility: visible;
+        pointer-events: auto;
+        box-shadow: 8px 0 36px rgba(0, 0, 0, 0.8);
+    }
+
+    .sidebar-overlay {
+        display: block !important;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .sidebar-overlay.active {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+    }
+
+    body.mobile-sidebar-active {
+        overflow: hidden;
+    }
+
+    /* 3. Хедер робочої області (Компактний мобільний формат + Ідеальна адаптація під iOS Safari та PWA) */
+    .workspace-top-header {
+        padding-top: calc(env(safe-area-inset-top, 0px) + 6px) !important;
+        padding-left: max(14px, env(safe-area-inset-left, 0px)) !important;
+        padding-right: max(14px, env(safe-area-inset-right, 0px)) !important;
+        padding-bottom: 6px !important;
+        height: auto !important;
+        min-height: auto !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Якщо сайт відкрито як PWA / Додано на екран «Додому» (Standalone Web App на iOS) */
+    @media all and (display-mode: standalone) {
+        .workspace-top-header {
+            padding-top: max(env(safe-area-inset-top, 44px), 44px) !important;
+        }
+    }
+
+    /* Приховуємо блок заголовка блокнота на мобільних, оскільки назва вже є в самій кореневій колонці */
+    .workspace-header-board-icon,
+    .workspace-header-board-title {
+        display: none !important;
+    }
+
+    /* 4. Колонки на смартфонах займають 100% ширини (1 колонка на весь екран зі зручним свайпом) */
+    .columns-container {
+        display: flex;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        gap: 0;
+        padding: 0;
+        flex: 1 1 0px !important;
+        height: auto !important;
+        min-height: 0 !important;
+    }
+
+    /* Приховуємо кнопку перемикання списку/сітки (Pinterest) на мобільних, оскільки на телефоні завжди зручний 1-колонковий список */
+    .column-layout-toggle-btn {
+        display: none !important;
+    }
+
+    .board-column,
+    .columns-container.has-many-columns .board-column {
+        flex: 0 0 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        scroll-snap-align: start;
+        scroll-snap-stop: always;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        background: transparent !important;
+        padding: 8px 16px 0 16px !important;
+        height: 100% !important;
+        min-height: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Адаптивна шапка колонки: компактний заголовок та іконка фільтра без тексту */
+    .column-header {
+        padding-bottom: 10px !important;
+        margin-bottom: 12px !important;
+        gap: 8px !important;
+        flex-shrink: 0 !important;
+    }
+
+    .column-header-icon {
+        font-size: 18px !important;
+    }
+
+    .column-title {
+        font-size: 17px !important;
+        font-weight: 700 !important;
+        letter-spacing: -0.3px;
+    }
+
+    .column-count-badge {
+        font-size: 11px !important;
+        padding: 1px 6px !important;
+    }
+
+    /* Кнопка фільтра колонки на мобільному стає компактною квадратною іконкою */
+    .column-filter-btn {
+        padding: 5px 8px !important;
+        height: 28px !important;
+        border-radius: 6px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    .column-filter-btn span {
+        display: none !important; /* Ховаємо напис "Фільтр" на телефоні */
+    }
+
+    .column-filter-btn svg {
+        width: 14px !important;
+        height: 14px !important;
+    }
+
+    /* Повнорозмірний вертикальний скрол списку нотаток на мобільному (з прихованою смугою скролу) */
+    .column-notes-list {
+        flex: 1 1 auto !important;
+        height: 100% !important;
+        min-height: 0 !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        scrollbar-width: none !important; /* Firefox */
+        -ms-overflow-style: none !important;  /* IE and Edge */
+        padding: 4px 0 110px 0 !important; /* Забезпечує вільний простір унизу під кнопкою */
+        box-sizing: border-box !important;
+    }
+
+    .column-notes-list::-webkit-scrollbar {
+        display: none !important; /* Safari and Chrome */
+        width: 0 !important;
+        height: 0 !important;
+    }
+
+    .columns-container {
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+    }
+
+    .columns-container::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+    }
+
+    .add-note-bottom-container {
+        margin-top: 20px !important;
+        margin-bottom: 24px !important;
+        padding-bottom: env(safe-area-inset-bottom, 20px) !important;
+    }
+
+    /* 5. Картки стікерів та адаптивна типографіка на телефоні */
+    .note-sticker {
+        width: 100%;
+        margin-bottom: 14px;
+        padding: 16px 16px 16px 42px !important;
+        box-sizing: border-box !important;
+        -webkit-tap-highlight-color: transparent !important;
+        outline: none !important;
+    }
+
+    .note-sticker *,
+    .sticker-title,
+    .sticker-content {
+        -webkit-tap-highlight-color: transparent !important;
+        outline: none !important;
+    }
+
+    .sticker-content {
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+        border: none !important;
+        box-shadow: none !important;
+        -webkit-appearance: none !important;
+        appearance: none !important;
+        -webkit-user-modify: read-write-plaintext-only !important;
+        background-clip: padding-box !important;
+        background-repeat: repeat !important;
+        background-position: left top !important;
+        background-attachment: scroll !important;
+        caret-color: #292524 !important;
+    }
+
+    .sticker-content:focus,
+    .sticker-content:focus-visible,
+    .sticker-content:active {
+        outline: none !important;
+        border: none !important;
+        box-shadow: none !important;
+        -webkit-appearance: none !important;
+    }
+
+    .sticker-content::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+    }
+
+    /* Адаптивна шкала шрифтів для мобільних екранів (S / M / L / XL) з ідеальною синхронізацією ліній блокнота */
+    .note-sticker[data-font-step="0"] .sticker-title { font-size: 14px !important; }
+    .note-sticker[data-font-step="0"] .sticker-content { 
+        font-size: 11px !important; 
+        line-height: 22px !important; 
+        background-size: 100% 22px !important;
+        background-position: left top !important;
+        background-repeat: repeat !important;
+        background-image: linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 21px,
+            rgba(0, 0, 0, 0.08) 21px,
+            rgba(0, 0, 0, 0.08) 22px
+        ) !important;
+    }
+
+    .note-sticker[data-font-step="1"] .sticker-title,
+    .note-sticker:not([data-font-step]) .sticker-title { font-size: 18px !important; }
+    .note-sticker[data-font-step="1"] .sticker-content,
+    .note-sticker:not([data-font-step]) .sticker-content { 
+        font-size: 14px !important; 
+        line-height: 26px !important; 
+        background-size: 100% 26px !important;
+        background-position: left top !important;
+        background-repeat: repeat !important;
+        background-image: linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 25px,
+            rgba(0, 0, 0, 0.08) 25px,
+            rgba(0, 0, 0, 0.08) 26px
+        ) !important;
+    }
+
+    .note-sticker[data-font-step="2"] .sticker-title { font-size: 22px !important; }
+    .note-sticker[data-font-step="2"] .sticker-content { 
+        font-size: 17px !important; 
+        line-height: 30px !important; 
+        background-size: 100% 30px !important;
+        background-position: left top !important;
+        background-repeat: repeat !important;
+        background-image: linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 29px,
+            rgba(0, 0, 0, 0.08) 29px,
+            rgba(0, 0, 0, 0.08) 30px
+        ) !important;
+    }
+
+    .note-sticker[data-font-step="3"] .sticker-title { font-size: 26px !important; }
+    .note-sticker[data-font-step="3"] .sticker-content { 
+        font-size: 20px !important; 
+        line-height: 34px !important; 
+        background-size: 100% 34px !important;
+        background-position: left top !important;
+        background-repeat: repeat !important;
+        background-image: linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 33px,
+            rgba(0, 0, 0, 0.08) 33px,
+            rgba(0, 0, 0, 0.08) 34px
+        ) !important;
+    }
+
+    /* Адаптив Polaroid-карток під ширину смартфона */
+    .sticker-images-gallery {
+        gap: 8px;
+        padding: 2px;
+    }
+
+    .sticker-image-wrapper {
+        margin: 4px 0;
+        max-width: 100%;
+    }
+
+    .sticker-image-wrapper.size-l {
+        width: 100% !important;
+    }
+
+    .masonry-grid-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .masonry-column {
+        width: 100% !important;
+        gap: 14px;
+    }
+
+    /* 6. Мобільний індикатор пагінації колонок (iOS Dots Pagination) */
+    .mobile-columns-pagination {
+        display: none;
+        position: fixed;
+        bottom: max(env(safe-area-inset-bottom, 0px), 14px);
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(22, 22, 26, 0.88);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        padding: 5px 10px;
+        border-radius: 20px;
+        z-index: 100;
+        align-items: center;
+        gap: 6px;
+        transition: opacity 0.25s ease;
+    }
+
+    .mobile-columns-pagination.visible {
+        display: flex;
+    }
+
+    .mobile-pagination-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .mobile-pagination-dot.active {
+        width: 20px;
+        border-radius: 10px;
+        background: #10b981;
+        box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+    }
+
+    /* Компактний тулбар виділеного тексту на смартфонах (тільки перемикач Regular / Bold) */
+    .text-selection-toolbar {
+        padding: 4px 6px !important;
+        border-radius: 12px !important;
+        gap: 0 !important;
+        min-width: 0 !important;
+        width: auto !important;
+        background: rgba(24, 24, 28, 0.95) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.16) !important;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.08) !important;
+        z-index: 10000 !important;
+    }
+
+    .text-selection-toolbar.active {
+        display: flex !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+        opacity: 1 !important;
+    }
+
+    /* На мобільних пристроях ховаємо слайдер розміру, палітру маркерів, кнопку "Всі" та кнопку ресету */
+    .text-selection-toolbar .text-sel-slider-wrap,
+    .text-selection-toolbar .text-sel-colors-wrap,
+    .text-selection-toolbar .text-sel-scope-wrap,
+    .text-selection-toolbar .text-sel-reset-all-btn,
+    .text-selection-toolbar .text-sel-divider {
+        display: none !important;
+    }
+
+    .text-selection-toolbar .text-sel-weight-wrap {
+        background: transparent !important;
+        padding: 0 !important;
+        gap: 4px !important;
+    }
+
+    .text-selection-toolbar .text-sel-weight-btn {
+        width: 32px !important;
+        height: 30px !important;
+        font-size: 13.5px !important;
+        border-radius: 8px !important;
+    }
+
+    /* Адаптація контекстного меню нотатки "три крапки" на мобільних пристроях */
+    .sticker-menu-dropdown {
+        width: 250px !important;
+        min-width: 250px !important;
+        max-width: 250px !important;
+    }
+
+    /* 7. Модальні вікна та діалоги дій (Mobile Modals & Selection Bar) */
+    .confirm-modal-box {
+        width: calc(100vw - 32px) !important;
+        max-width: none !important;
+        padding: 20px 18px !important;
+        border-radius: 16px !important;
+        gap: 14px !important;
+        margin: auto !important;
+    }
+
+    .confirm-modal-header {
+        gap: 10px !important;
+    }
+
+    .confirm-modal-icon-badge {
+        width: 32px !important;
+        height: 32px !important;
+    }
+
+    .confirm-modal-title {
+        font-size: 16px !important;
+    }
+
+    .confirm-modal-body {
+        font-size: 13px !important;
+        line-height: 1.4 !important;
+    }
+
+    .confirm-modal-actions {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 8px !important;
+        margin-top: 6px !important;
+        width: 100% !important;
+    }
+
+    .modal-cancel-btn {
+        flex: 1 1 0px !important;
+        padding: 10px 8px !important;
+        font-size: 13px !important;
+        text-align: center !important;
+    }
+
+    .hold-delete-btn {
+        flex: 1.6 1 0px !important;
+        padding: 10px 8px !important;
+        font-size: 13px !important;
+        text-align: center !important;
+    }
+
+    .hold-btn-text {
+        font-size: 12px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    /* Перемикання видимості елементів: на мобільних показуємо mobile-only, ховаємо desktop-only */
+    .mobile-only {
+        display: inline-flex !important;
+    }
+    .desktop-only {
+        display: none !important;
+    }
+
+    /* Адаптив плаваючої нижньої панелі масового вибору (iOS Selection Bar) */
+    .workspace-selection-bar {
+        width: calc(100vw - 20px) !important;
+        max-width: none !important;
+        bottom: max(env(safe-area-inset-bottom, 0px), 12px) !important;
+        padding: 6px 10px !important;
+        gap: 6px !important;
+        border-radius: 14px !important;
+        justify-content: space-between !important;
+        z-index: 1000 !important;
+    }
+
+    .selection-bar-left {
+        gap: 6px !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    .selection-bar-info {
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+    }
+
+    .selection-bar-count-badge {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: transparent !important;
+        border: 1.5px solid #10b981 !important;
+        color: #34d399 !important;
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        width: 28px !important;
+        height: 28px !important;
+        min-width: 28px !important;
+        padding: 0 !important;
+        border-radius: 8px !important;
+        box-sizing: border-box !important;
+    }
+
+    .selection-bar-quick-btns {
+        display: flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+    }
+
+    .selection-bar-icon-btn {
+        width: 28px !important;
+        height: 28px !important;
+        background: rgba(255, 255, 255, 0.06) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: var(--text-muted) !important;
+        border-radius: 8px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 !important;
+        cursor: pointer !important;
+        transition: all var(--transition-fast) !important;
+    }
+
+    .selection-bar-icon-btn:hover,
+    .selection-bar-icon-btn:active {
+        background: rgba(16, 185, 129, 0.2) !important;
+        border-color: #10b981 !important;
+        color: #34d399 !important;
+    }
+
+    .selection-bar-actions {
+        display: flex !important;
+        align-items: center !important;
+        gap: 5px !important;
+    }
+
+    .selection-action-btn {
+        width: 34px !important;
+        height: 34px !important;
+        min-width: 34px !important;
+        padding: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 10px !important;
+    }
+
+    .selection-action-btn .selection-btn-label {
+        display: none !important;
+    }
+
+    .selection-action-btn svg {
+        width: 16px !important;
+        height: 16px !important;
+    }
+
+    .selection-submenu-dropdown.selection-more-dropdown {
+        position: fixed !important;
+        left: 50% !important;
+        right: auto !important;
+        bottom: calc(max(env(safe-area-inset-bottom, 0px), 12px) + 54px) !important;
+        transform: translateX(-50%) translateY(8px) !important;
+        width: calc(100vw - 32px) !important;
+        max-width: 320px !important;
+        max-height: 55vh !important;
+        overflow-y: auto !important;
+        padding: 14px !important;
+        gap: 12px !important;
+        border-radius: 16px !important;
+        z-index: 1010 !important;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+    }
+
+    .selection-submenu-dropdown.selection-more-dropdown.active {
+        display: flex !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        transform: translateX(-50%) translateY(0) !important;
+    }
+
+    .selection-more-section {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
+    }
+
+    .selection-more-sec-title {
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        color: var(--text-muted) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+    }
+
+    .selection-sec-title-left {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+    }
+
+    .selection-color-swatches {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 6px !important;
+        padding: 2px 0 !important;
+        overflow-x: auto !important;
+    }
+
+    .selection-color-swatches .color-swatch-btn {
+        width: 24px !important;
+        height: 24px !important;
+        flex-shrink: 0 !important;
+    }
+
+    .selection-tag-list {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 4px !important;
+        max-height: 120px !important;
+        overflow-y: auto !important;
+    }
+
+    .selection-tag-item {
+        padding: 5px 8px !important;
+        font-size: 11px !important;
+    }
+
+    .auth-modal-card {
+        width: calc(100vw - 32px) !important;
+        max-width: none !important;
+        padding: 24px 18px !important;
+        border-radius: 16px !important;
+    }
+
+    /* 8. Адаптив режиму Графу зв'язків (Mobile Obsidian Graph View) */
+    .graph-view-wrapper {
+        height: 100% !important;
+        width: 100% !important;
+    }
+
+    .graph-toolbar {
+        top: 10px !important;
+        left: 12px !important;
+        right: 12px !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+    }
+
+    .graph-title-pill {
+        padding: 6px 10px !important;
+        border-radius: 10px !important;
+        justify-content: space-between !important;
+    }
+
+    .graph-title-text {
+        font-size: 11px !important;
+        max-width: 140px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .graph-nodes-count {
+        font-size: 10px !important;
+        padding: 1px 6px !important;
+    }
+
+    .graph-top-actions {
+        width: 100% !important;
+    }
+
+    .graph-search-box {
+        width: 100% !important;
+    }
+
+    .graph-search-input {
+        width: 100% !important;
+        font-size: 12px !important;
+        padding: 6px 30px 6px 10px !important;
+        height: 32px !important;
+    }
+
+    /* Кнопки зуму в правому нижньому кутку */
+    .graph-controls-panel {
+        bottom: max(env(safe-area-inset-bottom, 0px), 14px) !important;
+        right: 12px !important;
+        padding: 3px !important;
+        gap: 3px !important;
+        border-radius: 10px !important;
+    }
+
+    .graph-ctrl-btn {
+        width: 30px !important;
+        height: 30px !important;
+    }
+
+    /* Нижня легенда графу */
+    .graph-legend-pill {
+        bottom: max(env(safe-area-inset-bottom, 0px), 14px) !important;
+        left: 12px !important;
+        right: auto !important;
+        max-width: calc(100vw - 70px) !important;
+        padding: 6px 10px !important;
+        border-radius: 10px !important;
+        gap: 8px !important;
+        font-size: 10px !important;
+    }
+
+    .graph-legend-hint {
+        display: none !important; /* Ховаємо довгу підказку "Клік по вершині відкриває...", лишаємо тільки кружечки */
+    }
+
+    .workspace-top-header.graph-mode-active #workspace-undo-wrap,
+    .workspace-top-header.graph-mode-active #workspace-redo-wrap,
+    .workspace-top-header.graph-mode-active #workspace-search-wrap,
+    .workspace-top-header.graph-mode-active #workspace-collapse-wrap,
+    .workspace-top-header.graph-mode-active .header-select-btn {
+        opacity: 0.22 !important;
+        pointer-events: none !important;
+        user-select: none !important;
+        filter: grayscale(0.85) !important;
+    }
+
+    .board-creation-form {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .board-creation-form button {
+        width: 100%;
+    }
+}
+
