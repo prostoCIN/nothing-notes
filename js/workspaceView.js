@@ -284,6 +284,11 @@ window.App = window.App || {};
                 return;
             }
 
+            // Очищаємо будь-які застарілі відірвані картки перетягування з document.body
+            document.querySelectorAll('body > .note-sticker.is-dragging').forEach(staleCard => {
+                staleCard.remove();
+            });
+
             // Зберігаємо фокус та позицію курсора введення тексту
             let focusedNoteId = null;
             let focusedField = null;

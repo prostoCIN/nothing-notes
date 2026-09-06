@@ -4,7 +4,13 @@ window.App = window.App || {};
 (function() {
     let currentUser = null;
     let syncDebounceTimer = null;
-    let isSyncing = false;
+    let reorderDebounceTimer = null;
+    let _pendingReorderNotesMap = new Map();
+    let isPullingFromCloud = false;
+    let _rePullNeeded = false;
+    let _pendingPullAfterDrag = false;
+    let _deferredPulledNotes = null;
+    let pullDebounceTimer = null;
     let lastLocalEditTimestamps = new Map(); // id -> timestamp
     let locallyDeletedNoteIds = new Set(); // Захист від воскресіння видалених нотаток через Realtime
 
@@ -44,27 +50,36 @@ window.App = window.App || {};
                             const deletedId = payload.old.id;
                             locallyDeletedNoteIds.add(deletedId);
                             
+                            // Якщо прямо зараз користувач перетягує цю нотатку — відкладаємо до кінця драгу
+                            if (window.App.state && window.App.state.isDraggingNote && window.App.state.draggedNoteId === deletedId) {
+                                _pendingPullAfterDrag = true;
+                                return;
+                            }
+
                             // Якщо нотатка все ще є у локальному стані (прийшло з іншого пристрою) — видаляємо її
                             const state = window.App.state;
                             if (state.notes.some(n => n.id === deletedId)) {
                                 state.notes = state.notes.filter(n => n.id !== deletedId);
                                 window.App.storage.saveNotes(state.notes, true);
                                 if (window.App.sidebarView) window.App.sidebarView.render();
-                                if (window.App.workspaceView) window.App.workspaceView.render();
+                                if (window.App.workspaceView && (!window.App.state || !window.App.state.isDraggingNote)) {
+                                    window.App.workspaceView.render();
+                                }
                             }
                             return;
                         }
 
-                        // Якщо зміна стосується нотатки, яку щойно редагували на цьому ж пристрої (менше 2.5 сек тому) - ігноруємо власне "відлуння"
+                        // Якщо зміна стосується нотатки, яку щойно редагували на цьому ж пристрої (менше 3.5 сек тому) - ігноруємо власне "відлуння"
                         if (payload.new && payload.new.id) {
                             const lastEdit = lastLocalEditTimestamps.get(payload.new.id);
-                            if (lastEdit && (Date.now() - lastEdit < 2500)) {
+                            if (lastEdit && (Date.now() - lastEdit < 3500)) {
                                 return;
                             }
                         }
 
-                        // Якщо користувач прямо зараз тримає фокус і друкує в якійсь нотатці або перетягує її - не перериваємо
+                        // Якщо користувач прямо зараз перетягує нотатку - відкладаємо pull до завершення драгу
                         if (window.App.state && window.App.state.isDraggingNote) {
+                            _pendingPullAfterDrag = true;
                             return;
                         }
 
@@ -74,7 +89,11 @@ window.App = window.App || {};
                             return; // Не перебиваємо активний ввід користувача
                         }
 
-                        this.pullFromCloud();
+                        // Дебаунсимо виклики pullFromCloud (300мс) для об'єднання серії швидких подій
+                        clearTimeout(pullDebounceTimer);
+                        pullDebounceTimer = setTimeout(() => {
+                            this.pullFromCloud();
+                        }, 300);
                     })
                     .subscribe((status, err) => {
                         console.log('[CloudSync] Realtime status:', status);
@@ -96,6 +115,7 @@ window.App = window.App || {};
             // Гарантуємо відправку незбережених змін перед закриттям вкладки або згортанням браузера
             const flushOnExit = () => {
                 this.flushPendingNotes();
+                this.flushPendingReorders();
             };
 
             window.addEventListener('beforeunload', flushOnExit);
@@ -167,6 +187,20 @@ window.App = window.App || {};
             if (!currentUser || !window.App.supabase) return;
             const supabase = window.App.supabase;
             const state = window.App.state;
+
+            // Якщо прямо зараз триває перетягування нотатки — відкладаємо pull до завершення
+            if (state && state.isDraggingNote) {
+                _pendingPullAfterDrag = true;
+                return;
+            }
+
+            // Якщо інший запит pullFromCloud вже в процесі — плануємо перезапуск після завершення
+            if (isPullingFromCloud) {
+                _rePullNeeded = true;
+                return;
+            }
+
+            isPullingFromCloud = true;
 
             try {
                 // Отримуємо найсвіжіші дані користувача з сервера (user_metadata)
@@ -264,6 +298,13 @@ window.App = window.App || {};
                         };
                     });
 
+                    // Якщо під час запиту користувач почав перетягувати нотатку — відкладаємо застосування
+                    if (state && state.isDraggingNote) {
+                        console.log('[CloudSync] Notes pulled during drag, deferring update...');
+                        _deferredPulledNotes = formattedNotes;
+                        return;
+                    }
+
                     // Зберігаємо актуальний стан (строго такий, як у базі)
                     state.notes = formattedNotes;
                     window.App.storage.saveNotes(state.notes, true);
@@ -288,6 +329,15 @@ window.App = window.App || {};
                 }
             } catch (err) {
                 console.error('[CloudSync] Pull exception:', err);
+            } finally {
+                isPullingFromCloud = false;
+                if (_rePullNeeded) {
+                    _rePullNeeded = false;
+                    clearTimeout(pullDebounceTimer);
+                    pullDebounceTimer = setTimeout(() => {
+                        this.pullFromCloud();
+                    }, 200);
+                }
             }
         },
 
@@ -406,6 +456,36 @@ window.App = window.App || {};
             }, 300);
         },
 
+        // 2.2 Дебаунс синхронізації зміни порядку карток при Drag & Drop
+        syncReorderNotes(notes) {
+            if (!currentUser || !window.App.supabase || !notes || notes.length === 0) return;
+
+            const now = Date.now();
+            notes.forEach(note => {
+                lastLocalEditTimestamps.set(note.id, now);
+                _pendingReorderNotesMap.set(note.id, note);
+            });
+
+            clearTimeout(reorderDebounceTimer);
+            reorderDebounceTimer = setTimeout(async () => {
+                await this.flushPendingReorders();
+            }, 400);
+        },
+
+        async flushPendingReorders() {
+            if (!_pendingReorderNotesMap || _pendingReorderNotesMap.size === 0) return;
+
+            const notesToPush = Array.from(_pendingReorderNotesMap.values());
+            _pendingReorderNotesMap.clear();
+            clearTimeout(reorderDebounceTimer);
+            reorderDebounceTimer = null;
+
+            const now = Date.now();
+            notesToPush.forEach(n => lastLocalEditTimestamps.set(n.id, now));
+
+            await this._pushMultipleNotesToCloud(notesToPush);
+        },
+
         async flushPendingNotes() {
             if (!this._pendingSyncNotesMap || this._pendingSyncNotesMap.size === 0) return;
 
@@ -413,6 +493,9 @@ window.App = window.App || {};
             this._pendingSyncNotesMap.clear();
             clearTimeout(syncDebounceTimer);
             syncDebounceTimer = null;
+
+            const now = Date.now();
+            notesToPush.forEach(n => lastLocalEditTimestamps.set(n.id, now));
 
             if (notesToPush.length === 1) {
                 await this._pushNoteToCloud(notesToPush[0]);
@@ -425,6 +508,10 @@ window.App = window.App || {};
             const supabase = window.App.supabase;
             if (!supabase || !currentUser || !notes || notes.length === 0) return;
             const state = window.App.state;
+
+            // Захист від ехо: штампуємо актуальний час для всіх нотаток у пакеті
+            const now = Date.now();
+            notes.forEach(n => lastLocalEditTimestamps.set(n.id, now));
 
             const payloads = notes.map(note => {
                 const noteIndex = typeof note.orderIndex === 'number'
@@ -467,8 +554,10 @@ window.App = window.App || {};
 
         async _pushNoteToCloud(note) {
             const supabase = window.App.supabase;
-            if (!supabase || !currentUser) return;
+            if (!supabase || !currentUser || !note) return;
             const state = window.App.state;
+
+            lastLocalEditTimestamps.set(note.id, Date.now());
 
             const noteIndex = typeof note.orderIndex === 'number'
                 ? note.orderIndex
@@ -584,6 +673,9 @@ window.App = window.App || {};
             }));
 
             if (payloads.length === 0) return;
+
+            const now = Date.now();
+            payloads.forEach(p => lastLocalEditTimestamps.set(p.id, now));
 
             try {
                 const { error } = await supabase.from('notes').upsert(payloads, { onConflict: 'id' });
@@ -773,6 +865,28 @@ window.App = window.App || {};
                         window.App.authModal.open();
                     }
                 });
+            }
+        },
+
+        // Викликається після завершення перетягування картки (pointerup) для безпечного застосування відкладених оновлень
+        onDragEnd() {
+            const state = window.App.state;
+            if (_deferredPulledNotes) {
+                const notesToApply = _deferredPulledNotes;
+                _deferredPulledNotes = null;
+                _pendingPullAfterDrag = false;
+                if (state) {
+                    state.notes = notesToApply;
+                    window.App.storage.saveNotes(state.notes, true);
+                }
+                if (window.App.sidebarView) window.App.sidebarView.render();
+                if (window.App.workspaceView) window.App.workspaceView.render();
+            } else if (_pendingPullAfterDrag) {
+                _pendingPullAfterDrag = false;
+                clearTimeout(pullDebounceTimer);
+                pullDebounceTimer = setTimeout(() => {
+                    this.pullFromCloud();
+                }, 150);
             }
         }
     };

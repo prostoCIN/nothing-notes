@@ -28,11 +28,6 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
             const startColumnList = card.closest('.column-notes-list');
             if (!startColumnList) return;
 
-            const pointerId = e.pointerId;
-            try {
-                dragHandle.setPointerCapture(pointerId);
-            } catch (err) {}
-
             const startX = e.clientX;
             const startY = e.clientY;
             let isDragging = false;
@@ -58,6 +53,11 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                     state.draggedNoteId = draggedNoteId;
                 }
                 document.body.classList.add('is-sticker-dragging');
+
+                // Очищаємо можливі застарілі дублікати цієї картки в DOM перед початком перетягування
+                document.querySelectorAll(`.note-sticker[data-note-id="${draggedNoteId}"]`).forEach(dup => {
+                    if (dup !== card) dup.remove();
+                });
 
                 initialRect = card.getBoundingClientRect();
                 dragHeight = Math.min(initialRect.height, BASE_NOTE_HEIGHT);
@@ -330,15 +330,8 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
             }
 
             function onPointerUp(upEvent) {
-                try {
-                    if (dragHandle.hasPointerCapture && dragHandle.hasPointerCapture(pointerId)) {
-                        dragHandle.releasePointerCapture(pointerId);
-                    }
-                } catch (err) {}
-
                 window.removeEventListener('pointermove', onPointerMove);
                 window.removeEventListener('pointerup', onPointerUp);
-                window.removeEventListener('pointercancel', onPointerUp);
 
                 if (autoScrollAnimationId) {
                     cancelAnimationFrame(autoScrollAnimationId);
@@ -371,8 +364,10 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                 if (placeholder && placeholder.parentNode) {
                     placeholder.parentNode.insertBefore(card, placeholder);
                     placeholder.remove();
-                } else if (originalParent) {
+                } else if (originalParent && originalParent.isConnected) {
                     originalParent.appendChild(card);
+                } else if (startColumnList && startColumnList.isConnected) {
+                    startColumnList.appendChild(card);
                 }
 
                 card.classList.remove('is-dragging');
@@ -384,6 +379,18 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                 card.style.margin = '';
                 card.style.transition = '';
                 card.style.zIndex = '';
+
+                // Гарантуємо відсутність дублікатів картки в DOM
+                const duplicates = document.querySelectorAll(`.note-sticker[data-note-id="${draggedNoteId}"]`);
+                if (duplicates.length > 1) {
+                    duplicates.forEach(dup => {
+                        if (dup !== card) dup.remove();
+                    });
+                }
+
+                if (window.App.cloudSync && window.App.cloudSync.onDragEnd) {
+                    window.App.cloudSync.onDragEnd();
+                }
 
                 // Варіант 1: Відпустили над іншою нотаткою у зоні вкладення (зробити піднотаткою)
                 if (nestTarget && nestTarget.dataset.noteId && noteManager) {
@@ -450,7 +457,6 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
 
             window.addEventListener('pointermove', onPointerMove);
             window.addEventListener('pointerup', onPointerUp);
-            window.addEventListener('pointercancel', onPointerUp);
         });
     });
 };

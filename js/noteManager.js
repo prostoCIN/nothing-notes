@@ -408,11 +408,22 @@ window.App = window.App || {};
             const sortedLevelNotes = newOrderIds.map(id => currentLevelNotesMap.get(id)).filter(Boolean);
             const otherNotes = state.notes.filter(n => !(n.boardId === state.activeBoardId && (n.parentId || null) === parentId));
 
+            // Оновлюємо orderIndex та updatedAt для перевпорядкованих нотаток
+            const now = Date.now();
+            sortedLevelNotes.forEach((note, idx) => {
+                note.orderIndex = idx;
+                note.updatedAt = now;
+            });
+
             state.notes = [...sortedLevelNotes, ...otherNotes];
             storage.saveNotes(state.notes);
 
             if (window.App.cloudSync && window.App.cloudSync.isLoggedIn()) {
-                window.App.cloudSync.pushAllToCloud();
+                if (window.App.cloudSync.syncReorderNotes) {
+                    window.App.cloudSync.syncReorderNotes(sortedLevelNotes);
+                } else {
+                    window.App.cloudSync.pushAllToCloud();
+                }
             }
 
             this.notifyNotesChanged({ type: 'reorder' });
