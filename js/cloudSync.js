@@ -63,7 +63,11 @@ window.App = window.App || {};
                             }
                         }
 
-                        // Якщо користувач прямо зараз тримає фокус і друкує в якійсь нотатці - не робимо агресивний повний рендер
+                        // Якщо користувач прямо зараз тримає фокус і друкує в якійсь нотатці або перетягує її - не перериваємо
+                        if (window.App.state && window.App.state.isDraggingNote) {
+                            return;
+                        }
+
                         const activeEl = document.activeElement;
                         const isTyping = activeEl && (activeEl.classList.contains('sticker-content') || activeEl.classList.contains('sticker-title'));
                         if (isTyping && payload.new && activeEl.closest(`[data-note-id="${payload.new.id}"]`)) {

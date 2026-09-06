@@ -186,6 +186,17 @@
     transition: height 0.22s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s ease, opacity 0.2s ease !important;
 }
 
+body.is-sticker-dragging {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    cursor: grabbing !important;
+}
+
+body.is-sticker-dragging * {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+}
+
 /* Приховуємо піднотатки та маркування повністю під час перетягування, щоб вони не просвічували і не вилазили */
 .note-sticker.is-dragging .sticker-subnotes-container,
 .note-sticker.is-dragging .sticker-tag-container {

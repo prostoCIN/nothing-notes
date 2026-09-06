@@ -14,11 +14,16 @@ window.App = window.App || {};
             const state = window.App.state;
             const noteManager = window.App.noteManager;
             const sidebarView = window.App.sidebarView;
-            const els = window.App.getElements();
+            row.addEventListener('dragstart', (e) => e.preventDefault());
 
             row.addEventListener('pointerdown', (e) => {
                 // Не перетягуємо при кліку на кнопки видалення або стрілочку розгортання
                 if (e.target.closest('.delete-btn') || e.target.closest('.note-toggle-arrow') || e.button !== 0) return;
+
+                const pointerId = e.pointerId;
+                try {
+                    row.setPointerCapture(pointerId);
+                } catch (err) {}
 
                 const startY = e.clientY;
                 const startX = e.clientX;
@@ -74,6 +79,10 @@ window.App = window.App || {};
                     if (!isDragging) {
                         if (Math.hypot(moveEvent.clientX - startX, moveEvent.clientY - startY) > 5) {
                             isDragging = true;
+                            if (state) {
+                                state.isDraggingNote = true;
+                                state.draggedNoteId = draggedNoteId;
+                            }
                             document.body.classList.add('is-sidebar-dragging');
                             initialRect = row.getBoundingClientRect();
                             shiftX = startX - initialRect.left;
@@ -299,10 +308,21 @@ window.App = window.App || {};
                 };
 
                 const onPointerUp = () => {
+                    try {
+                        if (row.hasPointerCapture && row.hasPointerCapture(pointerId)) {
+                            row.releasePointerCapture(pointerId);
+                        }
+                    } catch (err) {}
+
                     window.removeEventListener('pointermove', onPointerMove);
                     window.removeEventListener('pointerup', onPointerUp);
                     window.removeEventListener('pointercancel', onPointerUp);
                     document.body.classList.remove('is-sidebar-dragging');
+
+                    if (state) {
+                        state.isDraggingNote = false;
+                        state.draggedNoteId = null;
+                    }
 
                     const notesHeader = document.querySelector('.notes-header');
                     const droppedOnRootHeader = notesHeader && notesHeader.classList.contains('sidebar-root-drop-target');

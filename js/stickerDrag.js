@@ -4,8 +4,16 @@ window.App = window.App || {};
 window.App.initStickerDrag = function(card, handles, originalParentId) {
     const handleList = Array.isArray(handles) ? handles : [handles];
 
+    // Забороняємо браузерний нативний drag&drop для самої картки (крім вкладених polaroid-зображень)
+    card.addEventListener('dragstart', (e) => {
+        if (e.target.closest('.sticker-image-wrapper')) return;
+        e.preventDefault();
+    });
+
     handleList.forEach(dragHandle => {
         if (!dragHandle) return;
+
+        dragHandle.addEventListener('dragstart', (e) => e.preventDefault());
 
         dragHandle.addEventListener('pointerdown', (e) => {
             if (e.button !== 0) return;
@@ -14,56 +22,86 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
             const noteManager = window.App.noteManager;
             const confirmModal = window.App.confirmModal;
             const boardManager = window.App.boardManager;
+            const state = window.App.state;
             const draggedNoteId = card.dataset.noteId;
 
             const startColumnList = card.closest('.column-notes-list');
             if (!startColumnList) return;
 
-            const initialRect = card.getBoundingClientRect();
-            const BASE_NOTE_HEIGHT = 160; // Базова висота чистої нотатки
-            const dragHeight = Math.min(initialRect.height, BASE_NOTE_HEIGHT);
+            const pointerId = e.pointerId;
+            try {
+                dragHandle.setPointerCapture(pointerId);
+            } catch (err) {}
 
-            const shiftX = e.clientX - initialRect.left;
-            const shiftY = Math.min(e.clientY - initialRect.top, dragHeight - 20);
-
-            // Плейсхолдер (область передперегляду в списку з чіткою фіксованою висотою)
-            const placeholder = document.createElement('div');
-            placeholder.className = 'sticker-drag-placeholder';
-            placeholder.style.height = `${dragHeight}px`;
-            placeholder.style.minHeight = `${dragHeight}px`;
-
-            const originalParent = card.parentNode;
-            originalParent.insertBefore(placeholder, card);
-
-            // Переміщуємо картку безпосередньо в body, щоб уникнути зсувів координат від батьківських backdrop-filter/transform
-            document.body.appendChild(card);
-
-            card.classList.add('is-dragging');
-            card.style.transition = 'none';
-            card.style.transform = 'none';
-            card.style.width = `${initialRect.width}px`;
-            card.style.height = `${initialRect.height}px`; // Початкова висота перед плавною анімацією
-            card.style.left = `${e.clientX - shiftX}px`;
-            card.style.top = `${e.clientY - shiftY}px`;
-            card.style.position = 'fixed';
-            card.style.zIndex = '999999';
-            card.style.margin = '0';
-
-            // На наступному кадрі плавно анімуємо висоту самої картки в руці до базової
-            requestAnimationFrame(() => {
-                card.style.transition = 'height 0.22s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s ease, opacity 0.2s ease';
-                card.style.height = `${dragHeight}px`;
-            });
+            const startX = e.clientX;
+            const startY = e.clientY;
+            let isDragging = false;
+            let placeholder = null;
+            let originalParent = card.parentNode;
+            let initialRect = null;
+            let shiftX = 0;
+            let shiftY = 0;
+            let dragHeight = 160;
+            const BASE_NOTE_HEIGHT = 160;
 
             let lastClientX = e.clientX;
             let lastClientY = e.clientY;
             let autoScrollAnimationId = null;
             let currentNestTarget = null;
-            let currentColumnDropTarget = null; // Цільова колонка для переміщення між колонками
-            // Заборонені ID для уникнення циклічних залежностей
-            const invalidTargetIds = new Set([draggedNoteId, ...noteManager.getDescendantIds(draggedNoteId)]);
+            let currentColumnDropTarget = null;
+            const invalidTargetIds = new Set([draggedNoteId, ...(noteManager ? noteManager.getDescendantIds(draggedNoteId) : [])]);
+
+            function startDrag(clientX, clientY) {
+                isDragging = true;
+                if (state) {
+                    state.isDraggingNote = true;
+                    state.draggedNoteId = draggedNoteId;
+                }
+                document.body.classList.add('is-sticker-dragging');
+
+                initialRect = card.getBoundingClientRect();
+                dragHeight = Math.min(initialRect.height, BASE_NOTE_HEIGHT);
+
+                shiftX = startX - initialRect.left;
+                shiftY = Math.min(startY - initialRect.top, dragHeight - 20);
+
+                // Плейсхолдер (область передперегляду в списку з чіткою фіксованою висотою)
+                placeholder = document.createElement('div');
+                placeholder.className = 'sticker-drag-placeholder';
+                placeholder.style.height = `${dragHeight}px`;
+                placeholder.style.minHeight = `${dragHeight}px`;
+
+                originalParent = card.parentNode;
+                if (originalParent) {
+                    originalParent.insertBefore(placeholder, card);
+                }
+
+                // Переміщуємо картку безпосередньо в body, щоб уникнути зсувів координат від батьківських backdrop-filter/transform
+                document.body.appendChild(card);
+
+                card.classList.add('is-dragging');
+                card.style.transition = 'none';
+                card.style.transform = 'none';
+                card.style.width = `${initialRect.width}px`;
+                card.style.height = `${initialRect.height}px`;
+                card.style.left = `${clientX - shiftX}px`;
+                card.style.top = `${clientY - shiftY}px`;
+                card.style.position = 'fixed';
+                card.style.zIndex = '999999';
+                card.style.margin = '0';
+
+                // На наступному кадрі плавно анімуємо висоту самої картки в руці до базової
+                requestAnimationFrame(() => {
+                    card.style.transition = 'height 0.22s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s ease, opacity 0.2s ease';
+                    card.style.height = `${dragHeight}px`;
+                });
+
+                autoScrollAnimationId = requestAnimationFrame(autoScrollLoop);
+            }
 
             function updatePositions(clientX, clientY) {
+                if (!placeholder) return;
+
                 // 1. Шукаємо цільову картку під курсором (серед ВСІХ карток на екрані)
                 const allStickers = [...document.querySelectorAll('.note-sticker:not(.is-dragging)')];
                 let hoveredCard = null;
@@ -271,11 +309,17 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                 autoScrollAnimationId = requestAnimationFrame(autoScrollLoop);
             }
 
-            autoScrollAnimationId = requestAnimationFrame(autoScrollLoop);
-
             function onPointerMove(moveEvent) {
                 lastClientX = moveEvent.clientX;
                 lastClientY = moveEvent.clientY;
+
+                if (!isDragging) {
+                    if (Math.hypot(moveEvent.clientX - startX, moveEvent.clientY - startY) > 3) {
+                        startDrag(moveEvent.clientX, moveEvent.clientY);
+                    } else {
+                        return;
+                    }
+                }
 
                 const newLeft = moveEvent.clientX - shiftX;
                 const newTop = moveEvent.clientY - shiftY;
@@ -285,15 +329,31 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                 updatePositions(lastClientX, lastClientY);
             }
 
-            function onPointerUp() {
+            function onPointerUp(upEvent) {
+                try {
+                    if (dragHandle.hasPointerCapture && dragHandle.hasPointerCapture(pointerId)) {
+                        dragHandle.releasePointerCapture(pointerId);
+                    }
+                } catch (err) {}
+
+                window.removeEventListener('pointermove', onPointerMove);
+                window.removeEventListener('pointerup', onPointerUp);
+                window.removeEventListener('pointercancel', onPointerUp);
+
                 if (autoScrollAnimationId) {
                     cancelAnimationFrame(autoScrollAnimationId);
                     autoScrollAnimationId = null;
                 }
 
-                window.removeEventListener('pointermove', onPointerMove);
-                window.removeEventListener('pointerup', onPointerUp);
-                window.removeEventListener('pointercancel', onPointerUp);
+                if (!isDragging) {
+                    return;
+                }
+
+                if (state) {
+                    state.isDraggingNote = false;
+                    state.draggedNoteId = null;
+                }
+                document.body.classList.remove('is-sticker-dragging');
 
                 const nestTarget = currentNestTarget;
                 if (currentNestTarget) {
@@ -307,9 +367,14 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                     currentColumnDropTarget = null;
                 }
 
-                // Скидаємо стилі перетягування
-                placeholder.parentNode.insertBefore(card, placeholder);
-                placeholder.remove();
+                // Скидаємо стилі перетягування та безпечно повертаємо картку в дерево DOM
+                if (placeholder && placeholder.parentNode) {
+                    placeholder.parentNode.insertBefore(card, placeholder);
+                    placeholder.remove();
+                } else if (originalParent) {
+                    originalParent.appendChild(card);
+                }
+
                 card.classList.remove('is-dragging');
                 card.style.position = '';
                 card.style.width = '';
@@ -318,9 +383,10 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                 card.style.top = '';
                 card.style.margin = '';
                 card.style.transition = '';
+                card.style.zIndex = '';
 
                 // Варіант 1: Відпустили над іншою нотаткою у зоні вкладення (зробити піднотаткою)
-                if (nestTarget && nestTarget.dataset.noteId) {
+                if (nestTarget && nestTarget.dataset.noteId && noteManager) {
                     const targetParentId = nestTarget.dataset.noteId;
                     const draggedNote = noteManager.getNoteById(draggedNoteId);
                     const parentNote = noteManager.getNoteById(targetParentId);
@@ -328,25 +394,29 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                     const draggedTitle = (draggedNote && draggedNote.title.trim()) ? draggedNote.title.trim() : 'Без назви';
                     const parentTitle = (parentNote && parentNote.title.trim()) ? parentNote.title.trim() : 'Без назви';
 
-                    confirmModal.show({
-                        title: 'Зробити піднотаткою?',
-                        message: `Ви дійсно хочете зробити нотатку <span class="confirm-modal-highlight">"${draggedTitle}"</span> піднотаткою для <span class="confirm-modal-highlight">"${parentTitle}"</span>?`,
-                        confirmText: 'Затисніть для переміщення',
-                        type: 'info',
-                        onConfirm: () => {
-                            noteManager.moveNoteToParent(draggedNoteId, targetParentId);
-                        }
-                    });
+                    if (confirmModal) {
+                        confirmModal.show({
+                            title: 'Зробити піднотаткою?',
+                            message: `Ви дійсно хочете зробити нотатку <span class="confirm-modal-highlight">"${draggedTitle}"</span> піднотаткою для <span class="confirm-modal-highlight">"${parentTitle}"</span>?`,
+                            confirmText: 'Затисніть для переміщення',
+                            type: 'info',
+                            onConfirm: () => {
+                                noteManager.moveNoteToParent(draggedNoteId, targetParentId);
+                            }
+                        });
+                    } else {
+                        noteManager.moveNoteToParent(draggedNoteId, targetParentId);
+                    }
                     return;
                 }
 
-                // Варіант 2: Відпустили над іншою колонкою (наприклад, перемістити піднотатку в головну колонку або в іншу гілку)
-                if (colTarget) {
+                // Варіант 2: Відпустили над іншою колонкою
+                if (colTarget && noteManager) {
                     const newParentId = colTarget.dataset.parentId === 'root' ? null : colTarget.dataset.parentId;
                     if (newParentId !== originalParentId) {
                         const draggedNote = noteManager.getNoteById(draggedNoteId);
                         const draggedTitle = (draggedNote && draggedNote.title.trim()) ? draggedNote.title.trim() : 'Без назви';
-                        const currentActiveBoard = boardManager.getActiveBoard();
+                        const currentActiveBoard = boardManager ? boardManager.getActiveBoard() : null;
                         const boardName = currentActiveBoard ? currentActiveBoard.name : 'блокнот';
 
                         let targetName = `колонку блокнота "${boardName}"`;
@@ -355,21 +425,27 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                             targetName = `колонку піднотаток для "${pNote ? (pNote.title.trim() || 'Без назви') : ''}"`;
                         }
 
-                        confirmModal.show({
-                            title: newParentId === null ? 'Перемістити в головні нотатки?' : 'Перемістити в іншу колонку?',
-                            message: `Ви дійсно хочете перемістити <span class="confirm-modal-highlight">"${draggedTitle}"</span> в ${targetName}?`,
-                            confirmText: 'Затисніть для переміщення',
-                            type: 'info',
-                            onConfirm: () => {
-                                noteManager.moveNoteToParent(draggedNoteId, newParentId);
-                            }
-                        });
+                        if (confirmModal) {
+                            confirmModal.show({
+                                title: newParentId === null ? 'Перемістити в головні нотатки?' : 'Перемістити в іншу колонку?',
+                                message: `Ви дійсно хочете перемістити <span class="confirm-modal-highlight">"${draggedTitle}"</span> в ${targetName}?`,
+                                confirmText: 'Затисніть для переміщення',
+                                type: 'info',
+                                onConfirm: () => {
+                                    noteManager.moveNoteToParent(draggedNoteId, newParentId);
+                                }
+                            });
+                        } else {
+                            noteManager.moveNoteToParent(draggedNoteId, newParentId);
+                        }
                         return;
                     }
                 }
 
                 // Варіант 3: Звичайне перевпорядкування всередині тієї ж колонки
-                noteManager.reorderNotes(startColumnList, originalParentId);
+                if (noteManager) {
+                    noteManager.reorderNotes(startColumnList, originalParentId);
+                }
             }
 
             window.addEventListener('pointermove', onPointerMove);

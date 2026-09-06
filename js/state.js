@@ -158,6 +158,8 @@ window.App.state = {
     selectedWorkspaceNoteIds: new Set(), // ID вибраних нотаток на головній області (iOS Gallery style)
     isWorkspaceSelectMode: false, // Режим мульти-вибору на головній області
     isGraphView: window.App.storage.getGraphViewMode(), // Режим перегляду інтерактивного графа (Obsidian Style)
+    isDraggingNote: false, // Прапорець активного перетягування нотатки (блокує фонові перерендери)
+    draggedNoteId: null, // ID поточної нотатки, що перетягується
     activeTagFilters: new Map(), // Карта фільтрів тегів для колонок: key: parentId || 'root' -> Set<tagText>
     columnLayouts: window.App.storage.getColumnLayouts() // key: parentId || 'root' -> 'list' | 'grid'
 };

@@ -279,6 +279,11 @@ window.App = window.App || {};
 
             if (!els || !els.columnsContainer) return;
 
+            // Блокуємо повторний рендер робочої області під час активного перетягування нотатки
+            if (state && state.isDraggingNote) {
+                return;
+            }
+
             // Зберігаємо фокус та позицію курсора введення тексту
             let focusedNoteId = null;
             let focusedField = null;
