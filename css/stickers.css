@@ -342,6 +342,24 @@ body.is-sticker-dragging * {
     word-break: break-word;
 }
 
+.sticker-title *,
+.sticker-title span,
+.sticker-title font,
+.sticker-title b,
+.sticker-title strong,
+.sticker-title em,
+.sticker-title i,
+.sticker-title div,
+.sticker-title p {
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    line-height: inherit !important;
+    color: inherit !important;
+    font-family: inherit !important;
+    letter-spacing: inherit !important;
+    background: transparent !important;
+}
+
 .sticker-title:focus,
 .sticker-title:focus-visible,
 .sticker-title:active,

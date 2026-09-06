@@ -71,6 +71,84 @@ window.App = window.App || {};
                     }
                 });
 
+                // Вставка тільки чистого тексту без форматування з області контенту чи буфера обміну
+                titleDiv.addEventListener('paste', (e) => {
+                    e.preventDefault();
+                    const text = (e.clipboardData || window.clipboardData)?.getData('text/plain') || '';
+                    if (!text) return;
+
+                    const cleanText = text.replace(/\r?\n|\r/g, ' ');
+
+                    if (document.queryCommandSupported && document.queryCommandSupported('insertText')) {
+                        document.execCommand('insertText', false, cleanText);
+                    } else {
+                        const sel = window.getSelection();
+                        if (sel && sel.rangeCount > 0) {
+                            const range = sel.getRangeAt(0);
+                            range.deleteContents();
+                            const textNode = document.createTextNode(cleanText);
+                            range.insertNode(textNode);
+                            range.setStartAfter(textNode);
+                            range.collapse(true);
+                            sel.removeAllRanges();
+                            sel.addRange(range);
+                        } else {
+                            titleDiv.innerText = cleanText;
+                        }
+                    }
+
+                    titleDiv.dispatchEvent(new Event('input', { bubbles: true }));
+                });
+
+                // Перетягування (Drag & Drop) виділеного тексту в заголовок тільки як чистий текст
+                titleDiv.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    const text = e.dataTransfer?.getData('text/plain') || '';
+                    if (!text) return;
+
+                    const cleanText = text.replace(/\r?\n|\r/g, ' ');
+
+                    let range = null;
+                    if (document.caretRangeFromPoint) {
+                        range = document.caretRangeFromPoint(e.clientX, e.clientY);
+                    } else if (document.caretPositionFromPoint) {
+                        const pos = document.caretPositionFromPoint(e.clientX, e.clientY);
+                        if (pos) {
+                            range = document.createRange();
+                            range.setStart(pos.offsetNode, pos.offset);
+                            range.collapse(true);
+                        }
+                    }
+
+                    const sel = window.getSelection();
+                    if (range && sel) {
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                        range.deleteContents();
+                        const textNode = document.createTextNode(cleanText);
+                        range.insertNode(textNode);
+                        range.setStartAfter(textNode);
+                        range.collapse(true);
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                    } else {
+                        titleDiv.innerText = cleanText;
+                    }
+
+                    titleDiv.dispatchEvent(new Event('input', { bubbles: true }));
+                });
+
+                // Натискання Enter у заголовку переводить фокус на область тексту нотатки
+                titleDiv.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const contentEl = card.querySelector('.sticker-content');
+                        if (contentEl) {
+                            contentEl.focus();
+                        }
+                    }
+                });
+
                 titleDiv.addEventListener('focus', updateTitlePlaceholder);
                 titleDiv.addEventListener('blur', updateTitlePlaceholder);
             }
