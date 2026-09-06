@@ -374,10 +374,31 @@
 
     /* Адаптивна шапка колонки: компактний заголовок та іконка фільтра без тексту */
     .column-header {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        width: 100% !important;
         padding-bottom: 10px !important;
         margin-bottom: 12px !important;
         gap: 8px !important;
         flex-shrink: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .column-title-wrap {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+    }
+
+    .column-header-actions {
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        flex-shrink: 0 !important;
+        margin-left: auto !important;
     }
 
     .column-header-icon {

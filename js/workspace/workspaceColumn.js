@@ -308,7 +308,11 @@ window.App = window.App || {};
                 if (onLayoutChange) onLayoutChange();
             });
 
-            titleWrap.appendChild(layoutToggleBtn);
+            // Блок дій у шапці колонки праворуч (Actions: перемикач сітки, меню "три крапки", кнопка закриття)
+            const actionsWrap = document.createElement('div');
+            actionsWrap.className = 'column-header-actions';
+
+            actionsWrap.appendChild(layoutToggleBtn);
 
             // Тулбар-меню "три крапки" (з фільтрами, перейменуванням та поширенням)
             if (window.App.columnMenu) {
@@ -322,10 +326,8 @@ window.App = window.App || {};
                         if (onFilterChange) onFilterChange();
                     }
                 });
-                titleWrap.appendChild(columnMenuWrap);
+                actionsWrap.appendChild(columnMenuWrap);
             }
-
-            header.appendChild(titleWrap);
 
             // Кнопка закриття для прив'язаних колонок
             if (colIndex > 0) {
@@ -336,8 +338,11 @@ window.App = window.App || {};
                 closeBtn.addEventListener('click', () => {
                     if (onCloseColumn) onCloseColumn(colIndex);
                 });
-                header.appendChild(closeBtn);
+                actionsWrap.appendChild(closeBtn);
             }
+
+            header.appendChild(titleWrap);
+            header.appendChild(actionsWrap);
 
             columnEl.appendChild(header);
 

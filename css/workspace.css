@@ -826,6 +826,13 @@ body.global-eraser-active #workspace-eraser-btn {
 .column-layout-toggle-btn {
     width: 26px;
     padding: 0;
+}
+
+.column-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
     margin-left: auto;
 }
 
@@ -836,7 +843,6 @@ body.global-eraser-active #workspace-eraser-btn {
     position: relative;
     display: inline-flex;
     align-items: center;
-    margin-left: 4px;
 }
 
 .column-more-btn {
