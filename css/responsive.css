@@ -1,4 +1,4 @@
-﻿/* ==========================================================================
+/* ==========================================================================
    📱 Мобільний адаптив (Mobile Responsive Styles)
    ========================================================================== */
 
@@ -468,15 +468,18 @@
     }
 
     .sticker-content {
+        overflow: hidden !important;
+        overflow-x: hidden !important;
+        overflow-y: hidden !important;
         scrollbar-width: none !important;
         -ms-overflow-style: none !important;
+        -webkit-overflow-scrolling: auto !important;
         border: none !important;
         box-shadow: none !important;
         -webkit-appearance: none !important;
         appearance: none !important;
         -webkit-user-modify: read-write-plaintext-only !important;
-        background-clip: padding-box !important;
-        background-repeat: repeat !important;
+        background-repeat: repeat-y !important;
         background-position: left top !important;
         background-attachment: scroll !important;
         caret-color: #292524 !important;
@@ -486,15 +489,23 @@
     .sticker-content:focus-visible,
     .sticker-content:active {
         outline: none !important;
+        outline-color: transparent !important;
         border: none !important;
         box-shadow: none !important;
         -webkit-appearance: none !important;
+        appearance: none !important;
+        overflow: hidden !important;
+        scrollbar-width: none !important;
     }
 
-    .sticker-content::-webkit-scrollbar {
+    .sticker-content::-webkit-scrollbar,
+    .sticker-content::-webkit-scrollbar-thumb,
+    .sticker-content::-webkit-scrollbar-track {
         display: none !important;
         width: 0 !important;
         height: 0 !important;
+        background: transparent !important;
+        opacity: 0 !important;
     }
 
     /* Адаптивна шкала шрифтів для мобільних екранів (S / M / L / XL) з ідеальною синхронізацією ліній блокнота */
@@ -504,7 +515,7 @@
         line-height: 22px !important; 
         background-size: 100% 22px !important;
         background-position: left top !important;
-        background-repeat: repeat !important;
+        background-repeat: repeat-y !important;
         background-image: linear-gradient(
             to bottom,
             transparent 0px,
@@ -522,7 +533,7 @@
         line-height: 26px !important; 
         background-size: 100% 26px !important;
         background-position: left top !important;
-        background-repeat: repeat !important;
+        background-repeat: repeat-y !important;
         background-image: linear-gradient(
             to bottom,
             transparent 0px,
@@ -538,7 +549,7 @@
         line-height: 30px !important; 
         background-size: 100% 30px !important;
         background-position: left top !important;
-        background-repeat: repeat !important;
+        background-repeat: repeat-y !important;
         background-image: linear-gradient(
             to bottom,
             transparent 0px,
@@ -554,7 +565,7 @@
         line-height: 34px !important; 
         background-size: 100% 34px !important;
         background-position: left top !important;
-        background-repeat: repeat !important;
+        background-repeat: repeat-y !important;
         background-image: linear-gradient(
             to bottom,
             transparent 0px,

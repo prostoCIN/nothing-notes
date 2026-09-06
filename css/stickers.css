@@ -694,10 +694,18 @@ body.is-sticker-dragging * {
 .sticker-content {
     min-height: 90px;
     height: auto;
+    overflow: hidden !important;
+    overflow-x: hidden !important;
+    overflow-y: hidden !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+    -webkit-overflow-scrolling: auto !important;
     outline: none !important;
+    outline-color: transparent !important;
     border: none !important;
     box-shadow: none !important;
     -webkit-tap-highlight-color: transparent !important;
+    caret-color: #292524 !important;
     font-size: 16px;
     line-height: 30px;
     color: #292524;
@@ -714,10 +722,20 @@ body.is-sticker-dragging * {
         rgba(0, 0, 0, 0.08) 30px
     );
     background-size: 100% 30px;
-    background-repeat: repeat;
+    background-repeat: repeat-y;
     background-position: left top;
     background-attachment: scroll;
     padding-bottom: 4px;
+}
+
+.sticker-content::-webkit-scrollbar,
+.sticker-content::-webkit-scrollbar-thumb,
+.sticker-content::-webkit-scrollbar-track {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+    opacity: 0 !important;
 }
 
 .sticker-content[contenteditable="true"] {
@@ -736,11 +754,13 @@ body.is-sticker-dragging * {
 .sticker-content:focus-visible,
 .sticker-content:active {
     outline: none !important;
+    outline-color: transparent !important;
     border: none !important;
     box-shadow: none !important;
     -webkit-appearance: none !important;
     appearance: none !important;
-    background-clip: padding-box !important;
+    overflow: hidden !important;
+    scrollbar-width: none !important;
 }
 
 /* ==========================================================================
