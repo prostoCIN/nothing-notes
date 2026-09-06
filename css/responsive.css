@@ -413,7 +413,15 @@
 
     .column-count-badge {
         font-size: 11px !important;
-        padding: 1px 6px !important;
+        min-width: 26px !important;
+        height: 26px !important;
+        padding: 0 4px !important;
+        border-radius: 6px !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        background: none !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
 
     /* Кнопка фільтра колонки на мобільному стає компактною квадратною іконкою */

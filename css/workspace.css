@@ -779,20 +779,30 @@ body.global-eraser-active #workspace-eraser-btn {
 
 .column-badge, .column-count-badge {
     font-size: var(--font-xs);
-    font-weight: 700;
+    font-weight: 600;
     line-height: 1;
     color: var(--text-muted);
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.04);
-    padding: 2px 6px;
-    border-radius: 10px;
-    margin-left: 6px;
+    background: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    min-width: 26px;
+    height: 26px;
+    padding: 0 4px;
+    border-radius: 6px;
+    margin: 0;
     flex-shrink: 0;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     font-family: inherit;
-    letter-spacing: 0.2px;
+    letter-spacing: -0.2px;
+    box-sizing: border-box;
+    user-select: none;
+    transition: all var(--transition-fast);
+}
+
+.column-count-badge:hover {
+    color: var(--text-main);
+    border-color: rgba(255, 255, 255, 0.2);
 }
 
 /* Кнопка фільтру тегів у правій частині title-wrap колонки */

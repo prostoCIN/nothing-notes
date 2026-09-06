@@ -50,6 +50,11 @@ window.App = window.App || {};
 
             const totalNoteCount = allColNotes.length;
 
+            const badgeSpan = document.createElement('span');
+            badgeSpan.className = 'column-count-badge';
+            badgeSpan.textContent = totalNoteCount;
+            badgeSpan.title = `Кількість нотаток: ${totalNoteCount}`;
+
             // 1. Хедер колонки
             const header = document.createElement('div');
             header.className = 'column-header';
@@ -133,10 +138,6 @@ window.App = window.App || {};
                     });
                 }
 
-                const badgeSpan = document.createElement('span');
-                badgeSpan.className = 'column-count-badge';
-                badgeSpan.textContent = totalNoteCount;
-
                 titleWrap.appendChild(boardIconPicker);
                 titleWrap.appendChild(titleH2);
 
@@ -163,8 +164,6 @@ window.App = window.App || {};
                     });
                     titleWrap.appendChild(editHint);
                 }
-
-                titleWrap.appendChild(badgeSpan);
             } else {
                 const parentNote = noteManager ? noteManager.getNoteById(parentNoteId) : null;
                 const parentTitle = parentNote ? parentNote.title.trim() : 'Без назви';
@@ -240,10 +239,6 @@ window.App = window.App || {};
                     });
                 }
 
-                const badgeSpan = document.createElement('span');
-                badgeSpan.className = 'column-count-badge';
-                badgeSpan.textContent = totalNoteCount;
-
                 titleWrap.appendChild(noteIconPicker);
                 titleWrap.appendChild(titleH2);
 
@@ -270,8 +265,6 @@ window.App = window.App || {};
                     });
                     titleWrap.appendChild(editHint);
                 }
-
-                titleWrap.appendChild(badgeSpan);
             }
 
             // Кнопка перемикання вигляду: Список (по порядку вниз) / Сітка 2 колонки (Pinterest Masonry)
@@ -313,6 +306,7 @@ window.App = window.App || {};
             actionsWrap.className = 'column-header-actions';
 
             actionsWrap.appendChild(layoutToggleBtn);
+            actionsWrap.appendChild(badgeSpan);
 
             // Тулбар-меню "три крапки" (з фільтрами, перейменуванням та поширенням)
             if (window.App.columnMenu) {
