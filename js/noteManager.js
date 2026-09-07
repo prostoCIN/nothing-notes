@@ -282,10 +282,11 @@ window.App = window.App || {};
                 }
 
                 state.notes[index] = { ...state.notes[index], ...safeUpdates, updatedAt: Date.now() };
+                const updatedNote = state.notes[index];
                 storage.saveNotes(state.notes);
 
                 if (window.App.cloudSync) {
-                    window.App.cloudSync.syncNote(state.notes[index]);
+                    window.App.cloudSync.syncNote(updatedNote);
                 }
 
                 // Якщо оновлюється заголовок нотатки - комплексно синхронізуємо всі пов'язані DOM-елементи
@@ -320,12 +321,12 @@ window.App = window.App || {};
 
                     // 4. Елемент нотатки в дереві сайдбара
                     if (window.App.sidebarView && window.App.sidebarView.updateNoteListItem) {
-                        window.App.sidebarView.updateNoteListItem(id, updates.title, state.notes[index].icon);
+                        window.App.sidebarView.updateNoteListItem(id, updates.title, updatedNote.icon);
                     }
                 }
 
                 if (triggerReRender) {
-                    this.notifyNotesChanged({ type: 'update', note: noteToUpdate });
+                    this.notifyNotesChanged({ type: 'update', note: updatedNote });
                 }
             }
         },
