@@ -30,7 +30,14 @@ window.App = window.App || {};
                 this.handleAuthChange(session ? session.user : null);
             });
 
-            supabase.auth.onAuthStateChange((_event, session) => {
+            supabase.auth.onAuthStateChange((event, session) => {
+                if (event === 'USER_UPDATED') {
+                    if (session && session.user) {
+                        currentUser = session.user;
+                        this.updateAuthUI(session.user);
+                    }
+                    return;
+                }
                 this.handleAuthChange(session ? session.user : null);
             });
 
@@ -137,10 +144,14 @@ window.App = window.App || {};
 
         async handleAuthChange(user) {
             const wasLoggedIn = !!currentUser;
+            const isSameUser = currentUser && user && currentUser.id === user.id;
             currentUser = user;
             this.updateAuthUI(user);
 
             if (user) {
+                if (isSameUser) {
+                    return;
+                }
                 console.log('[CloudSync] Logged in as:', user.email);
                 // Завантажуємо та об'єднуємо нотатки з хмари
                 await this.pullFromCloud();
@@ -278,6 +289,12 @@ window.App = window.App || {};
                         }
 
                         const cloudUpdatedAt = n.updated_at ? new Date(n.updated_at).getTime() : 0;
+                        const hasPendingSync = this._pendingSyncNotesMap && this._pendingSyncNotesMap.has(n.id);
+                        const isLocalNewer = localNote && localNote.updatedAt && (localNote.updatedAt > cloudUpdatedAt);
+
+                        if (localNote && (hasPendingSync || isLocalNewer)) {
+                            return { ...localNote, boardId: resolvedBoardId };
+                        }
 
                         return {
                             id: n.id,
@@ -298,6 +315,17 @@ window.App = window.App || {};
                         };
                     });
 
+                    // Зберігаємо локальні нотатки, які ще очікують відправки в хмару та не повернулися з бекенду
+                    const cloudIds = new Set(cloudNotes.map(n => n.id));
+                    state.notes.forEach(localNote => {
+                        if (!cloudIds.has(localNote.id)) {
+                            const hasPending = this._pendingSyncNotesMap && this._pendingSyncNotesMap.has(localNote.id);
+                            if (hasPending) {
+                                formattedNotes.push(localNote);
+                            }
+                        }
+                    });
+
                     // Якщо під час запиту користувач почав перетягувати нотатку — відкладаємо застосування
                     if (state && state.isDraggingNote) {
                         console.log('[CloudSync] Notes pulled during drag, deferring update...');
@@ -305,7 +333,7 @@ window.App = window.App || {};
                         return;
                     }
 
-                    // Зберігаємо актуальний стан (строго такий, як у базі)
+                    // Зберігаємо актуальний стан
                     state.notes = formattedNotes;
                     window.App.storage.saveNotes(state.notes, true);
 
