@@ -44,7 +44,9 @@ window.App = window.App || {};
                     removeBadgeBtn.innerHTML = '×';
                     removeBadgeBtn.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        const updatedTags = noteTags.filter(t => t !== tagText);
+                        const freshNote = (noteManager.getNoteById && noteManager.getNoteById(note.id)) || note;
+                        const freshTags = noteManager.getNoteTags ? noteManager.getNoteTags(freshNote) : [];
+                        const updatedTags = freshTags.filter(t => t !== tagText);
                         noteManager.updateNote(note.id, { tags: updatedTags, tag: null }, true);
                     });
                     badge.appendChild(removeBadgeBtn);
@@ -69,6 +71,9 @@ window.App = window.App || {};
             const renderDropdownContent = () => {
                 tagDropdown.innerHTML = '';
 
+                const freshNote = (noteManager.getNoteById && noteManager.getNoteById(note.id)) || note;
+                const currentNoteTags = noteManager.getNoteTags ? noteManager.getNoteTags(freshNote) : [];
+
                 const dHeader = document.createElement('div');
                 dHeader.className = 'tag-dropdown-header';
                 dHeader.innerHTML = `<span>Теги нотатки</span>`;
@@ -89,7 +94,7 @@ window.App = window.App || {};
                     optionsList.appendChild(emptyText);
                 } else {
                     availableOptions.forEach(opt => {
-                        const isAlreadyAttached = noteTags.includes(opt);
+                        const isAlreadyAttached = currentNoteTags.includes(opt);
                         const colorIndex = window.App.getTagColorIndex ? window.App.getTagColorIndex(opt) : 0;
 
                         const optItem = document.createElement('div');
@@ -108,11 +113,14 @@ window.App = window.App || {};
                         const mainAction = optItem.querySelector('.tag-option-main-action');
                         mainAction.addEventListener('click', (e) => {
                             e.stopPropagation();
-                            if (isAlreadyAttached) {
-                                const updatedTags = noteTags.filter(t => t !== opt);
+                            const noteRef = (noteManager.getNoteById && noteManager.getNoteById(note.id)) || note;
+                            const latestTags = noteManager.getNoteTags ? noteManager.getNoteTags(noteRef) : [];
+                            const isAttached = latestTags.includes(opt);
+                            if (isAttached) {
+                                const updatedTags = latestTags.filter(t => t !== opt);
                                 noteManager.updateNote(note.id, { tags: updatedTags, tag: null }, true);
                             } else {
-                                const updatedTags = [...noteTags, opt];
+                                const updatedTags = [...latestTags, opt];
                                 noteManager.updateNote(note.id, { tags: updatedTags, tag: null }, true);
                             }
                             if (window.App.workspaceSelectionBar && window.App.workspaceSelectionBar.refreshTagSubmenu) {
@@ -155,7 +163,7 @@ window.App = window.App || {};
                 tagDropdown.appendChild(optionsList);
 
                 // Опція зняти всі теги з цієї нотатки (якщо є хоча б один)
-                if (noteTags.length > 0) {
+                if (currentNoteTags.length > 0) {
                     const clearSingleNoteTagsBtn = document.createElement('button');
                     clearSingleNoteTagsBtn.className = 'selection-tag-clear-btn';
                     clearSingleNoteTagsBtn.style.margin = '4px 0 6px 0';
@@ -193,10 +201,13 @@ window.App = window.App || {};
                             currentAvailable.push(newOpt);
                             if (storage.saveTagOptions) storage.saveTagOptions(currentAvailable);
                         }
-                        if (!noteTags.includes(newOpt)) {
-                            const updatedTags = [...noteTags, newOpt];
+                        const freshNote = (noteManager.getNoteById && noteManager.getNoteById(note.id)) || note;
+                        const latestTags = noteManager.getNoteTags ? noteManager.getNoteTags(freshNote) : [];
+                        if (!latestTags.includes(newOpt)) {
+                            const updatedTags = [...latestTags, newOpt];
                             noteManager.updateNote(note.id, { tags: updatedTags, tag: null }, true);
                         }
+                        addInput.value = '';
                         if (window.App.workspaceSelectionBar && window.App.workspaceSelectionBar.refreshTagSubmenu) {
                             window.App.workspaceSelectionBar.refreshTagSubmenu();
                         }
