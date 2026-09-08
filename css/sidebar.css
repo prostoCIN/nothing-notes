@@ -290,24 +290,6 @@
     border-left-color: rgba(245, 158, 11, 0.8);
 }
 
-/* Тонкі гармонійні акценти лічильників за сходинками піраміди */
-.note-item[data-depth="0"] .sidebar-child-count {
-    border-color: rgba(16, 185, 129, 0.25);
-    color: #a7f3d0;
-}
-.note-item[data-depth="1"] .sidebar-child-count {
-    border-color: rgba(56, 189, 248, 0.25);
-    color: #bae6fd;
-}
-.note-item[data-depth="2"] .sidebar-child-count {
-    border-color: rgba(168, 85, 247, 0.25);
-    color: #e9d5ff;
-}
-.note-item[data-depth="3"] .sidebar-child-count,
-.note-item[data-depth="4"] .sidebar-child-count {
-    border-color: rgba(245, 158, 11, 0.25);
-    color: #fde68a;
-}
 
 .board-item, .note-item {
     padding: 6px 8px;
