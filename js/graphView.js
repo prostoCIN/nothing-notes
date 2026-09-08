@@ -214,13 +214,13 @@ window.App = window.App || {};
                 <div class="graph-legend-pill">
                     <div class="graph-legend-item">
                         <span class="graph-legend-dot root"></span>
-                        <span>Головні нотатки</span>
+                        <span>Рівень 0 (Корінь)</span>
                     </div>
                     <div class="graph-legend-item">
                         <span class="graph-legend-dot subnote"></span>
-                        <span>Піднотатки</span>
+                        <span>Рівні 1+ (Піднотатки)</span>
                     </div>
-                    <span class="graph-legend-hint">Клік по вершині відкриває нотатку</span>
+                    <span class="graph-legend-hint">Наведення фокусує гілку вниз, клік відкриває нотатку</span>
                 </div>
 
                 <div class="graph-node-tooltip" id="graph-node-tooltip" style="display: none;">
@@ -350,7 +350,8 @@ window.App = window.App || {};
             // 1. Формуємо вершини (Nodes) навколо реального центру полотна
             boardNotes.forEach((note) => {
                 const isRoot = !note.parentId;
-                const radius = isRoot ? 20 : 15;
+                const noteLevel = window.App.noteManager ? window.App.noteManager.getNoteLevel(note.id) : (isRoot ? 0 : 1);
+                const radius = isRoot ? 20 : Math.max(12, 16 - noteLevel);
                 
                 // Визначаємо колір гілки
                 const rootAncestor = getRootAncestor(note.id);
@@ -382,6 +383,7 @@ window.App = window.App || {};
                     icon: note.icon || (isRoot ? '🗒️' : '📄'),
                     branchColor: branchColor,
                     isRoot: isRoot,
+                    level: noteLevel,
                     parentId: note.parentId || null,
                     tags: Array.isArray(note.tags) ? note.tags : (note.tag ? [note.tag.text || note.tag] : []),
                     radius: radius,
@@ -394,8 +396,10 @@ window.App = window.App || {};
 
                 if (nodesLayer) {
                     const el = document.createElement('div');
-                    el.className = 'graph-html-node' + (isRoot ? ' is-root' : '');
-                    el.title = node.title + '\n\n' + node.content.substring(0, 100) + '...';
+                    el.className = 'graph-html-node' + (isRoot ? ' is-root' : '') + ` is-level-${noteLevel}`;
+                    el.dataset.level = noteLevel;
+                    const levelLabel = noteLevel === 0 ? 'Коренева нотатка (Рівень 0)' : `Піднотатка (Рівень ${noteLevel})`;
+                    el.title = `${node.title} — ${levelLabel}\n\n${node.content.substring(0, 100)}...`;
                     
                     const circle = document.createElement('div');
                     circle.className = 'graph-html-node-circle';
@@ -596,6 +600,29 @@ window.App = window.App || {};
             ctx.fill();
         },
 
+        // Отримує множину ID вершини та всіх її нащадків тільки вниз по ієрархії (сама нотатка + всі її піднотатки)
+        getDownwardSubtreeIds(nodeId) {
+            const result = new Set();
+            if (!nodeId) return result;
+            result.add(nodeId);
+
+            // Рекурсивний збір усіх нащадків виключно вниз по ієрархії (source -> target)
+            const collectDescendants = (currentId) => {
+                for (let i = 0; i < edges.length; i++) {
+                    const edge = edges[i];
+                    if (edge.source && edge.source.id === currentId && edge.target) {
+                        if (!result.has(edge.target.id)) {
+                            result.add(edge.target.id);
+                            collectDescendants(edge.target.id);
+                        }
+                    }
+                }
+            };
+
+            collectDescendants(nodeId);
+            return result;
+        },
+
         // Рендеринг кадру на Canvas
         draw() {
             if (!ctx || !canvas) return;
@@ -616,9 +643,18 @@ window.App = window.App || {};
 
             ctx.translate(-width / 2, -height / 2);
 
+            // Визначаємо низхідну гілку наведеної нотатки (сама нотатка + її піднотатки всіх рівнів нижче)
+            let activeSubtreeIds = null;
+            if (hoveredNode) {
+                activeSubtreeIds = this.getDownwardSubtreeIds(hoveredNode.id);
+            }
+
             // 1. Малювання зв'язків (Edges)
             edges.forEach(edge => {
-                const isHovered = hoveredNode && (edge.source === hoveredNode || edge.target === hoveredNode);
+                // Зв'язок підсвічується лише якщо ОБИДВА його кінці належать до низхідної гілки наведеної нотатки
+                const isHovered = !!(activeSubtreeIds && 
+                    activeSubtreeIds.has(edge.source.id) && 
+                    activeSubtreeIds.has(edge.target.id));
                 const branchColor = edge.color || edge.source.branchColor || '#10b981';
                 
                 ctx.beginPath();
@@ -627,9 +663,14 @@ window.App = window.App || {};
 
                 if (isHovered) {
                     ctx.strokeStyle = branchColor;
-                    ctx.lineWidth = 2.4 / camera.zoom;
+                    ctx.lineWidth = 2.5 / camera.zoom;
                     ctx.shadowColor = branchColor;
                     ctx.shadowBlur = 12;
+                } else if (activeSubtreeIds) {
+                    // Зв'язки поза вибраною низхідною гілкою сильно приглушуються
+                    ctx.strokeStyle = branchColor + '15'; // ~8% opacity
+                    ctx.lineWidth = 0.8 / camera.zoom;
+                    ctx.shadowBlur = 0;
                 } else {
                     // Тонка напівпрозора лінія з відтінком своєї гілки
                     ctx.strokeStyle = branchColor + '40'; // 25% opacity
@@ -641,19 +682,19 @@ window.App = window.App || {};
                 ctx.shadowBlur = 0;
             });
 
-            // 2. Малювання вершин (Nodes)
             // 2. Оновлення стану та позицій HTML-вершин
             nodes.forEach(node => {
                 if (!node.element) return;
                 
                 const isMatch = searchQuery === '' || node.title.toLowerCase().includes(searchQuery) || node.content.toLowerCase().includes(searchQuery);
                 const isHovered = (hoveredNode === node);
-                const isConnected = hoveredNode && edges.some(e => (e.source === hoveredNode && e.target === node) || (e.target === hoveredNode && e.source === node));
+                const isInSubtree = activeSubtreeIds && activeSubtreeIds.has(node.id);
+                const isConnected = isInSubtree && !isHovered;
 
                 node.element.classList.toggle('is-hovered', isHovered);
                 node.element.classList.toggle('is-connected', isConnected);
                 node.element.classList.toggle('is-match', isMatch && searchQuery !== '');
-                node.element.classList.toggle('is-faded', searchQuery ? !isMatch : (hoveredNode && !isHovered && !isConnected));
+                node.element.classList.toggle('is-faded', searchQuery ? !isMatch : (activeSubtreeIds && !isInSubtree));
 
                 node.element.style.left = node.x + 'px';
                 node.element.style.top = node.y + 'px';
