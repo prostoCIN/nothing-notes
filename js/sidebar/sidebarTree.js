@@ -25,12 +25,15 @@ window.App = window.App || {};
                 const row = document.createElement('div');
                 row.className = 'note-item';
                 row.dataset.id = note.id;
+                row.dataset.depth = depth;
+                itemWrap.dataset.depth = depth;
 
-                const childCount = noteManager.getChildNotesCount(note.id);
+                const directChildCount = noteManager.getChildNotesCount(note.id);
+                const totalChildCount = noteManager.getTotalDescendantsCount ? noteManager.getTotalDescendantsCount(note.id) : directChildCount;
                 const isExpanded = state.expandedSidebarNoteIds.has(note.id);
 
                 // Кнопка стрілочки для розгортання/згортання (лише якщо є піднотатки)
-                if (childCount > 0) {
+                if (directChildCount > 0) {
                     const arrowBtn = document.createElement('button');
                     arrowBtn.className = `note-toggle-arrow ${isExpanded ? 'expanded' : ''}`;
                     arrowBtn.innerHTML = `
@@ -60,11 +63,13 @@ window.App = window.App || {};
                 titleSpan.className = 'note-item-title';
                 titleSpan.textContent = note.title.trim() || 'Без назви';
 
-                // Лічильник піднотаток для нотатки у сайдбарі
-                if (childCount > 0) {
+                // Лічильник усіх вкладених піднотаток (включаючи піднотатки їхніх піднотаток)
+                if (totalChildCount > 0) {
                     const countBadge = document.createElement('span');
                     countBadge.className = 'sidebar-child-count';
-                    countBadge.textContent = childCount;
+                    countBadge.textContent = totalChildCount;
+                    const levelLabel = depth === 0 ? 'Коренева нотатка' : `Сходинка ${depth}`;
+                    countBadge.title = `Всього піднотаток: ${totalChildCount} (${levelLabel})`;
                     row.appendChild(emojiSpan);
                     row.appendChild(titleSpan);
                     row.appendChild(countBadge);
@@ -234,11 +239,13 @@ window.App = window.App || {};
                 itemWrap.appendChild(nestPocket);
 
                 // Дочірній підсписок нотаток
-                if (childCount > 0) {
+                if (directChildCount > 0) {
                     const subList = document.createElement('ul');
+                    const subLevel = depth + 1;
                     subList.className = `sidebar-list sidebar-subnotes-list ${isExpanded ? 'is-expanded' : ''}`;
+                    subList.dataset.level = subLevel;
                     if (isExpanded) {
-                        this.renderLevel(note.id, subList, depth + 1, onSelectNote);
+                        this.renderLevel(note.id, subList, subLevel, onSelectNote);
                     }
                     itemWrap.appendChild(subList);
                 }

@@ -76,6 +76,39 @@ window.App = window.App || {};
             return allNotes.filter(n => n.boardId === state.activeBoardId && n.parentId === noteId).length;
         },
 
+        // Рахує загальну кількість усіх вкладених піднотаток рекурсивно (діти + онуки + ...)
+        getTotalDescendantsCount(noteId) {
+            if (!noteId) return 0;
+            const state = window.App.state;
+            const allNotes = this.getAllNotes();
+            const boardNotes = allNotes.filter(n => n.boardId === state.activeBoardId);
+
+            const countNested = (parentId) => {
+                const children = boardNotes.filter(n => n.parentId === parentId);
+                let count = children.length;
+                for (let i = 0; i < children.length; i++) {
+                    count += countNested(children[i].id);
+                }
+                return count;
+            };
+
+            return countNested(noteId);
+        },
+
+        // Визначає рівень піраміди / сходинку ієрархії нотатки (0 = корінь, 1 = перший рівень піднотаток тощо)
+        getNoteLevel(noteId) {
+            const allNotes = this.getAllNotes();
+            let level = 0;
+            let current = allNotes.find(n => n.id === noteId);
+            const visited = new Set();
+            while (current && current.parentId && !visited.has(current.parentId)) {
+                visited.add(current.id);
+                level++;
+                current = allNotes.find(n => n.id === current.parentId);
+            }
+            return level;
+        },
+
         getDescendantIds(noteId) {
             const allNotes = this.getAllNotes();
             const directChildren = allNotes.filter(n => n.parentId === noteId);

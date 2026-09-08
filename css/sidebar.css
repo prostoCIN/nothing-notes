@@ -238,7 +238,7 @@
     color: var(--text-main);
 }
 
-/* Дерево нотаток та вертикальні напрямні лінії ієрархії */
+/* Дерево нотаток та вертикальні напрямні лінії ієрархії (Сходинки піраміди) */
 .sidebar-note-tree-node {
     list-style: none;
     position: relative;
@@ -248,7 +248,7 @@
     list-style: none;
     margin-left: 14px;
     padding-left: 10px;
-    border-left: 1.5px solid rgba(255, 255, 255, 0.12); /* Чітка лінія ієрархії */
+    border-left: 1.5px solid rgba(255, 255, 255, 0.12); /* Базова лінія ієрархії */
     display: flex;
     flex-direction: column;
     margin-top: 1px;
@@ -257,8 +257,56 @@
     transition: border-color 0.2s ease;
 }
 
-.sidebar-subnotes-list:hover {
-    border-left-color: rgba(16, 185, 129, 0.4); /* Підсвічування гілки при наведенні */
+/* Кольорові рівневі напрямні (Tree Level Indent Guides): сходинки піраміди знань */
+.sidebar-subnotes-list[data-level="1"] {
+    border-left-color: rgba(16, 185, 129, 0.35); /* Сходинка 1: смарагдовий */
+}
+.sidebar-subnotes-list[data-level="1"]:hover {
+    border-left-color: rgba(16, 185, 129, 0.8);
+}
+
+.sidebar-subnotes-list[data-level="2"] {
+    border-left-color: rgba(56, 189, 248, 0.35); /* Сходинка 2: небесно-блакитний */
+}
+.sidebar-subnotes-list[data-level="2"]:hover {
+    border-left-color: rgba(56, 189, 248, 0.8);
+}
+
+.sidebar-subnotes-list[data-level="3"] {
+    border-left-color: rgba(168, 85, 247, 0.35); /* Сходинка 3: лавандово-фіолетовий */
+}
+.sidebar-subnotes-list[data-level="3"]:hover {
+    border-left-color: rgba(168, 85, 247, 0.8);
+}
+
+.sidebar-subnotes-list[data-level="4"],
+.sidebar-subnotes-list[data-level="5"],
+.sidebar-subnotes-list[data-level="6"] {
+    border-left-color: rgba(245, 158, 11, 0.35); /* Сходинка 4+: теплий бурштиновий */
+}
+.sidebar-subnotes-list[data-level="4"]:hover,
+.sidebar-subnotes-list[data-level="5"]:hover,
+.sidebar-subnotes-list[data-level="6"]:hover {
+    border-left-color: rgba(245, 158, 11, 0.8);
+}
+
+/* Тонкі гармонійні акценти лічильників за сходинками піраміди */
+.note-item[data-depth="0"] .sidebar-child-count {
+    border-color: rgba(16, 185, 129, 0.25);
+    color: #a7f3d0;
+}
+.note-item[data-depth="1"] .sidebar-child-count {
+    border-color: rgba(56, 189, 248, 0.25);
+    color: #bae6fd;
+}
+.note-item[data-depth="2"] .sidebar-child-count {
+    border-color: rgba(168, 85, 247, 0.25);
+    color: #e9d5ff;
+}
+.note-item[data-depth="3"] .sidebar-child-count,
+.note-item[data-depth="4"] .sidebar-child-count {
+    border-color: rgba(245, 158, 11, 0.25);
+    color: #fde68a;
 }
 
 .board-item, .note-item {
