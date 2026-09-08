@@ -405,6 +405,20 @@ window.App = window.App || {};
                 els.columnsContainer.classList.remove('has-many-columns');
             }
 
+            // Перевіряємо та застосовуємо стан розтягнутої на весь екран колонки
+            if (state && state.stretchedColumnKey) {
+                const chainKeys = (state.activeChain || []).map(id => id || 'root');
+                if (!chainKeys.includes(state.stretchedColumnKey)) {
+                    state.stretchedColumnKey = null;
+                }
+            }
+
+            if (state && state.stretchedColumnKey) {
+                els.columnsContainer.classList.add('has-stretched-column');
+            } else {
+                els.columnsContainer.classList.remove('has-stretched-column');
+            }
+
             // Рендеримо кожну колонку ланцюжка
             if (state && state.activeChain && window.App.workspaceColumn) {
                 state.activeChain.forEach((parentNoteId, colIndex) => {

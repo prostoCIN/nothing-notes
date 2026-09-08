@@ -656,11 +656,27 @@ body.global-eraser-active #workspace-eraser-btn {
     padding: 22px 24px 20px 24px;
     box-shadow: var(--glass-specular);
     box-sizing: border-box;
-    transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    transition: flex 0.28s cubic-bezier(0.2, 0, 0, 1), min-width 0.28s cubic-bezier(0.2, 0, 0, 1), max-width 0.28s cubic-bezier(0.2, 0, 0, 1), width 0.28s cubic-bezier(0.2, 0, 0, 1), transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 /* Коли колонок 3 і більше — кожна колонка займає рівно 50% ширини екрана (calc((100% - 14px) / 2)) */
 .columns-container.has-many-columns .board-column {
+    flex: 0 0 calc((100% - 14px) / 2) !important;
+    min-width: calc((100% - 14px) / 2) !important;
+    max-width: calc((100% - 14px) / 2) !important;
+}
+
+/* Розтягування певної колонки на всю ширину робочої області (ніби вона одна відкрита) */
+.board-column.column-stretched-full,
+.columns-container.has-many-columns .board-column.column-stretched-full {
+    flex: 0 0 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+/* Якщо якась колонка розтягнута на весь екран — сусідні колонки тримають комфортні 50% ширини для скролу */
+.columns-container.has-stretched-column .board-column:not(.column-stretched-full) {
     flex: 0 0 calc((100% - 14px) / 2) !important;
     min-width: calc((100% - 14px) / 2) !important;
     max-width: calc((100% - 14px) / 2) !important;
@@ -814,7 +830,8 @@ body.global-eraser-active #workspace-eraser-btn {
 }
 
 .column-filter-btn,
-.column-layout-toggle-btn {
+.column-layout-toggle-btn,
+.column-expand-toggle-btn {
     background: none;
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: var(--text-muted);
@@ -833,7 +850,8 @@ body.global-eraser-active #workspace-eraser-btn {
     font-family: inherit;
 }
 
-.column-layout-toggle-btn {
+.column-layout-toggle-btn,
+.column-expand-toggle-btn {
     width: 26px;
     padding: 0;
 }
@@ -1106,6 +1124,7 @@ body.global-eraser-active #workspace-eraser-btn {
 
 .column-filter-btn:hover,
 .column-layout-toggle-btn:hover,
+.column-expand-toggle-btn:hover,
 .column-graph-toggle-btn:hover,
 .column-select-toggle-btn:hover {
     background-color: var(--hover-bg);
@@ -1114,7 +1133,8 @@ body.global-eraser-active #workspace-eraser-btn {
     transform: scale(0.96);
 }
 
-.column-layout-toggle-btn.active {
+.column-layout-toggle-btn.active,
+.column-expand-toggle-btn.active {
     background-color: rgba(16, 185, 129, 0.15);
     border-color: #10b981;
     color: #34d399;

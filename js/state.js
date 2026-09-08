@@ -161,7 +161,8 @@ window.App.state = {
     isDraggingNote: false, // Прапорець активного перетягування нотатки (блокує фонові перерендери)
     draggedNoteId: null, // ID поточної нотатки, що перетягується
     activeTagFilters: new Map(), // Карта фільтрів тегів для колонок: key: parentId || 'root' -> Set<tagText>
-    columnLayouts: window.App.storage.getColumnLayouts() // key: parentId || 'root' -> 'list' | 'grid'
+    columnLayouts: window.App.storage.getColumnLayouts(), // key: parentId || 'root' -> 'list' | 'grid'
+    stretchedColumnKey: null // parentKey ('root' або noteId) колонки, розтягнутої на весь екран у ПК версії
 };
 
 // Гарантуємо запис незбережених змін перед закриттям вкладки або браузера

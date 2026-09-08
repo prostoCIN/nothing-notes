@@ -301,11 +301,76 @@ window.App = window.App || {};
                 if (onLayoutChange) onLayoutChange();
             });
 
-            // Блок дій у шапці колонки праворуч (Actions: перемикач сітки, меню "три крапки", кнопка закриття)
+            // Кнопка розтягування колонки на весь екран (Full width toggle у ПК версії)
+            const isStretched = !!(state && state.stretchedColumnKey === parentKey);
+            if (isStretched) {
+                columnEl.classList.add('column-stretched-full');
+            }
+
+            const expandColumnBtn = document.createElement('button');
+            expandColumnBtn.className = `column-expand-toggle-btn ${isStretched ? 'active' : ''}`;
+            expandColumnBtn.title = isStretched ? 'Відновити звичайну ширину колонки' : 'Розтягнути колонку на весь екран';
+
+            const updateExpandIcon = (btn, stretched) => {
+                btn.innerHTML = stretched
+                    ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                         <polyline points="4 14 10 14 10 20"></polyline>
+                         <polyline points="20 10 14 10 14 4"></polyline>
+                         <line x1="14" y1="10" x2="21" y2="3"></line>
+                         <line x1="3" y1="21" x2="10" y2="14"></line>
+                       </svg>`
+                    : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                         <polyline points="15 3 21 3 21 9"></polyline>
+                         <polyline points="9 21 3 21 3 15"></polyline>
+                         <line x1="21" y1="3" x2="14" y2="10"></line>
+                         <line x1="3" y1="21" x2="10" y2="14"></line>
+                       </svg>`;
+            };
+            updateExpandIcon(expandColumnBtn, isStretched);
+
+            expandColumnBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const container = columnEl.closest('.columns-container');
+                const currentlyStretched = !!(state && state.stretchedColumnKey === parentKey);
+
+                if (currentlyStretched) {
+                    if (state) state.stretchedColumnKey = null;
+                    columnEl.classList.remove('column-stretched-full');
+                    expandColumnBtn.classList.remove('active');
+                    expandColumnBtn.title = 'Розтягнути колонку на весь екран';
+                    updateExpandIcon(expandColumnBtn, false);
+                    if (container) {
+                        container.classList.remove('has-stretched-column');
+                    }
+                } else {
+                    if (state) state.stretchedColumnKey = parentKey;
+                    if (container) {
+                        container.querySelectorAll('.column-stretched-full').forEach(el => {
+                            el.classList.remove('column-stretched-full');
+                        });
+                        container.querySelectorAll('.column-expand-toggle-btn.active').forEach(btn => {
+                            btn.classList.remove('active');
+                            btn.title = 'Розтягнути колонку на весь екран';
+                            updateExpandIcon(btn, false);
+                        });
+                        container.classList.add('has-stretched-column');
+                    }
+                    columnEl.classList.add('column-stretched-full');
+                    expandColumnBtn.classList.add('active');
+                    expandColumnBtn.title = 'Відновити звичайну ширину колонки';
+                    updateExpandIcon(expandColumnBtn, true);
+
+                    // Плавно центруємо колонку в зоні видимості
+                    columnEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                }
+            });
+
+            // Блок дій у шапці колонки праворуч (Actions: перемикач сітки, розтягування колонки, лічильник, меню "три крапки", кнопка закриття)
             const actionsWrap = document.createElement('div');
             actionsWrap.className = 'column-header-actions';
 
             actionsWrap.appendChild(layoutToggleBtn);
+            actionsWrap.appendChild(expandColumnBtn);
             actionsWrap.appendChild(badgeSpan);
 
             // Тулбар-меню "три крапки" (з фільтрами, перейменуванням та поширенням)

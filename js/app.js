@@ -26,6 +26,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (window.App.historyManager) {
                 window.App.historyManager.reset();
             }
+            if (window.App.state) {
+                window.App.state.stretchedColumnKey = null;
+            }
             welcomeView.hide();
             sidebarView.render();
             workspaceView.render();
