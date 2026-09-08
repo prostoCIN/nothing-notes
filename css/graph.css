@@ -117,20 +117,26 @@
     text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
 }
 
-/* Стани (Hover, Active, Search Match) */
-@media (hover: hover) and (min-width: 769px) {
-    .graph-html-node.is-hovered .graph-html-node-circle,
-    .graph-html-node.is-connected .graph-html-node-circle {
-        border-color: #ffffff !important;
-        transform: scale(1.15);
-        box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.25), 0 0 20px currentColor !important;
-    }
+/* Стани (Hover на ПК, Перетягування/хватання на смартфонах і ПК, Підсвічені зв'язки) */
+.graph-html-node.is-hovered .graph-html-node-circle,
+.graph-html-node.is-connected .graph-html-node-circle {
+    border-color: #ffffff !important;
+    transform: scale(1.15);
+    box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.25), 0 0 20px currentColor !important;
+}
 
-    .graph-html-node.is-hovered .graph-html-node-label {
-        color: #ffffff;
-        font-weight: 700;
-        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
-    }
+.graph-html-node.is-dragging .graph-html-node-circle {
+    border-color: #ffffff !important;
+    transform: scale(1.22);
+    box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.35), 0 0 26px currentColor !important;
+    z-index: 100;
+}
+
+.graph-html-node.is-hovered .graph-html-node-label,
+.graph-html-node.is-dragging .graph-html-node-label {
+    color: #ffffff;
+    font-weight: 700;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
 }
 
 .graph-html-node.is-match .graph-html-node-label {

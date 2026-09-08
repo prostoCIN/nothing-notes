@@ -298,6 +298,7 @@ window.App = window.App || {};
             canvas.addEventListener('pointerdown', this.onPointerDown.bind(this));
             window.addEventListener('pointermove', this.onPointerMove.bind(this));
             window.addEventListener('pointerup', this.onPointerUp.bind(this));
+            window.addEventListener('pointercancel', this.onPointerUp.bind(this));
             canvas.addEventListener('wheel', this.onWheel.bind(this), { passive: false });
 
             // Resize
@@ -643,16 +644,17 @@ window.App = window.App || {};
 
             ctx.translate(-width / 2, -height / 2);
 
-            // Визначаємо низхідну гілку наведеної нотатки (сама нотатка + її піднотатки всіх рівнів нижче)
+            // Визначаємо низхідну гілку активної нотатки (перетягуваної або наведеної)
+            const activeFocusNode = draggedNode || hoveredNode;
             let activeSubtreeIds = null;
-            if (hoveredNode) {
-                activeSubtreeIds = this.getDownwardSubtreeIds(hoveredNode.id);
+            if (activeFocusNode) {
+                activeSubtreeIds = this.getDownwardSubtreeIds(activeFocusNode.id);
             }
 
             // 1. Малювання зв'язків (Edges)
             edges.forEach(edge => {
-                // Зв'язок підсвічується лише якщо ОБИДВА його кінці належать до низхідної гілки наведеної нотатки
-                const isHovered = !!(activeSubtreeIds && 
+                // Зв'язок підсвічується лише якщо ОБИДВА його кінці належать до низхідної гілки активної нотатки
+                const isHighlighted = !!(activeSubtreeIds && 
                     activeSubtreeIds.has(edge.source.id) && 
                     activeSubtreeIds.has(edge.target.id));
                 const branchColor = edge.color || edge.source.branchColor || '#10b981';
@@ -661,11 +663,11 @@ window.App = window.App || {};
                 ctx.moveTo(edge.source.x, edge.source.y);
                 ctx.lineTo(edge.target.x, edge.target.y);
 
-                if (isHovered) {
+                if (isHighlighted) {
                     ctx.strokeStyle = branchColor;
-                    ctx.lineWidth = 2.5 / camera.zoom;
+                    ctx.lineWidth = (draggedNode ? 3.0 : 2.5) / camera.zoom;
                     ctx.shadowColor = branchColor;
-                    ctx.shadowBlur = 12;
+                    ctx.shadowBlur = 14;
                 } else if (activeSubtreeIds) {
                     // Зв'язки поза вибраною низхідною гілкою сильно приглушуються
                     ctx.strokeStyle = branchColor + '15'; // ~8% opacity
@@ -687,10 +689,12 @@ window.App = window.App || {};
                 if (!node.element) return;
                 
                 const isMatch = searchQuery === '' || node.title.toLowerCase().includes(searchQuery) || node.content.toLowerCase().includes(searchQuery);
-                const isHovered = (hoveredNode === node);
+                const isDragging = (draggedNode === node);
+                const isHovered = (hoveredNode === node && !draggedNode);
                 const isInSubtree = activeSubtreeIds && activeSubtreeIds.has(node.id);
-                const isConnected = isInSubtree && !isHovered;
+                const isConnected = isInSubtree && !isHovered && !isDragging;
 
+                node.element.classList.toggle('is-dragging', isDragging);
                 node.element.classList.toggle('is-hovered', isHovered);
                 node.element.classList.toggle('is-connected', isConnected);
                 node.element.classList.toggle('is-match', isMatch && searchQuery !== '');
@@ -758,7 +762,7 @@ window.App = window.App || {};
             return null;
         },
 
-        // Події миші
+        // Події миші та тач-пристроїв
         onPointerDown(e) {
             if (e.button !== 0 && e.button !== 1) return; // Ліва або середня кнопка
 
@@ -769,13 +773,11 @@ window.App = window.App || {};
             if (targetNode) {
                 isDraggingNode = true;
                 draggedNode = targetNode;
-                const isTouchDevice = e.pointerType === 'touch' || window.matchMedia('(hover: none)').matches || window.innerWidth <= 768;
-                if (!isTouchDevice) {
-                    hoveredNode = targetNode;
-                }
+                hoveredNode = targetNode;
             } else {
                 isDraggingCanvas = true;
                 hoveredNode = null;
+                draggedNode = null;
             }
         },
 
@@ -792,13 +794,11 @@ window.App = window.App || {};
                 draggedNode.y = world.y;
                 draggedNode.vx = 0;
                 draggedNode.vy = 0;
-                
             } else if (isDraggingCanvas) {
                 camera.x += dx;
                 camera.y += dy;
-                
             } else {
-                // Перевірка hover на вершину (тільки для миші на десктопі, щоб на телефонах не лишалося затемнення)
+                // Перевірка hover на вершину (тільки для миші на десктопі, щоб на телефонах без перетягування не залипало затемнення)
                 const isTouchDevice = e.pointerType === 'touch' || window.matchMedia('(hover: none)').matches || window.innerWidth <= 768;
                 if (!isTouchDevice) {
                     const hovered = this.getNodeAt(e.clientX, e.clientY);
@@ -806,13 +806,16 @@ window.App = window.App || {};
                         hoveredNode = hovered;
                     }
                 } else {
-                    if (hoveredNode) hoveredNode = null;
+                    if (hoveredNode && !draggedNode) {
+                        hoveredNode = null;
+                    }
                 }
             }
         },
 
         onPointerUp(e) {
             const distMoved = Math.sqrt(Math.pow(e.clientX - startMousePos.x, 2) + Math.pow(e.clientY - startMousePos.y, 2));
+            const isTouchDevice = e.pointerType === 'touch' || window.matchMedia('(hover: none)').matches || window.innerWidth <= 768;
 
             // Якщо це був клік (без значного перетягування) по вершині — відкриваємо нотатку у вигляді колонок
             if (distMoved < 6 && draggedNode) {
@@ -823,6 +826,14 @@ window.App = window.App || {};
             isDraggingCanvas = false;
             isDraggingNode = false;
             draggedNode = null;
+
+            // На смартфонах і планшетах при відпусканні пальця підсвічування миттєво знімається
+            if (isTouchDevice) {
+                hoveredNode = null;
+            } else {
+                // На ПК перевіряємо, чи миша лишилася над вершиною після відпускання кнопки
+                hoveredNode = this.getNodeAt(e.clientX, e.clientY);
+            }
         },
 
         onWheel(e) {
