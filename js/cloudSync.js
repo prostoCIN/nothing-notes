@@ -855,7 +855,7 @@ window.App = window.App || {};
             }
 
             if (user) {
-                const nickname = (user.user_metadata && (user.user_metadata.nickname || user.user_metadata.display_name)) || user.email.split('@')[0];
+                const nickname = (user.user_metadata && (user.user_metadata.username || user.user_metadata.nickname || user.user_metadata.display_name)) || user.email.split('@')[0];
                 const initial = nickname.charAt(0).toUpperCase();
 
                 profileCard.innerHTML = `

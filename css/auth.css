@@ -193,7 +193,60 @@
     margin: 0;
 }
 
+/* Вкладки перемикання режиму: Вхід / Реєстрація */
+.auth-tabs {
+    display: flex;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 9px;
+    padding: 3px;
+    margin-bottom: 18px;
+    gap: 4px;
+}
+
+.auth-tab-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    padding: 8px 12px;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+}
+
+.auth-tab-btn:hover {
+    color: var(--text-main);
+}
+
+.auth-tab-btn.active {
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.auth-input-hint {
+    font-size: 11px;
+    color: var(--text-muted);
+    opacity: 0.8;
+    margin-top: 1px;
+}
+
 .auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.auth-form-section {
     display: flex;
     flex-direction: column;
     gap: 14px;
