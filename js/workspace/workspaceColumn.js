@@ -328,6 +328,25 @@ window.App = window.App || {};
             };
             updateExpandIcon(expandColumnBtn, isStretched);
 
+            const scrollToCenterColumn = () => {
+                requestAnimationFrame(() => {
+                    const container = columnEl.closest('.columns-container');
+                    if (!container) return;
+
+                    const containerRect = container.getBoundingClientRect();
+                    const columnRect = columnEl.getBoundingClientRect();
+                    // Точна координата лівого краю колонки всередині вмісту контейнера
+                    const absoluteColLeft = (columnRect.left - containerRect.left) + container.scrollLeft;
+                    // Зміщення для ідеального центрування колонки на екрані
+                    const targetScroll = absoluteColLeft - Math.max(0, (container.clientWidth - columnRect.width) / 2);
+
+                    container.scrollTo({
+                        left: Math.max(0, Math.round(targetScroll)),
+                        behavior: 'smooth'
+                    });
+                });
+            };
+
             expandColumnBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const container = columnEl.closest('.columns-container');
@@ -342,6 +361,7 @@ window.App = window.App || {};
                     if (container) {
                         container.classList.remove('has-stretched-column');
                     }
+                    scrollToCenterColumn();
                 } else {
                     if (state) state.stretchedColumnKey = parentKey;
                     if (container) {
@@ -360,8 +380,8 @@ window.App = window.App || {};
                     expandColumnBtn.title = 'Відновити звичайну ширину колонки';
                     updateExpandIcon(expandColumnBtn, true);
 
-                    // Плавно центруємо колонку в зоні видимості
-                    columnEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                    // Плавно скролимо робочу область так, щоб відцентрувати розтягнуту колонку
+                    scrollToCenterColumn();
                 }
             });
 
