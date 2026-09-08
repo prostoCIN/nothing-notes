@@ -328,23 +328,46 @@ window.App = window.App || {};
             };
             updateExpandIcon(expandColumnBtn, isStretched);
 
-            const scrollToCenterColumn = () => {
-                requestAnimationFrame(() => {
-                    const container = columnEl.closest('.columns-container');
-                    if (!container) return;
+            // Плавне синхронне центрування скролу разом із 250мс CSS-анімацією розширення/звуження
+            const animateScrollToCenter = () => {
+                const container = columnEl.closest('.columns-container');
+                if (!container) return;
+
+                if (window._columnStretchScrollRaf) {
+                    cancelAnimationFrame(window._columnStretchScrollRaf);
+                    window._columnStretchScrollRaf = null;
+                }
+
+                const startTime = performance.now();
+                const duration = 260; // 260мс — плавно узгоджено з 0.25s CSS transition
+
+                const step = (now) => {
+                    const elapsed = now - startTime;
+                    const progress = Math.min(1, elapsed / duration);
 
                     const containerRect = container.getBoundingClientRect();
                     const columnRect = columnEl.getBoundingClientRect();
-                    // Точна координата лівого краю колонки всередині вмісту контейнера
+                    // Точна координата лівого краю колонки всередині скрол-контенту контейнера
                     const absoluteColLeft = (columnRect.left - containerRect.left) + container.scrollLeft;
-                    // Зміщення для ідеального центрування колонки на екрані
+                    // Зміщення для ідеального центрування колонки
                     const targetScroll = absoluteColLeft - Math.max(0, (container.clientWidth - columnRect.width) / 2);
 
-                    container.scrollTo({
-                        left: Math.max(0, Math.round(targetScroll)),
-                        behavior: 'smooth'
-                    });
-                });
+                    container.scrollLeft = Math.max(0, Math.round(targetScroll));
+
+                    if (progress < 1) {
+                        window._columnStretchScrollRaf = requestAnimationFrame(step);
+                    } else {
+                        window._columnStretchScrollRaf = null;
+                        // Фінальна точна фіксація після повного завершення переходу
+                        const cRect = container.getBoundingClientRect();
+                        const colRect = columnEl.getBoundingClientRect();
+                        const finalColLeft = (colRect.left - cRect.left) + container.scrollLeft;
+                        const finalTarget = finalColLeft - Math.max(0, (cRect.width - colRect.width) / 2);
+                        container.scrollLeft = Math.max(0, Math.round(finalTarget));
+                    }
+                };
+
+                window._columnStretchScrollRaf = requestAnimationFrame(step);
             };
 
             expandColumnBtn.addEventListener('click', (e) => {
@@ -361,7 +384,7 @@ window.App = window.App || {};
                     if (container) {
                         container.classList.remove('has-stretched-column');
                     }
-                    scrollToCenterColumn();
+                    animateScrollToCenter();
                 } else {
                     if (state) state.stretchedColumnKey = parentKey;
                     if (container) {
@@ -380,8 +403,8 @@ window.App = window.App || {};
                     expandColumnBtn.title = 'Відновити звичайну ширину колонки';
                     updateExpandIcon(expandColumnBtn, true);
 
-                    // Плавно скролимо робочу область так, щоб відцентрувати розтягнуту колонку
-                    scrollToCenterColumn();
+                    // Плавно розширюємо і центруємо розтягнуту колонку
+                    animateScrollToCenter();
                 }
             });
 

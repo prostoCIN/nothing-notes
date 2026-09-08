@@ -657,7 +657,7 @@ body.global-eraser-active #workspace-eraser-btn {
     padding: 22px 24px 20px 24px;
     box-shadow: var(--glass-specular);
     box-sizing: border-box;
-    transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    transition: flex 0.25s cubic-bezier(0.16, 1, 0.3, 1), min-width 0.25s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.25s cubic-bezier(0.16, 1, 0.3, 1), width 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 /* Коли колонок 3 і більше — кожна колонка займає рівно 50% ширини екрана (calc((100% - 14px) / 2)) */
