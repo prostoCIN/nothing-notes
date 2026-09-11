@@ -26,6 +26,10 @@ window.App = window.App || {};
         'violet': 'hl-purple'
     };
 
+    const SENTENCE_START_REGEX = /(?:^[\s\u00A0]*|[\r\n]+[\s\u00A0]*|(?:[.!?…]+|\.\.\.)[\s\u00A0]*(?:[\s\u00A0\r\n]|["'«»“”„(\[—–-])[\s\u00A0]*)$/;
+    let isAutoCapitalizing = false;
+    let lastAutoCapitalized = null;
+
     let testColorEl = null;
     function resolveColorToRgb(colorStr) {
         if (!testColorEl && typeof document !== 'undefined') {
@@ -812,7 +816,7 @@ window.App = window.App || {};
             contentDiv.className = 'sticker-content';
             contentDiv.contentEditable = isReadOnly ? 'false' : 'true';
             contentDiv.spellcheck = false;
-            contentDiv.autocapitalize = 'off';
+            contentDiv.autocapitalize = 'sentences';
             contentDiv.autocomplete = 'off';
             contentDiv.dataset.placeholder = isReadOnly ? '' : 'Напишіть текст нотатки...';
 
@@ -896,8 +900,10 @@ window.App = window.App || {};
                     }
                 });
 
-                // Перед введенням нового символу (beforeinput): якщо нотатка візуально порожня — гарантуємо чистий корінь без залишкових тегів
-                contentDiv.addEventListener('beforeinput', () => {
+                // Перед введенням нового символу (beforeinput):
+                // 1. Якщо нотатка візуально порожня — гарантуємо чистий корінь без залишкових тегів
+                // 2. Автоматично робимо першу літеру після крапки (. ), оклику (! ), питання (? ) чи нового рядка великою
+                contentDiv.addEventListener('beforeinput', (e) => {
                     const cleanText = contentDiv.innerText.replace(/\u200B/g, '').trim();
                     const hasImg = contentDiv.querySelector('img');
 
@@ -910,6 +916,58 @@ window.App = window.App || {};
                         if (contentDiv.querySelector('mark, span, b, strong, font')) {
                             contentDiv.innerHTML = '';
                             contentDiv.removeAttribute('data-empty');
+                        }
+                    }
+
+                    // Авто-капіталізація після крапки / знаків кінця речення
+                    if (isAutoCapitalizing) return;
+                    if (e.inputType === 'insertText' && e.data && e.data.length === 1) {
+                        const char = e.data;
+                        if (/\p{L}/u.test(char)) {
+                            const upper = char.toLocaleUpperCase();
+                            if (upper !== char) {
+                                const sel = window.getSelection();
+                                if (sel && sel.isCollapsed && sel.rangeCount > 0) {
+                                    const range = sel.getRangeAt(0);
+                                    if (contentDiv.contains(range.startContainer)) {
+                                        // Якщо користувач щойно видалив велику літеру Backspace-ом і знову вводить маленьку — залишаємо маленьку
+                                        if (lastAutoCapitalized &&
+                                            lastAutoCapitalized.char === char &&
+                                            lastAutoCapitalized.contentDiv === contentDiv &&
+                                            lastAutoCapitalized.userDeleted &&
+                                            Date.now() - lastAutoCapitalized.time < 4000) {
+                                            lastAutoCapitalized = null;
+                                            return;
+                                        }
+
+                                        try {
+                                            const preRange = document.createRange();
+                                            preRange.setStart(contentDiv, 0);
+                                            preRange.setEnd(range.startContainer, range.startOffset);
+                                            const textBefore = preRange.toString();
+
+                                            if (SENTENCE_START_REGEX.test(textBefore)) {
+                                                if (e.cancelable) {
+                                                    e.preventDefault();
+                                                    isAutoCapitalizing = true;
+                                                    lastAutoCapitalized = { char, upper, contentDiv, time: Date.now(), userDeleted: false };
+                                                    try {
+                                                        if (document.queryCommandSupported && document.queryCommandSupported('insertText')) {
+                                                            document.execCommand('insertText', false, upper);
+                                                        } else {
+                                                            insertTextAtCaret(upper, contentDiv, note);
+                                                        }
+                                                    } finally {
+                                                        isAutoCapitalizing = false;
+                                                    }
+                                                }
+                                            }
+                                        } catch (err) {
+                                            console.warn('[stickerContent] Помилка авто-капіталізації:', err);
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 });
@@ -1011,6 +1069,9 @@ window.App = window.App || {};
                 // При Backspace/Delete якщо нотатка порожня або виділено все — гарантуємо видалення тегів mark
                 contentDiv.addEventListener('keydown', (e) => {
                     if (e.key === 'Backspace' || e.key === 'Delete') {
+                        if (e.key === 'Backspace' && lastAutoCapitalized && lastAutoCapitalized.contentDiv === contentDiv && Date.now() - lastAutoCapitalized.time < 4000) {
+                            lastAutoCapitalized.userDeleted = true;
+                        }
                         setTimeout(() => {
                             const cleanText = contentDiv.innerText.replace(/\u200B/g, '').trim();
                             const hasImg = contentDiv.querySelector('img');

@@ -43,7 +43,7 @@ window.App = window.App || {};
             titleDiv.className = 'sticker-title';
             titleDiv.contentEditable = isReadOnly ? 'false' : 'true';
             titleDiv.spellcheck = false;
-            titleDiv.autocapitalize = 'off';
+            titleDiv.autocapitalize = 'sentences';
             titleDiv.autocomplete = 'off';
             titleDiv.dataset.placeholder = isReadOnly ? '' : 'Заголовок...';
             titleDiv.innerText = note.title || '';
@@ -73,6 +73,72 @@ window.App = window.App || {};
             updateTitlePlaceholder();
 
             if (!isReadOnly) {
+                let isHeaderAutoCapitalizing = false;
+                let lastHeaderAutoCapitalized = null;
+
+                titleDiv.addEventListener('beforeinput', (e) => {
+                    if (isHeaderAutoCapitalizing) return;
+                    if (e.inputType === 'insertText' && e.data && e.data.length === 1) {
+                        const char = e.data;
+                        if (/\p{L}/u.test(char)) {
+                            const upper = char.toLocaleUpperCase();
+                            if (upper !== char) {
+                                const sel = window.getSelection();
+                                if (sel && sel.isCollapsed && sel.rangeCount > 0) {
+                                    const range = sel.getRangeAt(0);
+                                    if (titleDiv.contains(range.startContainer)) {
+                                        if (lastHeaderAutoCapitalized &&
+                                            lastHeaderAutoCapitalized.char === char &&
+                                            lastHeaderAutoCapitalized.userDeleted &&
+                                            Date.now() - lastHeaderAutoCapitalized.time < 4000) {
+                                            lastHeaderAutoCapitalized = null;
+                                            return;
+                                        }
+
+                                        try {
+                                            const preRange = document.createRange();
+                                            preRange.setStart(titleDiv, 0);
+                                            preRange.setEnd(range.startContainer, range.startOffset);
+                                            const textBefore = preRange.toString();
+
+                                            const SENTENCE_START_REGEX = /(?:^[\s\u00A0]*|[\r\n]+[\s\u00A0]*|(?:[.!?…]+|\.\.\.)[\s\u00A0]*(?:[\s\u00A0\r\n]|["'«»“”„(\[—–-])[\s\u00A0]*)$/;
+                                            if (SENTENCE_START_REGEX.test(textBefore)) {
+                                                if (e.cancelable) {
+                                                    e.preventDefault();
+                                                    isHeaderAutoCapitalizing = true;
+                                                    lastHeaderAutoCapitalized = { char, upper, time: Date.now(), userDeleted: false };
+                                                    try {
+                                                        if (document.queryCommandSupported && document.queryCommandSupported('insertText')) {
+                                                            document.execCommand('insertText', false, upper);
+                                                        } else {
+                                                            const textNode = document.createTextNode(upper);
+                                                            range.deleteContents();
+                                                            range.insertNode(textNode);
+                                                            const newRange = document.createRange();
+                                                            newRange.setStartAfter(textNode);
+                                                            newRange.collapse(true);
+                                                            sel.removeAllRanges();
+                                                            sel.addRange(newRange);
+                                                        }
+                                                    } finally {
+                                                        isHeaderAutoCapitalizing = false;
+                                                    }
+                                                }
+                                            }
+                                        } catch (err) {}
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                titleDiv.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && lastHeaderAutoCapitalized && Date.now() - lastHeaderAutoCapitalized.time < 4000) {
+                        lastHeaderAutoCapitalized.userDeleted = true;
+                    }
+                });
+
                 titleDiv.addEventListener('input', () => {
                     updateTitlePlaceholder();
                     const text = titleDiv.innerText.replace(/\r?\n|\r/g, ' ').trim();
