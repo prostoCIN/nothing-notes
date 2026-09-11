@@ -107,15 +107,24 @@ window.App = window.App || {};
         while (ancestor && ancestor !== contentDiv) {
             const tagName = ancestor.tagName.toLowerCase();
 
+            let markerColor = null;
             if (tagName === 'mark' || ancestor.classList.contains('note-marker')) {
-                let colorClass = 'hl-yellow';
                 for (const cls of ancestor.classList) {
                     if (cls.startsWith('hl-')) {
-                        colorClass = cls;
+                        markerColor = cls;
                         break;
                     }
                 }
-                ancestorWrappers.push({ type: 'mark', colorClass: colorClass });
+                if (!markerColor && ancestor.style && ancestor.style.backgroundColor) {
+                    markerColor = matchColorToMarkerClass(ancestor.style.backgroundColor);
+                }
+                markerColor = markerColor || 'hl-yellow';
+            } else if (ancestor.style && ancestor.style.backgroundColor) {
+                markerColor = matchColorToMarkerClass(ancestor.style.backgroundColor);
+            }
+
+            if (markerColor) {
+                ancestorWrappers.push({ type: 'mark', colorClass: markerColor });
             } else if (tagName === 'b' || tagName === 'strong' || ancestor.style.fontWeight === 'bold' || parseInt(ancestor.style.fontWeight, 10) >= 600) {
                 ancestorWrappers.push({ type: 'b' });
             } else if (ancestor.style && ancestor.style.fontSize) {
@@ -200,6 +209,38 @@ window.App = window.App || {};
 
         return tempContainer.innerHTML;
     }
+    /**
+     * Перевіряє чи вузол містить реальний змістовний текст або візуальний елемент
+     */
+    function isNodeMeaningful(node) {
+        if (!node) return false;
+        if (node.nodeType === Node.TEXT_NODE) {
+            return node.nodeValue.replace(/[\r\n\t]/g, '').trim().length > 0;
+        }
+        if (node.nodeType === Node.ELEMENT_NODE) {
+            const tag = node.tagName.toLowerCase();
+            if (['script', 'style', 'meta', 'link', 'svg', 'button', 'input', 'iframe', 'canvas', 'noscript'].includes(tag)) {
+                return false;
+            }
+            if (tag === 'br' || tag === 'img') return true;
+            if (node.textContent && node.textContent.replace(/[\r\n\t]/g, '').trim().length > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Перевіряє чи є після поточного вузла наступні сестринські вузли з реальним змістом
+     */
+    function hasSubsequentContent(node) {
+        let next = node.nextSibling;
+        while (next) {
+            if (isNodeMeaningful(next)) return true;
+            next = next.nextSibling;
+        }
+        return false;
+    }
 
     /**
      * Рекурсивна санітизація та нормалізація вставленого вузла у чистий HTML мінімальних нотаток
@@ -244,7 +285,7 @@ window.App = window.App || {};
                 }
             }
             if (!markerClass) markerClass = 'hl-yellow';
-        } else if (node.style.backgroundColor) {
+        } else if (node.style && node.style.backgroundColor) {
             const matched = matchColorToMarkerClass(node.style.backgroundColor);
             if (matched) markerClass = matched;
         }
@@ -254,7 +295,10 @@ window.App = window.App || {};
                         node.style.fontWeight === 'bold' || 
                         parseInt(node.style.fontWeight, 10) >= 600) && node.style.fontWeight !== 'normal' && node.style.fontWeight !== '400';
 
-        const fontSize = node.style.fontSize;
+        const fontSize = node.style ? node.style.fontSize : null;
+        const isItalic = tagName === 'i' || tagName === 'em' || (node.style && node.style.fontStyle === 'italic');
+        const isUnderline = tagName === 'u' || (node.style && node.style.textDecoration?.includes('underline'));
+        const isStrike = tagName === 's' || tagName === 'strike' || (node.style && node.style.textDecoration?.includes('line-through'));
 
         const childFrag = document.createDocumentFragment();
         for (let child = node.firstChild; child; child = child.nextSibling) {
@@ -275,8 +319,27 @@ window.App = window.App || {};
             currentWrapper = span;
         }
 
+        if (isItalic) {
+            const it = document.createElement('i');
+            it.appendChild(currentWrapper);
+            currentWrapper = it;
+        }
+
+        if (isUnderline) {
+            const u = document.createElement('u');
+            u.appendChild(currentWrapper);
+            currentWrapper = u;
+        }
+
+        if (isStrike) {
+            const s = document.createElement('s');
+            s.appendChild(currentWrapper);
+            currentWrapper = s;
+        }
+
         if (isBold) {
             const b = document.createElement('b');
+            b.style.fontWeight = 'bold';
             b.appendChild(currentWrapper);
             currentWrapper = b;
         }
@@ -284,6 +347,9 @@ window.App = window.App || {};
         if (markerClass) {
             const mark = document.createElement('mark');
             mark.className = `note-marker ${markerClass}`;
+            const colorInfo = MARKER_COLOR_MAP[markerClass] || MARKER_COLOR_MAP['hl-yellow'];
+            mark.style.backgroundColor = colorInfo.bg;
+            mark.style.color = '#111827';
             mark.appendChild(currentWrapper);
             currentWrapper = mark;
         }
@@ -291,7 +357,8 @@ window.App = window.App || {};
         if (isBlock) {
             const blockFrag = document.createDocumentFragment();
             blockFrag.appendChild(currentWrapper);
-            if (node.nextSibling) {
+            // Додаємо розрив рядка тільки якщо після цього блоку є інший змістовний вміст
+            if (hasSubsequentContent(node)) {
                 blockFrag.appendChild(document.createElement('br'));
             }
             return blockFrag;
@@ -325,12 +392,17 @@ window.App = window.App || {};
         });
 
         // Видаляємо порожні форматувальні теги без тексту
-        const emptyTags = container.querySelectorAll('mark, b, span');
+        const emptyTags = container.querySelectorAll('mark, b, span, i, u, s');
         emptyTags.forEach(el => {
-            if (!el.textContent.trim() && !el.querySelector('br')) {
+            if (!el.textContent.trim() && !el.querySelector('br, img')) {
                 el.remove();
             }
         });
+
+        // Видаляємо випадковий кінцевий <br>, щоб вставка тексту не додавала зайвий пустий рядок знизу
+        while (container.lastChild && container.lastChild.nodeName && container.lastChild.nodeName.toLowerCase() === 'br') {
+            container.removeChild(container.lastChild);
+        }
     }
 
     function cleanPastedHtml(rawHtml) {
@@ -342,7 +414,13 @@ window.App = window.App || {};
             const body = doc.body;
             if (!body) return '';
 
-            const hasFormatting = body.querySelector('mark, b, strong, span[style], [class*="hl-"], [style*="background"], [style*="font-weight"]') !== null;
+            const hasFormatting = body.querySelector('mark, b, strong, i, em, u, s, strike, span[style], font[style], .note-marker, [class*="hl-"], [style*="background"], [style*="font-weight"], [style*="font-size"], [style*="text-decoration"]') !== null ||
+                (body.firstElementChild && (
+                    body.firstElementChild.style.backgroundColor || 
+                    body.firstElementChild.style.fontWeight || 
+                    body.firstElementChild.style.fontSize
+                ));
+
             if (!hasFormatting) return '';
 
             const frag = document.createDocumentFragment();
@@ -382,7 +460,11 @@ window.App = window.App || {};
             }
             if (!hasHl) {
                 const matched = matchColorToMarkerClass(mark.style.backgroundColor);
-                mark.classList.add(matched || 'hl-yellow');
+                const chosen = matched || 'hl-yellow';
+                mark.classList.add(chosen);
+                const colorInfo = MARKER_COLOR_MAP[chosen] || MARKER_COLOR_MAP['hl-yellow'];
+                mark.style.backgroundColor = colorInfo.bg;
+                mark.style.color = '#111827';
                 changed = true;
             }
         });
@@ -393,6 +475,9 @@ window.App = window.App || {};
             if (matched) {
                 const mark = document.createElement('mark');
                 mark.className = `note-marker ${matched}`;
+                const colorInfo = MARKER_COLOR_MAP[matched] || MARKER_COLOR_MAP['hl-yellow'];
+                mark.style.backgroundColor = colorInfo.bg;
+                mark.style.color = '#111827';
                 span.style.backgroundColor = '';
                 while (span.firstChild) {
                     mark.appendChild(span.firstChild);
@@ -407,40 +492,51 @@ window.App = window.App || {};
         }
     }
 
+    /**
+     * Вставка HTML безпосередньо в позицію курсору за допомогою Range API
+     * (Без document.execCommand, що запобігає створенню зайвих div і скиданню стилів у Chrome)
+     */
     function insertHtmlAtCaret(html, contentDiv, note) {
         contentDiv.focus();
 
-        let inserted = false;
-        if (document.queryCommandSupported && document.queryCommandSupported('insertHTML')) {
-            try {
-                inserted = document.execCommand('insertHTML', false, html);
-            } catch (err) {
-                inserted = false;
-            }
+        const sel = window.getSelection();
+        if (!sel || sel.rangeCount === 0) return;
+
+        let range = sel.getRangeAt(0);
+
+        // Переконуємось, що каретка знаходиться саме всередині contentDiv
+        if (!contentDiv.contains(range.commonAncestorContainer)) {
+            range = document.createRange();
+            range.selectNodeContents(contentDiv);
+            range.collapse(false);
+            sel.removeAllRanges();
+            sel.addRange(range);
         }
 
-        if (!inserted) {
-            const sel = window.getSelection();
-            if (sel && sel.rangeCount > 0) {
-                const range = sel.getRangeAt(0);
-                range.deleteContents();
-                const temp = document.createElement('div');
-                temp.innerHTML = html;
-                const frag = document.createDocumentFragment();
-                let node, lastNode;
-                while ((node = temp.firstChild)) {
-                    lastNode = frag.appendChild(node);
-                }
-                range.insertNode(frag);
-                if (lastNode) {
-                    const newRange = document.createRange();
-                    newRange.setStartAfter(lastNode);
-                    newRange.collapse(true);
-                    sel.removeAllRanges();
-                    sel.addRange(newRange);
-                }
-            }
+        // 1. Видаляємо поточний виділений діапазон, якщо користувач щось виділив перед вставкою
+        range.deleteContents();
+
+        // 2. Створюємо елементи з очищеного HTML
+        const temp = document.createElement('div');
+        temp.innerHTML = html;
+
+        const frag = document.createDocumentFragment();
+        let lastNode = null;
+        while (temp.firstChild) {
+            lastNode = frag.appendChild(temp.firstChild);
         }
+
+        if (!lastNode) return;
+
+        // 3. Вставляємо DocumentFragment безпосередньо через Range.insertNode
+        range.insertNode(frag);
+
+        // 4. Ставимо курсор відразу після останнього вставленого вузла
+        const newRange = document.createRange();
+        newRange.setStartAfter(lastNode);
+        newRange.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(newRange);
 
         contentDiv.removeAttribute('data-empty');
         contentDiv.dispatchEvent(new Event('input', { bubbles: true }));
@@ -449,31 +545,47 @@ window.App = window.App || {};
         }
     }
 
+    /**
+     * Вставка простого тексту безпосередньо в позицію курсору за допомогою Range API
+     */
     function insertTextAtCaret(text, contentDiv, note) {
         contentDiv.focus();
 
-        let inserted = false;
-        if (document.queryCommandSupported && document.queryCommandSupported('insertText')) {
-            try {
-                inserted = document.execCommand('insertText', false, text);
-            } catch (err) {
-                inserted = false;
-            }
+        const sel = window.getSelection();
+        if (!sel || sel.rangeCount === 0) return;
+
+        let range = sel.getRangeAt(0);
+        if (!contentDiv.contains(range.commonAncestorContainer)) {
+            range = document.createRange();
+            range.selectNodeContents(contentDiv);
+            range.collapse(false);
+            sel.removeAllRanges();
+            sel.addRange(range);
         }
 
-        if (!inserted) {
-            const sel = window.getSelection();
-            if (sel && sel.rangeCount > 0) {
-                const range = sel.getRangeAt(0);
-                range.deleteContents();
-                const textNode = document.createTextNode(text);
-                range.insertNode(textNode);
-                const newRange = document.createRange();
-                newRange.setStartAfter(textNode);
-                newRange.collapse(true);
-                sel.removeAllRanges();
-                sel.addRange(newRange);
+        range.deleteContents();
+
+        const normalizedText = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+        const lines = normalizedText.split('\n');
+        const frag = document.createDocumentFragment();
+        let lastNode = null;
+
+        lines.forEach((line, idx) => {
+            if (line.length > 0) {
+                lastNode = frag.appendChild(document.createTextNode(line));
             }
+            if (idx < lines.length - 1) {
+                lastNode = frag.appendChild(document.createElement('br'));
+            }
+        });
+
+        if (lastNode) {
+            range.insertNode(frag);
+            const newRange = document.createRange();
+            newRange.setStartAfter(lastNode);
+            newRange.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(newRange);
         }
 
         contentDiv.removeAttribute('data-empty');
