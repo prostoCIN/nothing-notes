@@ -207,6 +207,36 @@ window.App = window.App || {};
             b.style.fontWeight = 'bold';
         });
 
+        // Видаляємо випадкові початкові/кінцеві <br> або \n якщо виділення зачепило край рядка
+        while (tempContainer.firstChild) {
+            const first = tempContainer.firstChild;
+            if (first.nodeType === Node.TEXT_NODE) {
+                first.nodeValue = first.nodeValue.replace(/^[\r\n]+/, '');
+                if (!first.nodeValue) {
+                    tempContainer.removeChild(first);
+                    continue;
+                }
+            } else if (first.nodeType === Node.ELEMENT_NODE && first.tagName.toLowerCase() === 'br') {
+                tempContainer.removeChild(first);
+                continue;
+            }
+            break;
+        }
+        while (tempContainer.lastChild) {
+            const last = tempContainer.lastChild;
+            if (last.nodeType === Node.TEXT_NODE) {
+                last.nodeValue = last.nodeValue.replace(/[\r\n]+$/, '');
+                if (!last.nodeValue) {
+                    tempContainer.removeChild(last);
+                    continue;
+                }
+            } else if (last.nodeType === Node.ELEMENT_NODE && last.tagName.toLowerCase() === 'br') {
+                tempContainer.removeChild(last);
+                continue;
+            }
+            break;
+        }
+
         return tempContainer.innerHTML;
     }
     /**
@@ -247,6 +277,10 @@ window.App = window.App || {};
      */
     function sanitizePastedNode(node) {
         if (node.nodeType === Node.TEXT_NODE) {
+            // Ігноруємо суто технічні порожні проміжки з переносами рядків
+            if (!node.nodeValue.replace(/[\r\n\t]/g, '').trim() && (node.nodeValue.includes('\n') || node.nodeValue.includes('\r'))) {
+                return null;
+            }
             return document.createTextNode(node.nodeValue);
         }
 
@@ -399,9 +433,36 @@ window.App = window.App || {};
             }
         });
 
-        // Видаляємо випадковий кінцевий <br>, щоб вставка тексту не додавала зайвий пустий рядок знизу
-        while (container.lastChild && container.lastChild.nodeName && container.lastChild.nodeName.toLowerCase() === 'br') {
-            container.removeChild(container.lastChild);
+        // Видаляємо початкові переноси рядків, порожні текстові вузли та <br>
+        while (container.firstChild) {
+            const first = container.firstChild;
+            if (first.nodeType === Node.TEXT_NODE) {
+                first.nodeValue = first.nodeValue.replace(/^[\r\n]+/, '');
+                if (!first.nodeValue) {
+                    container.removeChild(first);
+                    continue;
+                }
+            } else if (first.nodeType === Node.ELEMENT_NODE && first.tagName.toLowerCase() === 'br') {
+                container.removeChild(first);
+                continue;
+            }
+            break;
+        }
+
+        // Видаляємо кінцеві переноси рядків, порожні текстові вузли та <br>
+        while (container.lastChild) {
+            const last = container.lastChild;
+            if (last.nodeType === Node.TEXT_NODE) {
+                last.nodeValue = last.nodeValue.replace(/[\r\n]+$/, '');
+                if (!last.nodeValue) {
+                    container.removeChild(last);
+                    continue;
+                }
+            } else if (last.nodeType === Node.ELEMENT_NODE && last.tagName.toLowerCase() === 'br') {
+                container.removeChild(last);
+                continue;
+            }
+            break;
         }
     }
 
@@ -409,6 +470,13 @@ window.App = window.App || {};
         if (!rawHtml || typeof rawHtml !== 'string') return '';
 
         try {
+            // Витягуємо тільки змістовний фрагмент між маркерами фрагмента браузера
+            const fragMatch = rawHtml.match(/<!--StartFragment-->([\s\S]*?)<!--EndFragment-->/i);
+            if (fragMatch && fragMatch[1]) {
+                rawHtml = fragMatch[1];
+            }
+            rawHtml = rawHtml.replace(/^[\r\n\t]+|[\r\n\t]+$/g, '');
+
             const parser = new DOMParser();
             const doc = parser.parseFromString(rawHtml, 'text/html');
             const body = doc.body;
@@ -504,8 +572,18 @@ window.App = window.App || {};
 
         let range = sel.getRangeAt(0);
 
-        // Переконуємось, що каретка знаходиться саме всередині contentDiv
-        if (!contentDiv.contains(range.commonAncestorContainer)) {
+        // Якщо контент нотатки візуально порожній, очищаємо його перед вставкою від залишкових <br> чи артефактів
+        const existingText = contentDiv.innerText.replace(/\u200B/g, '').trim();
+        const hasImg = contentDiv.querySelector('img');
+        if (!existingText && !hasImg) {
+            contentDiv.innerHTML = '';
+            range = document.createRange();
+            range.selectNodeContents(contentDiv);
+            range.collapse(false);
+            sel.removeAllRanges();
+            sel.addRange(range);
+        } else if (!contentDiv.contains(range.commonAncestorContainer)) {
+            // Переконуємось, що каретка знаходиться саме всередині contentDiv
             range = document.createRange();
             range.selectNodeContents(contentDiv);
             range.collapse(false);
@@ -519,6 +597,36 @@ window.App = window.App || {};
         // 2. Створюємо елементи з очищеного HTML
         const temp = document.createElement('div');
         temp.innerHTML = html;
+
+        // Гарантуємо відсутність початкових/кінцевих переносів рядків та <br> безпосередньо у temp перед вставкою
+        while (temp.firstChild) {
+            const first = temp.firstChild;
+            if (first.nodeType === Node.TEXT_NODE) {
+                first.nodeValue = first.nodeValue.replace(/^[\r\n]+/, '');
+                if (!first.nodeValue) {
+                    temp.removeChild(first);
+                    continue;
+                }
+            } else if (first.nodeType === Node.ELEMENT_NODE && first.tagName.toLowerCase() === 'br') {
+                temp.removeChild(first);
+                continue;
+            }
+            break;
+        }
+        while (temp.lastChild) {
+            const last = temp.lastChild;
+            if (last.nodeType === Node.TEXT_NODE) {
+                last.nodeValue = last.nodeValue.replace(/[\r\n]+$/, '');
+                if (!last.nodeValue) {
+                    temp.removeChild(last);
+                    continue;
+                }
+            } else if (last.nodeType === Node.ELEMENT_NODE && last.tagName.toLowerCase() === 'br') {
+                temp.removeChild(last);
+                continue;
+            }
+            break;
+        }
 
         const frag = document.createDocumentFragment();
         let lastNode = null;
@@ -555,7 +663,17 @@ window.App = window.App || {};
         if (!sel || sel.rangeCount === 0) return;
 
         let range = sel.getRangeAt(0);
-        if (!contentDiv.contains(range.commonAncestorContainer)) {
+
+        const existingText = contentDiv.innerText.replace(/\u200B/g, '').trim();
+        const hasImg = contentDiv.querySelector('img');
+        if (!existingText && !hasImg) {
+            contentDiv.innerHTML = '';
+            range = document.createRange();
+            range.selectNodeContents(contentDiv);
+            range.collapse(false);
+            sel.removeAllRanges();
+            sel.addRange(range);
+        } else if (!contentDiv.contains(range.commonAncestorContainer)) {
             range = document.createRange();
             range.selectNodeContents(contentDiv);
             range.collapse(false);
@@ -565,7 +683,8 @@ window.App = window.App || {};
 
         range.deleteContents();
 
-        const normalizedText = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+        const cleanText = text.replace(/^[\r\n]+|[\r\n]+$/g, '');
+        const normalizedText = cleanText.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
         const lines = normalizedText.split('\n');
         const frag = document.createDocumentFragment();
         let lastNode = null;
@@ -613,7 +732,10 @@ window.App = window.App || {};
             }
 
             const richHtml = getFormattedSelectionHtml(range, startDiv);
-            const plainText = selection.toString();
+            let plainText = selection.toString();
+            if (plainText && !plainText.includes('\n\n')) {
+                plainText = plainText.replace(/^[\r\n]+|[\r\n]+$/g, '');
+            }
 
             if (!richHtml && !plainText) return;
 
@@ -643,7 +765,10 @@ window.App = window.App || {};
             }
 
             const richHtml = getFormattedSelectionHtml(range, startDiv);
-            const plainText = selection.toString();
+            let plainText = selection.toString();
+            if (plainText && !plainText.includes('\n\n')) {
+                plainText = plainText.replace(/^[\r\n]+|[\r\n]+$/g, '');
+            }
 
             if (!richHtml && !plainText) return;
 
