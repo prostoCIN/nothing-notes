@@ -15,6 +15,7 @@ window.App = window.App || {};
     let holdTimerId = null;
     const HOLD_DURATION = 600; // 0.6 секунди для швидкого та комфортного затискання
     let onConfirmCallback = null;
+    let onCancelCallback = null;
 
     let iconBadgeEl = null;
 
@@ -119,29 +120,35 @@ window.App = window.App || {};
     function completeHold() {
         cancelHold();
         const cb = onConfirmCallback;
-        closeModal();
+        closeModal(true);
         if (cb) cb();
     }
 
-    function closeModal() {
+    function closeModal(isConfirmed = false) {
         if (!overlay) return;
         cancelHold();
         overlay.classList.remove('active');
+        const cancelCb = onCancelCallback;
         onConfirmCallback = null;
+        onCancelCallback = null;
+        if (!isConfirmed && cancelCb) {
+            cancelCb();
+        }
     }
 
     window.App.confirmModal = {
         /**
          * Показує універсальне модальне вікно підтвердження із затисканням
-         * @param {Object} options { title, message, confirmText, type, onConfirm }
+         * @param {Object} options { title, message, confirmText, type, onConfirm, onCancel }
          */
-        show({ title, message, confirmText, type = 'danger', onConfirm }) {
+        show({ title, message, confirmText, type = 'danger', onConfirm, onCancel }) {
             createModalDOM();
 
             titleEl.textContent = title || 'Підтвердження дії';
             descEl.innerHTML = message || 'Ви впевнені, що хочете продовжити?';
             holdBtnText.textContent = confirmText || (type === 'danger' ? 'Затисніть для видалення' : 'Затисніть для підтвердження');
             onConfirmCallback = onConfirm;
+            onCancelCallback = onCancel;
 
             // Налаштування іконки та стилю кнопки (danger / info)
             if (type === 'info') {

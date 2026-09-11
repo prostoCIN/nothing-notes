@@ -14,6 +14,8 @@ window.App = window.App || {};
             const state = window.App.state;
             const noteManager = window.App.noteManager;
             const sidebarView = window.App.sidebarView;
+            const els = window.App.getElements();
+            const notesList = (els && els.notesList) || document.getElementById('notes-list');
             row.addEventListener('dragstart', (e) => e.preventDefault());
 
             row.addEventListener('pointerdown', (e) => {
@@ -104,7 +106,7 @@ window.App = window.App || {};
                             if (isGroupDrag) {
                                 draggedNoteIds.forEach(dId => {
                                     if (dId !== draggedNoteId) {
-                                        const otherNode = els.notesList.querySelector(`.note-item[data-id="${dId}"]`)?.closest('.sidebar-note-tree-node');
+                                        const otherNode = notesList.querySelector(`.note-item[data-id="${dId}"]`)?.closest('.sidebar-note-tree-node');
                                         if (otherNode) {
                                             otherNode.style.display = 'none';
                                         }
@@ -182,18 +184,28 @@ window.App = window.App || {};
                             }
                         }
 
-                        const allNestZones = [...els.notesList.querySelectorAll('.sidebar-nest-drop-zone')];
+                        const allNestZones = [...notesList.querySelectorAll('.sidebar-nest-drop-zone')];
                         let hoveredNestZone = null;
 
                         for (const zone of allNestZones) {
                             if (invalidTargetIds.has(zone.dataset.targetId)) continue;
                             const zRect = zone.getBoundingClientRect();
-                            if (
-                                moveEvent.clientX >= zRect.left - 12 &&
-                                moveEvent.clientX <= zRect.right + 18 &&
-                                moveEvent.clientY >= zRect.top - 10 &&
-                                moveEvent.clientY <= zRect.bottom + 10
-                            ) {
+                            const parentRow = zone.closest('.note-item');
+                            const rowRect = parentRow ? parentRow.getBoundingClientRect() : zRect;
+
+                            // Спрацьовує або прямо на кнопці зі стрілкою, або у правій половині рядка нотатки
+                            const isOverRightZone = parentRow && 
+                                (moveEvent.clientX >= rowRect.left + rowRect.width * 0.45 && moveEvent.clientX <= rowRect.right + 25) &&
+                                (moveEvent.clientY >= rowRect.top - 4 && moveEvent.clientY <= rowRect.bottom + 4);
+
+                            const isOverNestBtn = (
+                                moveEvent.clientX >= zRect.left - 15 &&
+                                moveEvent.clientX <= zRect.right + 25 &&
+                                moveEvent.clientY >= zRect.top - 12 &&
+                                moveEvent.clientY <= zRect.bottom + 12
+                            );
+
+                            if (isOverRightZone || isOverNestBtn) {
                                 hoveredNestZone = zone;
                                 break;
                             }
@@ -237,11 +249,12 @@ window.App = window.App || {};
                         }
 
                         // 4. Звичайне переміщення між нотатками за допомогою плейсхолдера
-                        let targetContainer = els.notesList; // За замовчуванням головний рівень (корінь)
+                        let targetContainer = notesList; // За замовчуванням головний рівень (корінь)
 
-                        // Шукаємо найближчий відкритий підсписок, якщо курсор знаходиться праворуч із відступом
-                        const allSubLists = [...els.notesList.querySelectorAll('.sidebar-subnotes-list')];
-                        for (const subList of allSubLists) {
+                        // Шукаємо найбільш вкладений (глибокий) відкритий підсписок, якщо курсор знаходиться праворуч із відступом
+                        const allSubLists = [...notesList.querySelectorAll('.sidebar-subnotes-list')];
+                        for (let i = allSubLists.length - 1; i >= 0; i--) {
+                            const subList = allSubLists[i];
                             const subRect = subList.getBoundingClientRect();
                             if (
                                 moveEvent.clientY >= subRect.top &&
@@ -350,7 +363,7 @@ window.App = window.App || {};
                         // Відновлюємо видимість для всіх прихованих вузлів групи
                         if (isGroupDrag) {
                             draggedNoteIds.forEach(dId => {
-                                const node = els.notesList.querySelector(`.note-item[data-id="${dId}"]`)?.closest('.sidebar-note-tree-node');
+                                const node = notesList.querySelector(`.note-item[data-id="${dId}"]`)?.closest('.sidebar-note-tree-node');
                                 if (node) node.style.display = '';
                             });
                         }
@@ -425,7 +438,7 @@ window.App = window.App || {};
                         }
 
                         // Варіант 3: Переміщення між різними контейнерами (наприклад, перетягли піднотатку в головний список root)
-                        const isFinalRoot = finalContainer === els.notesList;
+                        const isFinalRoot = finalContainer === notesList;
                         const finalParentNode = isFinalRoot ? null : finalContainer.closest('.sidebar-note-tree-node');
                         const finalParentId = isFinalRoot ? null : (finalParentNode && finalParentNode.querySelector('.note-item') ? finalParentNode.querySelector('.note-item').dataset.id : null);
 
