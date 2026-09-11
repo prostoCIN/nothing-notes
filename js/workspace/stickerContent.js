@@ -2,6 +2,563 @@
 window.App = window.App || {};
 
 (function() {
+    const MARKER_COLOR_MAP = {
+        'hl-yellow': { bg: '#fef08a', rgba: 'rgba(254, 240, 138, 0.9)' },
+        'hl-green':  { bg: '#bbf7d0', rgba: 'rgba(187, 247, 208, 0.9)' },
+        'hl-blue':   { bg: '#bae6fd', rgba: 'rgba(186, 230, 253, 0.9)' },
+        'hl-pink':   { bg: '#fbcfe8', rgba: 'rgba(251, 207, 232, 0.9)' },
+        'hl-orange': { bg: '#fed7aa', rgba: 'rgba(254, 215, 170, 0.9)' },
+        'hl-purple': { bg: '#e9d5ff', rgba: 'rgba(233, 213, 255, 0.9)' }
+    };
+
+    const NAMED_COLORS = {
+        'yellow': 'hl-yellow',
+        'lime': 'hl-green',
+        'lightgreen': 'hl-green',
+        'green': 'hl-green',
+        'cyan': 'hl-blue',
+        'lightblue': 'hl-blue',
+        'blue': 'hl-blue',
+        'pink': 'hl-pink',
+        'magenta': 'hl-pink',
+        'orange': 'hl-orange',
+        'purple': 'hl-purple',
+        'violet': 'hl-purple'
+    };
+
+    let testColorEl = null;
+    function resolveColorToRgb(colorStr) {
+        if (!testColorEl && typeof document !== 'undefined') {
+            testColorEl = document.createElement('div');
+        }
+        if (!testColorEl) return '';
+        testColorEl.style.backgroundColor = '';
+        testColorEl.style.backgroundColor = colorStr;
+        return testColorEl.style.backgroundColor;
+    }
+
+    function matchColorToMarkerClass(colorStr) {
+        if (!colorStr) return null;
+        const s = colorStr.trim().toLowerCase();
+        if (s === 'transparent' || s === 'inherit' || s === 'initial' || s === 'rgba(0, 0, 0, 0)') {
+            return null;
+        }
+
+        if (NAMED_COLORS[s]) return NAMED_COLORS[s];
+
+        const resolved = resolveColorToRgb(s);
+        if (!resolved || resolved === 'transparent' || resolved === 'rgba(0, 0, 0, 0)') {
+            return null;
+        }
+
+        const rgbMatch = resolved.match(/rgba?\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([\d.]+))?\s*\)/);
+        if (!rgbMatch) return null;
+
+        const r = parseInt(rgbMatch[1], 10);
+        const g = parseInt(rgbMatch[2], 10);
+        const b = parseInt(rgbMatch[3], 10);
+        const a = rgbMatch[4] !== undefined ? parseFloat(rgbMatch[4]) : 1;
+
+        if (a < 0.1) return null;
+
+        // Ігноруємо надто темні кольори (наприклад фони карток/стікерів) або нейтрально білі/сірі фони
+        if (r < 60 && g < 60 && b < 60) return null;
+        if (r > 245 && g > 245 && b > 245 && (Math.max(r, g, b) - Math.min(r, g, b) < 15)) return null;
+
+        const PALETTE = [
+            { class: 'hl-yellow', r: 254, g: 240, b: 138 },
+            { class: 'hl-green',  r: 187, g: 247, b: 208 },
+            { class: 'hl-blue',   r: 186, g: 230, b: 253 },
+            { class: 'hl-pink',   r: 251, g: 207, b: 232 },
+            { class: 'hl-orange', r: 254, g: 215, b: 170 },
+            { class: 'hl-purple', r: 233, g: 213, b: 255 }
+        ];
+
+        let closestClass = 'hl-yellow';
+        let minDistance = Infinity;
+
+        for (const p of PALETTE) {
+            const dist = (r - p.r) ** 2 + (g - p.g) ** 2 + (b - p.b) ** 2;
+            if (dist < minDistance) {
+                minDistance = dist;
+                closestClass = p.class;
+            }
+        }
+
+        return closestClass;
+    }
+
+    /**
+     * Отримує форматований фрагмент HTML виділеного тексту в нотатці зі збереженням предків <mark>, <b>, <span>
+     */
+    function getFormattedSelectionHtml(range, contentDiv) {
+        if (!range || !contentDiv) return '';
+
+        const clonedFrag = range.cloneContents();
+        const tempContainer = document.createElement('div');
+        tempContainer.appendChild(clonedFrag);
+
+        let ancestor = range.commonAncestorContainer;
+        if (ancestor.nodeType === Node.TEXT_NODE) {
+            ancestor = ancestor.parentElement;
+        }
+
+        const ancestorWrappers = [];
+        while (ancestor && ancestor !== contentDiv) {
+            const tagName = ancestor.tagName.toLowerCase();
+
+            if (tagName === 'mark' || ancestor.classList.contains('note-marker')) {
+                let colorClass = 'hl-yellow';
+                for (const cls of ancestor.classList) {
+                    if (cls.startsWith('hl-')) {
+                        colorClass = cls;
+                        break;
+                    }
+                }
+                ancestorWrappers.push({ type: 'mark', colorClass: colorClass });
+            } else if (tagName === 'b' || tagName === 'strong' || ancestor.style.fontWeight === 'bold' || parseInt(ancestor.style.fontWeight, 10) >= 600) {
+                ancestorWrappers.push({ type: 'b' });
+            } else if (ancestor.style && ancestor.style.fontSize) {
+                ancestorWrappers.push({ type: 'fontSize', fontSize: ancestor.style.fontSize });
+            } else if (tagName === 'i' || tagName === 'em' || ancestor.style.fontStyle === 'italic') {
+                ancestorWrappers.push({ type: 'i' });
+            } else if (tagName === 'u' || ancestor.style.textDecoration?.includes('underline')) {
+                ancestorWrappers.push({ type: 'u' });
+            } else if (tagName === 's' || tagName === 'strike' || ancestor.style.textDecoration?.includes('line-through')) {
+                ancestorWrappers.push({ type: 's' });
+            }
+
+            ancestor = ancestor.parentElement;
+        }
+
+        for (const wrapper of ancestorWrappers) {
+            if (wrapper.type === 'b') {
+                if (tempContainer.childNodes.length === 1 && 
+                    tempContainer.firstChild.nodeType === Node.ELEMENT_NODE && 
+                    (tempContainer.firstChild.tagName.toLowerCase() === 'b' || tempContainer.firstChild.tagName.toLowerCase() === 'strong')) {
+                    continue;
+                }
+            }
+            if (wrapper.type === 'mark') {
+                if (tempContainer.childNodes.length === 1 && 
+                    tempContainer.firstChild.nodeType === Node.ELEMENT_NODE && 
+                    tempContainer.firstChild.tagName.toLowerCase() === 'mark') {
+                    continue;
+                }
+            }
+
+            let wrapperEl;
+            if (wrapper.type === 'mark') {
+                wrapperEl = document.createElement('mark');
+                wrapperEl.className = `note-marker ${wrapper.colorClass}`;
+                const colorInfo = MARKER_COLOR_MAP[wrapper.colorClass] || MARKER_COLOR_MAP['hl-yellow'];
+                wrapperEl.style.backgroundColor = colorInfo.bg;
+                wrapperEl.style.color = '#111827';
+            } else if (wrapper.type === 'b') {
+                wrapperEl = document.createElement('b');
+                wrapperEl.style.fontWeight = 'bold';
+            } else if (wrapper.type === 'fontSize') {
+                wrapperEl = document.createElement('span');
+                wrapperEl.style.fontSize = wrapper.fontSize;
+            } else if (wrapper.type === 'i') {
+                wrapperEl = document.createElement('i');
+            } else if (wrapper.type === 'u') {
+                wrapperEl = document.createElement('u');
+            } else if (wrapper.type === 's') {
+                wrapperEl = document.createElement('s');
+            }
+
+            if (wrapperEl) {
+                while (tempContainer.firstChild) {
+                    wrapperEl.appendChild(tempContainer.firstChild);
+                }
+                tempContainer.appendChild(wrapperEl);
+            }
+        }
+
+        // Забезпечуємо наявність класів та інлайн стилів для всіх внутрішніх <mark> (включно з частково скопійованими)
+        const allMarks = tempContainer.querySelectorAll('mark, [class*="hl-"]');
+        allMarks.forEach(mark => {
+            let colorClass = 'hl-yellow';
+            for (const cls of mark.classList) {
+                if (cls.startsWith('hl-')) {
+                    colorClass = cls;
+                    break;
+                }
+            }
+            mark.classList.add('note-marker');
+            mark.classList.add(colorClass);
+            const colorInfo = MARKER_COLOR_MAP[colorClass] || MARKER_COLOR_MAP['hl-yellow'];
+            mark.style.backgroundColor = colorInfo.bg;
+            mark.style.color = '#111827';
+        });
+
+        const allBolds = tempContainer.querySelectorAll('b, strong');
+        allBolds.forEach(b => {
+            b.style.fontWeight = 'bold';
+        });
+
+        return tempContainer.innerHTML;
+    }
+
+    /**
+     * Рекурсивна санітизація та нормалізація вставленого вузла у чистий HTML мінімальних нотаток
+     */
+    function sanitizePastedNode(node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+            return document.createTextNode(node.nodeValue);
+        }
+
+        if (node.nodeType !== Node.ELEMENT_NODE) {
+            return null;
+        }
+
+        const tagName = node.tagName.toLowerCase();
+
+        // Ігноруємо технічні теги
+        if (['script', 'style', 'meta', 'link', 'svg', 'button', 'input', 'iframe', 'canvas', 'noscript'].includes(tagName)) {
+            return null;
+        }
+
+        if (tagName === 'br') {
+            return document.createElement('br');
+        }
+
+        let markerClass = null;
+        if (tagName === 'mark') {
+            for (const cls of node.classList) {
+                if (cls.startsWith('hl-')) {
+                    markerClass = cls;
+                    break;
+                }
+            }
+            if (!markerClass && node.style.backgroundColor) {
+                markerClass = matchColorToMarkerClass(node.style.backgroundColor);
+            }
+            if (!markerClass) markerClass = 'hl-yellow';
+        } else if (node.classList.contains('note-marker')) {
+            for (const cls of node.classList) {
+                if (cls.startsWith('hl-')) {
+                    markerClass = cls;
+                    break;
+                }
+            }
+            if (!markerClass) markerClass = 'hl-yellow';
+        } else if (node.style.backgroundColor) {
+            const matched = matchColorToMarkerClass(node.style.backgroundColor);
+            if (matched) markerClass = matched;
+        }
+
+        // Визначаємо bold
+        const isBold = (tagName === 'b' || tagName === 'strong' || 
+                        node.style.fontWeight === 'bold' || 
+                        parseInt(node.style.fontWeight, 10) >= 600) && node.style.fontWeight !== 'normal' && node.style.fontWeight !== '400';
+
+        const fontSize = node.style.fontSize;
+
+        const childFrag = document.createDocumentFragment();
+        for (let child = node.firstChild; child; child = child.nextSibling) {
+            const sanitizedChild = sanitizePastedNode(child);
+            if (sanitizedChild) {
+                childFrag.appendChild(sanitizedChild);
+            }
+        }
+
+        const isBlock = ['p', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li'].includes(tagName);
+
+        let currentWrapper = childFrag;
+
+        if (fontSize) {
+            const span = document.createElement('span');
+            span.style.fontSize = fontSize;
+            span.appendChild(currentWrapper);
+            currentWrapper = span;
+        }
+
+        if (isBold) {
+            const b = document.createElement('b');
+            b.appendChild(currentWrapper);
+            currentWrapper = b;
+        }
+
+        if (markerClass) {
+            const mark = document.createElement('mark');
+            mark.className = `note-marker ${markerClass}`;
+            mark.appendChild(currentWrapper);
+            currentWrapper = mark;
+        }
+
+        if (isBlock) {
+            const blockFrag = document.createDocumentFragment();
+            blockFrag.appendChild(currentWrapper);
+            if (node.nextSibling) {
+                blockFrag.appendChild(document.createElement('br'));
+            }
+            return blockFrag;
+        }
+
+        return currentWrapper;
+    }
+
+    function normalizeSanitizedHtml(container) {
+        // Розгортаємо надлишкові однакові вкладені маркери
+        const nestedMarks = container.querySelectorAll('mark mark');
+        nestedMarks.forEach(innerMark => {
+            const outerMark = innerMark.parentElement.closest('mark');
+            if (outerMark && innerMark.className === outerMark.className) {
+                const parent = innerMark.parentNode;
+                while (innerMark.firstChild) {
+                    parent.insertBefore(innerMark.firstChild, innerMark);
+                }
+                parent.removeChild(innerMark);
+            }
+        });
+
+        // Розгортаємо надлишкові вкладені b/strong
+        const nestedBolds = container.querySelectorAll('b b, strong strong, b strong, strong b');
+        nestedBolds.forEach(innerBold => {
+            const parent = innerBold.parentNode;
+            while (innerBold.firstChild) {
+                parent.insertBefore(innerBold.firstChild, innerBold);
+            }
+            parent.removeChild(innerBold);
+        });
+
+        // Видаляємо порожні форматувальні теги без тексту
+        const emptyTags = container.querySelectorAll('mark, b, span');
+        emptyTags.forEach(el => {
+            if (!el.textContent.trim() && !el.querySelector('br')) {
+                el.remove();
+            }
+        });
+    }
+
+    function cleanPastedHtml(rawHtml) {
+        if (!rawHtml || typeof rawHtml !== 'string') return '';
+
+        try {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(rawHtml, 'text/html');
+            const body = doc.body;
+            if (!body) return '';
+
+            const hasFormatting = body.querySelector('mark, b, strong, span[style], [class*="hl-"], [style*="background"], [style*="font-weight"]') !== null;
+            if (!hasFormatting) return '';
+
+            const frag = document.createDocumentFragment();
+            for (let child = body.firstChild; child; child = child.nextSibling) {
+                const sanitized = sanitizePastedNode(child);
+                if (sanitized) {
+                    frag.appendChild(sanitized);
+                }
+            }
+
+            const temp = document.createElement('div');
+            temp.appendChild(frag);
+            normalizeSanitizedHtml(temp);
+
+            return temp.innerHTML;
+        } catch (e) {
+            console.error('[stickerContent] Помилка очищення вставленого HTML:', e);
+            return '';
+        }
+    }
+
+    function ensureNoteMarkers(contentDiv) {
+        let changed = false;
+
+        const marks = contentDiv.querySelectorAll('mark:not(.note-marker), mark:not([class*="hl-"])');
+        marks.forEach(mark => {
+            if (!mark.classList.contains('note-marker')) {
+                mark.classList.add('note-marker');
+                changed = true;
+            }
+            let hasHl = false;
+            for (const cls of mark.classList) {
+                if (cls.startsWith('hl-')) {
+                    hasHl = true;
+                    break;
+                }
+            }
+            if (!hasHl) {
+                const matched = matchColorToMarkerClass(mark.style.backgroundColor);
+                mark.classList.add(matched || 'hl-yellow');
+                changed = true;
+            }
+        });
+
+        const styledSpans = contentDiv.querySelectorAll('span[style*="background"], font[style*="background"]');
+        styledSpans.forEach(span => {
+            const matched = matchColorToMarkerClass(span.style.backgroundColor);
+            if (matched) {
+                const mark = document.createElement('mark');
+                mark.className = `note-marker ${matched}`;
+                span.style.backgroundColor = '';
+                while (span.firstChild) {
+                    mark.appendChild(span.firstChild);
+                }
+                span.parentNode.replaceChild(mark, span);
+                changed = true;
+            }
+        });
+
+        if (changed) {
+            contentDiv.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    }
+
+    function insertHtmlAtCaret(html, contentDiv, note) {
+        contentDiv.focus();
+
+        let inserted = false;
+        if (document.queryCommandSupported && document.queryCommandSupported('insertHTML')) {
+            try {
+                inserted = document.execCommand('insertHTML', false, html);
+            } catch (err) {
+                inserted = false;
+            }
+        }
+
+        if (!inserted) {
+            const sel = window.getSelection();
+            if (sel && sel.rangeCount > 0) {
+                const range = sel.getRangeAt(0);
+                range.deleteContents();
+                const temp = document.createElement('div');
+                temp.innerHTML = html;
+                const frag = document.createDocumentFragment();
+                let node, lastNode;
+                while ((node = temp.firstChild)) {
+                    lastNode = frag.appendChild(node);
+                }
+                range.insertNode(frag);
+                if (lastNode) {
+                    const newRange = document.createRange();
+                    newRange.setStartAfter(lastNode);
+                    newRange.collapse(true);
+                    sel.removeAllRanges();
+                    sel.addRange(newRange);
+                }
+            }
+        }
+
+        contentDiv.removeAttribute('data-empty');
+        contentDiv.dispatchEvent(new Event('input', { bubbles: true }));
+        if (window.App.noteManager && window.App.noteManager.updateNote) {
+            window.App.noteManager.updateNote(note.id, { content: contentDiv.innerHTML });
+        }
+    }
+
+    function insertTextAtCaret(text, contentDiv, note) {
+        contentDiv.focus();
+
+        let inserted = false;
+        if (document.queryCommandSupported && document.queryCommandSupported('insertText')) {
+            try {
+                inserted = document.execCommand('insertText', false, text);
+            } catch (err) {
+                inserted = false;
+            }
+        }
+
+        if (!inserted) {
+            const sel = window.getSelection();
+            if (sel && sel.rangeCount > 0) {
+                const range = sel.getRangeAt(0);
+                range.deleteContents();
+                const textNode = document.createTextNode(text);
+                range.insertNode(textNode);
+                const newRange = document.createRange();
+                newRange.setStartAfter(textNode);
+                newRange.collapse(true);
+                sel.removeAllRanges();
+                sel.addRange(newRange);
+            }
+        }
+
+        contentDiv.removeAttribute('data-empty');
+        contentDiv.dispatchEvent(new Event('input', { bubbles: true }));
+        if (window.App.noteManager && window.App.noteManager.updateNote) {
+            window.App.noteManager.updateNote(note.id, { content: contentDiv.innerHTML });
+        }
+    }
+
+    let isGlobalCopyCutBound = false;
+    function bindGlobalCopyCutListeners() {
+        if (isGlobalCopyCutBound || typeof document === 'undefined') return;
+        isGlobalCopyCutBound = true;
+
+        document.addEventListener('copy', (e) => {
+            const selection = window.getSelection();
+            if (!selection || selection.isCollapsed || selection.rangeCount === 0) return;
+
+            const range = selection.getRangeAt(0);
+            const startDiv = (range.startContainer.nodeType === Node.ELEMENT_NODE ? range.startContainer : range.startContainer.parentElement)?.closest('.sticker-content');
+            const endDiv = (range.endContainer.nodeType === Node.ELEMENT_NODE ? range.endContainer : range.endContainer.parentElement)?.closest('.sticker-content');
+
+            if (!startDiv || !endDiv || startDiv !== endDiv) {
+                return;
+            }
+
+            const richHtml = getFormattedSelectionHtml(range, startDiv);
+            const plainText = selection.toString();
+
+            if (!richHtml && !plainText) return;
+
+            if (e.clipboardData) {
+                e.clipboardData.setData('text/plain', plainText);
+                if (richHtml) {
+                    e.clipboardData.setData('text/html', richHtml);
+                }
+                e.preventDefault();
+            }
+        });
+
+        document.addEventListener('cut', (e) => {
+            const selection = window.getSelection();
+            if (!selection || selection.isCollapsed || selection.rangeCount === 0) return;
+
+            const range = selection.getRangeAt(0);
+            const startDiv = (range.startContainer.nodeType === Node.ELEMENT_NODE ? range.startContainer : range.startContainer.parentElement)?.closest('.sticker-content');
+            const endDiv = (range.endContainer.nodeType === Node.ELEMENT_NODE ? range.endContainer : range.endContainer.parentElement)?.closest('.sticker-content');
+
+            if (!startDiv || !endDiv || startDiv !== endDiv) {
+                return;
+            }
+
+            if (startDiv.contentEditable === 'false' || startDiv.getAttribute('contenteditable') === 'false') {
+                return;
+            }
+
+            const richHtml = getFormattedSelectionHtml(range, startDiv);
+            const plainText = selection.toString();
+
+            if (!richHtml && !plainText) return;
+
+            if (e.clipboardData) {
+                e.clipboardData.setData('text/plain', plainText);
+                if (richHtml) {
+                    e.clipboardData.setData('text/html', richHtml);
+                }
+                e.preventDefault();
+            }
+
+            if (window.App.historyManager) {
+                window.App.historyManager.recordState('cut_text');
+            }
+
+            range.deleteContents();
+            startDiv.dispatchEvent(new Event('input', { bubbles: true }));
+
+            const parentCard = startDiv.closest('.note-sticker');
+            if (parentCard && parentCard.dataset.noteId && window.App.noteManager?.updateNote) {
+                window.App.noteManager.updateNote(parentCard.dataset.noteId, { content: startDiv.innerHTML });
+            }
+        });
+    }
+
+    bindGlobalCopyCutListeners();
+
     window.App.stickerContent = {
         /**
          * Створює блок контенту для стікера та прив'язує необхідні обробники подій
@@ -120,8 +677,37 @@ window.App = window.App || {};
                     }
                 });
 
-                // Перехоплення вставки (Paste Ctrl+V): якщо вставляється зображення — автоматично додаємо його в Polaroid-галерею нотатки
+                // Перехоплення вставки (Paste Ctrl+V): обробка зображень та вставки тексту зі збереженням маркерів і жирного накреслення
                 const handlePaste = async (e) => {
+                    if (titleDiv && (e.currentTarget === titleDiv || titleDiv.contains(e.target))) {
+                        // Для заголовка перевіряємо тільки зображення, форматування обробляється у stickerHeader.js
+                        const clipboardData = e.clipboardData || window.clipboardData;
+                        if (!clipboardData) return;
+                        const items = Array.from(clipboardData.items || []);
+                        const imageFiles = [];
+                        for (const item of items) {
+                            if (item.type && item.type.indexOf('image') !== -1) {
+                                const file = item.getAsFile();
+                                if (file) imageFiles.push(file);
+                            }
+                        }
+                        if (imageFiles.length === 0 && clipboardData.files && clipboardData.files.length > 0) {
+                            for (const file of clipboardData.files) {
+                                if (file.type && file.type.startsWith('image/')) {
+                                    imageFiles.push(file);
+                                }
+                            }
+                        }
+                        if (imageFiles.length > 0) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (window.App.stickerMenu && window.App.stickerMenu.attachImagesToNote) {
+                                await window.App.stickerMenu.attachImagesToNote(note.id, imageFiles, card);
+                            }
+                        }
+                        return;
+                    }
+
                     const clipboardData = e.clipboardData || window.clipboardData;
                     if (!clipboardData) return;
 
@@ -150,6 +736,33 @@ window.App = window.App || {};
                         if (window.App.stickerMenu && window.App.stickerMenu.attachImagesToNote) {
                             await window.App.stickerMenu.attachImagesToNote(note.id, imageFiles, card);
                         }
+                        return;
+                    }
+
+                    // Обробка вставки тексту та збереження стилів маркерів і жирності
+                    const html = clipboardData.getData('text/html');
+                    const plainText = clipboardData.getData('text/plain');
+
+                    if (!html && !plainText) return;
+
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    if (window.App.historyManager) {
+                        window.App.historyManager.recordState('paste_content');
+                    }
+
+                    if (html) {
+                        const cleanHtml = cleanPastedHtml(html);
+                        if (cleanHtml) {
+                            insertHtmlAtCaret(cleanHtml, contentDiv, note);
+                            ensureNoteMarkers(contentDiv);
+                            return;
+                        }
+                    }
+
+                    if (plainText) {
+                        insertTextAtCaret(plainText, contentDiv, note);
                     }
                 };
 
