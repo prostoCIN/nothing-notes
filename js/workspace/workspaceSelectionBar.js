@@ -227,6 +227,12 @@ window.App = window.App || {};
             const storage = window.App.storage;
             const noteManager = window.App.noteManager;
 
+            // Запобігаємо випадковому закриттю підменю при взаємодії всередині них
+            barElement.querySelectorAll('.selection-submenu-dropdown').forEach(d => {
+                d.addEventListener('pointerdown', (e) => e.stopPropagation());
+                d.addEventListener('click', (e) => e.stopPropagation());
+            });
+
             const colors = window.App.NOTE_COLORS || [
                 { id: 'yellow', hex: '#fef08a', name: 'Жовтий' },
                 { id: 'green',  hex: '#bbf7d0', name: 'Зелений' },
@@ -391,8 +397,12 @@ window.App = window.App || {};
 
                         // Клік по кнопці × — повне видалення тегу зі списку та з усіх нотаток
                         const delBtn = item.querySelector('.selection-tag-del-btn');
+                        delBtn.addEventListener('pointerdown', (e) => {
+                            e.stopPropagation();
+                        });
                         delBtn.addEventListener('click', (e) => {
                             e.stopPropagation();
+                            e.preventDefault();
                             if (window.App.workspaceSelectionActions) {
                                 window.App.workspaceSelectionActions.deleteTagGlobally(tagText);
                             }
@@ -467,6 +477,19 @@ window.App = window.App || {};
 
             populateTagContainer(barElement.querySelector('#ws-desktop-tags'));
             populateTagContainer(barElement.querySelector('#ws-more-tags'));
+
+            // Переконуємось, що відкрите підменю тегів або загальне мобільне меню залишається активним
+            if (activeSubMenu === 'tag') {
+                const targetDropdown = barElement.querySelector('#ws-submenu-tag');
+                const targetBtn = barElement.querySelector('#ws-action-tag-btn');
+                if (targetDropdown) targetDropdown.classList.add('active');
+                if (targetBtn) targetBtn.classList.add('active');
+            } else if (activeSubMenu === 'more') {
+                const targetDropdown = barElement.querySelector('#ws-submenu-more');
+                const targetBtn = barElement.querySelector('#ws-action-more-btn');
+                if (targetDropdown) targetDropdown.classList.add('active');
+                if (targetBtn) targetBtn.classList.add('active');
+            }
         },
 
         bindBarEvents() {

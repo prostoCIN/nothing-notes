@@ -128,8 +128,9 @@ window.App = window.App || {};
                             }
                         });
 
-                        // Клік по хрестику — повне видалення тегу зі списку та з усіх нотаток
+                        // Клік по хрестику — повне видалення тегу зі списку та з усіх нотаток без закриття вікна
                         const delOptBtn = optItem.querySelector('.tag-option-del-btn');
+                        delOptBtn.addEventListener('pointerdown', (e) => e.stopPropagation());
                         delOptBtn.addEventListener('click', (e) => {
                             e.stopPropagation();
                             e.preventDefault();
@@ -149,8 +150,26 @@ window.App = window.App || {};
 
                             storage.saveNotes(state.notes);
 
-                            // 3. Оновлюємо робочу область
-                            if (window.App.workspaceView) window.App.workspaceView.render();
+                            // 3. Оновлюємо вміст випадаючого списку тегів без його закриття
+                            renderDropdownContent();
+                            tagDropdown.classList.add('active');
+                            addTagBtn.classList.add('active');
+
+                            // 4. Оновлюємо візуальні бейджі на дошці без повного руйнування DOM робочої області
+                            document.querySelectorAll('.sticker-tag-badge').forEach(badge => {
+                                const span = badge.querySelector('.sticker-tag-badge-text');
+                                if (span && span.textContent === opt) {
+                                    const container = badge.closest('.sticker-tags-container');
+                                    badge.remove();
+                                    if (container) {
+                                        const remainingBadges = container.querySelectorAll('.sticker-tag-badge');
+                                        if (remainingBadges.length === 0 && !container.querySelector('.sticker-tag-dropdown.active')) {
+                                            container.style.display = 'none';
+                                        }
+                                    }
+                                }
+                            });
+
                             if (window.App.workspaceSelectionBar && window.App.workspaceSelectionBar.refreshTagSubmenu) {
                                 window.App.workspaceSelectionBar.refreshTagSubmenu();
                             }
@@ -241,6 +260,8 @@ window.App = window.App || {};
             };
 
             tagDropdown.refreshContent = renderDropdownContent;
+            tagDropdown.addEventListener('pointerdown', (e) => e.stopPropagation());
+            tagDropdown.addEventListener('click', (e) => e.stopPropagation());
             renderDropdownContent();
 
             addTagBtn.addEventListener('click', (e) => {

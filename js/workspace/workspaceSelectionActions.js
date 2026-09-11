@@ -102,12 +102,34 @@ window.App = window.App || {};
             });
 
             storage.saveNotes(state.notes);
-            if (window.App.workspaceView) {
-                window.App.workspaceView.render();
-            }
+
+            // Оновлюємо візуальні бейджі на картках без руйнування DOM
+            document.querySelectorAll('.sticker-tag-badge').forEach(badge => {
+                const span = badge.querySelector('.sticker-tag-badge-text');
+                if (span && span.textContent === tagText) {
+                    const container = badge.closest('.sticker-tags-container');
+                    badge.remove();
+                    if (container) {
+                        const remainingBadges = container.querySelectorAll('.sticker-tag-badge');
+                        if (remainingBadges.length === 0 && !container.querySelector('.sticker-tag-dropdown.active')) {
+                            container.style.display = 'none';
+                        }
+                    }
+                }
+            });
+
+            // Оновлюємо субменю тегів на панелі вибору
             if (window.App.workspaceSelectionBar) {
                 window.App.workspaceSelectionBar.refreshTagSubmenu();
             }
+
+            // Оновлюємо відкриті вікна тегів на окремих стікерах, якщо такі є
+            document.querySelectorAll('.sticker-tag-dropdown.active').forEach(d => {
+                if (typeof d.refreshContent === 'function') {
+                    d.refreshContent();
+                    d.classList.add('active');
+                }
+            });
         },
 
         // Очистити всі теги з виділених нотаток
