@@ -1,0 +1,312 @@
+/* css/themes.css - Кольорові теми сайту: Асфальт, Біла, Нічне небо, Темний ліс */
+
+/* 1. Асфальт (Поточна темна тема за замовчуванням) */
+:root,
+html[data-theme="asphalt"] {
+    --theme-name: 'asphalt';
+    --bg-color: #141416;
+    --sidebar-bg: #1a1a1d;
+    --modal-bg: rgba(26, 26, 30, 0.88);
+    --header-bg: rgba(22, 22, 26, 0.75);
+    --text-main: rgba(255, 255, 255, 0.94);
+    --text-muted: rgba(255, 255, 255, 0.55);
+    --border-color: rgba(255, 255, 255, 0.08);
+    --hover-bg: rgba(255, 255, 255, 0.06);
+    --active-bg: rgba(255, 255, 255, 0.12);
+    --accent-color: #16b981;
+    --danger-color: #ff6b6b;
+    --scrollbar-thumb: rgba(255, 255, 255, 0.1);
+    --scrollbar-thumb-hover: rgba(255, 255, 255, 0.2);
+
+    --emerald-gradient: linear-gradient(135deg, #B3CD9D 0%, #16B981 30%, #ACF9DF 65%, #16B981 85%, #B3CD9D 100%);
+    --emerald-gradient-text: linear-gradient(120deg, #B3CD9D 0%, #16B981 35%, #ACF9DF 70%, #16B981 100%);
+    --emerald-glow: 0 8px 32px rgba(22, 185, 129, 0.22), 0 0 0 1px rgba(172, 249, 223, 0.15);
+
+    --glass-bg: rgba(24, 24, 28, 0.72);
+    --glass-bg-subtle: rgba(255, 255, 255, 0.035);
+    --glass-border: rgba(255, 255, 255, 0.12);
+    --glass-specular: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 8px 24px rgba(0, 0, 0, 0.35);
+    --glass-blur: blur(24px) saturate(180%);
+    --glass-card-shadow: 0 12px 36px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+
+    --body-bg-gradient: 
+        radial-gradient(at 10% 15%, rgba(22, 185, 129, 0.055) 0px, transparent 55%),
+        radial-gradient(at 85% 85%, rgba(0, 59, 39, 0.09) 0px, transparent 65%),
+        radial-gradient(at 90% 10%, rgba(172, 249, 223, 0.035) 0px, transparent 50%);
+}
+
+/* 2. Біла (Світла тема) */
+html[data-theme="light"] {
+    --theme-name: 'light';
+    --bg-color: #f7f7fa;
+    --sidebar-bg: #eceef3;
+    --modal-bg: rgba(255, 255, 255, 0.94);
+    --header-bg: rgba(247, 247, 250, 0.88);
+    --text-main: #18181b;
+    --text-muted: #64748b;
+    --border-color: rgba(0, 0, 0, 0.09);
+    --hover-bg: rgba(0, 0, 0, 0.05);
+    --active-bg: rgba(0, 0, 0, 0.08);
+    --accent-color: #059669;
+    --danger-color: #e11d48;
+    --scrollbar-thumb: rgba(0, 0, 0, 0.15);
+    --scrollbar-thumb-hover: rgba(0, 0, 0, 0.28);
+
+    --emerald-gradient: linear-gradient(135deg, #059669 0%, #10B981 30%, #34D399 65%, #059669 100%);
+    --emerald-gradient-text: linear-gradient(120deg, #047857 0%, #059669 35%, #10B981 70%, #047857 100%);
+    --emerald-glow: 0 8px 32px rgba(16, 185, 129, 0.16), 0 0 0 1px rgba(16, 185, 129, 0.2);
+
+    --glass-bg: rgba(255, 255, 255, 0.88);
+    --glass-bg-subtle: rgba(0, 0, 0, 0.03);
+    --glass-border: rgba(0, 0, 0, 0.1);
+    --glass-specular: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 8px 24px rgba(0, 0, 0, 0.06);
+    --glass-card-shadow: 0 12px 36px rgba(0, 0, 0, 0.07), 0 0 0 1px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+
+    --body-bg-gradient: 
+        radial-gradient(at 10% 15%, rgba(16, 185, 129, 0.07) 0px, transparent 55%),
+        radial-gradient(at 85% 85%, rgba(14, 165, 233, 0.07) 0px, transparent 65%),
+        radial-gradient(at 90% 10%, rgba(187, 247, 208, 0.12) 0px, transparent 50%);
+}
+
+/* 3. Нічне небо (Темно-синя тема) */
+html[data-theme="night-sky"] {
+    --theme-name: 'night-sky';
+    --bg-color: #0b0f19;
+    --sidebar-bg: #0f172a;
+    --modal-bg: rgba(15, 23, 42, 0.92);
+    --header-bg: rgba(11, 15, 25, 0.82);
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --border-color: rgba(148, 163, 184, 0.14);
+    --hover-bg: rgba(56, 189, 248, 0.08);
+    --active-bg: rgba(56, 189, 248, 0.16);
+    --accent-color: #38bdf8;
+    --danger-color: #f43f5e;
+    --scrollbar-thumb: rgba(148, 163, 184, 0.2);
+    --scrollbar-thumb-hover: rgba(148, 163, 184, 0.35);
+
+    --emerald-gradient: linear-gradient(135deg, #38bdf8 0%, #2563eb 50%, #60a5fa 100%);
+    --emerald-gradient-text: linear-gradient(120deg, #38bdf8 0%, #60a5fa 50%, #93c5fd 100%);
+    --emerald-glow: 0 8px 32px rgba(56, 189, 248, 0.25), 0 0 0 1px rgba(56, 189, 248, 0.2);
+
+    --glass-bg: rgba(15, 23, 42, 0.8);
+    --glass-bg-subtle: rgba(255, 255, 255, 0.03);
+    --glass-border: rgba(148, 163, 184, 0.18);
+    --glass-specular: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 8px 24px rgba(0, 0, 0, 0.45);
+    --glass-card-shadow: 0 12px 36px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(56, 189, 248, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+
+    --body-bg-gradient: 
+        radial-gradient(at 10% 15%, rgba(56, 189, 248, 0.09) 0px, transparent 55%),
+        radial-gradient(at 85% 85%, rgba(30, 58, 138, 0.22) 0px, transparent 65%),
+        radial-gradient(at 90% 10%, rgba(99, 102, 241, 0.07) 0px, transparent 50%);
+}
+
+/* 4. Темний ліс (Темно-зелена тема) */
+html[data-theme="forest"] {
+    --theme-name: 'forest';
+    --bg-color: #07130e;
+    --sidebar-bg: #0b1c14;
+    --modal-bg: rgba(11, 28, 20, 0.92);
+    --header-bg: rgba(7, 19, 14, 0.82);
+    --text-main: #f0fdf4;
+    --text-muted: #86efac;
+    --border-color: rgba(52, 211, 153, 0.14);
+    --hover-bg: rgba(52, 211, 153, 0.08);
+    --active-bg: rgba(52, 211, 153, 0.18);
+    --accent-color: #10b981;
+    --danger-color: #fb7185;
+    --scrollbar-thumb: rgba(52, 211, 153, 0.18);
+    --scrollbar-thumb-hover: rgba(52, 211, 153, 0.32);
+
+    --emerald-gradient: linear-gradient(135deg, #10b981 0%, #059669 50%, #34d399 100%);
+    --emerald-gradient-text: linear-gradient(120deg, #6ee7b7 0%, #10b981 50%, #a7f3d0 100%);
+    --emerald-glow: 0 8px 32px rgba(16, 185, 129, 0.28), 0 0 0 1px rgba(52, 211, 153, 0.22);
+
+    --glass-bg: rgba(11, 28, 20, 0.8);
+    --glass-bg-subtle: rgba(255, 255, 255, 0.03);
+    --glass-border: rgba(52, 211, 153, 0.2);
+    --glass-specular: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 8px 24px rgba(0, 0, 0, 0.45);
+    --glass-card-shadow: 0 12px 36px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(52, 211, 153, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+
+    --body-bg-gradient: 
+        radial-gradient(at 10% 15%, rgba(16, 185, 129, 0.12) 0px, transparent 55%),
+        radial-gradient(at 85% 85%, rgba(6, 78, 59, 0.25) 0px, transparent 65%),
+        radial-gradient(at 90% 10%, rgba(110, 231, 183, 0.06) 0px, transparent 50%);
+}
+
+/* ==========================================================================
+   Спеціальні адаптивні стилі для Світлої теми (Light Theme Refinements)
+   ========================================================================== */
+html[data-theme="light"] .header-action-icon-btn {
+    background: rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+html[data-theme="light"] .header-action-icon-btn:hover {
+    background: rgba(0, 0, 0, 0.08);
+    border-color: rgba(0, 0, 0, 0.14);
+}
+
+html[data-theme="light"] .header-history-control,
+html[data-theme="light"] .header-brush-group,
+html[data-theme="light"] .header-segment-control {
+    background: rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="light"] .header-segment-btn.active {
+    background: #ffffff;
+    color: #18181b;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+html[data-theme="light"] .header-divider {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+html[data-theme="light"] .header-select-btn {
+    background: rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    color: #18181b;
+}
+
+html[data-theme="light"] .header-select-btn:hover {
+    background: rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="light"] .header-search-bar {
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+}
+
+html[data-theme="light"] .header-search-bar input {
+    color: #18181b;
+}
+
+html[data-theme="light"] .column-header {
+    background: rgba(236, 238, 243, 0.9);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="light"] .column-header-title {
+    color: #18181b;
+}
+
+html[data-theme="light"] .column-item {
+    border-right-color: rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="light"] .column-footer-add-btn {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.08);
+    color: var(--text-muted);
+}
+
+html[data-theme="light"] .column-footer-add-btn:hover {
+    background: rgba(0, 0, 0, 0.06);
+    color: var(--text-main);
+}
+
+html[data-theme="light"] .note-item-sidebar:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+html[data-theme="light"] .note-item-sidebar.active {
+    background-color: rgba(0, 0, 0, 0.08);
+    color: #18181b;
+}
+
+html[data-theme="light"] .board-item-sidebar:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+html[data-theme="light"] .board-item-sidebar.active {
+    background-color: rgba(16, 185, 129, 0.12);
+    color: #047857;
+}
+
+html[data-theme="light"] .auth-modal-backdrop,
+html[data-theme="light"] .settings-modal-backdrop,
+html[data-theme="light"] .modal-overlay {
+    background: rgba(15, 23, 42, 0.4);
+}
+
+html[data-theme="light"] .settings-modal-card,
+html[data-theme="light"] .auth-modal-card,
+html[data-theme="light"] .confirm-modal-box {
+    background: rgba(255, 255, 255, 0.96);
+    border-color: rgba(0, 0, 0, 0.12);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+html[data-theme="light"] .settings-tabs {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="light"] .settings-tab-btn.active {
+    background: #ffffff;
+    color: #18181b;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="light"] .settings-item {
+    background: rgba(0, 0, 0, 0.025);
+    border-color: rgba(0, 0, 0, 0.06);
+}
+
+html[data-theme="light"] .settings-item:hover {
+    background: rgba(0, 0, 0, 0.045);
+}
+
+html[data-theme="light"] .settings-shortcut-row {
+    background: rgba(0, 0, 0, 0.025);
+    border-color: rgba(0, 0, 0, 0.06);
+}
+
+html[data-theme="light"] .settings-kbd {
+    background: #ffffff;
+    border-color: rgba(0, 0, 0, 0.14);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+    color: #18181b;
+}
+
+html[data-theme="light"] .settings-stat-box {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.06);
+}
+
+html[data-theme="light"] .settings-account-card {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="light"] .settings-theme-card {
+    background: rgba(0, 0, 0, 0.025);
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="light"] .settings-theme-card:hover {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.14);
+}
+
+html[data-theme="light"] .sidebar-user-profile {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+html[data-theme="light"] .sidebar-login-btn {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+html[data-theme="light"] .sidebar-settings-guest-btn {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="light"] .user-profile-clickable:hover {
+    background: rgba(0, 0, 0, 0.05);
+}

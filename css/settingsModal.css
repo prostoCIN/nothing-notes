@@ -495,3 +495,141 @@ body.compact-notes-mode .sticker-content {
 body.compact-notes-mode .sticker-title {
     font-size: 18px !important;
 }
+
+/* ==========================================================================
+   Стилі сітки вибору теми (Theme Selector Grid)
+   ========================================================================== */
+.settings-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    margin-top: 4px;
+}
+
+.settings-theme-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+@media (max-width: 480px) {
+    .settings-theme-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.settings-theme-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1.5px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    transition: all 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+    position: relative;
+}
+
+.settings-theme-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.18);
+    transform: translateY(-1px);
+}
+
+.settings-theme-card.active {
+    background: rgba(16, 185, 129, 0.08);
+    border-color: var(--accent-color, #10b981);
+    box-shadow: 0 0 0 1px var(--accent-color, #10b981), 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.settings-theme-preview {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1.5px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+.settings-theme-preview.asphalt-preview {
+    background: #1a1a1d;
+    border-color: #3f3f46;
+}
+.settings-theme-preview.asphalt-preview .theme-preview-dot {
+    background: #10b981;
+}
+
+.settings-theme-preview.light-preview {
+    background: #ffffff;
+    border-color: #d1d5db;
+}
+.settings-theme-preview.light-preview .theme-preview-dot {
+    background: #059669;
+}
+
+.settings-theme-preview.night-sky-preview {
+    background: #0f172a;
+    border-color: #38bdf8;
+}
+.settings-theme-preview.night-sky-preview .theme-preview-dot {
+    background: #38bdf8;
+}
+
+.settings-theme-preview.forest-preview {
+    background: #0c1c14;
+    border-color: #10b981;
+}
+.settings-theme-preview.forest-preview .theme-preview-dot {
+    background: #34d399;
+}
+
+.theme-preview-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.settings-theme-label {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.settings-theme-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-main);
+    line-height: 1.2;
+}
+
+.settings-theme-sub {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.settings-theme-check {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--accent-color, #10b981);
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.15s ease;
+}
+
+.settings-theme-card.active .settings-theme-check {
+    opacity: 1;
+    transform: scale(1);
+}
+

@@ -4,10 +4,19 @@ window.App = window.App || {};
 (function() {
     const STORAGE_KEY_AUTO_CAP = 'nothing_notes_auto_capitalize';
     const STORAGE_KEY_COMPACT = 'nothing_notes_compact_view';
+    const STORAGE_KEY_THEME = 'nothing_notes_theme';
+
+    const THEMES = [
+        { key: 'asphalt', name: 'Асфальт', desc: 'Темна (поточна)', metaColor: '#141416' },
+        { key: 'light', name: 'Біла', desc: 'Світла', metaColor: '#f7f7fa' },
+        { key: 'night-sky', name: 'Нічне небо', desc: 'Темно-синя', metaColor: '#0b0f19' },
+        { key: 'forest', name: 'Темний ліс', desc: 'Темно-зелена', metaColor: '#07130e' }
+    ];
 
     let modalOverlayEl = null;
     let autoCapitalize = true;
     let compactView = false;
+    let currentTheme = 'asphalt';
     let currentTab = 'general';
 
     window.App.settingsModal = {
@@ -33,6 +42,13 @@ window.App = window.App || {};
                 } else {
                     compactView = false;
                 }
+
+                const savedTheme = localStorage.getItem(STORAGE_KEY_THEME);
+                if (savedTheme && THEMES.some(t => t.key === savedTheme)) {
+                    currentTheme = savedTheme;
+                } else {
+                    currentTheme = 'asphalt';
+                }
             } catch (err) {
                 console.warn('[Settings] Помилка зчитування preferences:', err);
             }
@@ -43,6 +59,53 @@ window.App = window.App || {};
                 document.body.classList.add('compact-notes-mode');
             } else {
                 document.body.classList.remove('compact-notes-mode');
+            }
+            this.setTheme(currentTheme, false);
+        },
+
+        getTheme() {
+            return currentTheme;
+        },
+
+        setTheme(themeKey, save = true) {
+            if (!THEMES.some(t => t.key === themeKey)) {
+                themeKey = 'asphalt';
+            }
+            currentTheme = themeKey;
+
+            // Застосовуємо тему до html елемента
+            document.documentElement.setAttribute('data-theme', themeKey);
+
+            // Оновлюємо theme-color для браузерів на мобільних пристроях
+            const themeObj = THEMES.find(t => t.key === themeKey);
+            if (themeObj) {
+                let metaTheme = document.querySelector('meta[name="theme-color"]');
+                if (!metaTheme) {
+                    metaTheme = document.createElement('meta');
+                    metaTheme.name = 'theme-color';
+                    document.head.appendChild(metaTheme);
+                }
+                metaTheme.setAttribute('content', themeObj.metaColor);
+            }
+
+            if (save) {
+                try {
+                    localStorage.setItem(STORAGE_KEY_THEME, themeKey);
+                } catch (e) {
+                    console.warn(e);
+                }
+            }
+
+            // Оновлюємо вигляд карток у модальному вікні
+            if (modalOverlayEl) {
+                const cards = modalOverlayEl.querySelectorAll('.settings-theme-card');
+                cards.forEach(card => {
+                    if (card.getAttribute('data-theme') === themeKey) {
+                        card.classList.add('active');
+                    } else {
+                        card.classList.remove('active');
+                    }
+                });
             }
         },
 
@@ -95,7 +158,7 @@ window.App = window.App || {};
                         </div>
                         <div class="settings-header-titles">
                             <h2 class="settings-modal-title">Налаштування</h2>
-                            <p class="settings-modal-subtitle">Параметри інтерфейсу та облікового запису</p>
+                            <p class="settings-modal-subtitle">Параметри теми, інтерфейсу та облікового запису</p>
                         </div>
                     </div>
 
@@ -133,6 +196,56 @@ window.App = window.App || {};
 
                     <!-- Вміст: Загальні -->
                     <div class="settings-tab-content" id="settings-tab-general">
+                        <!-- Блок 1: Вибір теми оформлення сайту -->
+                        <div class="settings-section-title">Тема оформлення</div>
+                        <div class="settings-theme-grid" id="settings-theme-grid">
+                            <button type="button" class="settings-theme-card ${currentTheme === 'asphalt' ? 'active' : ''}" data-theme="asphalt">
+                                <div class="settings-theme-preview asphalt-preview">
+                                    <div class="theme-preview-dot"></div>
+                                </div>
+                                <div class="settings-theme-label">
+                                    <span class="settings-theme-name">Асфальт</span>
+                                    <span class="settings-theme-sub">Темна (поточна)</span>
+                                </div>
+                                <div class="settings-theme-check">✓</div>
+                            </button>
+
+                            <button type="button" class="settings-theme-card ${currentTheme === 'light' ? 'active' : ''}" data-theme="light">
+                                <div class="settings-theme-preview light-preview">
+                                    <div class="theme-preview-dot"></div>
+                                </div>
+                                <div class="settings-theme-label">
+                                    <span class="settings-theme-name">Біла</span>
+                                    <span class="settings-theme-sub">Світла</span>
+                                </div>
+                                <div class="settings-theme-check">✓</div>
+                            </button>
+
+                            <button type="button" class="settings-theme-card ${currentTheme === 'night-sky' ? 'active' : ''}" data-theme="night-sky">
+                                <div class="settings-theme-preview night-sky-preview">
+                                    <div class="theme-preview-dot"></div>
+                                </div>
+                                <div class="settings-theme-label">
+                                    <span class="settings-theme-name">Нічне небо</span>
+                                    <span class="settings-theme-sub">Темно-синя</span>
+                                </div>
+                                <div class="settings-theme-check">✓</div>
+                            </button>
+
+                            <button type="button" class="settings-theme-card ${currentTheme === 'forest' ? 'active' : ''}" data-theme="forest">
+                                <div class="settings-theme-preview forest-preview">
+                                    <div class="theme-preview-dot"></div>
+                                </div>
+                                <div class="settings-theme-label">
+                                    <span class="settings-theme-name">Темний ліс</span>
+                                    <span class="settings-theme-sub">Темно-зелена</span>
+                                </div>
+                                <div class="settings-theme-check">✓</div>
+                            </button>
+                        </div>
+
+                        <!-- Блок 2: Параметри редактора та нотаток -->
+                        <div class="settings-section-title" style="margin-top: 14px;">Редактор та нотатки</div>
                         <div class="settings-item">
                             <div class="settings-item-info">
                                 <div class="settings-item-title">Велика літера після крапки</div>
@@ -245,9 +358,20 @@ window.App = window.App || {};
             const autoCapToggle = modalOverlayEl.querySelector('#settings-autocap-toggle');
             const compactToggle = modalOverlayEl.querySelector('#settings-compact-toggle');
             const tabButtons = modalOverlayEl.querySelectorAll('.settings-tab-btn');
+            const themeCards = modalOverlayEl.querySelectorAll('.settings-theme-card');
 
             if (closeBtn) closeBtn.addEventListener('click', () => this.close());
             if (backdrop) backdrop.addEventListener('click', () => this.close());
+
+            // Вибір теми
+            themeCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    const themeKey = card.getAttribute('data-theme');
+                    if (themeKey) {
+                        this.setTheme(themeKey, true);
+                    }
+                });
+            });
 
             if (autoCapToggle) {
                 autoCapToggle.checked = autoCapitalize;
@@ -288,7 +412,6 @@ window.App = window.App || {};
                 }
             });
         },
-
 
         switchTab(tabKey) {
             currentTab = tabKey;
@@ -422,11 +545,13 @@ window.App = window.App || {};
             this.createModalDOM();
             this.switchTab(tab);
 
-            // Оновлюємо стан чекбоксів
+            // Оновлюємо стан чекбоксів та тем
             const autoCapToggle = modalOverlayEl.querySelector('#settings-autocap-toggle');
             const compactToggle = modalOverlayEl.querySelector('#settings-compact-toggle');
             if (autoCapToggle) autoCapToggle.checked = autoCapitalize;
             if (compactToggle) compactToggle.checked = compactView;
+
+            this.setTheme(currentTheme, false);
 
             modalOverlayEl.style.display = 'flex';
             requestAnimationFrame(() => {
