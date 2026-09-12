@@ -1,5 +1,5 @@
 /* css/themes.css - Кольорові теми сайту: Асфальт, Біла, Нічне небо, Темний ліс */
-/* Смарагдовий акцентний колір фірмового стилю NothingNotes є спільним і незмінним для всіх тем */
+/* Смарагдовий акцентний колір NothingNotes (#16b981) та нейтральні кольори тексту залишаються незмінними */
 
 /* 1. Асфальт (Поточна темна тема за замовчуванням) */
 :root,
@@ -15,6 +15,7 @@ html[data-theme="asphalt"] {
     --toolbar-bg: rgba(26, 26, 30, 0.92);
     --toolbar-border: rgba(255, 255, 255, 0.14);
 
+    /* Текст та підказки нейтральні, без кольорових домішок */
     --text-main: rgba(255, 255, 255, 0.94);
     --text-muted: rgba(255, 255, 255, 0.55);
     --border-color: rgba(255, 255, 255, 0.08);
@@ -23,6 +24,7 @@ html[data-theme="asphalt"] {
     --danger-color: #ff6b6b;
     --scrollbar-thumb: rgba(255, 255, 255, 0.1);
     --scrollbar-thumb-hover: rgba(255, 255, 255, 0.2);
+    --sticker-shadow: 0 4px 14px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.08);
 
     /* Фірмовий смарагдовий градієнт та акцент NothingNotes */
     --accent-color: #16b981;
@@ -50,22 +52,24 @@ html[data-theme="light"] {
     --sidebar-bg: #eceef3;
     --modal-bg: rgba(255, 255, 255, 0.94);
     --header-bg: rgba(247, 247, 250, 0.88);
-    --column-bg: rgba(255, 255, 255, 0.75);
+    --column-bg: rgba(255, 255, 255, 0.78);
     --column-border: rgba(0, 0, 0, 0.08);
     --graph-bg: radial-gradient(circle at center, #ffffff 0%, #eceef3 100%);
     --toolbar-bg: rgba(255, 255, 255, 0.94);
-    --toolbar-border: rgba(0, 0, 0, 0.1);
+    --toolbar-border: rgba(0, 0, 0, 0.09);
 
+    /* Текст та підказки нейтральні */
     --text-main: #18181b;
-    --text-muted: #64748b;
+    --text-muted: rgba(0, 0, 0, 0.55);
     --border-color: rgba(0, 0, 0, 0.09);
     --hover-bg: rgba(0, 0, 0, 0.05);
     --active-bg: rgba(0, 0, 0, 0.08);
     --danger-color: #e11d48;
-    --scrollbar-thumb: rgba(0, 0, 0, 0.15);
-    --scrollbar-thumb-hover: rgba(0, 0, 0, 0.28);
+    --scrollbar-thumb: rgba(0, 0, 0, 0.14);
+    --scrollbar-thumb-hover: rgba(0, 0, 0, 0.25);
+    --sticker-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
 
-    /* Фірмовий смарагдовий градієнт та акцент NothingNotes */
+    /* Фірмовий смарагдовий градієнт та акцент NothingNotes (незмінний!) */
     --accent-color: #16b981;
     --emerald-gradient: linear-gradient(135deg, #B3CD9D 0%, #16B981 30%, #ACF9DF 65%, #16B981 85%, #B3CD9D 100%);
     --emerald-gradient-text: linear-gradient(120deg, #B3CD9D 0%, #16B981 35%, #ACF9DF 70%, #16B981 100%);
@@ -73,14 +77,14 @@ html[data-theme="light"] {
 
     --glass-bg: rgba(255, 255, 255, 0.88);
     --glass-bg-subtle: rgba(0, 0, 0, 0.03);
-    --glass-border: rgba(0, 0, 0, 0.1);
-    --glass-specular: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 8px 24px rgba(0, 0, 0, 0.06);
-    --glass-card-shadow: 0 12px 36px rgba(0, 0, 0, 0.07), 0 0 0 1px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    --glass-border: rgba(0, 0, 0, 0.09);
+    --glass-specular: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 4px 14px rgba(0, 0, 0, 0.03);
+    --glass-card-shadow: 0 4px 16px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9);
 
     --body-bg-gradient: 
-        radial-gradient(at 10% 15%, rgba(16, 185, 129, 0.07) 0px, transparent 55%),
-        radial-gradient(at 85% 85%, rgba(14, 165, 233, 0.07) 0px, transparent 65%),
-        radial-gradient(at 90% 10%, rgba(187, 247, 208, 0.12) 0px, transparent 50%);
+        radial-gradient(at 10% 15%, rgba(16, 185, 129, 0.06) 0px, transparent 55%),
+        radial-gradient(at 85% 85%, rgba(14, 165, 233, 0.05) 0px, transparent 65%),
+        radial-gradient(at 90% 10%, rgba(187, 247, 208, 0.1) 0px, transparent 50%);
 }
 
 /* 3. Нічне небо (Темно-синя тема) */
@@ -96,16 +100,18 @@ html[data-theme="night-sky"] {
     --toolbar-bg: rgba(15, 23, 42, 0.9);
     --toolbar-border: rgba(148, 163, 184, 0.18);
 
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
+    /* Текст та підказки нейтральні */
+    --text-main: rgba(255, 255, 255, 0.94);
+    --text-muted: rgba(255, 255, 255, 0.55);
     --border-color: rgba(148, 163, 184, 0.14);
     --hover-bg: rgba(255, 255, 255, 0.06);
     --active-bg: rgba(255, 255, 255, 0.12);
     --danger-color: #f43f5e;
     --scrollbar-thumb: rgba(148, 163, 184, 0.2);
     --scrollbar-thumb-hover: rgba(148, 163, 184, 0.35);
+    --sticker-shadow: 0 4px 14px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.1);
 
-    /* Фірмовий смарагдовий градієнт та акцент NothingNotes (збережено без змін!) */
+    /* Фірмовий смарагдовий градієнт та акцент NothingNotes (незмінний!) */
     --accent-color: #16b981;
     --emerald-gradient: linear-gradient(135deg, #B3CD9D 0%, #16B981 30%, #ACF9DF 65%, #16B981 85%, #B3CD9D 100%);
     --emerald-gradient-text: linear-gradient(120deg, #B3CD9D 0%, #16B981 35%, #ACF9DF 70%, #16B981 100%);
@@ -136,16 +142,18 @@ html[data-theme="forest"] {
     --toolbar-bg: rgba(11, 28, 20, 0.9);
     --toolbar-border: rgba(52, 211, 153, 0.18);
 
-    --text-main: #f0fdf4;
-    --text-muted: #86efac;
+    /* Текст та підказки нейтральні */
+    --text-main: rgba(255, 255, 255, 0.94);
+    --text-muted: rgba(255, 255, 255, 0.55);
     --border-color: rgba(52, 211, 153, 0.14);
     --hover-bg: rgba(52, 211, 153, 0.08);
     --active-bg: rgba(52, 211, 153, 0.18);
     --danger-color: #fb7185;
     --scrollbar-thumb: rgba(52, 211, 153, 0.18);
     --scrollbar-thumb-hover: rgba(52, 211, 153, 0.32);
+    --sticker-shadow: 0 4px 14px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.1);
 
-    /* Фірмовий смарагдовий градієнт та акцент NothingNotes */
+    /* Фірмовий смарагдовий градієнт та акцент NothingNotes (незмінний!) */
     --accent-color: #16b981;
     --emerald-gradient: linear-gradient(135deg, #B3CD9D 0%, #16B981 30%, #ACF9DF 65%, #16B981 85%, #B3CD9D 100%);
     --emerald-gradient-text: linear-gradient(120deg, #B3CD9D 0%, #16B981 35%, #ACF9DF 70%, #16B981 100%);
@@ -164,12 +172,66 @@ html[data-theme="forest"] {
 }
 
 /* ==========================================================================
-   Спеціальні адаптивні стилі для Світлої теми (Light Theme Refinements)
+   Спеціальні делікатні стилі та легкі тіні для Світлої теми (Light Theme)
    ========================================================================== */
+
+/* 1. Полегшені тіні нотаток-стікерів у колонках (усунення важкої чорної плями) */
+html[data-theme="light"] .note-sticker {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+}
+
+html[data-theme="light"] .note-sticker:hover {
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* 2. Полегшені тіні колонок */
+html[data-theme="light"] .board-column {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 4px 14px rgba(0, 0, 0, 0.02) !important;
+}
+
+/* 3. Полегшені тіні тулбарів і панелей */
+html[data-theme="light"] .workspace-top-header {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+}
+
+html[data-theme="light"] .workspace-selection-bar,
+html[data-theme="light"] .text-selection-toolbar {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+}
+
+html[data-theme="light"] .graph-title-pill,
+html[data-theme="light"] .graph-controls-panel,
+html[data-theme="light"] .graph-legend-pill,
+html[data-theme="light"] .graph-switch-back-btn {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+}
+
+html[data-theme="light"] .header-search-bar,
+html[data-theme="light"] .header-brush-dropdown,
+html[data-theme="light"] .header-tooltip {
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+}
+
+html[data-theme="light"] .sticker-menu-dropdown,
+html[data-theme="light"] .sticker-tag-dropdown,
+html[data-theme="light"] .sticker-emoji-picker-dropdown {
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+}
+
+/* 4. Полегшені тіні модальних вікон */
+html[data-theme="light"] .settings-modal-card,
+html[data-theme="light"] .auth-modal-card,
+html[data-theme="light"] .confirm-modal-box {
+    background: rgba(255, 255, 255, 0.96);
+    border-color: rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* 5. Кнопки та контроли у світлій темі */
 html[data-theme="light"] .header-action-icon-btn {
     background: rgba(0, 0, 0, 0.04);
     border: 1px solid rgba(0, 0, 0, 0.08);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
 html[data-theme="light"] .header-action-icon-btn:hover {
@@ -187,11 +249,11 @@ html[data-theme="light"] .header-segment-control {
 html[data-theme="light"] .header-segment-btn.active {
     background: #ffffff;
     color: #18181b;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 html[data-theme="light"] .header-divider {
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: rgba(0, 0, 0, 0.08);
 }
 
 html[data-theme="light"] .header-select-btn {
@@ -207,7 +269,6 @@ html[data-theme="light"] .header-select-btn:hover {
 html[data-theme="light"] .header-search-bar {
     background: #ffffff;
     border: 1px solid rgba(0, 0, 0, 0.12);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
 }
 
 html[data-theme="light"] .header-search-bar input {
@@ -258,15 +319,7 @@ html[data-theme="light"] .board-item-sidebar.active {
 html[data-theme="light"] .auth-modal-backdrop,
 html[data-theme="light"] .settings-modal-backdrop,
 html[data-theme="light"] .modal-overlay {
-    background: rgba(15, 23, 42, 0.4);
-}
-
-html[data-theme="light"] .settings-modal-card,
-html[data-theme="light"] .auth-modal-card,
-html[data-theme="light"] .confirm-modal-box {
-    background: rgba(255, 255, 255, 0.96);
-    border-color: rgba(0, 0, 0, 0.12);
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.05);
+    background: rgba(15, 23, 42, 0.35);
 }
 
 html[data-theme="light"] .settings-tabs {
@@ -277,7 +330,7 @@ html[data-theme="light"] .settings-tabs {
 html[data-theme="light"] .settings-tab-btn.active {
     background: #ffffff;
     color: #18181b;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
 html[data-theme="light"] .settings-item {
@@ -297,7 +350,7 @@ html[data-theme="light"] .settings-shortcut-row {
 html[data-theme="light"] .settings-kbd {
     background: #ffffff;
     border-color: rgba(0, 0, 0, 0.14);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     color: #18181b;
 }
 
