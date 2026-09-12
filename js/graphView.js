@@ -588,7 +588,8 @@ window.App = window.App || {};
             const countY = (endY - startY) / gridSize;
             if (countX * countY > 2500) return;
 
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+            const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+            ctx.fillStyle = isLight ? 'rgba(0, 0, 0, 0.12)' : 'rgba(255, 255, 255, 0.08)';
             ctx.beginPath();
 
             for (let x = startX; x <= endX; x += gridSize) {

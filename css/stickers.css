@@ -1952,10 +1952,10 @@ mark.note-marker.hl-purple { background-color: rgba(233, 213, 255, 0.9); }
     display: none;
     align-items: center;
     gap: 12px;
-    background: rgba(26, 26, 30, 0.98);
+    background: var(--toolbar-bg, rgba(26, 26, 30, 0.98));
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(255, 255, 255, 0.16);
+    border: 1px solid var(--toolbar-border, rgba(255, 255, 255, 0.16));
     border-radius: 14px;
     padding: 8px 14px;
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);

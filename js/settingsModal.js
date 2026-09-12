@@ -107,7 +107,13 @@ window.App = window.App || {};
                     }
                 });
             }
+
+            // Якщо активний режим графа — миттєво перемальовуємо його
+            if (window.App.state && window.App.state.isGraphView && window.App.graphView) {
+                window.App.graphView.render();
+            }
         },
+
 
         isAutoCapitalizeEnabled() {
             return autoCapitalize;

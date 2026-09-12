@@ -1,4 +1,5 @@
 /* css/themes.css - Кольорові теми сайту: Асфальт, Біла, Нічне небо, Темний ліс */
+/* Смарагдовий акцентний колір фірмового стилю NothingNotes є спільним і незмінним для всіх тем */
 
 /* 1. Асфальт (Поточна темна тема за замовчуванням) */
 :root,
@@ -8,16 +9,23 @@ html[data-theme="asphalt"] {
     --sidebar-bg: #1a1a1d;
     --modal-bg: rgba(26, 26, 30, 0.88);
     --header-bg: rgba(22, 22, 26, 0.75);
+    --column-bg: rgba(26, 26, 30, 0.45);
+    --column-border: rgba(255, 255, 255, 0.08);
+    --graph-bg: radial-gradient(circle at center, #1f1f23 0%, #141416 100%);
+    --toolbar-bg: rgba(26, 26, 30, 0.92);
+    --toolbar-border: rgba(255, 255, 255, 0.14);
+
     --text-main: rgba(255, 255, 255, 0.94);
     --text-muted: rgba(255, 255, 255, 0.55);
     --border-color: rgba(255, 255, 255, 0.08);
     --hover-bg: rgba(255, 255, 255, 0.06);
     --active-bg: rgba(255, 255, 255, 0.12);
-    --accent-color: #16b981;
     --danger-color: #ff6b6b;
     --scrollbar-thumb: rgba(255, 255, 255, 0.1);
     --scrollbar-thumb-hover: rgba(255, 255, 255, 0.2);
 
+    /* Фірмовий смарагдовий градієнт та акцент NothingNotes */
+    --accent-color: #16b981;
     --emerald-gradient: linear-gradient(135deg, #B3CD9D 0%, #16B981 30%, #ACF9DF 65%, #16B981 85%, #B3CD9D 100%);
     --emerald-gradient-text: linear-gradient(120deg, #B3CD9D 0%, #16B981 35%, #ACF9DF 70%, #16B981 100%);
     --emerald-glow: 0 8px 32px rgba(22, 185, 129, 0.22), 0 0 0 1px rgba(172, 249, 223, 0.15);
@@ -42,19 +50,26 @@ html[data-theme="light"] {
     --sidebar-bg: #eceef3;
     --modal-bg: rgba(255, 255, 255, 0.94);
     --header-bg: rgba(247, 247, 250, 0.88);
+    --column-bg: rgba(255, 255, 255, 0.75);
+    --column-border: rgba(0, 0, 0, 0.08);
+    --graph-bg: radial-gradient(circle at center, #ffffff 0%, #eceef3 100%);
+    --toolbar-bg: rgba(255, 255, 255, 0.94);
+    --toolbar-border: rgba(0, 0, 0, 0.1);
+
     --text-main: #18181b;
     --text-muted: #64748b;
     --border-color: rgba(0, 0, 0, 0.09);
     --hover-bg: rgba(0, 0, 0, 0.05);
     --active-bg: rgba(0, 0, 0, 0.08);
-    --accent-color: #059669;
     --danger-color: #e11d48;
     --scrollbar-thumb: rgba(0, 0, 0, 0.15);
     --scrollbar-thumb-hover: rgba(0, 0, 0, 0.28);
 
-    --emerald-gradient: linear-gradient(135deg, #059669 0%, #10B981 30%, #34D399 65%, #059669 100%);
-    --emerald-gradient-text: linear-gradient(120deg, #047857 0%, #059669 35%, #10B981 70%, #047857 100%);
-    --emerald-glow: 0 8px 32px rgba(16, 185, 129, 0.16), 0 0 0 1px rgba(16, 185, 129, 0.2);
+    /* Фірмовий смарагдовий градієнт та акцент NothingNotes */
+    --accent-color: #16b981;
+    --emerald-gradient: linear-gradient(135deg, #B3CD9D 0%, #16B981 30%, #ACF9DF 65%, #16B981 85%, #B3CD9D 100%);
+    --emerald-gradient-text: linear-gradient(120deg, #B3CD9D 0%, #16B981 35%, #ACF9DF 70%, #16B981 100%);
+    --emerald-glow: 0 8px 32px rgba(22, 185, 129, 0.22), 0 0 0 1px rgba(172, 249, 223, 0.15);
 
     --glass-bg: rgba(255, 255, 255, 0.88);
     --glass-bg-subtle: rgba(0, 0, 0, 0.03);
@@ -75,30 +90,37 @@ html[data-theme="night-sky"] {
     --sidebar-bg: #0f172a;
     --modal-bg: rgba(15, 23, 42, 0.92);
     --header-bg: rgba(11, 15, 25, 0.82);
+    --column-bg: rgba(15, 23, 42, 0.55);
+    --column-border: rgba(99, 130, 180, 0.16);
+    --graph-bg: radial-gradient(circle at center, #131d36 0%, #0b0f19 100%);
+    --toolbar-bg: rgba(15, 23, 42, 0.9);
+    --toolbar-border: rgba(148, 163, 184, 0.18);
+
     --text-main: #f8fafc;
     --text-muted: #94a3b8;
     --border-color: rgba(148, 163, 184, 0.14);
-    --hover-bg: rgba(56, 189, 248, 0.08);
-    --active-bg: rgba(56, 189, 248, 0.16);
-    --accent-color: #38bdf8;
+    --hover-bg: rgba(255, 255, 255, 0.06);
+    --active-bg: rgba(255, 255, 255, 0.12);
     --danger-color: #f43f5e;
     --scrollbar-thumb: rgba(148, 163, 184, 0.2);
     --scrollbar-thumb-hover: rgba(148, 163, 184, 0.35);
 
-    --emerald-gradient: linear-gradient(135deg, #38bdf8 0%, #2563eb 50%, #60a5fa 100%);
-    --emerald-gradient-text: linear-gradient(120deg, #38bdf8 0%, #60a5fa 50%, #93c5fd 100%);
-    --emerald-glow: 0 8px 32px rgba(56, 189, 248, 0.25), 0 0 0 1px rgba(56, 189, 248, 0.2);
+    /* Фірмовий смарагдовий градієнт та акцент NothingNotes (збережено без змін!) */
+    --accent-color: #16b981;
+    --emerald-gradient: linear-gradient(135deg, #B3CD9D 0%, #16B981 30%, #ACF9DF 65%, #16B981 85%, #B3CD9D 100%);
+    --emerald-gradient-text: linear-gradient(120deg, #B3CD9D 0%, #16B981 35%, #ACF9DF 70%, #16B981 100%);
+    --emerald-glow: 0 8px 32px rgba(22, 185, 129, 0.22), 0 0 0 1px rgba(172, 249, 223, 0.15);
 
     --glass-bg: rgba(15, 23, 42, 0.8);
     --glass-bg-subtle: rgba(255, 255, 255, 0.03);
     --glass-border: rgba(148, 163, 184, 0.18);
     --glass-specular: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 8px 24px rgba(0, 0, 0, 0.45);
-    --glass-card-shadow: 0 12px 36px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(56, 189, 248, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    --glass-card-shadow: 0 12px 36px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(148, 163, 184, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 
     --body-bg-gradient: 
-        radial-gradient(at 10% 15%, rgba(56, 189, 248, 0.09) 0px, transparent 55%),
-        radial-gradient(at 85% 85%, rgba(30, 58, 138, 0.22) 0px, transparent 65%),
-        radial-gradient(at 90% 10%, rgba(99, 102, 241, 0.07) 0px, transparent 50%);
+        radial-gradient(at 10% 15%, rgba(22, 185, 129, 0.06) 0px, transparent 55%),
+        radial-gradient(at 85% 85%, rgba(15, 23, 42, 0.3) 0px, transparent 65%),
+        radial-gradient(at 90% 10%, rgba(30, 58, 138, 0.15) 0px, transparent 50%);
 }
 
 /* 4. Темний ліс (Темно-зелена тема) */
@@ -108,19 +130,26 @@ html[data-theme="forest"] {
     --sidebar-bg: #0b1c14;
     --modal-bg: rgba(11, 28, 20, 0.92);
     --header-bg: rgba(7, 19, 14, 0.82);
+    --column-bg: rgba(11, 28, 20, 0.55);
+    --column-border: rgba(52, 211, 153, 0.16);
+    --graph-bg: radial-gradient(circle at center, #0f271c 0%, #07130e 100%);
+    --toolbar-bg: rgba(11, 28, 20, 0.9);
+    --toolbar-border: rgba(52, 211, 153, 0.18);
+
     --text-main: #f0fdf4;
     --text-muted: #86efac;
     --border-color: rgba(52, 211, 153, 0.14);
     --hover-bg: rgba(52, 211, 153, 0.08);
     --active-bg: rgba(52, 211, 153, 0.18);
-    --accent-color: #10b981;
     --danger-color: #fb7185;
     --scrollbar-thumb: rgba(52, 211, 153, 0.18);
     --scrollbar-thumb-hover: rgba(52, 211, 153, 0.32);
 
-    --emerald-gradient: linear-gradient(135deg, #10b981 0%, #059669 50%, #34d399 100%);
-    --emerald-gradient-text: linear-gradient(120deg, #6ee7b7 0%, #10b981 50%, #a7f3d0 100%);
-    --emerald-glow: 0 8px 32px rgba(16, 185, 129, 0.28), 0 0 0 1px rgba(52, 211, 153, 0.22);
+    /* Фірмовий смарагдовий градієнт та акцент NothingNotes */
+    --accent-color: #16b981;
+    --emerald-gradient: linear-gradient(135deg, #B3CD9D 0%, #16B981 30%, #ACF9DF 65%, #16B981 85%, #B3CD9D 100%);
+    --emerald-gradient-text: linear-gradient(120deg, #B3CD9D 0%, #16B981 35%, #ACF9DF 70%, #16B981 100%);
+    --emerald-glow: 0 8px 32px rgba(22, 185, 129, 0.22), 0 0 0 1px rgba(172, 249, 223, 0.15);
 
     --glass-bg: rgba(11, 28, 20, 0.8);
     --glass-bg-subtle: rgba(255, 255, 255, 0.03);
@@ -186,7 +215,6 @@ html[data-theme="light"] .header-search-bar input {
 }
 
 html[data-theme="light"] .column-header {
-    background: rgba(236, 238, 243, 0.9);
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
@@ -309,4 +337,23 @@ html[data-theme="light"] .sidebar-settings-guest-btn {
 
 html[data-theme="light"] .user-profile-clickable:hover {
     background: rgba(0, 0, 0, 0.05);
+}
+
+html[data-theme="light"] .graph-html-node-label {
+    color: #18181b;
+    text-shadow: 0 1px 4px rgba(255, 255, 255, 0.8);
+}
+
+html[data-theme="light"] .graph-html-node.is-root .graph-html-node-label {
+    color: #0f172a;
+    text-shadow: 0 1px 6px rgba(255, 255, 255, 0.9);
+}
+
+html[data-theme="light"] .graph-html-node-circle {
+    border-color: rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme="light"] .graph-html-node.is-root .graph-html-node-circle {
+    border-color: rgba(0, 0, 0, 0.85);
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.9), 0 0 0 6.5px var(--node-branch-color, rgba(0, 0, 0, 0.6)), 0 0 16px var(--node-branch-color, rgba(0, 0, 0, 0.25));
 }

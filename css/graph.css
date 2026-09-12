@@ -4,12 +4,13 @@
     position: relative;
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle at center, #1f1f23 0%, #141416 100%);
+    background: var(--graph-bg, radial-gradient(circle at center, #1f1f23 0%, #141416 100%));
     overflow: hidden;
     display: flex;
     flex-direction: column;
     user-select: none;
 }
+
 
 .graph-canvas {
     position: absolute;
@@ -165,10 +166,10 @@
 }
 
 .graph-title-pill {
-    background: rgba(30, 30, 34, 0.85);
+    background: var(--toolbar-bg, rgba(30, 30, 34, 0.85));
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid var(--toolbar-border, rgba(255, 255, 255, 0.12));
     border-radius: 12px;
     padding: 8px 14px;
     display: flex;
@@ -211,10 +212,10 @@
 }
 
 .graph-search-input {
-    background: rgba(22, 22, 26, 0.92);
+    background: var(--toolbar-bg, rgba(22, 22, 26, 0.92));
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid var(--toolbar-border, rgba(255, 255, 255, 0.15));
     border-radius: 10px;
     padding: 7px 32px 7px 12px;
     color: var(--text-main);
@@ -235,12 +236,12 @@
 
 .graph-search-input:hover {
     border-color: rgba(255, 255, 255, 0.25);
-    background: rgba(28, 28, 34, 0.95);
+    background: var(--hover-bg, rgba(28, 28, 34, 0.95));
 }
 
 .graph-search-input:focus {
     border-color: #10b981;
-    background: rgba(26, 26, 32, 0.98);
+    background: var(--toolbar-bg, rgba(26, 26, 32, 0.98));
     box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3), 0 12px 32px rgba(0, 0, 0, 0.6);
 }
 
@@ -286,16 +287,11 @@
     background: rgba(255, 255, 255, 0.12);
 }
 
-.graph-search-clear-btn:hover {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.12);
-}
-
 .graph-switch-back-btn {
-    background: rgba(30, 30, 34, 0.85);
+    background: var(--toolbar-bg, rgba(30, 30, 34, 0.85));
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid var(--toolbar-border, rgba(255, 255, 255, 0.12));
     border-radius: 10px;
     padding: 7px 12px;
     color: var(--text-main);
@@ -322,10 +318,10 @@
     position: absolute;
     bottom: 24px;
     right: 24px;
-    background: rgba(30, 30, 34, 0.85);
+    background: var(--toolbar-bg, rgba(30, 30, 34, 0.85));
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid var(--toolbar-border, rgba(255, 255, 255, 0.12));
     border-radius: 12px;
     padding: 4px;
     display: flex;
@@ -363,15 +359,16 @@
     position: absolute;
     bottom: 24px;
     left: 24px;
-    background: rgba(30, 30, 34, 0.85);
+    background: var(--toolbar-bg, rgba(30, 30, 34, 0.85));
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid var(--toolbar-border, rgba(255, 255, 255, 0.12));
     border-radius: 12px;
     padding: 8px 12px;
     display: flex;
     align-items: center;
     gap: 14px;
+
     font-size: 11px;
     color: var(--text-muted);
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
