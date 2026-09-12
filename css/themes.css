@@ -132,14 +132,14 @@ html[data-theme="night-sky"] {
 /* 4. Темний ліс (Приглушена жовто-зелена / Monokai стиль) */
 html[data-theme="forest"] {
     --theme-name: 'forest';
-    --bg-color: #272822;
-    --sidebar-bg: #1d1e19;
-    --modal-bg: rgba(33, 34, 28, 0.95);
+    --bg-color: #1d1e19;
+    --sidebar-bg: #272822;
+    --modal-bg: rgba(39, 40, 34, 0.95);
     --header-bg: rgba(29, 30, 25, 0.85);
-    --column-bg: rgba(29, 30, 25, 0.55);
+    --column-bg: rgba(39, 40, 34, 0.55);
     --column-border: rgba(255, 255, 255, 0.08);
-    --graph-bg: radial-gradient(circle at center, #32332a 0%, #272822 100%);
-    --toolbar-bg: rgba(29, 30, 25, 0.92);
+    --graph-bg: radial-gradient(circle at center, #272822 0%, #1d1e19 100%);
+    --toolbar-bg: rgba(39, 40, 34, 0.92);
     --toolbar-border: rgba(255, 255, 255, 0.12);
 
     /* Текст та підказки нейтральні */
@@ -159,7 +159,7 @@ html[data-theme="forest"] {
     --emerald-gradient-text: linear-gradient(120deg, #B3CD9D 0%, #16B981 35%, #ACF9DF 70%, #16B981 100%);
     --emerald-glow: 0 8px 32px rgba(22, 185, 129, 0.22), 0 0 0 1px rgba(172, 249, 223, 0.15);
 
-    --glass-bg: rgba(33, 34, 28, 0.8);
+    --glass-bg: rgba(39, 40, 34, 0.8);
     --glass-bg-subtle: rgba(255, 255, 255, 0.03);
     --glass-border: rgba(255, 255, 255, 0.1);
     --glass-specular: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 8px 24px rgba(0, 0, 0, 0.45);
@@ -167,7 +167,7 @@ html[data-theme="forest"] {
 
     --body-bg-gradient: 
         radial-gradient(at 10% 15%, rgba(166, 226, 46, 0.04) 0px, transparent 55%),
-        radial-gradient(at 85% 85%, rgba(20, 21, 16, 0.35) 0px, transparent 65%),
+        radial-gradient(at 85% 85%, rgba(15, 16, 12, 0.4) 0px, transparent 65%),
         radial-gradient(at 90% 10%, rgba(230, 219, 116, 0.03) 0px, transparent 50%);
 }
 
