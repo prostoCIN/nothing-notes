@@ -102,7 +102,8 @@ window.App = window.App || {};
                                             const textBefore = preRange.toString();
 
                                             const SENTENCE_START_REGEX = /(?:^[\s\u00A0]*|[\r\n]+[\s\u00A0]*|(?:[.!?…]+|\.\.\.)[\s\u00A0]*(?:[\s\u00A0\r\n]|["'«»“”„(\[—–-])[\s\u00A0]*)$/;
-                                            if (SENTENCE_START_REGEX.test(textBefore)) {
+                                            const isAutoCapEnabled = !window.App?.settingsModal || window.App.settingsModal.isAutoCapitalizeEnabled();
+                                            if (isAutoCapEnabled && SENTENCE_START_REGEX.test(textBefore)) {
                                                 if (e.cancelable) {
                                                     e.preventDefault();
                                                     isHeaderAutoCapitalizing = true;

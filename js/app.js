@@ -71,9 +71,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.App.authModal) {
         window.App.authModal.init();
     }
+    if (window.App.settingsModal) {
+        window.App.settingsModal.init();
+    }
     if (window.App.cloudSync) {
         window.App.cloudSync.init();
     }
+
 
     // Початкова перевірка стану
     initApp();

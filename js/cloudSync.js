@@ -859,21 +859,47 @@ window.App = window.App || {};
                 const initial = nickname.charAt(0).toUpperCase();
 
                 profileCard.innerHTML = `
-                    <div class="user-avatar">${initial}</div>
-                    <div class="user-info">
-                        <div class="user-email" title="${user.email}">${nickname}</div>
-                        <div class="user-status-badge">Зберігається в хмарі</div>
+                    <div class="user-profile-clickable" id="user-profile-info-click" title="Налаштування сайту">
+                        <div class="user-avatar">${initial}</div>
+                        <div class="user-info">
+                            <div class="user-email" title="${user.email}">${nickname}</div>
+                            <div class="user-status-badge">Зберігається в хмарі</div>
+                        </div>
                     </div>
-                    <button class="user-logout-btn" id="user-logout-btn" title="Вийти з акаунта (${user.email})">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                            <polyline points="16 17 21 12 16 7"></polyline>
-                            <line x1="21" y1="12" x2="9" y2="12"></line>
-                        </svg>
-                    </button>
+                    <div class="user-profile-actions">
+                        <button class="user-action-btn user-settings-btn" id="sidebar-settings-btn" title="Налаштування сайту">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                        <button class="user-action-btn user-logout-btn" id="user-logout-btn" title="Вийти з акаунта (${user.email})">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                <polyline points="16 17 21 12 16 7"></polyline>
+                                <line x1="21" y1="12" x2="9" y2="12"></line>
+                            </svg>
+                        </button>
+                    </div>
                 `;
 
-                profileCard.querySelector('#user-logout-btn').addEventListener('click', async () => {
+                const clickWrap = profileCard.querySelector('#user-profile-info-click');
+                if (clickWrap) {
+                    clickWrap.addEventListener('click', () => {
+                        if (window.App.settingsModal) window.App.settingsModal.open();
+                    });
+                }
+
+                const settingsBtn = profileCard.querySelector('#sidebar-settings-btn');
+                if (settingsBtn) {
+                    settingsBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (window.App.settingsModal) window.App.settingsModal.open();
+                    });
+                }
+
+                profileCard.querySelector('#user-logout-btn').addEventListener('click', async (e) => {
+                    e.stopPropagation();
                     await window.App.supabase.auth.signOut();
                 });
             } else {
@@ -886,6 +912,12 @@ window.App = window.App || {};
                         </svg>
                         <span>Увійти / Реєстрація</span>
                     </button>
+                    <button class="sidebar-settings-guest-btn" id="sidebar-settings-btn" title="Налаштування сайту">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </button>
                 `;
 
                 profileCard.querySelector('#sidebar-login-btn').addEventListener('click', () => {
@@ -893,6 +925,15 @@ window.App = window.App || {};
                         window.App.authModal.open();
                     }
                 });
+
+                const settingsBtn = profileCard.querySelector('#sidebar-settings-btn');
+                if (settingsBtn) {
+                    settingsBtn.addEventListener('click', () => {
+                        if (window.App.settingsModal) {
+                            window.App.settingsModal.open();
+                        }
+                    });
+                }
             }
         },
 

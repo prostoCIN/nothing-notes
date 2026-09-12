@@ -946,7 +946,8 @@ window.App = window.App || {};
                                             preRange.setEnd(range.startContainer, range.startOffset);
                                             const textBefore = preRange.toString();
 
-                                            if (SENTENCE_START_REGEX.test(textBefore)) {
+                                            const isAutoCapEnabled = !window.App?.settingsModal || window.App.settingsModal.isAutoCapitalizeEnabled();
+                                            if (isAutoCapEnabled && SENTENCE_START_REGEX.test(textBefore)) {
                                                 if (e.cancelable) {
                                                     e.preventDefault();
                                                     isAutoCapitalizing = true;
