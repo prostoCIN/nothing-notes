@@ -10,7 +10,7 @@ window.App = window.App || {};
         { key: 'asphalt', name: 'Асфальт', desc: 'Темна (поточна)', metaColor: '#141416' },
         { key: 'light', name: 'Біла', desc: 'Світла', metaColor: '#f7f7fa' },
         { key: 'night-sky', name: 'Нічне небо', desc: 'Темно-синя', metaColor: '#0b0f19' },
-        { key: 'forest', name: 'Темний ліс', desc: 'Темно-зелена', metaColor: '#07130e' }
+        { key: 'forest', name: 'Темний ліс', desc: 'Приглушена жовто-зелена', metaColor: '#272822' }
     ];
 
     let modalOverlayEl = null;
@@ -244,7 +244,7 @@ window.App = window.App || {};
                                 </div>
                                 <div class="settings-theme-label">
                                     <span class="settings-theme-name">Темний ліс</span>
-                                    <span class="settings-theme-sub">Темно-зелена</span>
+                                    <span class="settings-theme-sub">Приглушена жовто-зелена</span>
                                 </div>
                                 <div class="settings-theme-check">✓</div>
                             </button>

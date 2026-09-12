@@ -586,11 +586,11 @@ body.compact-notes-mode .sticker-title {
 }
 
 .settings-theme-preview.forest-preview {
-    background: #0c1c14;
-    border-color: #10b981;
+    background: #272822;
+    border-color: #5a5b4c;
 }
 .settings-theme-preview.forest-preview .theme-preview-dot {
-    background: #34d399;
+    background: #a6e22e;
 }
 
 .theme-preview-dot {

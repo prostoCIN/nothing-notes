@@ -129,28 +129,28 @@ html[data-theme="night-sky"] {
         radial-gradient(at 90% 10%, rgba(30, 58, 138, 0.15) 0px, transparent 50%);
 }
 
-/* 4. Темний ліс (Темно-зелена тема) */
+/* 4. Темний ліс (Приглушена жовто-зелена / Monokai стиль) */
 html[data-theme="forest"] {
     --theme-name: 'forest';
-    --bg-color: #07130e;
-    --sidebar-bg: #0b1c14;
-    --modal-bg: rgba(11, 28, 20, 0.92);
-    --header-bg: rgba(7, 19, 14, 0.82);
-    --column-bg: rgba(11, 28, 20, 0.55);
-    --column-border: rgba(52, 211, 153, 0.16);
-    --graph-bg: radial-gradient(circle at center, #0f271c 0%, #07130e 100%);
-    --toolbar-bg: rgba(11, 28, 20, 0.9);
-    --toolbar-border: rgba(52, 211, 153, 0.18);
+    --bg-color: #272822;
+    --sidebar-bg: #1d1e19;
+    --modal-bg: rgba(33, 34, 28, 0.95);
+    --header-bg: rgba(29, 30, 25, 0.85);
+    --column-bg: rgba(29, 30, 25, 0.55);
+    --column-border: rgba(255, 255, 255, 0.08);
+    --graph-bg: radial-gradient(circle at center, #32332a 0%, #272822 100%);
+    --toolbar-bg: rgba(29, 30, 25, 0.92);
+    --toolbar-border: rgba(255, 255, 255, 0.12);
 
     /* Текст та підказки нейтральні */
     --text-main: rgba(255, 255, 255, 0.94);
     --text-muted: rgba(255, 255, 255, 0.55);
-    --border-color: rgba(52, 211, 153, 0.14);
-    --hover-bg: rgba(52, 211, 153, 0.08);
-    --active-bg: rgba(52, 211, 153, 0.18);
-    --danger-color: #fb7185;
-    --scrollbar-thumb: rgba(52, 211, 153, 0.18);
-    --scrollbar-thumb-hover: rgba(52, 211, 153, 0.32);
+    --border-color: rgba(255, 255, 255, 0.08);
+    --hover-bg: rgba(255, 255, 255, 0.06);
+    --active-bg: rgba(255, 255, 255, 0.12);
+    --danger-color: #f92672;
+    --scrollbar-thumb: rgba(255, 255, 255, 0.12);
+    --scrollbar-thumb-hover: rgba(255, 255, 255, 0.22);
     --sticker-shadow: 0 4px 14px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.1);
 
     /* Фірмовий смарагдовий градієнт та акцент NothingNotes (незмінний!) */
@@ -159,16 +159,16 @@ html[data-theme="forest"] {
     --emerald-gradient-text: linear-gradient(120deg, #B3CD9D 0%, #16B981 35%, #ACF9DF 70%, #16B981 100%);
     --emerald-glow: 0 8px 32px rgba(22, 185, 129, 0.22), 0 0 0 1px rgba(172, 249, 223, 0.15);
 
-    --glass-bg: rgba(11, 28, 20, 0.8);
+    --glass-bg: rgba(33, 34, 28, 0.8);
     --glass-bg-subtle: rgba(255, 255, 255, 0.03);
-    --glass-border: rgba(52, 211, 153, 0.2);
+    --glass-border: rgba(255, 255, 255, 0.1);
     --glass-specular: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 8px 24px rgba(0, 0, 0, 0.45);
-    --glass-card-shadow: 0 12px 36px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(52, 211, 153, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    --glass-card-shadow: 0 12px 36px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 
     --body-bg-gradient: 
-        radial-gradient(at 10% 15%, rgba(16, 185, 129, 0.12) 0px, transparent 55%),
-        radial-gradient(at 85% 85%, rgba(6, 78, 59, 0.25) 0px, transparent 65%),
-        radial-gradient(at 90% 10%, rgba(110, 231, 183, 0.06) 0px, transparent 50%);
+        radial-gradient(at 10% 15%, rgba(166, 226, 46, 0.04) 0px, transparent 55%),
+        radial-gradient(at 85% 85%, rgba(20, 21, 16, 0.35) 0px, transparent 65%),
+        radial-gradient(at 90% 10%, rgba(230, 219, 116, 0.03) 0px, transparent 50%);
 }
 
 /* ==========================================================================
