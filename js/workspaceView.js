@@ -166,9 +166,10 @@ window.App = window.App || {};
                 viewColumnsBtn.addEventListener('click', () => {
                     const state = window.App.state;
                     if (state && state.isGraphView) {
-                        state.isGraphView = false;
-                        if (window.App.storage && window.App.storage.saveGraphViewMode) {
-                            window.App.storage.saveGraphViewMode(false);
+                        if (window.App.store) {
+                            window.App.store.setGraphView(false);
+                        } else {
+                            state.isGraphView = false;
                         }
                         this.render();
                     }
@@ -179,9 +180,10 @@ window.App = window.App || {};
                 viewGraphBtn.addEventListener('click', () => {
                     const state = window.App.state;
                     if (state && !state.isGraphView) {
-                        state.isGraphView = true;
-                        if (window.App.storage && window.App.storage.saveGraphViewMode) {
-                            window.App.storage.saveGraphViewMode(true);
+                        if (window.App.store) {
+                            window.App.store.setGraphView(true);
+                        } else {
+                            state.isGraphView = true;
                         }
                         this.render();
                     }

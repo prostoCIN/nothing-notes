@@ -291,7 +291,9 @@ window.App = window.App || {};
 
             layoutToggleBtn.addEventListener('click', () => {
                 const newLayout = ((state && state.columnLayouts && state.columnLayouts[parentKey]) || 'list') === 'grid' ? 'list' : 'grid';
-                if (state) {
+                if (window.App.store) {
+                    window.App.store.setColumnLayout(parentKey, newLayout);
+                } else if (state) {
                     state.columnLayouts = state.columnLayouts || {};
                     state.columnLayouts[parentKey] = newLayout;
                     if (window.App.storage && window.App.storage.saveColumnLayouts) {

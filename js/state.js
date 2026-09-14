@@ -148,24 +148,240 @@ window.App.storage = {
     }
 };
 
-window.App.state = {
-    boards: window.App.storage.getBoards(),
-    readOnlyBoards: window.App.storage.getReadOnlyBoards(),
-    notes: window.App.storage.getNotes(),
-    readOnlyNotes: window.App.storage.getReadOnlyNotes(),
-    activeBoardId: window.App.storage.getActiveBoardId(),
-    activeChain: [null], // Масив ID батьківських нотаток [null, noteId1, noteId2...]
-    expandedSidebarNoteIds: new Set(), // ID розгорнутих нотаток у сайдбарі
-    selectedSidebarNoteIds: new Set(), // ID виділених нотаток у сайдбарі (Windows-style selection)
-    selectedWorkspaceNoteIds: new Set(), // ID вибраних нотаток на головній області (iOS Gallery style)
-    isWorkspaceSelectMode: false, // Режим мульти-вибору на головній області
-    isGraphView: window.App.storage.getGraphViewMode(), // Режим перегляду інтерактивного графа (Obsidian Style)
-    isDraggingNote: false, // Прапорець активного перетягування нотатки (блокує фонові перерендери)
-    draggedNoteId: null, // ID поточної нотатки, що перетягується
-    activeTagFilters: new Map(), // Карта фільтрів тегів для колонок: key: parentId || 'root' -> Set<tagText>
-    columnLayouts: window.App.storage.getColumnLayouts(), // key: parentId || 'root' -> 'list' | 'grid'
-    stretchedColumnKey: null // parentKey ('root' або noteId) колонки, розтягнутої на весь екран у ПК версії
-};
+(function() {
+    const rawState = {
+        boards: window.App.storage.getBoards(),
+        readOnlyBoards: window.App.storage.getReadOnlyBoards(),
+        notes: window.App.storage.getNotes(),
+        readOnlyNotes: window.App.storage.getReadOnlyNotes(),
+        activeBoardId: window.App.storage.getActiveBoardId(),
+        activeChain: [null], // Масив ID батьківських нотаток [null, noteId1, noteId2...]
+        expandedSidebarNoteIds: new Set(), // ID розгорнутих нотаток у сайдбарі
+        selectedSidebarNoteIds: new Set(), // ID виділених нотаток у сайдбарі (Windows-style selection)
+        selectedWorkspaceNoteIds: new Set(), // ID вибраних нотаток на головній області (iOS Gallery style)
+        isWorkspaceSelectMode: false, // Режим мульти-вибору на головній області
+        isGraphView: window.App.storage.getGraphViewMode(), // Режим перегляду інтерактивного графа (Obsidian Style)
+        isDraggingNote: false, // Прапорець активного перетягування нотатки (блокує фонові перерендери)
+        draggedNoteId: null, // ID поточної нотатки, що перетягується
+        activeTagFilters: new Map(), // Карта фільтрів тегів для колонок: key: parentId || 'root' -> Set<tagText>
+        columnLayouts: window.App.storage.getColumnLayouts(), // key: parentId || 'root' -> 'list' | 'grid'
+        stretchedColumnKey: null // parentKey ('root' або noteId) колонки, розтягнутої на весь екран у ПК версії
+    };
+
+    // Proxy для безпечного доступу та автоматичної синхронізації при прямих мутаціях state.prop = val
+    const stateProxy = new Proxy(rawState, {
+        get(target, prop, receiver) {
+            return Reflect.get(target, prop, receiver);
+        },
+        set(target, prop, value, receiver) {
+            const oldValue = target[prop];
+            const result = Reflect.set(target, prop, value, receiver);
+
+            if (oldValue !== value) {
+                const storage = window.App.storage;
+                if (storage) {
+                    switch (prop) {
+                        case 'boards':
+                            storage.saveBoards(value);
+                            break;
+                        case 'readOnlyBoards':
+                            storage.saveReadOnlyBoards(value);
+                            break;
+                        case 'notes':
+                            storage.saveNotes(value);
+                            break;
+                        case 'readOnlyNotes':
+                            storage.saveReadOnlyNotes(value);
+                            break;
+                        case 'activeBoardId':
+                            storage.saveActiveBoardId(value);
+                            break;
+                        case 'isGraphView':
+                            storage.saveGraphViewMode(value);
+                            break;
+                        case 'columnLayouts':
+                            storage.saveColumnLayouts(value);
+                            break;
+                    }
+                }
+
+                if (window.App.events) {
+                    window.App.events.emit(`state:${String(prop)}`, { value, oldValue });
+                    window.App.events.emit('state:mutation', { prop: String(prop), value, oldValue });
+                }
+            }
+
+            return result;
+        }
+    });
+
+    // Централізоване сховище (Store) з контрольованими методами мутацій
+    const store = {
+        getState() {
+            return stateProxy;
+        },
+
+        getRawState() {
+            return rawState;
+        },
+
+        getBoardById(id) {
+            if (!id) return null;
+            return rawState.boards.find(b => b.id === id)
+                || (rawState.readOnlyBoards && rawState.readOnlyBoards.find(b => b.id === id))
+                || null;
+        },
+
+        getActiveBoard() {
+            return this.getBoardById(rawState.activeBoardId);
+        },
+
+        getNoteById(id) {
+            if (!id) return null;
+            return rawState.notes.find(n => n.id === id)
+                || (rawState.readOnlyNotes && rawState.readOnlyNotes.find(n => n.id === id))
+                || null;
+        },
+
+        setBoards(boards, persist = true) {
+            rawState.boards = Array.isArray(boards) ? boards : [];
+            if (persist && window.App.storage) {
+                window.App.storage.saveBoards(rawState.boards);
+            }
+            this._notify('boards', rawState.boards);
+        },
+
+        setReadOnlyBoards(boards, persist = true) {
+            rawState.readOnlyBoards = Array.isArray(boards) ? boards : [];
+            if (persist && window.App.storage) {
+                window.App.storage.saveReadOnlyBoards(rawState.readOnlyBoards);
+            }
+            this._notify('readOnlyBoards', rawState.readOnlyBoards);
+        },
+
+        setNotes(notes, persist = true, immediate = false) {
+            rawState.notes = Array.isArray(notes) ? notes : [];
+            if (persist && window.App.storage) {
+                window.App.storage.saveNotes(rawState.notes, immediate);
+            }
+            this._notify('notes', rawState.notes);
+        },
+
+        setReadOnlyNotes(notes, persist = true) {
+            rawState.readOnlyNotes = Array.isArray(notes) ? notes : [];
+            if (persist && window.App.storage) {
+                window.App.storage.saveReadOnlyNotes(rawState.readOnlyNotes);
+            }
+            this._notify('readOnlyNotes', rawState.readOnlyNotes);
+        },
+
+        setActiveBoardId(id, persist = true) {
+            rawState.activeBoardId = id;
+            if (persist && window.App.storage) {
+                window.App.storage.saveActiveBoardId(id);
+            }
+            this._notify('activeBoardId', id);
+        },
+
+        setActiveChain(chain) {
+            rawState.activeChain = Array.isArray(chain) ? chain : [null];
+            this._notify('activeChain', rawState.activeChain);
+        },
+
+        setGraphView(enabled, persist = true) {
+            const val = Boolean(enabled);
+            rawState.isGraphView = val;
+            if (persist && window.App.storage) {
+                window.App.storage.saveGraphViewMode(val);
+            }
+            this._notify('isGraphView', val);
+        },
+
+        setColumnLayout(parentKey, layout, persist = true) {
+            rawState.columnLayouts = rawState.columnLayouts || {};
+            rawState.columnLayouts[parentKey] = layout;
+            if (persist && window.App.storage) {
+                window.App.storage.saveColumnLayouts(rawState.columnLayouts);
+            }
+            this._notify('columnLayouts', rawState.columnLayouts);
+        },
+
+        setColumnLayouts(layouts, persist = true) {
+            rawState.columnLayouts = layouts || {};
+            if (persist && window.App.storage) {
+                window.App.storage.saveColumnLayouts(rawState.columnLayouts);
+            }
+            this._notify('columnLayouts', rawState.columnLayouts);
+        },
+
+        setWorkspaceSelectMode(enabled) {
+            rawState.isWorkspaceSelectMode = Boolean(enabled);
+            if (!rawState.isWorkspaceSelectMode) {
+                rawState.selectedWorkspaceNoteIds.clear();
+            }
+            this._notify('isWorkspaceSelectMode', rawState.isWorkspaceSelectMode);
+        },
+
+        clearSelections() {
+            rawState.selectedSidebarNoteIds.clear();
+            rawState.selectedWorkspaceNoteIds.clear();
+            rawState.isWorkspaceSelectMode = false;
+            this._notify('selection:cleared', null);
+        },
+
+        setDraggingNote(isDragging, noteId = null) {
+            rawState.isDraggingNote = Boolean(isDragging);
+            rawState.draggedNoteId = isDragging ? noteId : null;
+            this._notify('isDraggingNote', rawState.isDraggingNote);
+        },
+
+        setStretchedColumn(key) {
+            rawState.stretchedColumnKey = key;
+            this._notify('stretchedColumnKey', key);
+        },
+
+        resetEphemeral() {
+            rawState.activeChain = [null];
+            rawState.expandedSidebarNoteIds.clear();
+            rawState.selectedSidebarNoteIds.clear();
+            rawState.selectedWorkspaceNoteIds.clear();
+            rawState.isWorkspaceSelectMode = false;
+            rawState.isDraggingNote = false;
+            rawState.draggedNoteId = null;
+            rawState.activeTagFilters.clear();
+            rawState.stretchedColumnKey = null;
+            this._notify('state:reset', null);
+        },
+
+        clearAll() {
+            this.setBoards([], false);
+            this.setReadOnlyBoards([], false);
+            this.setNotes([], false);
+            this.setReadOnlyNotes([], false);
+            this.setActiveBoardId(null, false);
+            this.resetEphemeral();
+            if (window.App.storage) {
+                window.App.storage.clearAll();
+            }
+        },
+
+        subscribe(propOrEvent, handler) {
+            if (!window.App.events) return () => {};
+            const eventName = propOrEvent.includes(':') ? propOrEvent : `state:${propOrEvent}`;
+            return window.App.events.on(eventName, handler);
+        },
+
+        _notify(eventOrProp, value) {
+            if (window.App.events) {
+                window.App.events.emit(`state:${eventOrProp}`, { value });
+                window.App.events.emit('state:changed', { prop: eventOrProp, value });
+            }
+        }
+    };
+
+    window.App.store = store;
+    window.App.state = stateProxy;
+})();
 
 // Гарантуємо запис незбережених змін перед закриттям вкладки або браузера
 window.addEventListener('beforeunload', () => {
