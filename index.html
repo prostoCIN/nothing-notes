@@ -19,7 +19,7 @@
             try {
                 var theme = localStorage.getItem('nothing_notes_theme') || 'asphalt';
                 document.documentElement.setAttribute('data-theme', theme);
-                var colors = { 'asphalt': '#141416', 'light': '#f7f7fa', 'night-sky': '#0b0f19', 'forest': '#07130e' };
+                var colors = { 'asphalt': '#141416', 'light': '#f7f7fa', 'night-sky': '#0b0f19', 'forest': '#1d1e19' };
                 var meta = document.querySelector('meta[name="theme-color"]');
                 if (meta && colors[theme]) meta.setAttribute('content', colors[theme]);
             } catch(e) {}

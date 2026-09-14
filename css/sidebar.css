@@ -815,12 +815,12 @@ body.is-sidebar-dragging .sidebar-nest-drop-zone.active-hover {
 }
 
 .share-modal-card {
-    background: rgba(26, 26, 30, 0.92);
+    background: rgba(26, 26, 30, 0.94);
     border: 1px solid rgba(255, 255, 255, 0.12);
     box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.15);
     border-radius: 18px;
     width: 100%;
-    max-width: 460px;
+    max-width: 520px;
     padding: 22px;
     box-sizing: border-box;
     display: flex;
@@ -1030,4 +1030,184 @@ body.is-sidebar-dragging .sidebar-nest-drop-zone.active-hover {
 
 .share-modal-status.error {
     color: #ef4444;
+}
+
+/* ==========================================================================
+   Вкладки модального вікна шерингу (Tabs: NothingNotes / ШІ & Raw / Експорт)
+   ========================================================================== */
+.share-modal-tabs {
+    display: flex;
+    gap: 6px;
+    background: rgba(0, 0, 0, 0.28);
+    padding: 4px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.share-modal-tab-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    user-select: none;
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+.share-modal-tab-btn:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.share-modal-tab-btn.active {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.share-tab-pane {
+    display: none;
+    flex-direction: column;
+    gap: 14px;
+    animation: shareFadeIn 0.2s ease;
+}
+
+.share-tab-pane.active {
+    display: flex;
+}
+
+/* Блок попереднього перегляду Markdown */
+.share-markdown-preview-box {
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 10px;
+    padding: 12px 14px;
+    max-height: 180px;
+    overflow-y: auto;
+    position: relative;
+}
+
+.share-markdown-preview-box pre {
+    margin: 0;
+    font-family: 'JetBrains Mono', Consolas, monospace;
+    font-size: 11.5px;
+    line-height: 1.55;
+    color: rgba(255, 255, 255, 0.88);
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* Група кнопок у футері вкладок */
+.share-btn-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.share-btn-group .share-copy-btn,
+.share-btn-group .share-secondary-btn {
+    flex: 1;
+    justify-content: center;
+}
+
+.share-secondary-btn {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-main);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    font-weight: 600;
+    font-size: 12px;
+    font-family: inherit;
+    border-radius: 8px;
+    padding: 7px 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.15s ease;
+    text-decoration: none;
+    box-sizing: border-box;
+}
+
+.share-secondary-btn:hover {
+    background: rgba(255, 255, 255, 0.14);
+    color: #ffffff;
+}
+
+/* ==========================================================================
+   Сторінка AI / Raw перегляду (коли відкрито URL з ?format=md)
+   ========================================================================== */
+.raw-markdown-page-wrap {
+    position: fixed;
+    inset: 0;
+    background: var(--bg-color, #141416);
+    color: var(--text-main, #ffffff);
+    z-index: 99999;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    box-sizing: border-box;
+}
+
+.raw-markdown-page-card {
+    max-width: 840px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.raw-markdown-top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+}
+
+.raw-markdown-logo-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.raw-markdown-badge {
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #10b981;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.raw-markdown-content-box {
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 24px 28px;
+    font-family: 'JetBrains Mono', Consolas, monospace;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text-main, #ffffff);
+    white-space: pre-wrap;
+    word-break: break-word;
+    user-select: text;
+    margin: 0;
 }

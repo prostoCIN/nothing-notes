@@ -300,19 +300,170 @@ window.App = window.App || {};
         },
 
         /**
-         * Відображає модальне вікно шерингу блокнота або нотатки
+         * Конвертує HTML розмітку нотатки у чистий Markdown
          */
-        showShareModal(boardId, noteIds = null) {
+        convertHtmlToMarkdown(html) {
+            if (!html || typeof html !== 'string') return '';
+            let md = html;
+
+            // Переноси рядків та блокові елементи
+            md = md.replace(/<br\s*[\/]?>/gi, '\n');
+            md = md.replace(/<\/p>/gi, '\n\n').replace(/<p[^>]*>/gi, '');
+            md = md.replace(/<\/div>/gi, '\n').replace(/<div[^>]*>/gi, '');
+
+            // Жирний шрифт
+            md = md.replace(/<(?:b|strong)[^>]*>(.*?)<\/(?:b|strong)>/gi, '**$1**');
+
+            // Курсив
+            md = md.replace(/<(?:i|em)[^>]*>(.*?)<\/(?:i|em)>/gi, '*$1*');
+
+            // Закреслення
+            md = md.replace(/<(?:s|strike)[^>]*>(.*?)<\/(?:s|strike)>/gi, '~~$1~~');
+
+            // Кольорові виділення / маркер
+            md = md.replace(/<mark[^>]*>(.*?)<\/mark>/gi, '==$1==');
+            md = md.replace(/<span[^>]*style="[^"]*background(?:-color)?:\s*([^";]+)[^"]*"[^>]*>(.*?)<\/span>/gi, '==$2==');
+
+            // Підкреслення
+            md = md.replace(/<u[^>]*>(.*?)<\/u>/gi, '<u>$1</u>');
+
+            // Посилання
+            md = md.replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)');
+
+            // Видаляємо всі залишки HTML-тегів
+            md = md.replace(/<[^>]+>/g, '');
+
+            // Декодування HTML-сутностей
+            md = md.replace(/&nbsp;/gi, ' ')
+                   .replace(/&amp;/gi, '&')
+                   .replace(/&lt;/gi, '<')
+                   .replace(/&gt;/gi, '>')
+                   .replace(/&quot;/gi, '"')
+                   .replace(/&#39;/gi, "'");
+
+            // Очищення зайвих послідовних пустих рядків
+            md = md.replace(/\n{3,}/g, '\n\n').trim();
+
+            return md;
+        },
+
+        /**
+         * Генерує структурований Markdown-документ для однієї або кількох нотаток
+         */
+        generateMarkdownForNotes(notes, boardTitle = '') {
+            if (!notes || notes.length === 0) return '# Порожня нотатка\n';
+
+            // Якщо одна нотатка
+            if (notes.length === 1) {
+                const n = notes[0];
+                const rawTitle = (n.title && n.title.trim()) ? n.title.trim() : 'Без назви';
+                const icon = n.icon ? `${n.icon} ` : '';
+                const bodyMd = this.convertHtmlToMarkdown(n.content);
+                const tags = Array.isArray(n.tags) && n.tags.length > 0 
+                    ? n.tags.map(t => `#${t.replace(/\s+/g, '_')}`).join(' ') 
+                    : '';
+
+                let out = `# ${icon}${rawTitle}\n\n`;
+                if (tags) {
+                    out += `> 🏷️ ${tags}\n\n`;
+                }
+                if (bodyMd) {
+                    out += `${bodyMd}\n\n`;
+                }
+                return out.trim() + '\n';
+            }
+
+            // Якщо кілька нотаток або цілий блокнот
+            let out = boardTitle ? `# 📓 ${boardTitle}\n\n` : '';
+
+            const noteMap = new Map(notes.map(n => [n.id, n]));
+            const rootNotes = notes.filter(n => !n.parentId || !noteMap.has(n.parentId));
+            const childMap = new Map();
+            notes.forEach(n => {
+                if (n.parentId && noteMap.has(n.parentId)) {
+                    if (!childMap.has(n.parentId)) childMap.set(n.parentId, []);
+                    childMap.get(n.parentId).push(n);
+                }
+            });
+
+            const appendNote = (note, depth = 1) => {
+                const rawTitle = (note.title && note.title.trim()) ? note.title.trim() : 'Без назви';
+                const icon = note.icon ? `${note.icon} ` : '';
+                const bodyMd = this.convertHtmlToMarkdown(note.content);
+                const tags = Array.isArray(note.tags) && note.tags.length > 0 
+                    ? note.tags.map(t => `#${t.replace(/\s+/g, '_')}`).join(' ') 
+                    : '';
+
+                const prefix = depth === 1 ? '## ' : depth === 2 ? '### ' : '#### ';
+                out += `${prefix}${icon}${rawTitle}\n\n`;
+                if (tags) {
+                    out += `> 🏷️ ${tags}\n\n`;
+                }
+                if (bodyMd) {
+                    out += `${bodyMd}\n\n`;
+                }
+
+                const children = childMap.get(note.id) || [];
+                children.forEach(ch => appendNote(ch, depth + 1));
+            };
+
+            rootNotes.forEach(rn => appendNote(rn, 1));
+            return out.trim() + '\n';
+        },
+
+        /**
+         * Завантажує Markdown як .md файл на пристрій
+         */
+        downloadMarkdownFile(filename, content) {
+            const cleanName = (filename || 'note').replace(/[\\/:*?"<>|]/g, '_').trim();
+            const fullName = cleanName.endsWith('.md') ? cleanName : `${cleanName}.md`;
+            const blob = new Blob([content], { type: 'text/markdown;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fullName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        },
+
+        /**
+         * Відображає оновлене модальне вікно шерингу з вкладками:
+         * 1. NothingNotes (спільне посилання для користувачів)
+         * 2. ШІ & Raw (посилання ?format=md для читання ChatGPT, Claude тощо)
+         * 3. Експорт в .md (копіювання або завантаження файлу)
+         */
+        showShareModal(boardId, noteIds = null, defaultTab = 'nothingnotes') {
             const state = window.App.state;
-            const targetBoard = state.boards.find(b => b.id === boardId);
-            if (!targetBoard) return;
+            const targetBoard = (state.boards || []).find(b => b.id === boardId) || { name: 'Блокнот', id: boardId };
+
+            // Отримуємо відповідні об'єкти нотаток
+            let targetNotes = [];
+            const allAvailableNotes = [...(state.notes || []), ...(state.readOnlyNotes || [])];
+
+            if (Array.isArray(noteIds) && noteIds.length > 0) {
+                const noteSet = new Set(noteIds);
+                targetNotes = allAvailableNotes.filter(n => noteSet.has(n.id));
+            } else {
+                targetNotes = allAvailableNotes.filter(n => n.boardId === boardId);
+            }
 
             const isSpecificNotes = Array.isArray(noteIds) && noteIds.length > 0;
-            const titleText = isSpecificNotes 
-                ? `Поділитись ${noteIds.length === 1 ? 'нотаткою' : 'виділеними нотатками'}` 
-                : `Поділитись блокнотом "${targetBoard.name}"`;
+            const singleNote = isSpecificNotes && targetNotes.length === 1 ? targetNotes[0] : null;
 
-            // Видаляємо старе модальне вікно, якщо було відкрите
+            const titleText = singleNote 
+                ? `Поділитись: ${singleNote.title || 'Нотатка'}` 
+                : (isSpecificNotes ? `Поділитись ${targetNotes.length} нотатками` : `Поділитись блокнотом "${targetBoard.name}"`);
+
+            const exportDocName = singleNote 
+                ? (singleNote.title || 'note') 
+                : (targetBoard.name || 'notes_export');
+
+            // Формуємо Markdown вміст для вкладки експорту
+            const markdownContent = this.generateMarkdownForNotes(targetNotes, targetBoard.name);
+
+            // Видаляємо старе вікно, якщо було відкрите
             const existing = document.getElementById('share-modal-backdrop');
             if (existing) existing.remove();
 
@@ -327,111 +478,372 @@ window.App = window.App || {};
                             <span class="share-modal-icon">🔗</span>
                             <h3 class="share-modal-title">${titleText}</h3>
                         </div>
-                        <button class="share-modal-close-btn" id="share-modal-close">×</button>
+                        <button class="share-modal-close-btn" id="share-modal-close" title="Закрити (Esc)">×</button>
+                    </div>
+
+                    <!-- Вкладки режимів шерингу -->
+                    <div class="share-modal-tabs">
+                        <button type="button" class="share-modal-tab-btn ${defaultTab === 'nothingnotes' ? 'active' : ''}" data-tab="nothingnotes">
+                            <span>👥 NothingNotes</span>
+                        </button>
+                        <button type="button" class="share-modal-tab-btn ${defaultTab === 'ai' ? 'active' : ''}" data-tab="ai">
+                            <span>🤖 ШІ & Raw</span>
+                        </button>
+                        <button type="button" class="share-modal-tab-btn ${defaultTab === 'export' ? 'active' : ''}" data-tab="export">
+                            <span>📝 Експорт в .md</span>
+                        </button>
                     </div>
 
                     <div class="share-modal-body">
-                        <p class="share-modal-desc">
-                            ${isSpecificNotes 
-                                ? 'Створіть захищене посилання для перегляду лише обраних нотаток. Інші нотатки блокнота залишаться приватними.' 
-                                : 'Будь-хто з цим посиланням зможе додати ваш блокнот для перегляду без можливості його зміни.'}
-                        </p>
+                        <!-- Вкладка 1: Для користувачів у додатку NothingNotes -->
+                        <div class="share-tab-pane ${defaultTab === 'nothingnotes' ? 'active' : ''}" id="share-pane-nothingnotes">
+                            <p class="share-modal-desc">
+                                ${isSpecificNotes 
+                                    ? 'Створіть спільне посилання для користувачів NothingNotes. Нотатка відкриється у повноцінному веб-інтерфейсі блокнота.' 
+                                    : 'Будь-хто з цим посиланням зможе додати ваш блокнот для перегляду у NothingNotes.'}
+                            </p>
 
-                        <div class="share-modal-option-row">
-                            <div class="share-option-info">
-                                <span class="share-option-title">Дозволити копіювання</span>
-                                <span class="share-option-hint">Дозволити іншим зберегти копію до своїх блокнотів</span>
+                            <div class="share-modal-option-row">
+                                <div class="share-option-info">
+                                    <span class="share-option-title">Дозволити копіювання</span>
+                                    <span class="share-option-hint">Дозволити іншим зберегти копію у свої блокноти</span>
+                                </div>
+                                <label class="share-toggle-switch">
+                                    <input type="checkbox" id="share-allow-clone-toggle">
+                                    <span class="share-toggle-slider"></span>
+                                </label>
                             </div>
-                            <label class="share-toggle-switch">
-                                <input type="checkbox" id="share-allow-clone-toggle">
-                                <span class="share-toggle-slider"></span>
-                            </label>
+
+                            <div class="share-link-box">
+                                <input type="text" class="share-link-input" id="share-nn-link-input" readonly placeholder="Генерація посилання...">
+                                <button class="share-copy-btn" id="share-nn-copy-btn">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                    <span>Скопіювати</span>
+                                </button>
+                            </div>
+
+                            <div class="share-modal-status" id="share-nn-status"></div>
                         </div>
 
-                        <div class="share-link-box" id="share-link-box">
-                            <input type="text" class="share-link-input" id="share-link-input" readonly placeholder="Генерація посилання...">
-                            <button class="share-copy-btn" id="share-copy-btn">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                </svg>
-                                <span>Скопіювати</span>
-                            </button>
+                        <!-- Вкладка 2: Спеціальне посилання для ШІ-агентів (?format=md) -->
+                        <div class="share-tab-pane ${defaultTab === 'ai' ? 'active' : ''}" id="share-pane-ai">
+                            <p class="share-modal-desc">
+                                Спеціальне посилання з параметром <code>?format=md</code>. Ідеально для <b>ChatGPT</b>, <b>Claude</b>, <b>Perplexity</b>, <b>Gemini</b> або скриптів: за цим URL віддається чистий структурований текст нотатки без важкого інтерфейсу SPA.
+                            </p>
+
+                            <div class="share-link-box">
+                                <input type="text" class="share-link-input" id="share-ai-link-input" readonly placeholder="Генерація посилання для ШІ...">
+                                <button class="share-copy-btn" id="share-ai-copy-btn">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                    <span>Скопіювати для ШІ</span>
+                                </button>
+                            </div>
+
+                            <div class="share-btn-group">
+                                <a href="#" target="_blank" class="share-secondary-btn" id="share-ai-preview-link" style="display: none;">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                        <polyline points="15 3 21 3 21 9"></polyline>
+                                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                                    </svg>
+                                    <span>Відкрити перегляд як бачить ШІ</span>
+                                </a>
+                            </div>
+
+                            <div class="share-modal-status" id="share-ai-status"></div>
                         </div>
 
-                        <div class="share-modal-status" id="share-modal-status"></div>
+                        <!-- Вкладка 3: Експорт у форматі Markdown (.md) -->
+                        <div class="share-tab-pane ${defaultTab === 'export' ? 'active' : ''}" id="share-pane-export">
+                            <p class="share-modal-desc">
+                                Вміст нотатки у чистому <b>Markdown</b>-форматі. Можна скопіювати для швидкої вставки в чат з нейромережею або завантажити на пристрій у файлі <code>.md</code>.
+                            </p>
+
+                            <div class="share-markdown-preview-box">
+                                <pre id="share-markdown-pre">${escapeHtml(markdownContent)}</pre>
+                            </div>
+
+                            <div class="share-btn-group">
+                                <button type="button" class="share-copy-btn" id="share-md-copy-btn">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                    <span>Скопіювати Markdown</span>
+                                </button>
+
+                                <button type="button" class="share-secondary-btn" id="share-md-download-btn">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="7 10 12 15 17 10"></polyline>
+                                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                                    </svg>
+                                    <span>Завантажити .md</span>
+                                </button>
+                            </div>
+
+                            <div class="share-modal-status" id="share-md-status"></div>
+                        </div>
                     </div>
                 </div>
             `;
 
             document.body.appendChild(modalEl);
 
-            const closeBtn = modalEl.querySelector('#share-modal-close');
-            const copyBtn = modalEl.querySelector('#share-copy-btn');
-            const linkInput = modalEl.querySelector('#share-link-input');
-            const cloneToggle = modalEl.querySelector('#share-allow-clone-toggle');
-            const statusEl = modalEl.querySelector('#share-modal-status');
+            function escapeHtml(str) {
+                return String(str || '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;');
+            }
 
-            const closeModal = () => modalEl.remove();
+            // Закриття модального вікна
+            const closeBtn = modalEl.querySelector('#share-modal-close');
+            const closeModal = () => {
+                modalEl.remove();
+                document.removeEventListener('keydown', handleEsc);
+            };
+
+            const handleEsc = (e) => {
+                if (e.key === 'Escape') closeModal();
+            };
+            document.addEventListener('keydown', handleEsc);
+
             closeBtn.addEventListener('click', closeModal);
             modalEl.addEventListener('click', (e) => {
                 if (e.target === modalEl) closeModal();
             });
 
-            // Генеруємо посилання
-            let currentShareUrl = '';
+            // Перемикання вкладок
+            const tabBtns = modalEl.querySelectorAll('.share-modal-tab-btn');
+            const tabPanes = modalEl.querySelectorAll('.share-tab-pane');
 
-            const generateLink = async () => {
-                linkInput.value = 'Створення безпечного посилання...';
-                copyBtn.disabled = true;
-                statusEl.textContent = '';
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tabKey = btn.dataset.tab;
+                    tabBtns.forEach(b => b.classList.toggle('active', b === btn));
+                    tabPanes.forEach(pane => pane.classList.toggle('active', pane.id === `share-pane-${tabKey}`));
+                });
+            });
+
+            // Логіка генерації посилань (Tabs 1 & 2)
+            const cloneToggle = modalEl.querySelector('#share-allow-clone-toggle');
+            const nnInput = modalEl.querySelector('#share-nn-link-input');
+            const nnCopyBtn = modalEl.querySelector('#share-nn-copy-btn');
+            const nnStatus = modalEl.querySelector('#share-nn-status');
+
+            const aiInput = modalEl.querySelector('#share-ai-link-input');
+            const aiCopyBtn = modalEl.querySelector('#share-ai-copy-btn');
+            const aiPreviewLink = modalEl.querySelector('#share-ai-preview-link');
+            const aiStatus = modalEl.querySelector('#share-ai-status');
+
+            let baseShareUrl = '';
+            let isGenerating = false;
+
+            const generateLinks = async () => {
+                if (isGenerating) return;
+                isGenerating = true;
+
+                nnInput.value = 'Створення безпечного посилання...';
+                aiInput.value = 'Створення безпечного посилання...';
+                nnCopyBtn.disabled = true;
+                aiCopyBtn.disabled = true;
+                nnStatus.textContent = '';
+                aiStatus.textContent = '';
+                aiPreviewLink.style.display = 'none';
 
                 try {
-                    const allowClone = cloneToggle.checked;
+                    const allowClone = cloneToggle ? cloneToggle.checked : false;
                     const res = await this.createShareLink(boardId, noteIds, allowClone);
-                    currentShareUrl = res.shareUrl;
-                    linkInput.value = currentShareUrl;
-                    copyBtn.disabled = false;
+                    baseShareUrl = res.shareUrl;
+
+                    const nnUrl = baseShareUrl;
+                    const aiUrl = `${baseShareUrl}&format=md`;
+
+                    nnInput.value = nnUrl;
+                    aiInput.value = aiUrl;
+                    nnCopyBtn.disabled = false;
+                    aiCopyBtn.disabled = false;
+
+                    aiPreviewLink.href = aiUrl;
+                    aiPreviewLink.style.display = 'inline-flex';
                 } catch (err) {
-                    linkInput.value = 'Помилка генерації';
-                    statusEl.textContent = err.message || 'Не вдалося створити посилання. Перевірте авторизацію.';
-                    statusEl.className = 'share-modal-status error';
+                    const errMsg = err.message || 'Не вдалося створити посилання. Перевірте авторизацію.';
+                    nnInput.value = 'Потрібен вхід в акаунт';
+                    aiInput.value = 'Потрібен вхід в акаунт';
+                    nnStatus.textContent = errMsg;
+                    nnStatus.className = 'share-modal-status error';
+                    aiStatus.textContent = errMsg;
+                    aiStatus.className = 'share-modal-status error';
+                } finally {
+                    isGenerating = false;
                 }
             };
 
-            cloneToggle.addEventListener('change', generateLink);
-            generateLink();
+            if (cloneToggle) {
+                cloneToggle.addEventListener('change', generateLinks);
+            }
+            generateLinks();
 
-            // Копіювання в буфер обміну
-            copyBtn.addEventListener('click', async () => {
-                if (!currentShareUrl) return;
-
+            // Копіювання посилання NothingNotes
+            nnCopyBtn.addEventListener('click', async () => {
+                if (!nnInput.value || nnInput.value.startsWith('Створення')) return;
                 try {
-                    await navigator.clipboard.writeText(currentShareUrl);
-                    copyBtn.classList.add('copied');
-                    copyBtn.innerHTML = `
+                    await navigator.clipboard.writeText(nnInput.value);
+                    nnStatus.textContent = '✅ Посилання NothingNotes скопійовано!';
+                    nnStatus.className = 'share-modal-status success';
+                } catch (e) {
+                    nnInput.select();
+                    document.execCommand('copy');
+                }
+            });
+
+            // Копіювання посилання для ШІ
+            aiCopyBtn.addEventListener('click', async () => {
+                if (!aiInput.value || aiInput.value.startsWith('Створення')) return;
+                try {
+                    await navigator.clipboard.writeText(aiInput.value);
+                    aiStatus.textContent = '✅ AI/Raw посилання скопійовано! Надішліть його ChatGPT або Claude.';
+                    aiStatus.className = 'share-modal-status success';
+                } catch (e) {
+                    aiInput.select();
+                    document.execCommand('copy');
+                }
+            });
+
+            // Логіка вкладки 3: Експорт Markdown
+            const mdCopyBtn = modalEl.querySelector('#share-md-copy-btn');
+            const mdDownloadBtn = modalEl.querySelector('#share-md-download-btn');
+            const mdStatus = modalEl.querySelector('#share-md-status');
+
+            mdCopyBtn.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(markdownContent);
+                    mdCopyBtn.innerHTML = `
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="20 6 9 17 4 12"></polyline>
                         </svg>
                         <span>Скопійовано!</span>
                     `;
-                    statusEl.textContent = '✅ Посилання скопійовано в буфер обміну!';
-                    statusEl.className = 'share-modal-status success';
+                    mdStatus.textContent = '✅ Markdown тексту скопійовано в буфер обміну!';
+                    mdStatus.className = 'share-modal-status success';
 
                     setTimeout(() => {
-                        copyBtn.classList.remove('copied');
-                        copyBtn.innerHTML = `
+                        mdCopyBtn.innerHTML = `
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                             </svg>
-                            <span>Скопіювати</span>
+                            <span>Скопіювати Markdown</span>
                         `;
                     }, 2500);
                 } catch (e) {
-                    linkInput.select();
-                    document.execCommand('copy');
+                    mdStatus.textContent = 'Не вдалося скопіювати автоматично';
+                    mdStatus.className = 'share-modal-status error';
                 }
+            });
+
+            mdDownloadBtn.addEventListener('click', () => {
+                try {
+                    this.downloadMarkdownFile(exportDocName, markdownContent);
+                    mdStatus.textContent = `✅ Файл "${exportDocName}.md" успішно завантажено!`;
+                    mdStatus.className = 'share-modal-status success';
+                } catch (e) {
+                    mdStatus.textContent = 'Помилка при збереженні файлу';
+                    mdStatus.className = 'share-modal-status error';
+                }
+            });
+        },
+
+        /**
+         * Відображає чистий AI / Raw Markdown екран, коли користувач або бот відкриває URL з ?format=md
+         */
+        renderRawMarkdownView(shareInfo) {
+            const notes = shareInfo.notes || [];
+            const boardName = shareInfo.board ? shareInfo.board.name : 'Нотатки';
+            const markdownContent = this.generateMarkdownForNotes(notes, boardName);
+
+            // Ховаємо інтерфейс робочого простору
+            const mainApp = document.getElementById('app-container') || document.body;
+            document.title = `${boardName} — Raw Markdown`;
+
+            let rawPage = document.getElementById('raw-markdown-page');
+            if (!rawPage) {
+                rawPage = document.createElement('div');
+                rawPage.id = 'raw-markdown-page';
+                rawPage.className = 'raw-markdown-page-wrap';
+                document.body.appendChild(rawPage);
+            }
+
+            const cleanNnUrl = window.location.origin + window.location.pathname + `?share_board=${shareInfo.share.share_token}`;
+
+            rawPage.innerHTML = `
+                <div class="raw-markdown-page-card">
+                    <div class="raw-markdown-top-bar">
+                        <div class="raw-markdown-logo-group">
+                            <img src="img/Logo.svg" alt="Logo" style="width: 24px; height: 24px;">
+                            <strong>NothingNotes</strong>
+                            <span class="raw-markdown-badge">AI / Raw View</span>
+                        </div>
+                        <div class="share-btn-group">
+                            <button type="button" class="share-copy-btn" id="raw-copy-btn">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                                <span>Скопіювати Markdown</span>
+                            </button>
+                            <button type="button" class="share-secondary-btn" id="raw-download-btn">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                <span>Завантажити .md</span>
+                            </button>
+                            <a href="${cleanNnUrl}" class="share-secondary-btn">
+                                <span>↗️ Відкрити в NothingNotes</span>
+                            </a>
+                        </div>
+                    </div>
+                    <pre class="raw-markdown-content-box" id="raw-pre-content">${escapeHtml(markdownContent)}</pre>
+                </div>
+            `;
+
+            function escapeHtml(str) {
+                return String(str || '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;');
+            }
+
+            const rawCopyBtn = rawPage.querySelector('#raw-copy-btn');
+            const rawDownloadBtn = rawPage.querySelector('#raw-download-btn');
+
+            rawCopyBtn.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(markdownContent);
+                    rawCopyBtn.innerHTML = '<span>✅ Скопійовано!</span>';
+                    setTimeout(() => {
+                        rawCopyBtn.innerHTML = `
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            <span>Скопіювати Markdown</span>
+                        `;
+                    }, 2000);
+                } catch(e) {}
+            });
+
+            rawDownloadBtn.addEventListener('click', () => {
+                this.downloadMarkdownFile(boardName, markdownContent);
             });
         }
     };

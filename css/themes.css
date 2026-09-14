@@ -410,3 +410,51 @@ html[data-theme="light"] .graph-html-node.is-root .graph-html-node-circle {
     border-color: rgba(0, 0, 0, 0.85);
     box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.9), 0 0 0 6.5px var(--node-branch-color, rgba(0, 0, 0, 0.6)), 0 0 16px var(--node-branch-color, rgba(0, 0, 0, 0.25));
 }
+
+html[data-theme="light"] .share-modal-card {
+    background: rgba(255, 255, 255, 0.96);
+    border-color: rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+    color: #18181b;
+}
+
+html[data-theme="light"] .share-modal-title {
+    color: #18181b;
+}
+
+html[data-theme="light"] .share-modal-tabs {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="light"] .share-modal-tab-btn.active {
+    background: #ffffff;
+    color: #18181b;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="light"] .share-markdown-preview-box {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="light"] .share-markdown-preview-box pre {
+    color: #18181b;
+}
+
+html[data-theme="light"] .share-link-box {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+html[data-theme="light"] .share-secondary-btn {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
+    color: #18181b;
+}
+
+html[data-theme="light"] .raw-markdown-content-box {
+    background: rgba(0, 0, 0, 0.02);
+    border-color: rgba(0, 0, 0, 0.08);
+    color: #18181b;
+}
