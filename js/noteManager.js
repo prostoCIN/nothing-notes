@@ -1,5 +1,8 @@
 // js/noteManager.js - Управління нотатками (створення, оновлення, видалення, пошук ієрархії)
+import DOMPurify from 'dompurify';
+
 window.App = window.App || {};
+window.DOMPurify = window.DOMPurify || DOMPurify;
 
 (function() {
     let onNotesChangeCallback = null;
