@@ -263,6 +263,7 @@ window.App = window.App || {};
                     isOrphansOnly = !isOrphansOnly;
                     orphansBtn.classList.toggle('is-active', isOrphansOnly);
                     this.hidePreviewCard(true);
+                    this.updateEdgesCounter();
                     this.draw();
                 });
             }
@@ -274,8 +275,9 @@ window.App = window.App || {};
                     showTagLinks = !showTagLinks;
                     tagLinksBtn.classList.toggle('is-active', showTagLinks);
                     this.hidePreviewCard(true);
-                    this.buildGraphData();
+                    this.updateEdgesCounter();
                     this.wakeUpSimulation();
+                    this.draw();
                 });
             }
 
@@ -406,6 +408,9 @@ window.App = window.App || {};
             edges = [];
             lastFocusNodeId = null;
             cachedSubtreeIds = null;
+            if (nodesLayer) {
+                nodesLayer.innerHTML = '';
+            }
 
             const dpr = window.devicePixelRatio || 1;
             const width = (canvas && canvas.width > 0) ? (canvas.width / dpr) : (container ? container.clientWidth : 800);
@@ -559,43 +564,38 @@ window.App = window.App || {};
 
             this.renderTagsBar(tagsCountMap);
 
-            if (showTagLinks) {
-                const tagEdgePairs = new Set();
-                const hasHierarchyEdge = (n1, n2) => (n1.parentId === n2.id || n2.parentId === n1.id);
+            const tagEdgePairs = new Set();
+            const hasHierarchyEdge = (n1, n2) => (n1.parentId === n2.id || n2.parentId === n1.id);
 
-                tagToNodes.forEach((taggedNodes, tagText) => {
-                    if (taggedNodes.length < 2) return;
-                    const tagColor = getTagColor(tagText);
+            tagToNodes.forEach((taggedNodes, tagText) => {
+                if (taggedNodes.length < 2) return;
+                const tagColor = getTagColor(tagText);
 
-                    for (let i = 0; i < taggedNodes.length; i++) {
-                        const nextIdx = (i + 1) % taggedNodes.length;
-                        if (taggedNodes.length === 2 && i === 1) break;
+                for (let i = 0; i < taggedNodes.length; i++) {
+                    const nextIdx = (i + 1) % taggedNodes.length;
+                    if (taggedNodes.length === 2 && i === 1) break;
 
-                        const n1 = taggedNodes[i];
-                        const n2 = taggedNodes[nextIdx];
-                        if (n1 === n2 || hasHierarchyEdge(n1, n2)) continue;
+                    const n1 = taggedNodes[i];
+                    const n2 = taggedNodes[nextIdx];
+                    if (n1 === n2 || hasHierarchyEdge(n1, n2)) continue;
 
-                        const pairKey = n1.id < n2.id ? (n1.id + '__' + n2.id) : (n2.id + '__' + n1.id);
-                        if (tagEdgePairs.has(pairKey)) continue;
-                        tagEdgePairs.add(pairKey);
+                    const pairKey = n1.id < n2.id ? (n1.id + '__' + n2.id) : (n2.id + '__' + n1.id);
+                    if (tagEdgePairs.has(pairKey)) continue;
+                    tagEdgePairs.add(pairKey);
 
-                        edges.push({
-                            source: n1,
-                            target: n2,
-                            color: tagColor,
-                            length: 130 + Math.random() * 25,
-                            type: 'tag',
-                            tag: tagText
-                        });
-                    }
-                });
-            }
+                    edges.push({
+                        source: n1,
+                        target: n2,
+                        color: tagColor,
+                        length: 130 + Math.random() * 25,
+                        type: 'tag',
+                        tag: tagText
+                    });
+                }
+            });
 
-            // Оновлюємо лічильник зв'язків
-            const counter = container.querySelector('#graph-nodes-counter');
-            if (counter) {
-                counter.textContent = `${nodes.length} нотаток, ${edges.length} зв'язків`;
-            }
+            // Оновлюємо лічильник активних зв'язків
+            this.updateEdgesCounter();
 
             // Центруємо камеру на старті
             this.resetCamera();
@@ -675,6 +675,15 @@ window.App = window.App || {};
                     chip.classList.toggle('is-active', activeTagFilter === tag);
                 }
             });
+        },
+
+        updateEdgesCounter() {
+            if (!container) return;
+            const counter = container.querySelector('#graph-nodes-counter');
+            if (counter) {
+                const activeEdgesCount = edges.filter(e => !isOrphansOnly && (e.type !== 'tag' || showTagLinks)).length;
+                counter.textContent = `${nodes.length} нотаток, ${activeEdgesCount} зв'язків`;
+            }
         },
 
         showPreviewCard(node, immediate = false) {
@@ -905,6 +914,7 @@ window.App = window.App || {};
 
             // 2. Сила пружин по зв'язках (Hooke's Law: дія та протидія рівні й протилежні)
             edges.forEach(edge => {
+                if (edge.type === 'tag' && !showTagLinks) return;
                 const s = edge.source;
                 const t = edge.target;
                 let dx = t.x - s.x;
