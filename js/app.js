@@ -1,7 +1,7 @@
 // js/app.js - Головна точка входу (ініціалізація та зв''язування компонентів)
 window.App = window.App || {};
 
-document.addEventListener('DOMContentLoaded', () => {
+function bootstrapApp() {
     const welcomeView = window.App.welcomeView;
     const boardManager = window.App.boardManager;
     const noteManager = window.App.noteManager;
@@ -36,6 +36,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         window.App.events.on('welcome:needed', () => {
             welcomeView.show();
+        });
+
+        window.App.events.on('board:switched', () => {
+            if (window.App.historyManager) {
+                window.App.historyManager.updateButtonsState();
+            }
+            welcomeView.hide();
+            sidebarView.render();
+            workspaceView.render();
         });
 
         window.App.events.on('board:renamed', ({ boardId, name }) => {
@@ -128,7 +137,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Початкова перевірка стану
     initApp();
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootstrapApp);
+} else {
+    bootstrapApp();
+}
 
 function initApp() {
     const state = window.App.state;
