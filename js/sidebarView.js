@@ -163,6 +163,14 @@ window.App = window.App || {};
 
             state.activeNoteId = noteId;
 
+            // Синхронізуємо виділення у сайдбарі: скидаємо всі інші виділення і залишаємо тільки активну нотатку
+            if (state.selectedSidebarNoteIds) {
+                state.selectedSidebarNoteIds.clear();
+                if (noteId) {
+                    state.selectedSidebarNoteIds.add(noteId);
+                }
+            }
+
             let needsReRender = false;
 
             if (noteId && autoExpand && noteManager) {
@@ -183,16 +191,17 @@ window.App = window.App || {};
             if (needsReRender) {
                 this.renderNotesList();
             } else if (els && els.notesList) {
-                // Швидке оновлення класів без повного перерендеру DOM (60fps)
-                els.notesList.querySelectorAll('.note-item.is-active-note').forEach(el => {
+                // Швидке оновлення класів: скидаємо будь-які виділення для ВСІХ інших нотаток у лівій панелі
+                els.notesList.querySelectorAll('.note-item.is-active-note, .note-item.is-selected, .note-item.active').forEach(el => {
                     if (el.dataset.id !== noteId) {
-                        el.classList.remove('is-active-note');
+                        el.classList.remove('is-active-note', 'is-selected', 'active');
                     }
                 });
                 if (noteId) {
                     const activeRow = els.notesList.querySelector(`.note-item[data-id="${noteId}"]`);
                     if (activeRow) {
                         activeRow.classList.add('is-active-note');
+                        activeRow.classList.remove('is-selected');
                     }
                 }
             }

@@ -138,11 +138,11 @@ window.App = window.App || {};
                 window.App.sidebarDragDrop.attachDrag(row, itemWrap, note, parentId);
 
                 const isSelected = state.selectedSidebarNoteIds.has(note.id);
-                if (isSelected) {
-                    row.classList.add('is-selected');
-                }
-                if (state.activeNoteId === note.id) {
+                const isActive = (state.activeNoteId === note.id);
+                if (isActive) {
                     row.classList.add('is-active-note');
+                } else if (isSelected) {
+                    row.classList.add('is-selected');
                 }
 
                 row.addEventListener('click', (e) => {
@@ -158,7 +158,7 @@ window.App = window.App || {};
                         // Ctrl + Клік: інвертуємо виділення конкретної нотатки
                         if (state.selectedSidebarNoteIds.has(note.id)) {
                             state.selectedSidebarNoteIds.delete(note.id);
-                            row.classList.remove('is-selected');
+                            row.classList.remove('is-selected', 'is-active-note');
                         } else {
                             state.selectedSidebarNoteIds.add(note.id);
                             row.classList.add('is-selected');
@@ -179,11 +179,15 @@ window.App = window.App || {};
                             }
                         }
                     } else {
-                        // Звичайний клік: виділяємо поточну нотатку та переходимо до неї
+                        // Звичайний клік: скидаємо всі інші виділення і робимо нотатку єдиною активною
                         state.selectedSidebarNoteIds.clear();
-                        allVisibleRows.forEach(r => r.classList.remove('is-selected'));
                         state.selectedSidebarNoteIds.add(note.id);
-                        row.classList.add('is-selected');
+                        state.activeNoteId = note.id;
+
+                        allVisibleRows.forEach(r => {
+                            r.classList.remove('is-selected', 'is-active-note', 'active');
+                        });
+                        row.classList.add('is-active-note');
 
                         if (sidebarView && sidebarView.setActiveNote) {
                             sidebarView.setActiveNote(note.id, { autoExpand: false, scrollIntoView: false });
@@ -207,11 +211,12 @@ window.App = window.App || {};
                         if (el.classList.contains('sidebar-context-menu')) el.remove();
                     });
 
-                    // Виділяємо нотатку
+                    // Виділяємо нотатку як єдину активну
                     state.selectedSidebarNoteIds.clear();
-                    els.notesList.querySelectorAll('.note-item.is-selected').forEach(r => r.classList.remove('is-selected'));
                     state.selectedSidebarNoteIds.add(note.id);
-                    row.classList.add('is-selected');
+                    state.activeNoteId = note.id;
+                    els.notesList.querySelectorAll('.note-item').forEach(r => r.classList.remove('is-selected', 'is-active-note', 'active'));
+                    row.classList.add('is-active-note');
 
                     if (window.App.stickerMenu && window.App.stickerMenu.createDropdown) {
                         const targetCard = document.querySelector(`.note-sticker[data-note-id="${note.id}"]`);

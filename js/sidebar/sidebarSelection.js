@@ -1,4 +1,4 @@
-﻿// js/sidebar/sidebarSelection.js - Модуль рамки виділення мишкою (Marquee Selection) та гарячих клавіш
+// js/sidebar/sidebarSelection.js - Модуль рамки виділення мишкою (Marquee Selection) та гарячих клавіш
 window.App = window.App || {};
 
 (function() {
@@ -106,7 +106,8 @@ window.App = window.App || {};
                     // Якщо це був просто клік у порожнє місце без перетягування — скидаємо виділення
                     if (!isMarquee && !e.ctrlKey && !e.metaKey) {
                         state.selectedSidebarNoteIds.clear();
-                        els.notesList.querySelectorAll('.note-item.is-selected').forEach(el => el.classList.remove('is-selected'));
+                        state.activeNoteId = null;
+                        els.notesList.querySelectorAll('.note-item').forEach(el => el.classList.remove('is-selected', 'is-active-note', 'active'));
                     }
                 };
 
