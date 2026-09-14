@@ -969,6 +969,13 @@ body.is-sidebar-dragging .sidebar-nest-drop-zone.active-hover {
     transform: translateX(18px);
 }
 
+.share-toggle-switch.disabled,
+.share-toggle-switch input:disabled + .share-toggle-slider {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
 .share-link-box {
     display: flex;
     align-items: center;

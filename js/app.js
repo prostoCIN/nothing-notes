@@ -150,8 +150,11 @@ async function handleShareUrlParams() {
 
     if (!window.App.shareManager) return;
 
+    const subnotesParam = urlParams.get('subnotes');
+    const includeSubnotes = subnotesParam !== '0';
+
     try {
-        const info = await window.App.shareManager.fetchShareInfo(shareToken);
+        const info = await window.App.shareManager.fetchShareInfo(shareToken, includeSubnotes);
         if (!info || !info.board || !info.share) {
             window.App.confirmModal.show({
                 title: 'Посилання недійсне',

@@ -61,9 +61,10 @@ window.App = window.App || {};
         /**
          * Отримує інформацію про спільний блокнот за токеном
          * @param {string} shareToken
+         * @param {boolean} includeSubnotes - чи включати вкладені піднотатки (за замовчуванням true)
          * @returns {Promise<Object|null>}
          */
-        async fetchShareInfo(shareToken) {
+        async fetchShareInfo(shareToken, includeSubnotes = true) {
             const supabase = window.App.supabase;
             if (!supabase || !shareToken) return null;
 
@@ -98,16 +99,18 @@ window.App = window.App || {};
                 if (Array.isArray(shareData.note_ids) && shareData.note_ids.length > 0) {
                     const allowedSet = new Set(shareData.note_ids);
                     
-                    // Рекурсивно додаємо дочірні нотатки
-                    let addedMore = true;
-                    while (addedMore) {
-                        addedMore = false;
-                        finalNotes.forEach(n => {
-                            if (n.parent_id && allowedSet.has(n.parent_id) && !allowedSet.has(n.id)) {
-                                allowedSet.add(n.id);
-                                addedMore = true;
-                            }
-                        });
+                    // Рекурсивно додаємо дочірні нотатки, тільки якщо includeSubnotes !== false
+                    if (includeSubnotes !== false) {
+                        let addedMore = true;
+                        while (addedMore) {
+                            addedMore = false;
+                            finalNotes.forEach(n => {
+                                if (n.parent_id && allowedSet.has(n.parent_id) && !allowedSet.has(n.id)) {
+                                    allowedSet.add(n.id);
+                                    addedMore = true;
+                                }
+                            });
+                        }
                     }
 
                     finalNotes = finalNotes.filter(n => allowedSet.has(n.id));
@@ -386,6 +389,7 @@ window.App = window.App || {};
                 }
             });
 
+            const isSingleRoot = rootNotes.length === 1 && !boardTitle;
             const appendNote = (note, depth = 1) => {
                 const rawTitle = (note.title && note.title.trim()) ? note.title.trim() : 'Без назви';
                 const icon = note.icon ? `${note.icon} ` : '';
@@ -394,7 +398,8 @@ window.App = window.App || {};
                     ? note.tags.map(t => `#${t.replace(/\s+/g, '_')}`).join(' ') 
                     : '';
 
-                const prefix = depth === 1 ? '## ' : depth === 2 ? '### ' : '#### ';
+                const effectiveDepth = isSingleRoot ? depth : depth + 1;
+                const prefix = '#'.repeat(Math.min(6, effectiveDepth)) + ' ';
                 out += `${prefix}${icon}${rawTitle}\n\n`;
                 if (tags) {
                     out += `> 🏷️ ${tags}\n\n`;
@@ -452,6 +457,28 @@ window.App = window.App || {};
             const isSpecificNotes = Array.isArray(noteIds) && noteIds.length > 0;
             const singleNote = isSpecificNotes && targetNotes.length === 1 ? targetNotes[0] : null;
 
+            // Збираємо всі дочірні піднотатки (якщо вибрано конкретні нотатки)
+            let subnotes = [];
+            if (isSpecificNotes) {
+                const targetSet = new Set(targetNotes.map(n => n.id));
+                const currentParentIds = new Set(targetSet);
+                let foundMore = true;
+                while (foundMore) {
+                    foundMore = false;
+                    const nextParentIds = new Set();
+                    allAvailableNotes.forEach(n => {
+                        if (n.parentId && currentParentIds.has(n.parentId) && !targetSet.has(n.id) && !subnotes.some(s => s.id === n.id)) {
+                            subnotes.push(n);
+                            nextParentIds.add(n.id);
+                            foundMore = true;
+                        }
+                    });
+                    nextParentIds.forEach(id => currentParentIds.add(id));
+                }
+            }
+            const hasSubnotes = subnotes.length > 0;
+            let includeSubnotes = hasSubnotes; // За замовчуванням увімкнено, якщо є піднотатки
+
             const titleText = singleNote 
                 ? `Поділитись: ${singleNote.title || 'Нотатка'}` 
                 : (isSpecificNotes ? `Поділитись ${targetNotes.length} нотатками` : `Поділитись блокнотом "${targetBoard.name}"`);
@@ -460,8 +487,15 @@ window.App = window.App || {};
                 ? (singleNote.title || 'note') 
                 : (targetBoard.name || 'notes_export');
 
+            const docTitle = isSpecificNotes ? '' : targetBoard.name;
+            const getEffectiveNotes = () => {
+                return (isSpecificNotes && includeSubnotes && hasSubnotes) 
+                    ? [...targetNotes, ...subnotes] 
+                    : [...targetNotes];
+            };
+
             // Формуємо Markdown вміст для вкладки експорту
-            const markdownContent = this.generateMarkdownForNotes(targetNotes, targetBoard.name);
+            let markdownContent = this.generateMarkdownForNotes(getEffectiveNotes(), docTitle);
 
             // Видаляємо старе вікно, якщо було відкрите
             const existing = document.getElementById('share-modal-backdrop');
@@ -506,6 +540,19 @@ window.App = window.App || {};
                                     : 'Будь-хто з цим посиланням зможе додати ваш блокнот для перегляду у NothingNotes.'}
                             </p>
 
+                            ${isSpecificNotes ? `
+                            <div class="share-modal-option-row share-subnotes-row">
+                                <div class="share-option-info">
+                                    <span class="share-option-title">Включати піднотатки</span>
+                                    <span class="share-option-hint">${hasSubnotes ? `Поділитися також усіма вкладеними піднотатками (${subnotes.length})` : 'У цієї нотатки немає вкладених піднотаток'}</span>
+                                </div>
+                                <label class="share-toggle-switch ${!hasSubnotes ? 'disabled' : ''}">
+                                    <input type="checkbox" class="share-subnotes-toggle" ${hasSubnotes ? 'checked' : 'disabled'}>
+                                    <span class="share-toggle-slider"></span>
+                                </label>
+                            </div>
+                            ` : ''}
+
                             <div class="share-modal-option-row">
                                 <div class="share-option-info">
                                     <span class="share-option-title">Дозволити копіювання</span>
@@ -537,6 +584,19 @@ window.App = window.App || {};
                                 Спеціальне посилання з параметром <code>?format=md</code>. Ідеально для <b>ChatGPT</b>, <b>Claude</b>, <b>Perplexity</b>, <b>Gemini</b> або скриптів: за цим URL віддається чистий структурований текст нотатки без важкого інтерфейсу SPA.
                             </p>
 
+                            ${isSpecificNotes ? `
+                            <div class="share-modal-option-row share-subnotes-row">
+                                <div class="share-option-info">
+                                    <span class="share-option-title">Включати піднотатки</span>
+                                    <span class="share-option-hint">${hasSubnotes ? `ШІ отримає доступ також до вкладених піднотаток (${subnotes.length})` : 'У цієї нотатки немає вкладених піднотаток'}</span>
+                                </div>
+                                <label class="share-toggle-switch ${!hasSubnotes ? 'disabled' : ''}">
+                                    <input type="checkbox" class="share-subnotes-toggle" ${hasSubnotes ? 'checked' : 'disabled'}>
+                                    <span class="share-toggle-slider"></span>
+                                </label>
+                            </div>
+                            ` : ''}
+
                             <div class="share-link-box">
                                 <input type="text" class="share-link-input" id="share-ai-link-input" readonly placeholder="Генерація посилання для ШІ...">
                                 <button class="share-copy-btn" id="share-ai-copy-btn">
@@ -567,6 +627,19 @@ window.App = window.App || {};
                             <p class="share-modal-desc">
                                 Вміст нотатки у чистому <b>Markdown</b>-форматі. Можна скопіювати для швидкої вставки в чат з нейромережею або завантажити на пристрій у файлі <code>.md</code>.
                             </p>
+
+                            ${isSpecificNotes ? `
+                            <div class="share-modal-option-row share-subnotes-row" style="margin-bottom: 12px;">
+                                <div class="share-option-info">
+                                    <span class="share-option-title">Включати піднотатки</span>
+                                    <span class="share-option-hint">${hasSubnotes ? `Експортувати разом з усіма вкладеними піднотатками (${subnotes.length})` : 'У цієї нотатки немає вкладених піднотаток'}</span>
+                                </div>
+                                <label class="share-toggle-switch ${!hasSubnotes ? 'disabled' : ''}">
+                                    <input type="checkbox" class="share-subnotes-toggle" ${hasSubnotes ? 'checked' : 'disabled'}>
+                                    <span class="share-toggle-slider"></span>
+                                </label>
+                            </div>
+                            ` : ''}
 
                             <div class="share-markdown-preview-box">
                                 <pre id="share-markdown-pre">${escapeHtml(markdownContent)}</pre>
@@ -649,6 +722,38 @@ window.App = window.App || {};
             let baseShareUrl = '';
             let isGenerating = false;
 
+            const updateMarkdownView = () => {
+                markdownContent = this.generateMarkdownForNotes(getEffectiveNotes(), docTitle);
+                const preEl = modalEl.querySelector('#share-markdown-pre');
+                if (preEl) {
+                    preEl.textContent = markdownContent;
+                }
+            };
+
+            const updateShareLinks = () => {
+                if (!baseShareUrl) return;
+                const subnotesSuffix = (isSpecificNotes && hasSubnotes && !includeSubnotes) ? '&subnotes=0' : '';
+                const nnUrl = `${baseShareUrl}${subnotesSuffix}`;
+                const aiUrl = `${baseShareUrl}&format=md${subnotesSuffix}`;
+
+                if (nnInput) nnInput.value = nnUrl;
+                if (aiInput) aiInput.value = aiUrl;
+                if (aiPreviewLink) aiPreviewLink.href = aiUrl;
+            };
+
+            // Обробники чекбоксів включення піднотаток
+            const subnotesToggles = modalEl.querySelectorAll('.share-subnotes-toggle');
+            subnotesToggles.forEach(toggle => {
+                toggle.addEventListener('change', (e) => {
+                    includeSubnotes = e.target.checked;
+                    subnotesToggles.forEach(t => {
+                        if (t !== e.target) t.checked = includeSubnotes;
+                    });
+                    updateMarkdownView();
+                    updateShareLinks();
+                });
+            });
+
             const generateLinks = async () => {
                 if (isGenerating) return;
                 isGenerating = true;
@@ -666,15 +771,10 @@ window.App = window.App || {};
                     const res = await this.createShareLink(boardId, noteIds, allowClone);
                     baseShareUrl = res.shareUrl;
 
-                    const nnUrl = baseShareUrl;
-                    const aiUrl = `${baseShareUrl}&format=md`;
+                    updateShareLinks();
 
-                    nnInput.value = nnUrl;
-                    aiInput.value = aiUrl;
                     nnCopyBtn.disabled = false;
                     aiCopyBtn.disabled = false;
-
-                    aiPreviewLink.href = aiUrl;
                     aiPreviewLink.style.display = 'inline-flex';
                 } catch (err) {
                     const errMsg = err.message || 'Не вдалося створити посилання. Перевірте авторизацію.';
@@ -784,7 +884,9 @@ window.App = window.App || {};
                 document.body.appendChild(rawPage);
             }
 
-            const cleanNnUrl = window.location.origin + window.location.pathname + `?share_board=${shareInfo.share.share_token}`;
+            const urlParams = new URLSearchParams(window.location.search);
+            const hasSubnotesParam = urlParams.get('subnotes') === '0';
+            const cleanNnUrl = window.location.origin + window.location.pathname + `?share_board=${shareInfo.share.share_token}` + (hasSubnotesParam ? '&subnotes=0' : '');
 
             rawPage.innerHTML = `
                 <div class="raw-markdown-page-card">

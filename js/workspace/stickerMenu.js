@@ -312,7 +312,7 @@ window.App = window.App || {};
         });
         menuDropdown.appendChild(shareItem);
 
-        // 4b. Пункт "Експорт / ШІ (.md)"
+        // 4b. Пункт "Експорт нотатки (.md)"
         const exportItem = document.createElement('div');
         exportItem.className = 'sticker-menu-item';
         exportItem.innerHTML = `
@@ -321,7 +321,7 @@ window.App = window.App || {};
                 <polyline points="7 10 12 15 17 10"></polyline>
                 <line x1="12" y1="15" x2="12" y2="3"></line>
             </svg>
-            <span>Експорт / ШІ (.md)</span>
+            <span>Експорт нотатки (.md)</span>
         `;
         exportItem.addEventListener('click', (e) => {
             e.stopPropagation();
