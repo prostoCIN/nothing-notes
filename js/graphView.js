@@ -32,6 +32,15 @@ window.App = window.App || {};
     let lastMousePos = { x: 0, y: 0 };
     let searchQuery = '';
 
+    // Стан нових інтелектуальних фільтрів та попереднього перегляду
+    let isOrphansOnly = false;
+    let showTagLinks = true;
+    let activeTagFilter = null;
+    let previewCard = null;
+    let previewNode = null;
+    let previewTimeout = null;
+    let isMouseOverPreview = false;
+
     // Кеш для фокусованих піддерев (уникнення повторних алокацій у кожному кадрі)
     let lastFocusNodeId = null;
     let cachedSubtreeIds = null;
@@ -56,6 +65,33 @@ window.App = window.App || {};
         '#14b8a6', // Тіловий (Teal)
         '#eab308'  // Золотистий
     ];
+
+    const TAG_HEX_COLORS = [
+        '#3b82f6', // Синій
+        '#10b981', // Смарагдовий
+        '#f59e0b', // Бурштиновий
+        '#ec4899', // Рожевий
+        '#8b5cf6', // Фіолетовий
+        '#ef4444'  // Червоний
+    ];
+
+    function getTagColor(tagText) {
+        const idx = window.App.getTagColorIndex ? window.App.getTagColorIndex(tagText) : 0;
+        return TAG_HEX_COLORS[idx % TAG_HEX_COLORS.length];
+    }
+
+    function formatTimeAgo(timestamp) {
+        if (!timestamp) return '';
+        const diff = Date.now() - timestamp;
+        const mins = Math.floor(diff / 60000);
+        if (mins < 1) return 'щойно';
+        if (mins < 60) return `${mins} хв тому`;
+        const hours = Math.floor(mins / 60);
+        if (hours < 24) return `${hours} год тому`;
+        const days = Math.floor(hours / 24);
+        if (days < 30) return `${days} дн тому`;
+        return new Date(timestamp).toLocaleDateString('uk-UA');
+    }
 
     function getBranchColor(rootId, index) {
         if (typeof index === 'number') {
@@ -110,6 +146,18 @@ window.App = window.App || {};
                         <span class="graph-nodes-count" id="graph-nodes-counter">0 зв'язків</span>
                     </div>
 
+                    <div class="graph-toolbar-filters">
+                        <button class="graph-toolbar-filter-btn is-orphans-btn" id="graph-filter-orphans" title="Показати лише ізольовані нотатки без піднотаток та батьків">
+                            <span class="filter-btn-icon">🏝️</span>
+                            <span class="filter-btn-label">Сироти</span>
+                            <span class="filter-btn-badge" id="graph-orphans-counter">0</span>
+                        </button>
+                        <button class="graph-toolbar-filter-btn is-active" id="graph-toggle-tag-links" title="Увімкнути/вимкнути пунктирні зв'язки між нотатками зі спільними тегами">
+                            <span class="filter-btn-icon">🏷️</span>
+                            <span class="filter-btn-label">Зв'язки тегів</span>
+                        </button>
+                    </div>
+
                     <div class="graph-top-actions">
                         <div class="graph-search-box">
                             <input type="text" class="graph-search-input" id="graph-search-input" placeholder="Пошук у графі зв'язків..." autocomplete="off">
@@ -124,8 +172,32 @@ window.App = window.App || {};
                     </div>
                 </div>
 
+                <div class="graph-tags-bar" id="graph-tags-bar" style="display: none;"></div>
+
                 <canvas class="graph-canvas" id="graph-canvas"></canvas>
                 <div class="graph-nodes-layer" id="graph-nodes-layer"></div>
+
+                <div class="graph-preview-card" id="graph-preview-card" style="display: none;">
+                    <button class="graph-preview-close" id="graph-preview-close" title="Закрити прев'ю">×</button>
+                    <div class="graph-preview-header">
+                        <span class="graph-preview-icon" id="graph-preview-icon">📄</span>
+                        <div class="graph-preview-title-wrap">
+                            <h4 class="graph-preview-title" id="graph-preview-title"></h4>
+                            <div class="graph-preview-badges" id="graph-preview-badges"></div>
+                        </div>
+                    </div>
+                    <div class="graph-preview-tags" id="graph-preview-tags"></div>
+                    <div class="graph-preview-body" id="graph-preview-body"></div>
+                    <div class="graph-preview-footer">
+                        <span class="graph-preview-meta" id="graph-preview-meta"></span>
+                        <button class="graph-preview-open-btn" id="graph-preview-open-btn">
+                            <span>Відкрити нотатку</span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
 
                 <div class="graph-controls-panel">
                     <button class="graph-ctrl-btn" id="graph-zoom-in" title="Наблизити (+)">
@@ -140,7 +212,7 @@ window.App = window.App || {};
                         </svg>
                     </button>
                     <button class="graph-ctrl-btn" id="graph-reset-view" title="Скинути камеру / Центрувати">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="10"></circle>
                             <circle cx="12" cy="12" r="3"></circle>
                         </svg>
@@ -150,13 +222,17 @@ window.App = window.App || {};
                 <div class="graph-legend-pill">
                     <div class="graph-legend-item">
                         <span class="graph-legend-dot root"></span>
-                        <span>Рівень 0 (Корінь)</span>
+                        <span>Корінь</span>
                     </div>
                     <div class="graph-legend-item">
                         <span class="graph-legend-dot subnote"></span>
-                        <span>Рівні 1+ (Піднотатки)</span>
+                        <span>Піднотатки</span>
                     </div>
-                    <span class="graph-legend-hint">Наведення фокусує гілку вниз, клік відкриває нотатку</span>
+                    <div class="graph-legend-item">
+                        <span class="graph-legend-dot" style="background: #f59e0b; border: 1px dashed #f59e0b;"></span>
+                        <span>Спільні теги</span>
+                    </div>
+                    <span class="graph-legend-hint">Наведення відкриває прев'ю, клік відкриває в робочій області</span>
                 </div>
             `;
 
@@ -166,6 +242,7 @@ window.App = window.App || {};
             ctx = canvas.getContext('2d');
             nodesLayer = container.querySelector('#graph-nodes-layer');
             searchInput = container.querySelector('#graph-search-input');
+            previewCard = container.querySelector('#graph-preview-card');
 
             this.bindDOMEvents();
         },
@@ -175,6 +252,54 @@ window.App = window.App || {};
 
             const clearBtn = container.querySelector('#graph-search-clear-btn');
             const searchIconRight = container.querySelector('#graph-search-icon-right');
+            const orphansBtn = container.querySelector('#graph-filter-orphans');
+            const tagLinksBtn = container.querySelector('#graph-toggle-tag-links');
+            const previewCloseBtn = container.querySelector('#graph-preview-close');
+
+            // 1. Фільтр Сироти (Orphans)
+            if (orphansBtn) {
+                orphansBtn.classList.toggle('is-active', isOrphansOnly);
+                orphansBtn.addEventListener('click', () => {
+                    isOrphansOnly = !isOrphansOnly;
+                    orphansBtn.classList.toggle('is-active', isOrphansOnly);
+                    this.hidePreviewCard(true);
+                    this.draw();
+                });
+            }
+
+            // 2. Перемикач зв'язків за тегами
+            if (tagLinksBtn) {
+                tagLinksBtn.classList.toggle('is-active', showTagLinks);
+                tagLinksBtn.addEventListener('click', () => {
+                    showTagLinks = !showTagLinks;
+                    tagLinksBtn.classList.toggle('is-active', showTagLinks);
+                    this.hidePreviewCard(true);
+                    this.buildGraphData();
+                    this.wakeUpSimulation();
+                });
+            }
+
+            // 3. Події картки швидкого перегляду
+            if (previewCard) {
+                previewCard.addEventListener('pointerenter', () => {
+                    isMouseOverPreview = true;
+                    if (previewTimeout) {
+                        clearTimeout(previewTimeout);
+                        previewTimeout = null;
+                    }
+                });
+                previewCard.addEventListener('pointerleave', () => {
+                    isMouseOverPreview = false;
+                    this.hidePreviewCard();
+                });
+            }
+
+            if (previewCloseBtn) {
+                previewCloseBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.hidePreviewCard(true);
+                });
+            }
 
             // Пошук
             if (searchInput) {
@@ -211,6 +336,8 @@ window.App = window.App || {};
                     }
                 } else if ((e.key === 'Escape' || e.key === 'Enter') && document.activeElement === searchInput) {
                     searchInput.blur();
+                } else if (e.key === 'Escape' && previewCard && previewCard.classList.contains('active')) {
+                    this.hidePreviewCard(true);
                 }
             };
 
@@ -227,6 +354,12 @@ window.App = window.App || {};
 
             // Canvas події
             canvas.addEventListener('pointerdown', this.onPointerDown.bind(this));
+            canvas.addEventListener('dblclick', (e) => {
+                const targetNode = this.getNodeAt(e.clientX, e.clientY);
+                if (targetNode) {
+                    this.openNoteInWorkspace(targetNode.id);
+                }
+            });
             canvas.addEventListener('wheel', this.onWheel.bind(this), { passive: false });
 
             // Глобальні події вікна з можливістю чистого відписування
@@ -335,13 +468,14 @@ window.App = window.App || {};
                     isRoot: isRoot,
                     level: noteLevel,
                     parentId: note.parentId || null,
-                    tags: Array.isArray(note.tags) ? note.tags : (note.tag ? [note.tag.text || note.tag] : []),
+                    tags: window.App.noteManager ? window.App.noteManager.getNoteTags(note) : (Array.isArray(note.tags) ? note.tags : (note.tag ? [note.tag.text || note.tag] : [])),
                     radius: radius,
                     x: centerX + Math.cos(angle) * dist,
                     y: centerY + Math.sin(angle) * dist,
                     vx: 0,
                     vy: 0,
-                    childCount: 0
+                    childCount: 0,
+                    isOrphan: false
                 };
 
                 if (nodesLayer) {
@@ -387,10 +521,75 @@ window.App = window.App || {};
                         source: parentNode,
                         target: node,
                         color: parentNode.branchColor || node.branchColor || '#10b981',
-                        length: 90 + Math.random() * 20
+                        length: 90 + Math.random() * 20,
+                        type: 'hierarchy'
                     });
                 }
             });
+
+            // 3. Розрахунок ізольованих нотаток (сиріт)
+            let orphansCount = 0;
+            nodes.forEach(node => {
+                node.isOrphan = !node.parentId && (node.childCount === 0);
+                if (node.isOrphan) {
+                    orphansCount++;
+                    if (node.element) {
+                        node.element.classList.add('is-orphan');
+                    }
+                }
+            });
+
+            const orphansCounter = container.querySelector('#graph-orphans-counter');
+            if (orphansCounter) {
+                orphansCounter.textContent = orphansCount;
+            }
+
+            // 4. Формуємо зв'язки за спільними тегами та панель тегів
+            const tagToNodes = new Map();
+            const tagsCountMap = new Map();
+            nodes.forEach(node => {
+                (node.tags || []).forEach(t => {
+                    const tagText = (typeof t === 'string' ? t : (t.text || '')).trim();
+                    if (!tagText) return;
+                    if (!tagToNodes.has(tagText)) tagToNodes.set(tagText, []);
+                    tagToNodes.get(tagText).push(node);
+                    tagsCountMap.set(tagText, (tagsCountMap.get(tagText) || 0) + 1);
+                });
+            });
+
+            this.renderTagsBar(tagsCountMap);
+
+            if (showTagLinks) {
+                const tagEdgePairs = new Set();
+                const hasHierarchyEdge = (n1, n2) => (n1.parentId === n2.id || n2.parentId === n1.id);
+
+                tagToNodes.forEach((taggedNodes, tagText) => {
+                    if (taggedNodes.length < 2) return;
+                    const tagColor = getTagColor(tagText);
+
+                    for (let i = 0; i < taggedNodes.length; i++) {
+                        const nextIdx = (i + 1) % taggedNodes.length;
+                        if (taggedNodes.length === 2 && i === 1) break;
+
+                        const n1 = taggedNodes[i];
+                        const n2 = taggedNodes[nextIdx];
+                        if (n1 === n2 || hasHierarchyEdge(n1, n2)) continue;
+
+                        const pairKey = n1.id < n2.id ? (n1.id + '__' + n2.id) : (n2.id + '__' + n1.id);
+                        if (tagEdgePairs.has(pairKey)) continue;
+                        tagEdgePairs.add(pairKey);
+
+                        edges.push({
+                            source: n1,
+                            target: n2,
+                            color: tagColor,
+                            length: 130 + Math.random() * 25,
+                            type: 'tag',
+                            tag: tagText
+                        });
+                    }
+                });
+            }
 
             // Оновлюємо лічильник зв'язків
             const counter = container.querySelector('#graph-nodes-counter');
@@ -404,6 +603,223 @@ window.App = window.App || {};
             // Warm-up Physics: розгортаємо граф за кілька швидких ітерацій
             for (let i = 0; i < 40; i++) {
                 this.updatePhysics();
+            }
+        },
+
+        renderTagsBar(tagsCountMap) {
+            const bar = container ? container.querySelector('#graph-tags-bar') : null;
+            if (!bar) return;
+
+            if (!tagsCountMap || tagsCountMap.size === 0) {
+                bar.style.display = 'none';
+                bar.innerHTML = '';
+                return;
+            }
+
+            bar.style.display = 'flex';
+            bar.innerHTML = '';
+
+            // Кнопка "Всі нотатки"
+            const allBtn = document.createElement('button');
+            allBtn.className = 'graph-tag-chip' + (activeTagFilter === null ? ' is-active' : '');
+            allBtn.innerHTML = `
+                <span class="graph-tag-dot" style="background: #10b981;"></span>
+                <span class="graph-tag-name">Всі нотатки</span>
+                <span class="graph-tag-count">${nodes.length}</span>
+            `;
+            allBtn.addEventListener('click', () => {
+                activeTagFilter = null;
+                this.updateTagsBarActive();
+                this.hidePreviewCard(true);
+                this.draw();
+            });
+            bar.appendChild(allBtn);
+
+            // Сортуємо теги за спаданням кількості
+            const sortedTags = Array.from(tagsCountMap.entries()).sort((a, b) => b[1] - a[1]);
+
+            sortedTags.forEach(([tagText, count]) => {
+                const color = getTagColor(tagText);
+                const chip = document.createElement('button');
+                chip.className = 'graph-tag-chip' + (activeTagFilter === tagText ? ' is-active' : '');
+                chip.dataset.tag = tagText;
+                chip.innerHTML = `
+                    <span class="graph-tag-dot" style="background: ${color};"></span>
+                    <span class="graph-tag-name">#${tagText}</span>
+                    <span class="graph-tag-count">${count}</span>
+                `;
+
+                chip.addEventListener('click', () => {
+                    if (activeTagFilter === tagText) {
+                        activeTagFilter = null;
+                    } else {
+                        activeTagFilter = tagText;
+                    }
+                    this.updateTagsBarActive();
+                    this.hidePreviewCard(true);
+                    this.draw();
+                });
+
+                bar.appendChild(chip);
+            });
+        },
+
+        updateTagsBarActive() {
+            const bar = container ? container.querySelector('#graph-tags-bar') : null;
+            if (!bar) return;
+            bar.querySelectorAll('.graph-tag-chip').forEach(chip => {
+                const tag = chip.dataset.tag;
+                if (!tag) {
+                    chip.classList.toggle('is-active', activeTagFilter === null);
+                } else {
+                    chip.classList.toggle('is-active', activeTagFilter === tag);
+                }
+            });
+        },
+
+        showPreviewCard(node, immediate = false) {
+            if (!node || !previewCard) return;
+            if (previewTimeout) {
+                clearTimeout(previewTimeout);
+                previewTimeout = null;
+            }
+
+            if (immediate) {
+                this.renderPreviewCard(node);
+            } else {
+                previewTimeout = setTimeout(() => {
+                    this.renderPreviewCard(node);
+                }, 120);
+            }
+        },
+
+        renderPreviewCard(node) {
+            if (!node || !previewCard) return;
+            previewNode = node;
+
+            const iconEl = previewCard.querySelector('#graph-preview-icon');
+            const titleEl = previewCard.querySelector('#graph-preview-title');
+            const badgesEl = previewCard.querySelector('#graph-preview-badges');
+            const tagsEl = previewCard.querySelector('#graph-preview-tags');
+            const bodyEl = previewCard.querySelector('#graph-preview-body');
+            const metaEl = previewCard.querySelector('#graph-preview-meta');
+            const openBtn = previewCard.querySelector('#graph-preview-open-btn');
+
+            if (iconEl) iconEl.textContent = node.icon;
+            if (titleEl) titleEl.textContent = node.title;
+
+            if (badgesEl) {
+                let badgesHtml = '';
+                if (node.isOrphan) {
+                    badgesHtml += `<span class="preview-badge preview-badge-orphan">🏝️ Сирота</span>`;
+                }
+                if (node.isRoot) {
+                    badgesHtml += `<span class="preview-badge preview-badge-root">Коренева</span>`;
+                } else {
+                    badgesHtml += `<span class="preview-badge preview-badge-level">Рівень ${node.level}</span>`;
+                }
+                if (node.childCount > 0) {
+                    badgesHtml += `<span class="preview-badge preview-badge-subs">${node.childCount} ${node.childCount === 1 ? 'піднотатка' : (node.childCount < 5 ? 'піднотатки' : 'піднотаток')}</span>`;
+                }
+                badgesEl.innerHTML = badgesHtml;
+            }
+
+            if (tagsEl) {
+                if (node.tags && node.tags.length > 0) {
+                    tagsEl.innerHTML = node.tags.map(t => {
+                        const tagText = typeof t === 'string' ? t : (t.text || '');
+                        const color = getTagColor(tagText);
+                        return `<span class="graph-preview-tag" style="background: ${color}22; color: ${color}; border: 1px solid ${color}55;">#${tagText}</span>`;
+                    }).join('');
+                    tagsEl.style.display = 'flex';
+                } else {
+                    tagsEl.innerHTML = '';
+                    tagsEl.style.display = 'none';
+                }
+            }
+
+            if (bodyEl) {
+                if (node.content && node.content.trim()) {
+                    bodyEl.classList.remove('is-empty');
+                    const text = node.content.trim();
+                    bodyEl.textContent = text.length > 200 ? text.slice(0, 200) + '...' : text;
+                } else {
+                    bodyEl.classList.add('is-empty');
+                    bodyEl.textContent = 'Порожня нотатка';
+                }
+            }
+
+            if (metaEl) {
+                const rawNote = window.App.noteManager ? window.App.noteManager.getNoteById(node.id) : null;
+                const timeStr = rawNote && rawNote.updatedAt ? `Змінено ${formatTimeAgo(rawNote.updatedAt)}` : '';
+                metaEl.textContent = timeStr;
+            }
+
+            if (openBtn) {
+                openBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    this.openNoteInWorkspace(node.id);
+                };
+            }
+
+            previewCard.style.display = 'block';
+            previewCard.classList.add('active');
+            this.updatePreviewPosition(node);
+        },
+
+        updatePreviewPosition(node) {
+            if (!previewCard || !node || !container) return;
+
+            const screenPos = this.worldToScreen(node.x, node.y);
+            const cRect = container.getBoundingClientRect();
+            const pRect = previewCard.getBoundingClientRect();
+
+            const cardWidth = pRect.width || 320;
+            const cardHeight = pRect.height || 180;
+            const padding = 16;
+
+            let left = screenPos.x + (node.radius * camera.zoom) + 16;
+            let top = screenPos.y - 45;
+
+            // Якщо картка виходить за правий край — відображаємо зліва від вузла
+            if (left + cardWidth > cRect.width - padding) {
+                left = screenPos.x - (node.radius * camera.zoom) - cardWidth - 16;
+            }
+
+            // Межі екрана
+            if (left < padding) left = padding;
+            if (top + cardHeight > cRect.height - padding) {
+                top = Math.max(padding + 60, cRect.height - cardHeight - padding);
+            }
+            if (top < padding + 55) {
+                top = padding + 55;
+            }
+
+            previewCard.style.left = `${left}px`;
+            previewCard.style.top = `${top}px`;
+        },
+
+        hidePreviewCard(immediate = false) {
+            if (previewTimeout) {
+                clearTimeout(previewTimeout);
+                previewTimeout = null;
+            }
+
+            if (isMouseOverPreview && !immediate) return;
+
+            const doHide = () => {
+                if (isMouseOverPreview && !immediate) return;
+                if (previewCard) {
+                    previewCard.style.display = 'none';
+                    previewCard.classList.remove('active');
+                }
+                previewNode = null;
+            };
+
+            if (immediate) {
+                doHide();
+            } else {
+                previewTimeout = setTimeout(doHide, 220);
             }
         },
 
@@ -495,7 +911,8 @@ window.App = window.App || {};
                 let dy = t.y - s.y;
                 let dist = Math.sqrt(dx * dx + dy * dy) || 1;
                 let displacement = dist - edge.length;
-                let force = displacement * springK;
+                const k = (edge.type === 'tag') ? (springK * 0.35) : springK;
+                let force = displacement * k;
 
                 let fx = (dx / dist) * force;
                 let fy = (dy / dist) * force;
@@ -618,16 +1035,40 @@ window.App = window.App || {};
 
             // 1. Малювання зв'язків (Edges)
             edges.forEach(edge => {
+                // Якщо увімкнено фільтр "Лише сироти", зв'язки графу не відображаються
+                if (isOrphansOnly) return;
+
+                // Якщо тип - тег, і тегові зв'язки вимкнено - пропускаємо
+                if (edge.type === 'tag' && !showTagLinks) return;
+
+                const isTagEdge = (edge.type === 'tag');
+
+                // Перевірка активного фільтра за тегами
+                const sourceMatchesTag = !activeTagFilter || (edge.source.tags && edge.source.tags.some(t => (typeof t === 'string' ? t : (t.text || '')) === activeTagFilter));
+                const targetMatchesTag = !activeTagFilter || (edge.target.tags && edge.target.tags.some(t => (typeof t === 'string' ? t : (t.text || '')) === activeTagFilter));
+                const edgeMatchesTagFilter = sourceMatchesTag && targetMatchesTag;
+
                 const isHighlighted = !!(activeSubtreeIds &&
                     activeSubtreeIds.has(edge.source.id) &&
                     activeSubtreeIds.has(edge.target.id));
+
                 const branchColor = edge.color || edge.source.branchColor || '#10b981';
 
                 ctx.beginPath();
                 ctx.moveTo(edge.source.x, edge.source.y);
                 ctx.lineTo(edge.target.x, edge.target.y);
 
-                if (isHighlighted) {
+                if (isTagEdge) {
+                    ctx.setLineDash([5, 4]);
+                } else {
+                    ctx.setLineDash([]);
+                }
+
+                if (activeTagFilter && !edgeMatchesTagFilter) {
+                    ctx.strokeStyle = branchColor + '10';
+                    ctx.lineWidth = 0.7 / camera.zoom;
+                    ctx.shadowBlur = 0;
+                } else if (isHighlighted) {
                     ctx.strokeStyle = branchColor;
                     ctx.lineWidth = (draggedNode ? 3.0 : 2.5) / camera.zoom;
                     ctx.shadowColor = branchColor;
@@ -636,6 +1077,11 @@ window.App = window.App || {};
                     ctx.strokeStyle = branchColor + '15';
                     ctx.lineWidth = 0.8 / camera.zoom;
                     ctx.shadowBlur = 0;
+                } else if (isTagEdge) {
+                    ctx.strokeStyle = branchColor + (activeTagFilter ? 'dd' : '90');
+                    ctx.lineWidth = (activeTagFilter ? 2.0 : 1.3) / camera.zoom;
+                    ctx.shadowBlur = activeTagFilter ? 8 : 0;
+                    ctx.shadowColor = branchColor;
                 } else {
                     ctx.strokeStyle = branchColor + '40';
                     ctx.lineWidth = 1.2 / camera.zoom;
@@ -646,25 +1092,45 @@ window.App = window.App || {};
                 ctx.shadowBlur = 0;
             });
 
+            ctx.setLineDash([]);
+
             // 2. Оновлення стану та позицій HTML-вершин
             nodes.forEach(node => {
                 if (!node.element) return;
 
-                const isMatch = searchQuery === '' || node.title.toLowerCase().includes(searchQuery) || node.content.toLowerCase().includes(searchQuery);
+                const isSearchMatch = searchQuery === '' || node.title.toLowerCase().includes(searchQuery) || node.content.toLowerCase().includes(searchQuery);
+                const isOrphanMatch = !isOrphansOnly || node.isOrphan;
+                const isTagMatch = !activeTagFilter || (node.tags && node.tags.some(t => (typeof t === 'string' ? t : (t.text || '')) === activeTagFilter));
+
+                const isOverallMatch = isSearchMatch && isOrphanMatch && isTagMatch;
+
                 const isDragging = (draggedNode === node);
                 const isHovered = (hoveredNode === node && !draggedNode);
                 const isInSubtree = activeSubtreeIds && activeSubtreeIds.has(node.id);
                 const isConnected = isInSubtree && !isHovered && !isDragging;
 
+                const hasActiveFilter = (searchQuery !== '' || isOrphansOnly || activeTagFilter !== null);
+                let isFaded = false;
+                if (hasActiveFilter) {
+                    isFaded = !isOverallMatch;
+                } else if (activeSubtreeIds) {
+                    isFaded = !isInSubtree;
+                }
+
                 node.element.classList.toggle('is-dragging', isDragging);
                 node.element.classList.toggle('is-hovered', isHovered);
                 node.element.classList.toggle('is-connected', isConnected);
-                node.element.classList.toggle('is-match', isMatch && searchQuery !== '');
-                node.element.classList.toggle('is-faded', searchQuery ? !isMatch : (activeSubtreeIds && !isInSubtree));
+                node.element.classList.toggle('is-orphan', !!node.isOrphan && isOrphansOnly);
+                node.element.classList.toggle('is-match', isOverallMatch && hasActiveFilter);
+                node.element.classList.toggle('is-faded', isFaded);
 
                 node.element.style.left = node.x + 'px';
                 node.element.style.top = node.y + 'px';
             });
+
+            if (previewNode && previewCard && previewCard.classList.contains('active')) {
+                this.updatePreviewPosition(previewNode);
+            }
 
             if (nodesLayer) {
                 nodesLayer.style.transform = 'translate(' + camera.x + 'px, ' + camera.y + 'px) scale(' + camera.zoom + ') translate(' + (-width / 2) + 'px, ' + (-height / 2) + 'px)';
@@ -723,12 +1189,15 @@ window.App = window.App || {};
 
         cleanup() {
             this.stopSimulation();
+            this.hidePreviewCard(true);
             nodes = [];
             edges = [];
             hoveredNode = null;
             draggedNode = null;
             lastFocusNodeId = null;
             cachedSubtreeIds = null;
+            isOrphansOnly = false;
+            activeTagFilter = null;
         },
 
         destroy() {
@@ -741,6 +1210,7 @@ window.App = window.App || {};
             ctx = null;
             nodesLayer = null;
             searchInput = null;
+            previewCard = null;
         },
 
         // Перетворення координат
@@ -780,11 +1250,13 @@ window.App = window.App || {};
                 isDraggingNode = true;
                 draggedNode = targetNode;
                 hoveredNode = targetNode;
+                this.showPreviewCard(targetNode, true);
                 this.wakeUpSimulation();
             } else {
                 isDraggingCanvas = true;
                 hoveredNode = null;
                 draggedNode = null;
+                this.hidePreviewCard(true);
                 this.draw();
             }
         },
@@ -802,10 +1274,12 @@ window.App = window.App || {};
                 draggedNode.y = world.y;
                 draggedNode.vx = 0;
                 draggedNode.vy = 0;
+                this.hidePreviewCard(true);
                 this.wakeUpSimulation();
             } else if (isDraggingCanvas) {
                 camera.x += dx;
                 camera.y += dy;
+                this.hidePreviewCard(true);
                 this.draw();
             } else {
                 const isTouchDevice = e.pointerType === 'touch' || window.matchMedia('(hover: none)').matches || window.innerWidth <= 768;
@@ -813,6 +1287,11 @@ window.App = window.App || {};
                     const hovered = this.getNodeAt(e.clientX, e.clientY);
                     if (hovered !== hoveredNode) {
                         hoveredNode = hovered;
+                        if (hoveredNode) {
+                            this.showPreviewCard(hoveredNode);
+                        } else {
+                            this.hidePreviewCard();
+                        }
                         this.draw();
                     }
                 } else {
@@ -829,8 +1308,8 @@ window.App = window.App || {};
             const isTouchDevice = e.pointerType === 'touch' || window.matchMedia('(hover: none)').matches || window.innerWidth <= 768;
 
             if (distMoved < 6 && draggedNode) {
-                const clickedNoteId = draggedNode.id;
-                this.openNoteInWorkspace(clickedNoteId);
+                const clickedNode = draggedNode;
+                this.showPreviewCard(clickedNode, true);
             }
 
             isDraggingCanvas = false;
