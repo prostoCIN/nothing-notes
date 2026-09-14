@@ -280,7 +280,7 @@ window.App = window.App || {};
                         await window.App.imageDb.clearAll();
                     }
                     if (window.App.historyManager) {
-                        window.App.historyManager.reset();
+                        window.App.historyManager.reset(true);
                     }
 
                     if (window.App.sidebarView) {

@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         window.App.events.on('board:changed', () => {
             if (window.App.historyManager) {
-                window.App.historyManager.reset();
+                window.App.historyManager.updateButtonsState();
             }
             if (window.App.state) {
                 window.App.state.stretchedColumnKey = null;
