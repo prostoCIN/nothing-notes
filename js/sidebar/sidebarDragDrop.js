@@ -63,6 +63,15 @@ window.App = window.App || {};
                 let shiftY = 0;
                 let activeNestDropZone = null;
                 let activeOpenPocket = null;
+                let lastClientX = startX;
+                let lastClientY = startY;
+
+                const notesScroller = window.App.dragUtils.createAutoScroller(notesList, {
+                    edgeThreshold: 60,
+                    maxSpeed: 18,
+                    vertical: true,
+                    horizontal: false
+                });
 
                 const clearActiveNestZone = () => {
                     if (activeNestDropZone) {
@@ -77,7 +86,182 @@ window.App = window.App || {};
                     document.body.classList.remove('is-sidebar-pocket-open');
                 };
 
+                const updatePositions = (clientX, clientY) => {
+                    itemWrap.style.left = `${clientX - shiftX}px`;
+                    itemWrap.style.top = `${clientY - shiftY}px`;
+
+                    // 1. Перевірка наведення на шапку "НОТАТКИ" (винесення піднотатки в корінь)
+                    const notesHeader = document.querySelector('.notes-header');
+                    if (notesHeader && parentId !== null) {
+                        const headerRect = notesHeader.getBoundingClientRect();
+                        if (
+                            clientY >= headerRect.top &&
+                            clientY <= headerRect.bottom &&
+                            clientX >= headerRect.left &&
+                            clientX <= headerRect.right
+                        ) {
+                            notesHeader.classList.add('sidebar-root-drop-target');
+                            if (placeholder) placeholder.style.display = 'none';
+                            clearActiveNestZone();
+                            return;
+                        } else {
+                            notesHeader.classList.remove('sidebar-root-drop-target');
+                        }
+                    }
+
+                    // 2. Перевірка наведення на іконку стрілочки праворуч (.sidebar-nest-drop-zone) або на саму розкриту кишеню (.sidebar-nest-pocket)
+                    let isInsideActivePocketZone = false;
+
+                    if (activeOpenPocket) {
+                        const pocketRect = activeOpenPocket.getBoundingClientRect();
+                        // Буферна зона навколо відкритої кишені (гістерезис), щоб вона не закривалася від випадкового мікро-руху
+                        if (
+                            clientX >= pocketRect.left - 25 &&
+                            clientX <= pocketRect.right + 25 &&
+                            clientY >= pocketRect.top - 12 &&
+                            clientY <= pocketRect.bottom + 15
+                        ) {
+                            isInsideActivePocketZone = true;
+                            if (
+                                clientX >= pocketRect.left &&
+                                clientX <= pocketRect.right &&
+                                clientY >= pocketRect.top &&
+                                clientY <= pocketRect.bottom
+                            ) {
+                                activeOpenPocket.classList.add('active-hover');
+                            } else {
+                                activeOpenPocket.classList.remove('active-hover');
+                            }
+                        }
+                    }
+
+                    const allNestZones = [...notesList.querySelectorAll('.sidebar-nest-drop-zone')];
+                    let hoveredNestZone = null;
+
+                    for (const zone of allNestZones) {
+                        if (invalidTargetIds.has(zone.dataset.targetId)) continue;
+                        const zRect = zone.getBoundingClientRect();
+                        const parentRow = zone.closest('.note-item');
+                        const rowRect = parentRow ? parentRow.getBoundingClientRect() : zRect;
+
+                        // Спрацьовує або прямо на кнопці зі стрілкою, або у правій половині рядка нотатки
+                        const isOverRightZone = parentRow && 
+                            (clientX >= rowRect.left + rowRect.width * 0.45 && clientX <= rowRect.right + 25) &&
+                            (clientY >= rowRect.top - 4 && clientY <= rowRect.bottom + 4);
+
+                        const isOverNestBtn = (
+                            clientX >= zRect.left - 15 &&
+                            clientX <= zRect.right + 25 &&
+                            clientY >= zRect.top - 12 &&
+                            clientY <= zRect.bottom + 12
+                        );
+
+                        if (isOverRightZone || isOverNestBtn) {
+                            hoveredNestZone = zone;
+                            break;
+                        }
+                    }
+
+                    if (hoveredNestZone) {
+                        if (activeNestDropZone !== hoveredNestZone) {
+                            if (activeNestDropZone) activeNestDropZone.classList.remove('active-hover');
+                            activeNestDropZone = hoveredNestZone;
+                            activeNestDropZone.classList.add('active-hover');
+
+                            // Відкриваємо кишеню знизу цієї нотатки
+                            const parentNode = hoveredNestZone.closest('.sidebar-note-tree-node');
+                            const targetPocket = parentNode ? parentNode.querySelector('.sidebar-nest-pocket') : null;
+                            if (activeOpenPocket && activeOpenPocket !== targetPocket) {
+                                activeOpenPocket.classList.remove('is-open');
+                                activeOpenPocket.classList.remove('active-hover');
+                            }
+                            if (targetPocket) {
+                                activeOpenPocket = targetPocket;
+                                activeOpenPocket.classList.add('is-open');
+                                document.body.classList.add('is-sidebar-pocket-open');
+                            }
+                        }
+                        isInsideActivePocketZone = true;
+                    } else if (!isInsideActivePocketZone) {
+                        // Курсор дійсно виведений далеко за межі іконки та буферної зони кишені — закриваємо
+                        clearActiveNestZone();
+                    }
+
+                    // 3. ПОВНЕ БЛОКУВАННЯ: якщо кишеня відкрита або активна — повністю блокуємо стрибки плейсхолдера
+                    if (isInsideActivePocketZone || activeOpenPocket) {
+                        if (placeholder) {
+                            placeholder.style.display = 'none';
+                        }
+                        return;
+                    } else {
+                        if (placeholder) {
+                            placeholder.style.display = '';
+                        }
+                    }
+
+                    // 4. Звичайне переміщення між нотатками за допомогою плейсхолдера
+                    let targetContainer = notesList; // За замовчуванням головний рівень (корінь)
+
+                    // Шукаємо найбільш вкладений (глибокий) відкритий підсписок, якщо курсор знаходиться праворуч із відступом
+                    const allSubLists = [...notesList.querySelectorAll('.sidebar-subnotes-list')];
+                    for (let i = allSubLists.length - 1; i >= 0; i--) {
+                        const subList = allSubLists[i];
+                        const subRect = subList.getBoundingClientRect();
+                        if (
+                            clientY >= subRect.top &&
+                            clientY <= subRect.bottom &&
+                            clientX >= subRect.left - 10
+                        ) {
+                            targetContainer = subList;
+                            break;
+                        }
+                    }
+
+                    // Виключаємо всі вузли, які зараз перетягуються (всю виділену групу)
+                    const siblings = [...targetContainer.children].filter(el => {
+                        if (el === itemWrap || el === placeholder || !el.classList.contains('sidebar-note-tree-node')) return false;
+                        const r = el.querySelector('.note-item');
+                        const id = r ? r.dataset.id : null;
+                        return !draggedNoteIds.includes(id);
+                    });
+                    const oldPositions = new Map();
+                    siblings.forEach(s => oldPositions.set(s, s.getBoundingClientRect()));
+
+                    let targetSibling = null;
+
+                    for (const sibling of siblings) {
+                        const rect = sibling.getBoundingClientRect();
+                        const middleY = rect.top + rect.height / 2;
+                        if (clientY < middleY) {
+                            targetSibling = sibling;
+                            break;
+                        }
+                    }
+
+                    let positionChanged = false;
+                    if (targetSibling) {
+                        if (placeholder.nextElementSibling !== targetSibling || placeholder.parentNode !== targetContainer) {
+                            targetContainer.insertBefore(placeholder, targetSibling);
+                            positionChanged = true;
+                        }
+                    } else {
+                        if (placeholder !== targetContainer.lastElementChild || placeholder.parentNode !== targetContainer) {
+                            targetContainer.appendChild(placeholder);
+                            positionChanged = true;
+                        }
+                    }
+
+                    // Плавна анімація розсування сусідніх нотаток через DragUtils
+                    if (positionChanged) {
+                        window.App.dragUtils.animateFLIP(siblings, oldPositions, 200);
+                    }
+                };
+
                 const onPointerMove = (moveEvent) => {
+                    lastClientX = moveEvent.clientX;
+                    lastClientY = moveEvent.clientY;
+                    notesScroller.update(lastClientX, lastClientY);
+
                     if (!isDragging) {
                         if (Math.hypot(moveEvent.clientX - startX, moveEvent.clientY - startY) > 5) {
                             isDragging = true;
@@ -134,189 +318,12 @@ window.App = window.App || {};
                                 badge.textContent = draggedNoteIds.length;
                                 row.appendChild(badge);
                             }
+
+                            notesScroller.update(moveEvent.clientX, moveEvent.clientY);
+                            notesScroller.start((x, y) => updatePositions(x, y));
                         }
                     } else {
-                        itemWrap.style.left = `${moveEvent.clientX - shiftX}px`;
-                        itemWrap.style.top = `${moveEvent.clientY - shiftY}px`;
-
-                        // 1. Перевірка наведення на шапку "НОТАТКИ" (винесення піднотатки в корінь)
-                        const notesHeader = document.querySelector('.notes-header');
-                        if (notesHeader && parentId !== null) {
-                            const headerRect = notesHeader.getBoundingClientRect();
-                            if (
-                                moveEvent.clientY >= headerRect.top &&
-                                moveEvent.clientY <= headerRect.bottom &&
-                                moveEvent.clientX >= headerRect.left &&
-                                moveEvent.clientX <= headerRect.right
-                            ) {
-                                notesHeader.classList.add('sidebar-root-drop-target');
-                                if (placeholder) placeholder.style.display = 'none';
-                                clearActiveNestZone();
-                                return;
-                            } else {
-                                notesHeader.classList.remove('sidebar-root-drop-target');
-                            }
-                        }
-
-                        // 2. Перевірка наведення на іконку стрілочки праворуч (.sidebar-nest-drop-zone) або на саму розкриту кишеню (.sidebar-nest-pocket)
-                        let isInsideActivePocketZone = false;
-
-                        if (activeOpenPocket) {
-                            const pocketRect = activeOpenPocket.getBoundingClientRect();
-                            // Буферна зона навколо відкритої кишені (гістерезис), щоб вона не закривалася від випадкового мікро-руху
-                            if (
-                                moveEvent.clientX >= pocketRect.left - 25 &&
-                                moveEvent.clientX <= pocketRect.right + 25 &&
-                                moveEvent.clientY >= pocketRect.top - 12 &&
-                                moveEvent.clientY <= pocketRect.bottom + 15
-                            ) {
-                                isInsideActivePocketZone = true;
-                                if (
-                                    moveEvent.clientX >= pocketRect.left &&
-                                    moveEvent.clientX <= pocketRect.right &&
-                                    moveEvent.clientY >= pocketRect.top &&
-                                    moveEvent.clientY <= pocketRect.bottom
-                                ) {
-                                    activeOpenPocket.classList.add('active-hover');
-                                } else {
-                                    activeOpenPocket.classList.remove('active-hover');
-                                }
-                            }
-                        }
-
-                        const allNestZones = [...notesList.querySelectorAll('.sidebar-nest-drop-zone')];
-                        let hoveredNestZone = null;
-
-                        for (const zone of allNestZones) {
-                            if (invalidTargetIds.has(zone.dataset.targetId)) continue;
-                            const zRect = zone.getBoundingClientRect();
-                            const parentRow = zone.closest('.note-item');
-                            const rowRect = parentRow ? parentRow.getBoundingClientRect() : zRect;
-
-                            // Спрацьовує або прямо на кнопці зі стрілкою, або у правій половині рядка нотатки
-                            const isOverRightZone = parentRow && 
-                                (moveEvent.clientX >= rowRect.left + rowRect.width * 0.45 && moveEvent.clientX <= rowRect.right + 25) &&
-                                (moveEvent.clientY >= rowRect.top - 4 && moveEvent.clientY <= rowRect.bottom + 4);
-
-                            const isOverNestBtn = (
-                                moveEvent.clientX >= zRect.left - 15 &&
-                                moveEvent.clientX <= zRect.right + 25 &&
-                                moveEvent.clientY >= zRect.top - 12 &&
-                                moveEvent.clientY <= zRect.bottom + 12
-                            );
-
-                            if (isOverRightZone || isOverNestBtn) {
-                                hoveredNestZone = zone;
-                                break;
-                            }
-                        }
-
-                        if (hoveredNestZone) {
-                            if (activeNestDropZone !== hoveredNestZone) {
-                                if (activeNestDropZone) activeNestDropZone.classList.remove('active-hover');
-                                activeNestDropZone = hoveredNestZone;
-                                activeNestDropZone.classList.add('active-hover');
-
-                                // Відкриваємо кишеню знизу цієї нотатки
-                                const parentNode = hoveredNestZone.closest('.sidebar-note-tree-node');
-                                const targetPocket = parentNode ? parentNode.querySelector('.sidebar-nest-pocket') : null;
-                                if (activeOpenPocket && activeOpenPocket !== targetPocket) {
-                                    activeOpenPocket.classList.remove('is-open');
-                                    activeOpenPocket.classList.remove('active-hover');
-                                }
-                                if (targetPocket) {
-                                    activeOpenPocket = targetPocket;
-                                    activeOpenPocket.classList.add('is-open');
-                                    document.body.classList.add('is-sidebar-pocket-open');
-                                }
-                            }
-                            isInsideActivePocketZone = true;
-                        } else if (!isInsideActivePocketZone) {
-                            // Курсор дійсно виведений далеко за межі іконки та буферної зони кишені — закриваємо
-                            clearActiveNestZone();
-                        }
-
-                        // 3. ПОВНЕ БЛОКУВАННЯ: якщо кишеня відкрита або активна — повністю блокуємо стрибки плейсхолдера
-                        if (isInsideActivePocketZone || activeOpenPocket) {
-                            if (placeholder) {
-                                placeholder.style.display = 'none';
-                            }
-                            return;
-                        } else {
-                            if (placeholder) {
-                                placeholder.style.display = '';
-                            }
-                        }
-
-                        // 4. Звичайне переміщення між нотатками за допомогою плейсхолдера
-                        let targetContainer = notesList; // За замовчуванням головний рівень (корінь)
-
-                        // Шукаємо найбільш вкладений (глибокий) відкритий підсписок, якщо курсор знаходиться праворуч із відступом
-                        const allSubLists = [...notesList.querySelectorAll('.sidebar-subnotes-list')];
-                        for (let i = allSubLists.length - 1; i >= 0; i--) {
-                            const subList = allSubLists[i];
-                            const subRect = subList.getBoundingClientRect();
-                            if (
-                                moveEvent.clientY >= subRect.top &&
-                                moveEvent.clientY <= subRect.bottom &&
-                                moveEvent.clientX >= subRect.left - 10
-                            ) {
-                                targetContainer = subList;
-                                break;
-                            }
-                        }
-
-                        // Виключаємо всі вузли, які зараз перетягуються (всю виділену групу)
-                        const siblings = [...targetContainer.children].filter(el => {
-                            if (el === itemWrap || el === placeholder || !el.classList.contains('sidebar-note-tree-node')) return false;
-                            const r = el.querySelector('.note-item');
-                            const id = r ? r.dataset.id : null;
-                            return !draggedNoteIds.includes(id);
-                        });
-                        const oldPositions = new Map();
-                        siblings.forEach(s => oldPositions.set(s, s.getBoundingClientRect()));
-
-                        let targetSibling = null;
-
-                        for (const sibling of siblings) {
-                            const rect = sibling.getBoundingClientRect();
-                            const middleY = rect.top + rect.height / 2;
-                            if (moveEvent.clientY < middleY) {
-                                targetSibling = sibling;
-                                break;
-                            }
-                        }
-
-                        let positionChanged = false;
-                        if (targetSibling) {
-                            if (placeholder.nextElementSibling !== targetSibling || placeholder.parentNode !== targetContainer) {
-                                targetContainer.insertBefore(placeholder, targetSibling);
-                                positionChanged = true;
-                            }
-                        } else {
-                            if (placeholder !== targetContainer.lastElementChild || placeholder.parentNode !== targetContainer) {
-                                targetContainer.appendChild(placeholder);
-                                positionChanged = true;
-                            }
-                        }
-
-                        // Плавна анімація розсування сусідніх нотаток
-                        if (positionChanged) {
-                            siblings.forEach(sibling => {
-                                const oldPos = oldPositions.get(sibling);
-                                if (!oldPos) return;
-                                const newPos = sibling.getBoundingClientRect();
-                                const dy = oldPos.top - newPos.top;
-                                if (dy !== 0) {
-                                    sibling.style.transition = 'none';
-                                    sibling.style.transform = `translateY(${dy}px)`;
-                                    requestAnimationFrame(() => {
-                                        sibling.style.transition = 'transform 0.2s cubic-bezier(0.2, 0, 0, 1)';
-                                        sibling.style.transform = '';
-                                    });
-                                }
-                            });
-                        }
+                        updatePositions(lastClientX, lastClientY);
                     }
                 };
 
@@ -327,9 +334,12 @@ window.App = window.App || {};
                         }
                     } catch (err) {}
 
+                    notesScroller.stop();
+
                     window.removeEventListener('pointermove', onPointerMove);
                     window.removeEventListener('pointerup', onPointerUp);
                     window.removeEventListener('pointercancel', onPointerUp);
+                    window.removeEventListener('blur', onPointerUp);
                     document.body.classList.remove('is-sidebar-dragging');
 
                     if (state) {
@@ -570,6 +580,7 @@ window.App = window.App || {};
                 window.addEventListener('pointermove', onPointerMove);
                 window.addEventListener('pointerup', onPointerUp);
                 window.addEventListener('pointercancel', onPointerUp);
+                window.addEventListener('blur', onPointerUp);
             });
         }
     };

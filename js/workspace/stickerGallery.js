@@ -229,9 +229,17 @@ window.App = window.App || {};
                 if (!parentGallery || draggedWrap.parentNode !== parentGallery) return;
 
                 // 🔄 МИТТЄВИЙ СВАП (Обмін двох фотографій місцями в DOM)
+                const items = Array.from(parentGallery.querySelectorAll('.sticker-image-wrapper'));
+                const oldPositions = new Map();
+                items.forEach(i => oldPositions.set(i, i.getBoundingClientRect()));
+
                 const nextSiblingOfTarget = imgWrap.nextSibling === draggedWrap ? imgWrap : imgWrap.nextSibling;
                 parentGallery.insertBefore(imgWrap, draggedWrap);
                 parentGallery.insertBefore(draggedWrap, nextSiblingOfTarget);
+
+                if (window.App.dragUtils && window.App.dragUtils.animateFLIP) {
+                    window.App.dragUtils.animateFLIP(items, oldPositions, 200);
+                }
 
                 // Оновлюємо порядок у стані note.images
                 const note = noteManager ? noteManager.getNoteById(noteId) : null;

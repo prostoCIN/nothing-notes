@@ -41,7 +41,21 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
 
             let lastClientX = e.clientX;
             let lastClientY = e.clientY;
-            let autoScrollAnimationId = null;
+            let activeColumnList = startColumnList;
+            const columnsContainer = (window.App.getElements && window.App.getElements().columnsContainer) || document.getElementById('columns-container');
+            const verticalScroller = window.App.dragUtils.createAutoScroller(() => activeColumnList, {
+                vertical: true,
+                horizontal: false,
+                edgeThreshold: 80,
+                maxSpeed: 22
+            });
+            const horizontalScroller = window.App.dragUtils.createAutoScroller(columnsContainer, {
+                vertical: false,
+                horizontal: true,
+                edgeThreshold: 80,
+                maxSpeed: 24
+            });
+
             let currentNestTarget = null;
             let currentColumnDropTarget = null;
             const invalidTargetIds = new Set([draggedNoteId, ...(noteManager ? noteManager.getDescendantIds(draggedNoteId) : [])]);
@@ -96,7 +110,10 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                     card.style.height = `${dragHeight}px`;
                 });
 
-                autoScrollAnimationId = requestAnimationFrame(autoScrollLoop);
+                verticalScroller.update(clientX, clientY);
+                horizontalScroller.update(clientX, clientY);
+                verticalScroller.start((x, y) => updatePositions(x, y));
+                horizontalScroller.start((x, y) => updatePositions(x, y));
             }
 
             function updatePositions(clientX, clientY) {
@@ -170,6 +187,7 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                 }
 
                 const currentColumnList = hoveredColumn ? hoveredColumn.querySelector('.column-notes-list') : startColumnList;
+                activeColumnList = currentColumnList || startColumnList;
                 const targetColumnParentId = hoveredColumn ? (hoveredColumn.dataset.parentId === 'root' ? null : hoveredColumn.dataset.parentId) : originalParentId;
 
                 // Якщо курсор над іншою колонкою (міжколонковий переніс)
@@ -260,58 +278,18 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                             }
                         }
 
-                        if (positionChanged && currentColumnList === startColumnList) {
-                            siblings.forEach(sibling => {
-                                const oldPos = oldPositions.get(sibling);
-                                if (!oldPos) return;
-                                const newPos = sibling.getBoundingClientRect();
-                                const dy = oldPos.top - newPos.top;
-                                if (dy !== 0) {
-                                    sibling.style.transition = 'none';
-                                    sibling.style.transform = `translateY(${dy}px)`;
-                                    requestAnimationFrame(() => {
-                                        sibling.style.transition = 'transform 0.2s cubic-bezier(0.2, 0, 0, 1)';
-                                        sibling.style.transform = '';
-                                    });
-                                }
-                            });
+                        if (positionChanged) {
+                            window.App.dragUtils.animateFLIP(siblings, oldPositions, 200);
                         }
                     }
                 }
             }
 
-            function autoScrollLoop() {
-                const colRect = startColumnList.getBoundingClientRect();
-                const edgeThreshold = 80;
-                let scrolled = false;
-
-                if (lastClientY < colRect.top + edgeThreshold) {
-                    const dist = (colRect.top + edgeThreshold) - lastClientY;
-                    const speed = Math.min(22, Math.max(3, (dist / edgeThreshold) * 20));
-                    if (startColumnList.scrollTop > 0) {
-                        startColumnList.scrollTop -= speed;
-                        scrolled = true;
-                    }
-                } else if (lastClientY > colRect.bottom - edgeThreshold) {
-                    const dist = lastClientY - (colRect.bottom - edgeThreshold);
-                    const speed = Math.min(22, Math.max(3, (dist / edgeThreshold) * 20));
-                    const maxScroll = startColumnList.scrollHeight - startColumnList.clientHeight;
-                    if (startColumnList.scrollTop < maxScroll) {
-                        startColumnList.scrollTop += speed;
-                        scrolled = true;
-                    }
-                }
-
-                if (scrolled) {
-                    updatePositions(lastClientX, lastClientY);
-                }
-
-                autoScrollAnimationId = requestAnimationFrame(autoScrollLoop);
-            }
-
             function onPointerMove(moveEvent) {
                 lastClientX = moveEvent.clientX;
                 lastClientY = moveEvent.clientY;
+                verticalScroller.update(lastClientX, lastClientY);
+                horizontalScroller.update(lastClientX, lastClientY);
 
                 if (!isDragging) {
                     if (Math.hypot(moveEvent.clientX - startX, moveEvent.clientY - startY) > 3) {
@@ -332,11 +310,11 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
             function onPointerUp(upEvent) {
                 window.removeEventListener('pointermove', onPointerMove);
                 window.removeEventListener('pointerup', onPointerUp);
+                window.removeEventListener('pointercancel', onPointerUp);
+                window.removeEventListener('blur', onPointerUp);
 
-                if (autoScrollAnimationId) {
-                    cancelAnimationFrame(autoScrollAnimationId);
-                    autoScrollAnimationId = null;
-                }
+                verticalScroller.stop();
+                horizontalScroller.stop();
 
                 if (!isDragging) {
                     return;
@@ -458,6 +436,8 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
 
             window.addEventListener('pointermove', onPointerMove);
             window.addEventListener('pointerup', onPointerUp);
+            window.addEventListener('pointercancel', onPointerUp);
+            window.addEventListener('blur', onPointerUp);
         });
     });
 };
