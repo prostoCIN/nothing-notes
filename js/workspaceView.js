@@ -503,6 +503,73 @@ window.App = window.App || {};
                     setTimeout(() => card.classList.remove('sticker-highlight-pulse'), 1800);
                 }
             }, 60);
+        },
+
+        updateNoteTitle(id, title) {
+            const cleanTitle = (title || '').trim();
+            const displayTitle = cleanTitle || 'Без назви';
+
+            // 1. Заголовок прив'язаної дочірньої колонки
+            const linkedHeader = document.querySelector(`.board-column[data-parent-id="${id}"] .column-title`);
+            if (linkedHeader && linkedHeader !== document.activeElement && linkedHeader.textContent !== displayTitle) {
+                linkedHeader.textContent = displayTitle;
+            }
+
+            // 2. Заголовок самої картки-стікера у робочій області
+            const stickerCard = document.querySelector(`.note-sticker[data-note-id="${id}"]`);
+            if (stickerCard) {
+                const cardTitle = stickerCard.querySelector('.sticker-title');
+                if (cardTitle && cardTitle !== document.activeElement && cardTitle.textContent !== (title || '')) {
+                    cardTitle.textContent = title || '';
+                    if (cleanTitle) {
+                        cardTitle.removeAttribute('data-empty');
+                    } else {
+                        cardTitle.setAttribute('data-empty', 'true');
+                    }
+                }
+            }
+
+            // 3. Список прев'ю піднотаток всередині батьківських карток
+            document.querySelectorAll(`.subnote-preview-item[data-subnote-id="${id}"] span:last-child`).forEach(span => {
+                span.textContent = displayTitle;
+            });
+        },
+
+        updateBoardTitle(id, name) {
+            const state = window.App.state;
+            if (state && state.activeBoardId === id) {
+                const rootColTitle = document.querySelector('.board-column.root-column .column-title');
+                if (rootColTitle && rootColTitle !== document.activeElement && rootColTitle.innerText !== name) {
+                    rootColTitle.innerText = name;
+                }
+
+                const boardTitleEl = document.getElementById('workspace-header-board-title');
+                if (boardTitleEl && boardTitleEl.textContent !== name) {
+                    boardTitleEl.textContent = name;
+                }
+            }
+        },
+
+        focusNote(noteId) {
+            setTimeout(() => {
+                const noteElement = document.querySelector(`.note-sticker[data-note-id="${noteId}"]`);
+                if (noteElement) {
+                    noteElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    const titleInput = noteElement.querySelector('.sticker-title');
+                    if (titleInput) titleInput.focus();
+                }
+            }, 60);
+        },
+
+        highlightNote(noteId) {
+            setTimeout(() => {
+                const noteElement = document.querySelector(`.note-sticker[data-note-id="${noteId}"]`);
+                if (noteElement) {
+                    noteElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    noteElement.classList.add('highlight-pulse');
+                    setTimeout(() => noteElement.classList.remove('highlight-pulse'), 1200);
+                }
+            }, 100);
         }
     };
 })();

@@ -44,7 +44,6 @@ window.App = window.App || {};
 
             const state = window.App.state;
             const storage = window.App.storage;
-            const els = window.App.getElements();
 
             const newBoard = {
                 id: 'board_' + Date.now().toString(),
@@ -58,10 +57,11 @@ window.App = window.App || {};
                 window.App.cloudSync.syncBoards();
             }
 
-            this.switchBoard(newBoard.id);
+            if (window.App.events) {
+                window.App.events.emit('board:created', newBoard);
+            }
 
-            if (els.welcomeBoardInput) els.welcomeBoardInput.value = '';
-            if (els.sidebarNewBoardInput) els.sidebarNewBoardInput.value = '';
+            this.switchBoard(newBoard.id);
         },
 
         renameBoard(id, newName) {
@@ -81,22 +81,8 @@ window.App = window.App || {};
                 window.App.cloudSync.syncBoards();
             }
 
-            // Синхронізуємо DOM назви блокнота в сайдбарі
-            document.querySelectorAll(`.board-item[data-board-id="${id}"] .board-item-text`).forEach(el => {
-                el.textContent = trimmedName;
-            });
-
-            // Синхронізуємо заголовок кореневої колонки та верхнього хедера воркспейсу, якщо це активний блокнот
-            if (state.activeBoardId === id) {
-                const rootColTitle = document.querySelector('.board-column.root-column .column-title');
-                if (rootColTitle && rootColTitle !== document.activeElement && rootColTitle.innerText !== trimmedName) {
-                    rootColTitle.innerText = trimmedName;
-                }
-
-                const boardTitleEl = document.getElementById('workspace-header-board-title');
-                if (boardTitleEl && boardTitleEl.textContent !== trimmedName) {
-                    boardTitleEl.textContent = trimmedName;
-                }
+            if (window.App.events) {
+                window.App.events.emit('board:renamed', { boardId: id, name: trimmedName });
             }
 
             return true;
@@ -116,14 +102,8 @@ window.App = window.App || {};
                 window.App.cloudSync.syncBoards();
             }
 
-            // Оновлюємо сайдбар якщо там є елемент
-            if (window.App.sidebarView) {
-                window.App.sidebarView.renderBoardsList();
-            }
-
-            // Оновлюємо шапку робочого простору
-            if (window.App.workspaceView) {
-                window.App.workspaceView.render();
+            if (window.App.events) {
+                window.App.events.emit('board:icon_updated', { boardId: id, icon: newIcon });
             }
 
             return true;
@@ -172,6 +152,10 @@ window.App = window.App || {};
 
                 state.notes = state.notes.filter(n => n.boardId !== id);
                 storage.saveNotes(state.notes);
+
+                if (window.App.events) {
+                    window.App.events.emit('board:deleted', { boardId: id });
+                }
 
                 if (window.App.cloudSync) {
                     if (window.App.cloudSync.deleteBoardFromCloud) {

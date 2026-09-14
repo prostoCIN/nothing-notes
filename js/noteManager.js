@@ -169,15 +169,8 @@ window.App = window.App || {};
 
             this.notifyNotesChanged({ type: 'create', note: newNote });
 
-            if (shouldFocus) {
-                setTimeout(() => {
-                    const noteElement = document.querySelector(`.note-sticker[data-note-id="${newNote.id}"]`);
-                    if (noteElement) {
-                        noteElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        const titleInput = noteElement.querySelector('.sticker-title');
-                        if (titleInput) titleInput.focus();
-                    }
-                }, 60);
+            if (window.App.events) {
+                window.App.events.emit('note:created', { note: newNote, shouldFocus });
             }
 
             return newNote;
@@ -253,13 +246,14 @@ window.App = window.App || {};
                 state.selectedSidebarNoteIds.clear();
                 state.selectedWorkspaceNoteIds.clear();
 
-                if (window.App.workspaceSelectionBar) {
-                    window.App.workspaceSelectionBar.exitSelectMode();
-                }
-
                 storage.saveNotes(state.notes);
 
-                this.notifyNotesChanged({ type: 'delete', deletedIds: Array.from(toDeleteIds) });
+                const deletedIds = Array.from(toDeleteIds);
+                this.notifyNotesChanged({ type: 'delete', deletedIds });
+
+                if (window.App.events) {
+                    window.App.events.emit('notes:deleted', { deletedIds });
+                }
             };
 
             if (window.App.confirmModal) {
@@ -322,40 +316,8 @@ window.App = window.App || {};
                     window.App.cloudSync.syncNote(updatedNote);
                 }
 
-                // Якщо оновлюється заголовок нотатки - комплексно синхронізуємо всі пов'язані DOM-елементи
-                if (updates.title !== undefined) {
-                    const cleanTitle = updates.title.trim();
-                    const displayTitle = cleanTitle || 'Без назви';
-
-                    // 1. Заголовок прив'язаної дочірньої колонки
-                    const linkedHeader = document.querySelector(`.board-column[data-parent-id="${id}"] .column-title`);
-                    if (linkedHeader && linkedHeader !== document.activeElement && linkedHeader.textContent !== displayTitle) {
-                        linkedHeader.textContent = displayTitle;
-                    }
-
-                    // 2. Заголовок самої картки-стікера у робочій області
-                    const stickerCard = document.querySelector(`.note-sticker[data-note-id="${id}"]`);
-                    if (stickerCard) {
-                        const cardTitle = stickerCard.querySelector('.sticker-title');
-                        if (cardTitle && cardTitle !== document.activeElement && cardTitle.textContent !== updates.title) {
-                            cardTitle.textContent = updates.title;
-                            if (cleanTitle) {
-                                cardTitle.removeAttribute('data-empty');
-                            } else {
-                                cardTitle.setAttribute('data-empty', 'true');
-                            }
-                        }
-                    }
-
-                    // 3. Список прев'ю піднотаток всередині батьківських карток
-                    document.querySelectorAll(`.subnote-preview-item[data-subnote-id="${id}"] span:last-child`).forEach(span => {
-                        span.textContent = displayTitle;
-                    });
-
-                    // 4. Елемент нотатки в дереві сайдбара
-                    if (window.App.sidebarView && window.App.sidebarView.updateNoteListItem) {
-                        window.App.sidebarView.updateNoteListItem(id, updates.title, updatedNote.icon);
-                    }
+                if (window.App.events) {
+                    window.App.events.emit('note:updated', { id, note: updatedNote, updates });
                 }
 
                 if (triggerReRender) {
@@ -392,21 +354,28 @@ window.App = window.App || {};
             }
         },
 
-        reorderNotes(columnNotesList, parentId) {
-            const state = window.App.state;
-            const storage = window.App.storage;
+        reorderNotes(newOrderIdsOrElement, parentId) {
+            if (Array.isArray(newOrderIdsOrElement)) {
+                this.reorderNotesByIds(newOrderIdsOrElement, parentId);
+                return;
+            }
+            // Fallback якщо передано DOM-елемент
+            const newOrderIds = this._extractOrderIdsFromDom(newOrderIdsOrElement);
+            this.reorderNotesByIds(newOrderIds, parentId);
+        },
+
+        _extractOrderIdsFromDom(columnNotesList) {
+            if (!columnNotesList || typeof columnNotesList.querySelector !== 'function') return [];
             const masonryWrapper = columnNotesList.querySelector('.masonry-grid-wrapper');
             let newOrderIds = [];
 
             if (masonryWrapper) {
-                // У режимі 2-колонкової Pinterest-сітки: зчитуємо черговість із підколонок
                 const colLeft = masonryWrapper.querySelector('.masonry-column-left');
                 const colRight = masonryWrapper.querySelector('.masonry-column-right');
 
                 const leftStickers = colLeft ? [...colLeft.querySelectorAll('.note-sticker')] : [];
                 const rightStickers = colRight ? [...colRight.querySelectorAll('.note-sticker')] : [];
 
-                // Збираємо послідовність карток чергуванням (L0, R0, L1, R1...)
                 const maxLen = Math.max(leftStickers.length, rightStickers.length);
                 for (let i = 0; i < maxLen; i++) {
                     if (i < leftStickers.length && leftStickers[i].dataset.noteId) {
@@ -416,28 +385,11 @@ window.App = window.App || {};
                         newOrderIds.push(rightStickers[i].dataset.noteId);
                     }
                 }
-
-                // Гарантуємо ідеальний баланс 50/50: парні індекси (0, 2, 4...) -> Left, непарні (1, 3, 5...) -> Right
-                // Таким чином при 4 нотатках ЗАВЖДИ буде рівно по 2 в кожній колонці
-                newOrderIds.forEach((id, idx) => {
-                    const note = state.notes.find(n => n.id === id);
-                    if (note) {
-                        note.gridCol = (idx % 2 === 0) ? 'left' : 'right';
-                    }
-                });
             } else {
-                // У звичайному вертикальному списку
                 const stickerElements = [...columnNotesList.querySelectorAll('.note-sticker')];
-                newOrderIds = stickerElements.map(el => el.dataset.noteId);
-                newOrderIds.forEach((id, idx) => {
-                    const note = state.notes.find(n => n.id === id);
-                    if (note) {
-                        note.gridCol = (idx % 2 === 0) ? 'left' : 'right';
-                    }
-                });
+                newOrderIds = stickerElements.map(el => el.dataset.noteId).filter(Boolean);
             }
-
-            this.reorderNotesByIds(newOrderIds, parentId);
+            return newOrderIds;
         },
 
         swapNotes(noteIdA, noteIdB) {
@@ -470,10 +422,11 @@ window.App = window.App || {};
             const sortedLevelNotes = newOrderIds.map(id => currentLevelNotesMap.get(id)).filter(Boolean);
             const otherNotes = state.notes.filter(n => !(n.boardId === state.activeBoardId && (n.parentId || null) === parentId));
 
-            // Оновлюємо orderIndex та updatedAt для перевпорядкованих нотаток
+            // Оновлюємо orderIndex, gridCol та updatedAt для перевпорядкованих нотаток
             const now = Date.now();
             sortedLevelNotes.forEach((note, idx) => {
                 note.orderIndex = idx;
+                note.gridCol = (idx % 2 === 0) ? 'left' : 'right';
                 note.updatedAt = now;
             });
 
@@ -488,7 +441,7 @@ window.App = window.App || {};
                 }
             }
 
-            this.notifyNotesChanged({ type: 'reorder' });
+            this.notifyNotesChanged({ type: 'reorder', parentId, newOrderIds });
         },
 
         moveNoteToParent(noteId, newParentId) {
@@ -568,15 +521,9 @@ window.App = window.App || {};
 
             this.notifyNotesChanged({ type: 'duplicate', rootNote: rootClonedNote });
 
-            // Підсвічування створеної дубльованої нотатки
-            setTimeout(() => {
-                const noteElement = document.querySelector(`.note-sticker[data-note-id="${rootClonedNote.id}"]`);
-                if (noteElement) {
-                    noteElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    noteElement.classList.add('highlight-pulse');
-                    setTimeout(() => noteElement.classList.remove('highlight-pulse'), 1200);
-                }
-            }, 100);
+            if (window.App.events) {
+                window.App.events.emit('note:duplicated', { note: rootClonedNote });
+            }
 
             return rootClonedNote;
         },

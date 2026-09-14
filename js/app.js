@@ -37,6 +37,53 @@ document.addEventListener('DOMContentLoaded', () => {
         window.App.events.on('welcome:needed', () => {
             welcomeView.show();
         });
+
+        window.App.events.on('board:renamed', ({ boardId, name }) => {
+            if (sidebarView && sidebarView.updateBoardTitle) {
+                sidebarView.updateBoardTitle(boardId, name);
+            }
+            if (workspaceView && workspaceView.updateBoardTitle) {
+                workspaceView.updateBoardTitle(boardId, name);
+            }
+        });
+
+        window.App.events.on('board:icon_updated', () => {
+            if (sidebarView && sidebarView.renderBoardsList) {
+                sidebarView.renderBoardsList();
+            }
+            if (workspaceView && workspaceView.render) {
+                workspaceView.render();
+            }
+        });
+
+        window.App.events.on('note:created', ({ note, shouldFocus }) => {
+            if (shouldFocus && workspaceView && workspaceView.focusNote) {
+                workspaceView.focusNote(note.id);
+            }
+        });
+
+        window.App.events.on('note:duplicated', ({ note }) => {
+            if (workspaceView && workspaceView.highlightNote) {
+                workspaceView.highlightNote(note.id);
+            }
+        });
+
+        window.App.events.on('note:updated', ({ id, note, updates }) => {
+            if (updates && updates.title !== undefined) {
+                if (workspaceView && workspaceView.updateNoteTitle) {
+                    workspaceView.updateNoteTitle(id, updates.title);
+                }
+                if (sidebarView && sidebarView.updateNoteListItem) {
+                    sidebarView.updateNoteListItem(id, updates.title, note.icon);
+                }
+            }
+        });
+
+        window.App.events.on('notes:deleted', () => {
+            if (window.App.workspaceSelectionBar && window.App.workspaceSelectionBar.exitSelectMode) {
+                window.App.workspaceSelectionBar.exitSelectMode();
+            }
+        });
     }
 
     boardManager.init();

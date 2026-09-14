@@ -122,6 +122,12 @@ window.App = window.App || {};
                 const iconSpan = row.querySelector('.note-item-icon');
                 if (iconSpan) iconSpan.textContent = icon || '📄';
             }
+        },
+
+        updateBoardTitle(id, name) {
+            document.querySelectorAll(`.board-item[data-board-id="${id}"] .board-item-text`).forEach(el => {
+                el.textContent = name;
+            });
         }
     };
 })();

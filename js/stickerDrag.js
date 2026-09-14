@@ -451,7 +451,8 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
 
                 // Варіант 3: Звичайне перевпорядкування всередині тієї ж колонки
                 if (noteManager) {
-                    noteManager.reorderNotes(startColumnList, originalParentId);
+                    const newOrderIds = extractNoteIdsFromColumn(startColumnList);
+                    noteManager.reorderNotesByIds(newOrderIds, originalParentId);
                 }
             }
 
@@ -460,3 +461,30 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
         });
     });
 };
+
+function extractNoteIdsFromColumn(columnNotesList) {
+    if (!columnNotesList) return [];
+    const masonryWrapper = columnNotesList.querySelector('.masonry-grid-wrapper');
+    if (masonryWrapper) {
+        const colLeft = masonryWrapper.querySelector('.masonry-column-left');
+        const colRight = masonryWrapper.querySelector('.masonry-column-right');
+
+        const leftStickers = colLeft ? [...colLeft.querySelectorAll('.note-sticker')] : [];
+        const rightStickers = colRight ? [...colRight.querySelectorAll('.note-sticker')] : [];
+
+        const newOrderIds = [];
+        const maxLen = Math.max(leftStickers.length, rightStickers.length);
+        for (let i = 0; i < maxLen; i++) {
+            if (i < leftStickers.length && leftStickers[i].dataset.noteId) {
+                newOrderIds.push(leftStickers[i].dataset.noteId);
+            }
+            if (i < rightStickers.length && rightStickers[i].dataset.noteId) {
+                newOrderIds.push(rightStickers[i].dataset.noteId);
+            }
+        }
+        return newOrderIds;
+    } else {
+        const stickerElements = [...columnNotesList.querySelectorAll('.note-sticker')];
+        return stickerElements.map(el => el.dataset.noteId).filter(Boolean);
+    }
+}
