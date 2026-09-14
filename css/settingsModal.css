@@ -33,16 +33,16 @@
 .settings-modal-card {
     position: relative;
     z-index: 2;
-    background: rgba(26, 26, 30, 0.88);
+    background: var(--modal-bg);
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    border: 1px solid var(--glass-border);
     border-radius: 20px;
     width: 92%;
     max-width: 520px;
     max-height: 88vh;
     padding: 24px;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    box-shadow: var(--glass-card-shadow);
     transform: scale(0.96) translateY(8px);
     transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     box-sizing: border-box;
@@ -50,6 +50,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    color: var(--text-main);
 }
 
 .settings-modal-overlay.active .settings-modal-card {
@@ -60,8 +61,8 @@
     position: absolute;
     top: 18px;
     right: 18px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--hover-bg);
+    border: 1px solid var(--border-color);
     color: var(--text-muted);
     font-size: 18px;
     width: 32px;
@@ -78,8 +79,8 @@
 
 .settings-modal-close:hover {
     color: var(--text-main);
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.2);
+    background: var(--active-bg);
+    border-color: var(--border-color);
 }
 
 .settings-modal-header {
@@ -126,10 +127,10 @@
 .settings-tabs {
     display: flex;
     gap: 6px;
-    background: rgba(0, 0, 0, 0.25);
+    background: var(--hover-bg);
     padding: 4px;
     border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border-color);
     margin-bottom: 20px;
     flex-shrink: 0;
 }
@@ -154,13 +155,13 @@
 
 .settings-tab-btn:hover {
     color: var(--text-main);
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--hover-bg);
 }
 
 .settings-tab-btn.active {
-    background: rgba(255, 255, 255, 0.12);
-    color: #ffffff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    background: var(--modal-bg);
+    color: var(--text-main);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
 }
 
 /* Вміст вкладок з прокруткою */
@@ -178,7 +179,7 @@
 }
 
 .settings-tab-content::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--scrollbar-thumb);
     border-radius: 4px;
 }
 
@@ -189,15 +190,15 @@
     justify-content: space-between;
     gap: 16px;
     padding: 14px 16px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--hover-bg);
+    border: 1px solid var(--border-color);
     border-radius: 12px;
     transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .settings-item:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.1);
+    background: var(--active-bg);
+    border-color: var(--border-color);
 }
 
 .settings-item-info {

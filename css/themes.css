@@ -221,7 +221,9 @@ html[data-theme="light"] .sticker-emoji-picker-dropdown {
 /* 4. Полегшені тіні модальних вікон */
 html[data-theme="light"] .settings-modal-card,
 html[data-theme="light"] .auth-modal-card,
-html[data-theme="light"] .confirm-modal-box {
+html[data-theme="light"] .confirm-modal-box,
+html[data-theme="light"] .share-modal-card,
+html[data-theme="light"] .account-switcher-overlay {
     background: rgba(255, 255, 255, 0.96);
     border-color: rgba(0, 0, 0, 0.1);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04) !important;
@@ -329,7 +331,9 @@ html[data-theme="light"] .board-item-sidebar.active {
 
 html[data-theme="light"] .auth-modal-backdrop,
 html[data-theme="light"] .settings-modal-backdrop,
-html[data-theme="light"] .modal-overlay {
+html[data-theme="light"] .share-modal-backdrop,
+html[data-theme="light"] .modal-overlay,
+html[data-theme="light"] .account-overlay-backdrop {
     background: rgba(15, 23, 42, 0.35);
 }
 
@@ -468,4 +472,22 @@ html[data-theme="light"] .raw-markdown-content-box {
     background: rgba(0, 0, 0, 0.02);
     border-color: rgba(0, 0, 0, 0.08);
     color: #18181b;
+}
+
+/* Нічне небо (Night Sky) - модальні вікна та бекдропи */
+html[data-theme="night-sky"] .auth-modal-backdrop,
+html[data-theme="night-sky"] .settings-modal-backdrop,
+html[data-theme="night-sky"] .share-modal-backdrop,
+html[data-theme="night-sky"] .modal-overlay,
+html[data-theme="night-sky"] .account-overlay-backdrop {
+    background: rgba(4, 7, 13, 0.75);
+}
+
+/* Темний ліс (Dark Forest) - модальні вікна та бекдропи */
+html[data-theme="forest"] .auth-modal-backdrop,
+html[data-theme="forest"] .settings-modal-backdrop,
+html[data-theme="forest"] .share-modal-backdrop,
+html[data-theme="forest"] .modal-overlay,
+html[data-theme="forest"] .account-overlay-backdrop {
+    background: rgba(18, 19, 15, 0.75);
 }

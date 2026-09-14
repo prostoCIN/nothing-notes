@@ -23,15 +23,15 @@
 }
 
 .confirm-modal-box {
-    background: rgba(28, 28, 32, 0.82);
+    background: var(--modal-bg);
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    border: 1px solid var(--glass-border);
     border-radius: 18px;
     width: 90%;
     max-width: 480px;
     padding: 24px;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    box-shadow: var(--glass-card-shadow);
     transform: scale(0.94) translateY(10px);
     transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     color: var(--text-main);
@@ -66,7 +66,7 @@
 .confirm-modal-title {
     font-size: var(--font-md);
     font-weight: 700;
-    color: #ffffff;
+    color: var(--text-main);
     line-height: 1.2;
     margin: 0;
 }
@@ -78,7 +78,7 @@
 }
 
 .confirm-modal-highlight {
-    color: #ffffff;
+    color: var(--text-main);
     font-weight: 600;
 }
 
@@ -126,7 +126,7 @@
 
 .modal-cancel-btn:hover {
     background-color: var(--hover-bg);
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: var(--border-color);
 }
 
 /* Кнопка затискання з внутрішнім прогрес-баром */
