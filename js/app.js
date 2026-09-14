@@ -42,6 +42,9 @@ function bootstrapApp() {
             if (window.App.historyManager) {
                 window.App.historyManager.updateButtonsState();
             }
+            if (window.App.state) {
+                window.App.state.activeNoteId = null;
+            }
             welcomeView.hide();
             sidebarView.render();
             workspaceView.render();
@@ -66,6 +69,9 @@ function bootstrapApp() {
         });
 
         window.App.events.on('note:created', ({ note, shouldFocus }) => {
+            if (window.App.sidebarView) {
+                window.App.sidebarView.setActiveNote(note.id, { autoExpand: true, scrollIntoView: true });
+            }
             if (shouldFocus && workspaceView && workspaceView.focusNote) {
                 workspaceView.focusNote(note.id);
             }

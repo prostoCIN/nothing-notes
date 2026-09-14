@@ -156,6 +156,7 @@ window.App.storage = {
         readOnlyNotes: window.App.storage.getReadOnlyNotes(),
         activeBoardId: window.App.storage.getActiveBoardId(),
         activeChain: [null], // Масив ID батьківських нотаток [null, noteId1, noteId2...]
+        activeNoteId: null, // ID поточної активної/сфокусованої нотатки для візуальної синхронізації з сайдбаром
         expandedSidebarNoteIds: new Set(), // ID розгорнутих нотаток у сайдбарі
         selectedSidebarNoteIds: new Set(), // ID виділених нотаток у сайдбарі (Windows-style selection)
         selectedWorkspaceNoteIds: new Set(), // ID вибраних нотаток на головній області (iOS Gallery style)
@@ -342,6 +343,7 @@ window.App.storage = {
 
         resetEphemeral() {
             rawState.activeChain = [null];
+            rawState.activeNoteId = null;
             rawState.expandedSidebarNoteIds.clear();
             rawState.selectedSidebarNoteIds.clear();
             rawState.selectedWorkspaceNoteIds.clear();

@@ -234,6 +234,21 @@ window.App = window.App || {};
                         this.updateMobilePagination();
                     }
                 }, { passive: true });
+
+                // Візуальна синхронізація активної нотатки з лівим сайдбаром при кліку або фокусі
+                columnsContainer.addEventListener('pointerdown', (e) => {
+                    const sticker = e.target.closest('.note-sticker[data-note-id]');
+                    if (sticker && sticker.dataset.noteId && window.App.sidebarView) {
+                        window.App.sidebarView.setActiveNote(sticker.dataset.noteId, { autoExpand: true, scrollIntoView: false });
+                    }
+                }, { passive: true });
+
+                columnsContainer.addEventListener('focusin', (e) => {
+                    const sticker = e.target.closest('.note-sticker[data-note-id]');
+                    if (sticker && sticker.dataset.noteId && window.App.sidebarView) {
+                        window.App.sidebarView.setActiveNote(sticker.dataset.noteId, { autoExpand: true, scrollIntoView: true });
+                    }
+                }, { passive: true });
             }
         },
 
@@ -251,6 +266,12 @@ window.App = window.App || {};
 
             state.activeChain.push(noteId);
             this.render();
+
+            // Автоматично розгортаємо гілку в лівому сайдбарі та виділяємо відкриту нотатку
+            if (window.App.sidebarView) {
+                window.App.sidebarView.expandChain(state.activeChain);
+                window.App.sidebarView.setActiveNote(noteId, { autoExpand: true, scrollIntoView: true });
+            }
 
             // Автоматично скролимо контейнер колонок до останньої щойно відкритої колонки
             setTimeout(() => {
@@ -273,6 +294,11 @@ window.App = window.App || {};
             if (!state) return;
             state.activeChain = state.activeChain.slice(0, colIndex);
             this.render();
+
+            const lastParentId = state.activeChain[state.activeChain.length - 1];
+            if (window.App.sidebarView) {
+                window.App.sidebarView.setActiveNote(lastParentId, { autoExpand: false, scrollIntoView: true });
+            }
         },
 
         render() {
@@ -494,6 +520,12 @@ window.App = window.App || {};
             state.activeChain = chain;
             this.render();
 
+            // Синхронізація розгортання та підсвічування активної нотатки в сайдбарі
+            if (window.App.sidebarView) {
+                window.App.sidebarView.expandChain(chain);
+                window.App.sidebarView.setActiveNote(noteId, { autoExpand: true, scrollIntoView: true });
+            }
+
             // Знаходимо картку на екрані та плавно скролимо до неї
             setTimeout(() => {
                 const card = document.querySelector(`.note-sticker[data-note-id="${noteId}"]`);
@@ -553,6 +585,9 @@ window.App = window.App || {};
         },
 
         focusNote(noteId) {
+            if (window.App.sidebarView) {
+                window.App.sidebarView.setActiveNote(noteId, { autoExpand: true, scrollIntoView: true });
+            }
             setTimeout(() => {
                 const noteElement = document.querySelector(`.note-sticker[data-note-id="${noteId}"]`);
                 if (noteElement) {

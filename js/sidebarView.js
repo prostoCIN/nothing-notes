@@ -145,6 +145,99 @@ window.App = window.App || {};
             document.querySelectorAll(`.board-item[data-board-id="${id}"] .board-item-text`).forEach(el => {
                 el.textContent = name;
             });
+        },
+
+        /**
+         * Встановлює активну нотатку у сайдбарі, розгортає її гілку та скролить до неї
+         * @param {string|null} noteId - ID активної нотатки
+         * @param {Object} [options] - { autoExpand: true, scrollIntoView: true }
+         */
+        setActiveNote(noteId, options = {}) {
+            const state = window.App.state;
+            const noteManager = window.App.noteManager;
+            const els = window.App.getElements();
+            if (!state) return;
+
+            const autoExpand = options.autoExpand !== false;
+            const shouldScroll = options.scrollIntoView !== false;
+
+            state.activeNoteId = noteId;
+
+            let needsReRender = false;
+
+            if (noteId && autoExpand && noteManager) {
+                const note = noteManager.getNoteById(noteId);
+                if (note) {
+                    let parentId = note.parentId;
+                    while (parentId) {
+                        if (!state.expandedSidebarNoteIds.has(parentId)) {
+                            state.expandedSidebarNoteIds.add(parentId);
+                            needsReRender = true;
+                        }
+                        const pNote = noteManager.getNoteById(parentId);
+                        parentId = pNote ? pNote.parentId : null;
+                    }
+                }
+            }
+
+            if (needsReRender) {
+                this.renderNotesList();
+            } else if (els && els.notesList) {
+                // Швидке оновлення класів без повного перерендеру DOM (60fps)
+                els.notesList.querySelectorAll('.note-item.is-active-note').forEach(el => {
+                    if (el.dataset.id !== noteId) {
+                        el.classList.remove('is-active-note');
+                    }
+                });
+                if (noteId) {
+                    const activeRow = els.notesList.querySelector(`.note-item[data-id="${noteId}"]`);
+                    if (activeRow) {
+                        activeRow.classList.add('is-active-note');
+                    }
+                }
+            }
+
+            // Плавне докручування сайдбару до сфокусованої нотатки
+            if (noteId && shouldScroll && els && els.notesList) {
+                setTimeout(() => {
+                    const activeRow = els.notesList.querySelector(`.note-item[data-id="${noteId}"]`);
+                    if (activeRow) {
+                        activeRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                }, needsReRender ? 60 : 0);
+            }
+        },
+
+        /**
+         * Розгортає дерево сайдбару для ланцюжка відкритих колонок
+         * @param {Array<string|null>} chain - Масив ID батьківських нотаток
+         */
+        expandChain(chain) {
+            const state = window.App.state;
+            const noteManager = window.App.noteManager;
+            if (!state || !Array.isArray(chain)) return;
+
+            let hasNewExpands = false;
+            chain.forEach(noteId => {
+                if (!noteId) return;
+                let currId = noteId;
+                while (currId) {
+                    if (!state.expandedSidebarNoteIds.has(currId)) {
+                        state.expandedSidebarNoteIds.add(currId);
+                        hasNewExpands = true;
+                    }
+                    if (noteManager) {
+                        const n = noteManager.getNoteById(currId);
+                        currId = n ? n.parentId : null;
+                    } else {
+                        break;
+                    }
+                }
+            });
+
+            if (hasNewExpands) {
+                this.renderNotesList();
+            }
         }
     };
 })();

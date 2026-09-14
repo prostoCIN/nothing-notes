@@ -502,6 +502,31 @@ body.is-sidebar-dragging .sidebar-nest-drop-zone.active-hover {
     font-weight: 500;
 }
 
+/* Візуальна синхронізація активної/сфокусованої нотатки з робочої області */
+.note-item.is-active-note {
+    background-color: rgba(16, 185, 129, 0.16) !important;
+    color: var(--text-main) !important;
+    font-weight: 600;
+    box-shadow: inset 3.5px 0 0 var(--accent-color, #10b981), 0 1px 4px rgba(0, 0, 0, 0.25);
+    border-radius: 6px;
+    padding-left: 9px;
+}
+
+.note-item.is-active-note .note-item-title {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.note-item.is-active-note .note-item-icon {
+    transform: scale(1.12);
+    transition: transform 0.15s ease;
+}
+
+.note-item.is-selected.is-active-note {
+    background-color: rgba(16, 185, 129, 0.32) !important;
+    box-shadow: inset 3.5px 0 0 #ffffff, 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
 /* Windows-style виділення нотаток у сайдбарі */
 .note-item.is-selected {
     background-color: rgba(16, 185, 129, 0.22) !important;

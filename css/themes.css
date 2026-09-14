@@ -302,9 +302,20 @@ html[data-theme="light"] .note-item-sidebar:hover {
     background-color: rgba(0, 0, 0, 0.05);
 }
 
-html[data-theme="light"] .note-item-sidebar.active {
+html[data-theme="light"] .note-item-sidebar.active,
+html[data-theme="light"] .note-item.active {
     background-color: rgba(0, 0, 0, 0.08);
     color: #18181b;
+}
+
+html[data-theme="light"] .note-item.is-active-note {
+    background-color: rgba(16, 185, 129, 0.12) !important;
+    box-shadow: inset 3.5px 0 0 #10b981, 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+html[data-theme="light"] .note-item.is-active-note .note-item-title {
+    color: #047857 !important;
+    font-weight: 700;
 }
 
 html[data-theme="light"] .board-item-sidebar:hover {

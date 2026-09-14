@@ -107,6 +107,9 @@ window.App = window.App || {};
                 if (isSelected) {
                     row.classList.add('is-selected');
                 }
+                if (state.activeNoteId === note.id) {
+                    row.classList.add('is-active-note');
+                }
 
                 row.addEventListener('click', (e) => {
                     if (e.target.closest('.delete-btn') || e.target.closest('.note-toggle-arrow')) return;
@@ -143,6 +146,10 @@ window.App = window.App || {};
                         allVisibleRows.forEach(r => r.classList.remove('is-selected'));
                         state.selectedSidebarNoteIds.add(note.id);
                         row.classList.add('is-selected');
+
+                        if (sidebarView && sidebarView.setActiveNote) {
+                            sidebarView.setActiveNote(note.id, { autoExpand: false, scrollIntoView: false });
+                        }
 
                         if (onSelectNote) {
                             onSelectNote(note.id);
