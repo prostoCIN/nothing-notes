@@ -68,63 +68,17 @@ window.App = window.App || {};
                 textSpan.textContent = board.name;
                 textSpan.title = 'Подвійний клік для редагування назви';
 
-                const finishEditing = () => {
-                    if (textSpan.contentEditable === 'true') {
-                        textSpan.contentEditable = 'false';
-                        li.classList.remove('is-editing');
-                        textSpan.scrollLeft = 0;
-                        document.removeEventListener('pointerdown', onOutsidePointerDown, true);
-                        const newName = textSpan.innerText.trim();
-                        if (newName && newName !== board.name && window.App.boardManager) {
-                            window.App.boardManager.renameBoard(board.id, newName);
-                        } else {
-                            textSpan.innerText = board.name;
+                let editor = null;
+                if (window.App.sidebarActions) {
+                    editor = window.App.sidebarActions.attachInlineEditor(li, textSpan, {
+                        getCurrentText: () => board.name,
+                        onSave: (newName) => {
+                            if (window.App.boardManager) {
+                                window.App.boardManager.renameBoard(board.id, newName);
+                            }
                         }
-                    }
-                };
-
-                const onOutsidePointerDown = (evt) => {
-                    if (!textSpan.contains(evt.target)) {
-                        finishEditing();
-                    }
-                };
-
-                const startEditing = () => {
-                    li.classList.add('is-editing');
-                    textSpan.contentEditable = 'true';
-                    textSpan.focus();
-                    const range = document.createRange();
-                    range.selectNodeContents(textSpan);
-                    const sel = window.getSelection();
-                    if (sel) {
-                        sel.removeAllRanges();
-                        sel.addRange(range);
-                    }
-
-                    setTimeout(() => {
-                        document.addEventListener('pointerdown', onOutsidePointerDown, true);
-                    }, 10);
-                };
-
-                textSpan.addEventListener('dblclick', (e) => {
-                    e.stopPropagation();
-                    startEditing();
-                });
-
-                textSpan.addEventListener('blur', finishEditing);
-                textSpan.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        textSpan.blur();
-                    } else if (e.key === 'Escape') {
-                        e.preventDefault();
-                        document.removeEventListener('pointerdown', onOutsidePointerDown, true);
-                        li.classList.remove('is-editing');
-                        textSpan.scrollLeft = 0;
-                        textSpan.innerText = board.name;
-                        textSpan.contentEditable = 'false';
-                    }
-                });
+                    });
+                }
 
                 if (board.icon) {
                     const iconSpan = document.createElement('span');
@@ -144,64 +98,34 @@ window.App = window.App || {};
                     countBadge.textContent = boardNoteCount;
                 }
 
-                const actionsDiv = document.createElement('div');
-                actionsDiv.className = 'board-actions';
-
-                // 1. Поділитись блокнотом
-                const shareBtn = document.createElement('button');
-                shareBtn.className = 'board-share-btn';
-                shareBtn.title = 'Поділитись блокнотом';
-                shareBtn.innerHTML = `
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="18" cy="5" r="3"></circle>
-                        <circle cx="6" cy="12" r="3"></circle>
-                        <circle cx="18" cy="19" r="3"></circle>
-                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-                    </svg>
-                `;
-                shareBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    if (window.App.shareManager) {
-                        window.App.shareManager.showShareModal(board.id);
-                    }
-                });
-
-                // 2. Перейменувати блокнот
-                const editBtn = document.createElement('button');
-                editBtn.className = 'board-edit-btn';
-                editBtn.title = 'Перейменувати блокнот';
-                editBtn.innerHTML = `
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 20h9"></path>
-                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                    </svg>
-                `;
-                editBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    startEditing();
-                });
-
-                // 3. Видалити блокнот
-                const delBtn = document.createElement('button');
-                delBtn.className = 'board-delete-btn';
-                delBtn.title = 'Видалити блокнот';
-                delBtn.innerHTML = `
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M3 6h18"></path>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                    </svg>
-                `;
-                delBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    if (window.App.boardManager) {
-                        window.App.boardManager.deleteBoard(board.id);
-                    }
-                });
-
-                actionsDiv.appendChild(shareBtn);
-                actionsDiv.appendChild(editBtn);
-                actionsDiv.appendChild(delBtn);
+                let actionsDiv = null;
+                if (window.App.sidebarActions) {
+                    actionsDiv = window.App.sidebarActions.createActionButtons({
+                        containerClass: 'board-actions',
+                        share: {
+                            title: 'Поділитись блокнотом',
+                            onClick: () => {
+                                if (window.App.shareManager) {
+                                    window.App.shareManager.showShareModal(board.id);
+                                }
+                            }
+                        },
+                        edit: {
+                            title: 'Перейменувати блокнот',
+                            onClick: () => {
+                                if (editor) editor.startEditing();
+                            }
+                        },
+                        delete: {
+                            title: 'Видалити блокнот',
+                            onClick: () => {
+                                if (window.App.boardManager) {
+                                    window.App.boardManager.deleteBoard(board.id);
+                                }
+                            }
+                        }
+                    });
+                }
 
                 li.addEventListener('click', (e) => {
                     if (e.target.closest('.board-actions') || textSpan.contentEditable === 'true') return;

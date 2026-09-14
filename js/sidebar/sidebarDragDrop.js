@@ -19,8 +19,8 @@ window.App = window.App || {};
             row.addEventListener('dragstart', (e) => e.preventDefault());
 
             row.addEventListener('pointerdown', (e) => {
-                // Не перетягуємо при кліку на кнопки видалення або стрілочку розгортання
-                if (e.target.closest('.delete-btn') || e.target.closest('.note-toggle-arrow') || e.button !== 0) return;
+                // Не перетягуємо при редагуванні, кліку на кнопки дій або стрілочку розгортання
+                if (row.classList.contains('is-editing') || e.target.closest('.note-actions') || e.target.closest('.sidebar-action-btn') || e.target.closest('.delete-btn') || e.target.closest('.note-toggle-arrow') || e.button !== 0) return;
 
                 const pointerId = e.pointerId;
                 try {

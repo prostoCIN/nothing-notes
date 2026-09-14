@@ -62,6 +62,21 @@ window.App = window.App || {};
                 const titleSpan = document.createElement('span');
                 titleSpan.className = 'note-item-title';
                 titleSpan.textContent = note.title.trim() || 'Без назви';
+                titleSpan.title = 'Подвійний клік для редагування назви';
+
+                let editor = null;
+                if (window.App.sidebarActions) {
+                    editor = window.App.sidebarActions.attachInlineEditor(row, titleSpan, {
+                        getCurrentText: () => note.title,
+                        allowEmpty: true,
+                        defaultDisplay: 'Без назви',
+                        onSave: (newTitle) => {
+                            if (noteManager && noteManager.updateNote) {
+                                noteManager.updateNote(note.id, { title: newTitle });
+                            }
+                        }
+                    });
+                }
 
                 // Лічильник усіх вкладених піднотаток (включаючи піднотатки їхніх піднотаток)
                 if (totalChildCount > 0) {
@@ -78,6 +93,36 @@ window.App = window.App || {};
                     row.appendChild(titleSpan);
                 }
 
+                // Дії нотатки: поділитись, редагувати, видалити
+                let actionsDiv = null;
+                if (window.App.sidebarActions) {
+                    actionsDiv = window.App.sidebarActions.createActionButtons({
+                        containerClass: 'note-actions',
+                        share: {
+                            title: 'Поділитись нотаткою',
+                            onClick: () => {
+                                if (window.App.shareManager) {
+                                    window.App.shareManager.showShareModal(note.boardId, [note.id]);
+                                }
+                            }
+                        },
+                        edit: {
+                            title: 'Перейменувати нотатку',
+                            onClick: () => {
+                                if (editor) editor.startEditing();
+                            }
+                        },
+                        delete: {
+                            title: 'Видалити нотатку',
+                            onClick: (e) => {
+                                if (noteManager && noteManager.deleteNote) {
+                                    noteManager.deleteNote(note.id, e);
+                                }
+                            }
+                        }
+                    });
+                }
+
                 // Спеціальна зона-іконка для перетворення на піднотатку (розташована праворуч)
                 const nestZone = document.createElement('div');
                 nestZone.className = 'sidebar-nest-drop-zone';
@@ -88,17 +133,6 @@ window.App = window.App || {};
                         <polyline points="9 18 15 12 9 6"></polyline>
                     </svg>
                 `;
-
-                const delBtn = document.createElement('button');
-                delBtn.className = 'delete-btn';
-                delBtn.innerHTML = `
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M3 6h18"></path>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                    </svg>
-                `;
-                delBtn.title = 'Видалити нотатку';
-                delBtn.addEventListener('click', (e) => noteManager.deleteNote(note.id, e));
 
                 // Логіка перетягування (Drag & Drop)
                 window.App.sidebarDragDrop.attachDrag(row, itemWrap, note, parentId);
@@ -112,7 +146,11 @@ window.App = window.App || {};
                 }
 
                 row.addEventListener('click', (e) => {
-                    if (e.target.closest('.delete-btn') || e.target.closest('.note-toggle-arrow')) return;
+                    if (row.classList.contains('is-editing') || 
+                        e.target.closest('.note-actions') || 
+                        e.target.closest('.sidebar-action-btn') || 
+                        e.target.closest('.delete-btn') || 
+                        e.target.closest('.note-toggle-arrow')) return;
 
                     const allVisibleRows = [...els.notesList.querySelectorAll('.note-item[data-id]')];
 
@@ -159,6 +197,7 @@ window.App = window.App || {};
 
                 // Відкриття меню налаштувань нотатки по кліку правою кнопкою миші (Context Menu)
                 row.addEventListener('contextmenu', (e) => {
+                    if (row.classList.contains('is-editing')) return;
                     e.preventDefault();
                     e.stopPropagation();
 
@@ -229,7 +268,9 @@ window.App = window.App || {};
                     }
                 });
 
-                row.appendChild(delBtn);
+                if (actionsDiv) {
+                    row.appendChild(actionsDiv);
+                }
                 row.appendChild(nestZone);
                 itemWrap.appendChild(row);
 

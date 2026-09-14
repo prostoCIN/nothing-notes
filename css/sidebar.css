@@ -384,8 +384,11 @@ body.is-sidebar-dragging .sidebar-drag-placeholder {
     background-color: rgba(16, 185, 129, 0.16) !important;
 }
 
-/* Під час перетягування приховуємо кнопку видалення, щоб зона-кишеня була на самому правому краї */
-body.is-sidebar-dragging .delete-btn {
+/* Під час перетягування приховуємо кнопки дій, щоб зона-кишеня була на самому правому краї */
+body.is-sidebar-dragging .delete-btn,
+body.is-sidebar-dragging .note-actions,
+body.is-sidebar-dragging .board-actions,
+body.is-sidebar-dragging .sidebar-action-btn {
     display: none !important;
 }
 
@@ -598,7 +601,8 @@ body.is-sidebar-dragging .sidebar-nest-drop-zone.active-hover {
     min-width: 0;
 }
 
-.board-item-text[contenteditable="true"] {
+.board-item-text[contenteditable="true"],
+.note-item-title[contenteditable="true"] {
     background-color: var(--bg-color);
     box-shadow: 0 0 0 1px var(--accent-color);
     color: var(--text-main);
@@ -612,28 +616,37 @@ body.is-sidebar-dragging .sidebar-nest-drop-zone.active-hover {
     max-width: 100% !important;
     flex: 1 1 auto !important;
     scrollbar-width: none !important;
+    border-radius: 4px;
+    padding: 1px 4px;
+    margin: -1px -4px;
 }
 
-.board-item-text[contenteditable="true"]::-webkit-scrollbar {
+.board-item-text[contenteditable="true"]::-webkit-scrollbar,
+.note-item-title[contenteditable="true"]::-webkit-scrollbar {
     display: none !important;
 }
 
-/* Під час редагування назви дошки даємо полю повну ширину рядка і приховуємо лічильник */
-.board-item.is-editing {
+/* Під час редагування назви дошки або нотатки даємо полю повну ширину рядка і приховуємо лічильник та дії */
+.board-item.is-editing,
+.note-item.is-editing {
     overflow: hidden !important;
 }
 
-.board-item.is-editing .board-item-name {
+.board-item.is-editing .board-item-name,
+.note-item.is-editing .note-item-title {
     overflow: hidden !important;
     flex: 1 1 auto !important;
     min-width: 0 !important;
 }
 
-.board-item.is-editing .sidebar-child-count {
+.board-item.is-editing .sidebar-child-count,
+.note-item.is-editing .sidebar-child-count {
     display: none !important;
 }
 
-.board-item.is-editing .board-actions {
+.board-item.is-editing .board-actions,
+.note-item.is-editing .note-actions,
+.note-item.is-editing .item-actions {
     display: none !important;
 }
 
@@ -664,7 +677,7 @@ body.is-sidebar-dragging .sidebar-nest-drop-zone.active-hover {
     transition: opacity 0.2s cubic-bezier(0.2, 0, 0, 1), background-color 0.2s ease;
 }
 
-.board-actions, .board-item-actions {
+.board-actions, .board-item-actions, .note-actions, .item-actions {
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
@@ -679,9 +692,11 @@ body.is-sidebar-dragging .sidebar-nest-drop-zone.active-hover {
 }
 
 .board-item:hover .board-actions,
-.board-item:hover .board-item-actions {
+.board-item:hover .board-item-actions,
+.note-item:hover .note-actions,
+.note-item:hover .item-actions {
     opacity: 1;
-    max-width: 60px;
+    max-width: 90px;
     pointer-events: auto;
 }
 
@@ -698,12 +713,18 @@ body.is-sidebar-dragging .sidebar-nest-drop-zone.active-hover {
     pointer-events: none;
 }
 
+/* Кнопки дій у лівій панелі (спільні для блокнотів та нотаток) */
+.sidebar-action-btn,
+.board-delete-btn,
+.board-edit-btn,
+.board-share-btn,
+.board-clone-btn,
 .delete-btn {
     background: none;
     border: none;
     color: var(--text-muted);
     cursor: pointer;
-    opacity: 0;
+    opacity: 0.75;
     width: 22px;
     height: 22px;
     border-radius: 4px;
@@ -712,75 +733,26 @@ body.is-sidebar-dragging .sidebar-nest-drop-zone.active-hover {
     justify-content: center;
     transition: opacity 0.2s cubic-bezier(0.2, 0, 0, 1), background-color 0.15s ease, color 0.15s ease;
     flex-shrink: 0;
-    margin-left: auto;
+    padding: 0;
 }
 
-.note-item:hover .delete-btn {
-    opacity: 0.8;
+.sidebar-action-btn:hover,
+.board-edit-btn:hover,
+.board-share-btn:hover,
+.board-clone-btn:hover,
+.share-btn:hover,
+.edit-btn:hover {
+    background-color: var(--hover-bg);
+    color: var(--accent-color);
+    opacity: 1 !important;
 }
 
+.sidebar-action-btn.delete-btn:hover,
+.board-delete-btn:hover,
 .delete-btn:hover {
-    background-color: rgba(255, 99, 99, 0.2);
-    color: var(--danger-color);
+    background-color: rgba(255, 99, 99, 0.2) !important;
+    color: var(--danger-color) !important;
     opacity: 1 !important;
-}
-
-/* Кнопки блокнота (з'являються при наведенні на рядок дошки) */
-.board-delete-btn, .board-edit-btn {
-    background: none;
-    border: none;
-    color: var(--text-muted);
-    cursor: pointer;
-    opacity: 0.75;
-    width: 22px;
-    height: 22px;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: opacity 0.2s cubic-bezier(0.2, 0, 0, 1), background-color 0.15s ease, color 0.15s ease;
-    flex-shrink: 0;
-}
-
-.board-edit-btn:hover {
-    background-color: var(--hover-bg);
-    color: var(--accent-color);
-    opacity: 1 !important;
-}
-
-.board-delete-btn:hover {
-    background-color: rgba(255, 99, 99, 0.2);
-    color: var(--danger-color);
-    opacity: 1 !important;
-}
-
-.board-share-btn, .board-clone-btn {
-    background: none;
-    border: none;
-    color: var(--text-muted);
-    cursor: pointer;
-    opacity: 0.75;
-    width: 22px;
-    height: 22px;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: opacity 0.2s cubic-bezier(0.2, 0, 0, 1), background-color 0.15s ease, color 0.15s ease;
-    flex-shrink: 0;
-}
-
-.board-share-btn:hover, .board-clone-btn:hover {
-    background-color: var(--hover-bg);
-    color: var(--accent-color);
-    opacity: 1 !important;
-}
-
-.board-item:hover .board-actions,
-.board-item:hover .board-item-actions {
-    opacity: 1;
-    max-width: 90px;
-    pointer-events: auto;
 }
 
 .shared-board-lock-icon {
