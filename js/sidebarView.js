@@ -44,6 +44,23 @@ window.App = window.App || {};
                     }
                 });
             }
+
+            // Кнопка входу та налаштувань у сайдбарі
+            if (els.sidebarLoginBtn) {
+                els.sidebarLoginBtn.addEventListener('click', () => {
+                    if (window.App.authModal) {
+                        window.App.authModal.open();
+                    }
+                });
+            }
+
+            if (els.sidebarSettingsBtn) {
+                els.sidebarSettingsBtn.addEventListener('click', () => {
+                    if (window.App.settingsModal) {
+                        window.App.settingsModal.open();
+                    }
+                });
+            }
         },
 
         openMobileSidebar() {

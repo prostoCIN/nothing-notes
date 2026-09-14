@@ -134,6 +134,29 @@ function bootstrapApp() {
         window.App.cloudSync.init();
     }
 
+    // Делегована глобальна обробка кліків по кнопках входу та налаштувань (гарантія роботи за будь-якого стану DOM)
+    document.addEventListener('click', (e) => {
+        const loginTrigger = e.target.closest('#sidebar-login-btn, #welcome-login-btn, #settings-login-btn, .sidebar-login-btn');
+        if (loginTrigger) {
+            e.preventDefault();
+            if (window.App.settingsModal && window.App.settingsModal.close) {
+                window.App.settingsModal.close();
+            }
+            if (window.App.authModal) {
+                window.App.authModal.open();
+            }
+            return;
+        }
+
+        const settingsTrigger = e.target.closest('#sidebar-settings-btn, .sidebar-settings-guest-btn');
+        if (settingsTrigger) {
+            e.preventDefault();
+            if (window.App.settingsModal) {
+                window.App.settingsModal.open();
+            }
+            return;
+        }
+    });
 
     // Початкова перевірка стану
     initApp();

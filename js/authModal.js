@@ -11,7 +11,12 @@ window.App = window.App || {};
         },
 
         createModalDOM() {
-            if (modalEl) return;
+            if (modalEl) {
+                if (document.body && !document.body.contains(modalEl)) {
+                    document.body.appendChild(modalEl);
+                }
+                return;
+            }
 
             modalEl = document.createElement('div');
             modalEl.id = 'auth-modal';
@@ -132,7 +137,9 @@ window.App = window.App || {};
                 </div>
             `;
 
-            document.body.appendChild(modalEl);
+            if (document.body && !document.body.contains(modalEl)) {
+                document.body.appendChild(modalEl);
+            }
 
             let isSignUpMode = false;
             const form = modalEl.querySelector('#auth-form');
@@ -398,9 +405,12 @@ window.App = window.App || {};
         },
 
         open(isSignUp = false) {
-            if (!modalEl) this.createModalDOM();
+            this.createModalDOM();
+            if (!modalEl) return;
             modalEl.style.display = 'flex';
-            setTimeout(() => modalEl.classList.add('active'), 10);
+            // Force reflow for guaranteed transition triggering
+            void modalEl.offsetHeight;
+            modalEl.classList.add('active');
             if (setModeFn) {
                 setModeFn(Boolean(isSignUp));
             }
@@ -410,7 +420,9 @@ window.App = window.App || {};
             if (!modalEl) return;
             modalEl.classList.remove('active');
             setTimeout(() => {
-                modalEl.style.display = 'none';
+                if (modalEl && !modalEl.classList.contains('active')) {
+                    modalEl.style.display = 'none';
+                }
             }, 200);
         }
     };

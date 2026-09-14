@@ -10,8 +10,10 @@ window.App = window.App || {};
         bindEvents() {
             const els = window.App.getElements();
 
-            if (els.welcomeLoginBtn) {
-                els.welcomeLoginBtn.addEventListener('click', () => {
+            const loginBtn = els.welcomeLoginBtn || document.getElementById('welcome-login-btn');
+            if (loginBtn) {
+                loginBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
                     if (window.App.authModal) {
                         window.App.authModal.open();
                     }

@@ -78,13 +78,21 @@ window.App = window.App || {};
                 this.pullFromCloud();
             });
 
+            // Миттєво синхронно оновлюємо стан профілю в сайдбарі для готовності кнопок
+            this.updateAuthUI(currentUser);
+
             const supabase = window.App.supabase;
             if (!supabase) return;
 
             // Відстежуємо стан сесії користувача
-            supabase.auth.getSession().then(({ data: { session } }) => {
-                this.handleAuthChange(session ? session.user : null);
-            });
+            supabase.auth.getSession()
+                .then(({ data: { session } }) => {
+                    this.handleAuthChange(session ? session.user : null);
+                })
+                .catch(err => {
+                    console.warn('[CloudSync] getSession error:', err);
+                    this.updateAuthUI(null);
+                });
 
             supabase.auth.onAuthStateChange((event, session) => {
                 if (event === 'USER_UPDATED') {
