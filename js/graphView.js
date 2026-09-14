@@ -446,6 +446,7 @@ window.App = window.App || {};
             const springK = 0.005;
             const damping = 0.88;
             const centerAttraction = 0.0008;
+            const maxVelocity = 20;
 
             const dpr = window.devicePixelRatio || 1;
             const centerX = canvas ? (canvas.width / dpr) / 2 : 400;
@@ -458,10 +459,13 @@ window.App = window.App || {};
                     const n2 = nodes[j];
                     let dx = n2.x - n1.x;
                     let dy = n2.y - n1.y;
-                    let dist = Math.sqrt(dx * dx + dy * dy) || 1;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 1) dist = 1;
 
                     if (dist < 320) {
-                        let force = (repulsion / (dist * dist));
+                        // Запобігаємо вибуху сили при дуже близьких або однакових координатах
+                        const effectiveDist = Math.max(15, dist);
+                        let force = (repulsion / (effectiveDist * effectiveDist));
                         let fx = (dx / dist) * force;
                         let fy = (dy / dist) * force;
 
@@ -483,7 +487,7 @@ window.App = window.App || {};
                 }
             }
 
-            // 2. Сила пружин по зв'язках (Hooke's Law)
+            // 2. Сила пружин по зв'язках (Hooke's Law: дія та протидія рівні й протилежні)
             edges.forEach(edge => {
                 const s = edge.source;
                 const t = edge.target;
@@ -501,18 +505,25 @@ window.App = window.App || {};
                     s.vy += fy;
                 }
                 if (t !== draggedNode) {
-                    t.vx += fx;
-                    t.vy += fy;
+                    t.vx -= fx;
+                    t.vy -= fy;
                 }
             });
 
-            // 3. Застосування швидкості та затухання з розрахунком сумарної енергії
+            // 3. Застосування швидкості та затухання з лімітом швидкості та розрахунком сумарної енергії
             let totalMovement = 0;
             nodes.forEach(node => {
                 if (node === draggedNode) return;
 
                 node.vx *= damping;
                 node.vy *= damping;
+
+                // Обмежуємо максимальну швидкість для стабільності симуляції
+                const speed = Math.hypot(node.vx, node.vy);
+                if (speed > maxVelocity) {
+                    node.vx = (node.vx / speed) * maxVelocity;
+                    node.vy = (node.vy / speed) * maxVelocity;
+                }
 
                 node.x += node.vx;
                 node.y += node.vy;
