@@ -140,22 +140,24 @@ window.App = window.App || {};
 
             container.innerHTML = `
                 <div class="graph-toolbar">
-                    <div class="graph-title-pill">
-                        <span class="graph-title-icon">🕸️</span>
-                        <span class="graph-title-text">${currentBoard.name}</span>
-                        <span class="graph-nodes-count" id="graph-nodes-counter">0 зв'язків</span>
-                    </div>
+                    <div class="graph-toolbar-left">
+                        <div class="graph-title-pill">
+                            <span class="graph-title-icon">🕸️</span>
+                            <span class="graph-title-text">${currentBoard.name}</span>
+                            <span class="graph-nodes-count" id="graph-nodes-counter">0 зв'язків</span>
+                        </div>
 
-                    <div class="graph-toolbar-filters">
-                        <button class="graph-toolbar-filter-btn is-orphans-btn" id="graph-filter-orphans" title="Показати лише ізольовані нотатки без піднотаток та батьків">
-                            <span class="filter-btn-icon">🏝️</span>
-                            <span class="filter-btn-label">Сироти</span>
-                            <span class="filter-btn-badge" id="graph-orphans-counter">0</span>
-                        </button>
-                        <button class="graph-toolbar-filter-btn is-active" id="graph-toggle-tag-links" title="Увімкнути/вимкнути пунктирні зв'язки між нотатками зі спільними тегами">
-                            <span class="filter-btn-icon">🏷️</span>
-                            <span class="filter-btn-label">Зв'язки тегів</span>
-                        </button>
+                        <div class="graph-toolbar-filters">
+                            <button class="graph-toolbar-filter-btn is-orphans-btn" id="graph-filter-orphans" title="Показати лише ізольовані нотатки без піднотаток та батьків">
+                                <span class="filter-btn-icon">🏝️</span>
+                                <span class="filter-btn-label">Сироти</span>
+                                <span class="filter-btn-badge" id="graph-orphans-counter">0</span>
+                            </button>
+                            <button class="graph-toolbar-filter-btn is-active" id="graph-toggle-tag-links" title="Увімкнути/вимкнути пунктирні зв'язки між нотатками зі спільними тегами">
+                                <span class="filter-btn-icon">🏷️</span>
+                                <span class="filter-btn-label">Зв'язки тегів</span>
+                            </button>
+                        </div>
                     </div>
 
                     <div class="graph-top-actions">
