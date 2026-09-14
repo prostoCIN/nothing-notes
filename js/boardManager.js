@@ -174,6 +174,9 @@ window.App = window.App || {};
                 storage.saveNotes(state.notes);
 
                 if (window.App.cloudSync) {
+                    if (window.App.cloudSync.deleteBoardFromCloud) {
+                        window.App.cloudSync.deleteBoardFromCloud(id);
+                    }
                     window.App.cloudSync.syncBoards();
                     deletedNotes.forEach(dn => window.App.cloudSync.deleteNoteFromCloud(dn.id));
                     // Видаляємо посилання шерингу цього блокнота, щоб не лишати «мертвих» записів у базі

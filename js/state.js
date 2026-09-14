@@ -143,6 +143,8 @@ window.App.storage = {
         localStorage.removeItem('minimal_board_tag_options');
         localStorage.removeItem('minimal_column_layouts');
         localStorage.removeItem('minimal_graph_view_mode');
+        localStorage.removeItem('minimal_offline_sync_queue');
+        localStorage.removeItem('minimal_locally_deleted_ids');
     }
 };
 

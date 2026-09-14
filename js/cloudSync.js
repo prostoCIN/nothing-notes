@@ -12,7 +12,56 @@ window.App = window.App || {};
     let _deferredPulledNotes = null;
     let pullDebounceTimer = null;
     let lastLocalEditTimestamps = new Map(); // id -> timestamp
-    let locallyDeletedNoteIds = new Set(); // Захист від воскресіння видалених нотаток через Realtime
+
+    // Персистентний кеш локально видалених ID для надійного захисту від воскресіння нотаток
+    let locallyDeletedNoteIds = new Set();
+    try {
+        const savedDeleted = JSON.parse(localStorage.getItem('minimal_locally_deleted_ids'));
+        if (Array.isArray(savedDeleted)) {
+            locallyDeletedNoteIds = new Set(savedDeleted);
+        }
+    } catch (e) {}
+
+    function persistDeletedId(id) {
+        if (!id) return;
+        locallyDeletedNoteIds.add(id);
+        try {
+            localStorage.setItem('minimal_locally_deleted_ids', JSON.stringify(Array.from(locallyDeletedNoteIds)));
+        } catch (e) {}
+    }
+
+    // Персистентна черга офлайн-змін (localStorage)
+    function getOfflineQueue() {
+        try {
+            return JSON.parse(localStorage.getItem('minimal_offline_sync_queue')) || [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function saveOfflineQueue(queue) {
+        try {
+            localStorage.setItem('minimal_offline_sync_queue', JSON.stringify(queue));
+        } catch (e) {}
+    }
+
+    function queueOfflineAction(action) {
+        if (!action || !action.id) return;
+        const queue = getOfflineQueue();
+        const filtered = queue.filter(item => !(item.id === action.id && item.type === action.type));
+        filtered.push({ ...action, timestamp: Date.now() });
+        saveOfflineQueue(filtered);
+    }
+
+    function removeOfflineAction(id, type = null) {
+        if (!id) return;
+        const queue = getOfflineQueue();
+        const filtered = queue.filter(item => {
+            if (type) return !(item.id === id && item.type === type);
+            return item.id !== id;
+        });
+        saveOfflineQueue(filtered);
+    }
 
     window.App.cloudSync = {
         init() {
@@ -21,6 +70,13 @@ window.App = window.App || {};
                     window.App.supabaseConfig.initClient();
                 }
             }
+
+            // Відстежуємо повернення пристрою онлайн для миттєвого скидання черги
+            window.addEventListener('online', () => {
+                console.log('[CloudSync] 🌐 Device is back online. Flushing offline queue & pulling latest changes...');
+                this.flushOfflineQueue();
+                this.pullFromCloud();
+            });
 
             const supabase = window.App.supabase;
             if (!supabase) return;
@@ -49,6 +105,50 @@ window.App = window.App || {};
 
                 this._realtimeChannel = supabase
                     .channel('notes-realtime-channel')
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'boards' }, async (payload) => {
+                        console.log('[CloudSync] ⚡ Realtime board change detected:', payload.eventType, payload);
+                        const state = window.App.state;
+                        if (!state) return;
+
+                        if (payload.eventType === 'DELETE' && payload.old && payload.old.id) {
+                            const delBoardId = payload.old.id;
+                            if (state.boards.some(b => b.id === delBoardId)) {
+                                state.boards = state.boards.filter(b => b.id !== delBoardId);
+                                window.App.storage.saveBoards(state.boards);
+                                if (state.activeBoardId === delBoardId) {
+                                    state.activeBoardId = state.boards.length > 0 ? state.boards[0].id : null;
+                                    window.App.storage.saveActiveBoardId(state.activeBoardId);
+                                }
+                                if (window.App.sidebarView) window.App.sidebarView.render();
+                                if (window.App.workspaceView) window.App.workspaceView.render();
+                            }
+                        } else if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+                            const newB = payload.new;
+                            if (newB && newB.id) {
+                                const existingIdx = state.boards.findIndex(b => b.id === newB.id);
+                                const mapped = {
+                                    id: newB.id,
+                                    name: newB.name,
+                                    icon: newB.icon || null,
+                                    createdAt: newB.created_at ? new Date(newB.created_at).getTime() : Date.now(),
+                                    orderIndex: typeof newB.order_index === 'number' ? newB.order_index : 0
+                                };
+                                if (existingIdx !== -1) {
+                                    state.boards[existingIdx] = mapped;
+                                } else {
+                                    state.boards.push(mapped);
+                                }
+                                if (newB.tag_options && Array.isArray(newB.tag_options)) {
+                                    const allBoardsTags = JSON.parse(localStorage.getItem('minimal_board_tag_options')) || {};
+                                    allBoardsTags[newB.id] = newB.tag_options;
+                                    localStorage.setItem('minimal_board_tag_options', JSON.stringify(allBoardsTags));
+                                }
+                                window.App.storage.saveBoards(state.boards);
+                                if (window.App.sidebarView) window.App.sidebarView.render();
+                                if (window.App.workspaceView) window.App.workspaceView.render();
+                            }
+                        }
+                    })
                     .on('postgres_changes', { event: '*', schema: 'public', table: 'notes' }, (payload) => {
                         console.log('[CloudSync] ⚡ Realtime change detected from cloud:', payload.eventType, payload);
 
@@ -214,32 +314,85 @@ window.App = window.App || {};
             isPullingFromCloud = true;
 
             try {
-                // Отримуємо найсвіжіші дані користувача з сервера (user_metadata)
+                // Отримуємо найсвіжіші дані користувача з сервера
                 const { data: freshUserResp } = await supabase.auth.getUser();
                 if (freshUserResp && freshUserResp.user) {
                     currentUser = freshUserResp.user;
                 }
 
-                const savedBoards = currentUser?.user_metadata?.boards;
-                if (Array.isArray(savedBoards) && savedBoards.length > 0) {
-                    state.boards = savedBoards;
+                // 1. Завантаження блокнотів із таблиці `boards`
+                const { data: dbBoards, error: boardsErr } = await supabase
+                    .from('boards')
+                    .select('*')
+                    .order('order_index', { ascending: true, nullsFirst: false })
+                    .order('created_at', { ascending: true });
+
+                if (boardsErr) {
+                    console.warn('[CloudSync] Error fetching boards from table:', boardsErr.message);
+                }
+
+                if (dbBoards && dbBoards.length > 0) {
+                    state.boards = dbBoards.map(b => ({
+                        id: b.id,
+                        name: b.name,
+                        icon: b.icon || null,
+                        createdAt: b.created_at ? new Date(b.created_at).getTime() : Date.now(),
+                        orderIndex: typeof b.order_index === 'number' ? b.order_index : 0
+                    }));
                     window.App.storage.saveBoards(state.boards);
+
+                    // Відновлюємо збережені теги кожного блокнота
+                    const allBoardsTags = JSON.parse(localStorage.getItem('minimal_board_tag_options')) || {};
+                    dbBoards.forEach(b => {
+                        if (b.tag_options && Array.isArray(b.tag_options)) {
+                            allBoardsTags[b.id] = b.tag_options;
+                        }
+                    });
+                    localStorage.setItem('minimal_board_tag_options', JSON.stringify(allBoardsTags));
+
                     if (!state.activeBoardId || !state.boards.find(b => b.id === state.activeBoardId)) {
                         state.activeBoardId = state.boards[0].id;
                         window.App.storage.saveActiveBoardId(state.activeBoardId);
                     }
-                } else if (state.boards.length > 0) {
-                    // Якщо в хмарі ще немає збережених блокнотів — вивантажуємо поточні оригінальні блокноти
-                    await this.syncBoards();
+                } else {
+                    // Безшовна міграція: якщо в таблиці ще пусто, але є дані в user_metadata чи state.boards
+                    const legacyBoards = currentUser?.user_metadata?.boards;
+                    const boardsToMigrate = (Array.isArray(legacyBoards) && legacyBoards.length > 0)
+                        ? legacyBoards
+                        : state.boards;
+
+                    if (Array.isArray(boardsToMigrate) && boardsToMigrate.length > 0) {
+                        state.boards = boardsToMigrate;
+                        window.App.storage.saveBoards(state.boards);
+                        if (!state.activeBoardId || !state.boards.find(b => b.id === state.activeBoardId)) {
+                            state.activeBoardId = state.boards[0].id;
+                            window.App.storage.saveActiveBoardId(state.activeBoardId);
+                        }
+                        await this.syncBoards();
+                    }
                 }
 
-                // Синхронізація спільних блокнотів для читання (Shared Read-Only Boards)
-                const savedSharedTokens = currentUser?.user_metadata?.shared_board_tokens;
-                if (Array.isArray(savedSharedTokens) && savedSharedTokens.length > 0 && window.App.shareManager) {
+                // 2. Синхронізація спільних блокнотів читача з таблиці `user_shared_tokens` (з fallback до user_metadata)
+                let sharedTokens = [];
+                const { data: dbSharedTokens } = await supabase
+                    .from('user_shared_tokens')
+                    .select('share_token');
+
+                if (dbSharedTokens && dbSharedTokens.length > 0) {
+                    sharedTokens = dbSharedTokens.map(t => t.share_token).filter(Boolean);
+                } else {
+                    const legacyTokens = currentUser?.user_metadata?.shared_board_tokens;
+                    if (Array.isArray(legacyTokens) && legacyTokens.length > 0) {
+                        sharedTokens = legacyTokens;
+                        await this.syncSharedTokens(legacyTokens);
+                    }
+                }
+
+                if (sharedTokens.length > 0 && window.App.shareManager) {
                     const loadedSharedBoards = [];
                     const loadedSharedNotes = [];
 
-                    for (const token of savedSharedTokens) {
+                    for (const token of sharedTokens) {
                         try {
                             const info = await window.App.shareManager.fetchShareInfo(token);
                             if (info && info.board && info.notes) {
@@ -259,12 +412,6 @@ window.App = window.App || {};
                     }
                 }
 
-                // Синхронізація доступних варіантів тегів
-                const savedTagOptions = currentUser?.user_metadata?.board_tag_options;
-                if (savedTagOptions && typeof savedTagOptions === 'object') {
-                    localStorage.setItem('minimal_board_tag_options', JSON.stringify(savedTagOptions));
-                }
-
                 const { data: cloudNotes, error } = await supabase
                     .from('notes')
                     .select('*')
@@ -279,8 +426,14 @@ window.App = window.App || {};
                 if (cloudNotes) {
                     const firstBoardId = (state.boards && state.boards[0]) ? state.boards[0].id : null;
                     const localMap = new Map(state.notes.map(n => [n.id, n]));
+                    const offlineQueue = getOfflineQueue();
+                    const pendingUpsertIds = new Set(offlineQueue.filter(i => i.type === 'upsert_note').map(i => i.id));
+                    const pendingDeleteIds = new Set(offlineQueue.filter(i => i.type === 'delete_note').map(i => i.id));
 
-                    const formattedNotes = cloudNotes.map(n => {
+                    // Відкидаємо нотатки, які були видалені локально
+                    const validCloudNotes = cloudNotes.filter(n => !locallyDeletedNoteIds.has(n.id) && !pendingDeleteIds.has(n.id));
+
+                    const formattedNotes = validCloudNotes.map(n => {
                         const localNote = localMap.get(n.id);
                         const resolvedBoardId = n.board_id || (localNote ? localNote.boardId : null) || firstBoardId;
 
@@ -289,10 +442,12 @@ window.App = window.App || {};
                         }
 
                         const cloudUpdatedAt = n.updated_at ? new Date(n.updated_at).getTime() : 0;
-                        const hasPendingSync = this._pendingSyncNotesMap && this._pendingSyncNotesMap.has(n.id);
+                        const hasPendingSync = (this._pendingSyncNotesMap && this._pendingSyncNotesMap.has(n.id)) || pendingUpsertIds.has(n.id);
                         const isLocalNewer = localNote && localNote.updatedAt && (localNote.updatedAt > cloudUpdatedAt);
 
                         if (localNote && (hasPendingSync || isLocalNewer)) {
+                            // Локальна версія новіша або містить несинхронізовані зміни — зберігаємо її
+                            queueOfflineAction({ type: 'upsert_note', id: localNote.id });
                             return { ...localNote, boardId: resolvedBoardId };
                         }
 
@@ -315,14 +470,13 @@ window.App = window.App || {};
                         };
                     });
 
-                    // Зберігаємо локальні нотатки, які ще очікують відправки в хмару та не повернулися з бекенду
+                    // Зберігаємо локальні нотатки, яких ще немає в хмарі (офлайн створення)
                     const cloudIds = new Set(cloudNotes.map(n => n.id));
                     state.notes.forEach(localNote => {
-                        if (!cloudIds.has(localNote.id)) {
-                            const hasPending = this._pendingSyncNotesMap && this._pendingSyncNotesMap.has(localNote.id);
-                            if (hasPending) {
-                                formattedNotes.push(localNote);
-                            }
+                        if (!cloudIds.has(localNote.id) && !locallyDeletedNoteIds.has(localNote.id) && !pendingDeleteIds.has(localNote.id)) {
+                            console.log('[CloudSync] 💾 Preserving offline-created note:', localNote.id);
+                            formattedNotes.push(localNote);
+                            queueOfflineAction({ type: 'upsert_note', id: localNote.id });
                         }
                     });
 
@@ -343,6 +497,9 @@ window.App = window.App || {};
 
                     // Вивантажуємо фото з IndexedDB, якщо є локальні
                     await this.uploadMissingLocalImages();
+
+                    // Миттєво синхронізуємо накопичені офлайн-зміни з хмарою
+                    this.flushOfflineQueue();
                 } else {
                     // Якщо в хмарі пусто, але локально є нотатки (офлайн створення) — вивантажуємо їх у хмару
                     if (state.notes.length > 0) {
@@ -369,58 +526,110 @@ window.App = window.App || {};
             }
         },
 
-        // Синхронізація списку блокнотів у метадані користувача
+        // 2.1 Синхронізація списку блокнотів у таблицю `boards` (замість user_metadata)
         async syncBoards() {
             if (!currentUser || !window.App.supabase) return;
             const state = window.App.state;
+            if (!state.boards || state.boards.length === 0) return;
+
             try {
-                const { data, error } = await window.App.supabase.auth.updateUser({
-                    data: {
-                        boards: state.boards
-                    }
-                });
-                if (data && data.user) {
-                    currentUser = data.user;
+                const allBoardsTags = JSON.parse(localStorage.getItem('minimal_board_tag_options')) || {};
+                const payloads = state.boards.map((b, idx) => ({
+                    id: b.id,
+                    user_id: currentUser.id,
+                    name: b.name,
+                    icon: b.icon || null,
+                    order_index: typeof b.orderIndex === 'number' ? b.orderIndex : idx,
+                    tag_options: allBoardsTags[b.id] || ['В процесі', 'Зроблено', 'Виконати пізніше'],
+                    created_at: new Date(b.createdAt || Date.now()).toISOString(),
+                    updated_at: new Date().toISOString()
+                }));
+
+                const { error } = await window.App.supabase
+                    .from('boards')
+                    .upsert(payloads, { onConflict: 'id' });
+
+                if (error) {
+                    console.warn('[CloudSync] boards upsert error:', error.message);
+                } else {
+                    console.log(`[CloudSync] ⚡ Successfully synced ${payloads.length} boards to database table.`);
                 }
             } catch (e) {
-                console.warn('[CloudSync] syncBoards error:', e);
+                console.warn('[CloudSync] syncBoards exception:', e);
             }
         },
 
-        // Синхронізація списку створених користувачем тегів
-        async syncTagOptions() {
+        // 2.2 Видалення блокнота з хмарної таблиці `boards`
+        async deleteBoardFromCloud(boardId) {
+            if (!boardId) return;
+            queueOfflineAction({ type: 'delete_board', id: boardId });
             if (!currentUser || !window.App.supabase) return;
             try {
+                const { error } = await window.App.supabase
+                    .from('boards')
+                    .delete()
+                    .eq('id', boardId);
+
+                if (error) {
+                    console.warn('[CloudSync] deleteBoardFromCloud error:', error.message);
+                } else {
+                    removeOfflineAction(boardId, 'delete_board');
+                    console.log(`[CloudSync] ⚡ Board "${boardId}" deleted from cloud database.`);
+                }
+            } catch (e) {
+                console.warn('[CloudSync] deleteBoardFromCloud exception:', e);
+            }
+        },
+
+        // 2.3 Синхронізація списку створених користувачем тегів для конкретного блокнота в таблицю `boards`
+        async syncTagOptions(boardId = null) {
+            if (!currentUser || !window.App.supabase) return;
+            const state = window.App.state;
+            const targetBoardId = boardId || state.activeBoardId;
+            if (!targetBoardId) return;
+
+            try {
                 const allBoardsTags = JSON.parse(localStorage.getItem('minimal_board_tag_options')) || {};
-                const { data, error } = await window.App.supabase.auth.updateUser({
-                    data: {
-                        board_tag_options: allBoardsTags
-                    }
-                });
-                if (data && data.user) {
-                    currentUser = data.user;
+                const currentTags = allBoardsTags[targetBoardId];
+                if (currentTags && Array.isArray(currentTags)) {
+                    await window.App.supabase
+                        .from('boards')
+                        .update({
+                            tag_options: currentTags,
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('id', targetBoardId);
                 }
             } catch (e) {
                 console.warn('[CloudSync] syncTagOptions error:', e);
             }
         },
 
-        // Синхронізація підключених спільних блокнотів у хмару акаунта
-        async syncSharedTokens() {
+        // 2.4 Синхронізація підключених спільних блокнотів у таблицю `user_shared_tokens`
+        async syncSharedTokens(tokensToSync = null) {
             if (!currentUser || !window.App.supabase) return;
             const state = window.App.state;
             try {
-                const tokens = (state.readOnlyBoards || [])
+                const tokens = tokensToSync || (state.readOnlyBoards || [])
                     .map(b => b.shareToken)
                     .filter(Boolean);
 
-                const { data, error } = await window.App.supabase.auth.updateUser({
-                    data: {
-                        shared_board_tokens: tokens
-                    }
-                });
-                if (data && data.user) {
-                    currentUser = data.user;
+                // Очищаємо старі токени користувача та вставляємо актуальні
+                await window.App.supabase
+                    .from('user_shared_tokens')
+                    .delete()
+                    .eq('user_id', currentUser.id);
+
+                if (tokens.length > 0) {
+                    const payloads = tokens.map(token => ({
+                        user_id: currentUser.id,
+                        share_token: token,
+                        created_at: new Date().toISOString()
+                    }));
+
+                    await window.App.supabase
+                        .from('user_shared_tokens')
+                        .upsert(payloads, { onConflict: 'user_id,share_token' });
                 }
             } catch (e) {
                 console.warn('[CloudSync] syncSharedTokens error:', e);
@@ -469,7 +678,12 @@ window.App = window.App || {};
 
         // 2. Відправка нотатки в хмару (пакетна черга Map для кількох нотаток одночасно)
         syncNote(note) {
-            if (!currentUser || !window.App.supabase || !note) return;
+            if (!note) return;
+
+            // Завжди фіксуємо в персистентній офлайн-черзі
+            queueOfflineAction({ type: 'upsert_note', id: note.id });
+
+            if (!currentUser || !window.App.supabase) return;
 
             lastLocalEditTimestamps.set(note.id, Date.now());
             
@@ -486,7 +700,13 @@ window.App = window.App || {};
 
         // 2.2 Дебаунс синхронізації зміни порядку карток при Drag & Drop
         syncReorderNotes(notes) {
-            if (!currentUser || !window.App.supabase || !notes || notes.length === 0) return;
+            if (!notes || notes.length === 0) return;
+
+            notes.forEach(note => {
+                queueOfflineAction({ type: 'upsert_note', id: note.id });
+            });
+
+            if (!currentUser || !window.App.supabase) return;
 
             const now = Date.now();
             notes.forEach(note => {
@@ -574,6 +794,7 @@ window.App = window.App || {};
                     console.warn('[CloudSync] Bulk note upsert error:', error.message);
                 } else {
                     console.log(`[CloudSync] ⚡ Successfully batch synced ${notes.length} notes to cloud.`);
+                    notes.forEach(n => removeOfflineAction(n.id, 'upsert_note'));
                 }
             } catch (err) {
                 console.warn('[CloudSync] Bulk upsert exception:', err);
@@ -616,6 +837,8 @@ window.App = window.App || {};
 
                 if (error) {
                     console.warn('[CloudSync] Note upsert error:', error.message);
+                } else {
+                    removeOfflineAction(note.id, 'upsert_note');
                 }
             } catch (err) {
                 console.warn('[CloudSync] Upsert exception:', err);
@@ -625,14 +848,20 @@ window.App = window.App || {};
         // 3. Видалення нотаток з хмари (пакетне або поодиноке)
         async deleteNoteFromCloud(noteId) {
             if (!noteId) return;
-            locallyDeletedNoteIds.add(noteId);
+            persistDeletedId(noteId);
+            removeOfflineAction(noteId, 'upsert_note');
+            queueOfflineAction({ type: 'delete_note', id: noteId });
+
             if (this._pendingSyncNotesMap) this._pendingSyncNotesMap.delete(noteId);
 
             if (!currentUser || !window.App.supabase) return;
             const supabase = window.App.supabase;
 
             try {
-                await supabase.from('notes').delete().eq('id', noteId);
+                const { error } = await supabase.from('notes').delete().eq('id', noteId);
+                if (!error) {
+                    removeOfflineAction(noteId, 'delete_note');
+                }
             } catch (err) {
                 console.warn('[CloudSync] Delete exception:', err);
             }
@@ -641,7 +870,9 @@ window.App = window.App || {};
         async deleteNotesFromCloud(noteIds) {
             if (!noteIds || noteIds.length === 0) return;
             noteIds.forEach(id => {
-                locallyDeletedNoteIds.add(id);
+                persistDeletedId(id);
+                removeOfflineAction(id, 'upsert_note');
+                queueOfflineAction({ type: 'delete_note', id });
                 if (this._pendingSyncNotesMap) this._pendingSyncNotesMap.delete(id);
             });
 
@@ -649,10 +880,63 @@ window.App = window.App || {};
             const supabase = window.App.supabase;
 
             try {
-                await supabase.from('notes').delete().in('id', noteIds);
+                const { error } = await supabase.from('notes').delete().in('id', noteIds);
+                if (!error) {
+                    noteIds.forEach(id => removeOfflineAction(id, 'delete_note'));
+                }
                 console.log(`[CloudSync] 🗑️ Batch deleted ${noteIds.length} notes from cloud.`);
             } catch (err) {
                 console.warn('[CloudSync] Batch delete exception:', err);
+            }
+        },
+
+        // Обробка накопиченої черги дій при відновленні зв'язку
+        async flushOfflineQueue() {
+            if (!currentUser || !window.App.supabase || !navigator.onLine) return;
+            const queue = getOfflineQueue();
+            if (!queue || queue.length === 0) return;
+
+            console.log(`[CloudSync] 🔄 Flushing offline queue (${queue.length} items)...`);
+            const state = window.App.state;
+
+            const deleteNoteIds = queue.filter(i => i.type === 'delete_note').map(i => i.id);
+            const deleteBoardIds = queue.filter(i => i.type === 'delete_board').map(i => i.id);
+            const upsertNoteIds = new Set(queue.filter(i => i.type === 'upsert_note').map(i => i.id));
+
+            // 1. Видалення накопичених нотаток
+            if (deleteNoteIds.length > 0) {
+                try {
+                    const { error } = await window.App.supabase.from('notes').delete().in('id', deleteNoteIds);
+                    if (!error) {
+                        deleteNoteIds.forEach(id => removeOfflineAction(id, 'delete_note'));
+                        console.log(`[CloudSync] ⚡ Successfully flushed ${deleteNoteIds.length} offline note deletes.`);
+                    }
+                } catch (e) {
+                    console.warn('[CloudSync] Error flushing delete notes queue:', e);
+                }
+            }
+
+            // 2. Видалення накопичених блокнотів
+            if (deleteBoardIds.length > 0) {
+                try {
+                    for (const bId of deleteBoardIds) {
+                        const { error } = await window.App.supabase.from('boards').delete().eq('id', bId);
+                        if (!error) {
+                            removeOfflineAction(bId, 'delete_board');
+                            console.log(`[CloudSync] ⚡ Successfully flushed offline delete for board "${bId}".`);
+                        }
+                    }
+                } catch (e) {
+                    console.warn('[CloudSync] Error flushing delete boards queue:', e);
+                }
+            }
+
+            // 3. Відправка накопичених оновлень/створень нотаток
+            if (upsertNoteIds.size > 0 && state && state.notes) {
+                const notesToPush = state.notes.filter(n => upsertNoteIds.has(n.id));
+                if (notesToPush.length > 0) {
+                    await this._pushMultipleNotesToCloud(notesToPush);
+                }
             }
         },
 
