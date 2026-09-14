@@ -853,7 +853,15 @@ body.is-sidebar-dragging .sidebar-nest-drop-zone.active-hover {
 }
 
 .share-modal-icon {
-    font-size: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-main, #ffffff);
+    flex-shrink: 0;
+}
+
+.share-modal-icon svg {
+    display: block;
 }
 
 .share-modal-title {
@@ -1027,7 +1035,14 @@ body.is-sidebar-dragging .sidebar-nest-drop-zone.active-hover {
 .share-modal-status {
     font-size: 12px;
     line-height: 1.4;
-    min-height: 16px;
+    min-height: 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.share-modal-status svg {
+    flex-shrink: 0;
 }
 
 .share-modal-status.success {
@@ -1086,9 +1101,15 @@ body.is-sidebar-dragging .sidebar-nest-drop-zone.active-hover {
 }
 
 .share-tab-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
-    font-size: 13px;
     line-height: 1;
+}
+
+.share-tab-icon svg {
+    display: block;
 }
 
 .share-modal-tab-btn:hover {

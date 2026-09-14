@@ -509,24 +509,60 @@ window.App = window.App || {};
                 <div class="share-modal-card">
                     <div class="share-modal-header">
                         <div class="share-modal-title-wrap">
-                            <span class="share-modal-icon">🔗</span>
+                            <span class="share-modal-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="18" cy="5" r="3"></circle>
+                                    <circle cx="6" cy="12" r="3"></circle>
+                                    <circle cx="18" cy="19" r="3"></circle>
+                                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                                </svg>
+                            </span>
                             <h3 class="share-modal-title">${titleText}</h3>
                         </div>
-                        <button class="share-modal-close-btn" id="share-modal-close" title="Закрити (Esc)">×</button>
+                        <button class="share-modal-close-btn" id="share-modal-close" title="Закрити (Esc)">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
                     </div>
 
                     <!-- Вкладки режимів шерингу -->
                     <div class="share-modal-tabs">
                         <button type="button" class="share-modal-tab-btn ${defaultTab === 'nothingnotes' ? 'active' : ''}" data-tab="nothingnotes" title="NothingNotes">
-                            <span class="share-tab-icon">👥</span>
+                            <span class="share-tab-icon">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                            </span>
                             <span class="share-tab-text">NothingNotes</span>
                         </button>
                         <button type="button" class="share-modal-tab-btn ${defaultTab === 'ai' ? 'active' : ''}" data-tab="ai" title="ШІ & Raw">
-                            <span class="share-tab-icon">🤖</span>
+                            <span class="share-tab-icon">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="11" width="18" height="10" rx="2"></rect>
+                                    <circle cx="12" cy="5" r="2"></circle>
+                                    <path d="M12 7v4"></path>
+                                    <line x1="8" y1="16" x2="8.01" y2="16"></line>
+                                    <line x1="16" y1="16" x2="16.01" y2="16"></line>
+                                </svg>
+                            </span>
                             <span class="share-tab-text">ШІ & Raw</span>
                         </button>
                         <button type="button" class="share-modal-tab-btn ${defaultTab === 'export' ? 'active' : ''}" data-tab="export" title="Експорт .md">
-                            <span class="share-tab-icon">📝</span>
+                            <span class="share-tab-icon">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                                    <polyline points="10 9 9 9 8 9"></polyline>
+                                </svg>
+                            </span>
                             <span class="share-tab-text">Експорт .md</span>
                         </button>
                     </div>
@@ -762,8 +798,8 @@ window.App = window.App || {};
                 aiInput.value = 'Створення безпечного посилання...';
                 nnCopyBtn.disabled = true;
                 aiCopyBtn.disabled = true;
-                nnStatus.textContent = '';
-                aiStatus.textContent = '';
+                setStatusMessage(nnStatus, '');
+                setStatusMessage(aiStatus, '');
                 aiPreviewLink.style.display = 'none';
 
                 try {
@@ -780,13 +816,24 @@ window.App = window.App || {};
                     const errMsg = err.message || 'Не вдалося створити посилання. Перевірте авторизацію.';
                     nnInput.value = 'Потрібен вхід в акаунт';
                     aiInput.value = 'Потрібен вхід в акаунт';
-                    nnStatus.textContent = errMsg;
-                    nnStatus.className = 'share-modal-status error';
-                    aiStatus.textContent = errMsg;
-                    aiStatus.className = 'share-modal-status error';
+                    setStatusMessage(nnStatus, errMsg, true);
+                    setStatusMessage(aiStatus, errMsg, true);
                 } finally {
                     isGenerating = false;
                 }
+            };
+
+            const setStatusMessage = (el, message, isError = false) => {
+                if (!el) return;
+                el.className = `share-modal-status ${isError ? 'error' : 'success'}`;
+                if (!message) {
+                    el.innerHTML = '';
+                    return;
+                }
+                const iconSvg = isError
+                    ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`
+                    : `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+                el.innerHTML = `${iconSvg}<span>${message}</span>`;
             };
 
             if (cloneToggle) {
@@ -799,8 +846,7 @@ window.App = window.App || {};
                 if (!nnInput.value || nnInput.value.startsWith('Створення')) return;
                 try {
                     await navigator.clipboard.writeText(nnInput.value);
-                    nnStatus.textContent = '✅ Посилання NothingNotes скопійовано!';
-                    nnStatus.className = 'share-modal-status success';
+                    setStatusMessage(nnStatus, 'Посилання NothingNotes скопійовано!');
                 } catch (e) {
                     nnInput.select();
                     document.execCommand('copy');
@@ -812,8 +858,7 @@ window.App = window.App || {};
                 if (!aiInput.value || aiInput.value.startsWith('Створення')) return;
                 try {
                     await navigator.clipboard.writeText(aiInput.value);
-                    aiStatus.textContent = '✅ AI/Raw посилання скопійовано! Надішліть його ChatGPT або Claude.';
-                    aiStatus.className = 'share-modal-status success';
+                    setStatusMessage(aiStatus, 'AI / Raw посилання скопійовано! Надішліть його ChatGPT або Claude.');
                 } catch (e) {
                     aiInput.select();
                     document.execCommand('copy');
@@ -834,8 +879,7 @@ window.App = window.App || {};
                         </svg>
                         <span>Скопійовано!</span>
                     `;
-                    mdStatus.textContent = '✅ Markdown тексту скопійовано в буфер обміну!';
-                    mdStatus.className = 'share-modal-status success';
+                    setStatusMessage(mdStatus, 'Markdown тексту скопійовано в буфер обміну!');
 
                     setTimeout(() => {
                         mdCopyBtn.innerHTML = `
@@ -847,19 +891,16 @@ window.App = window.App || {};
                         `;
                     }, 2500);
                 } catch (e) {
-                    mdStatus.textContent = 'Не вдалося скопіювати автоматично';
-                    mdStatus.className = 'share-modal-status error';
+                    setStatusMessage(mdStatus, 'Не вдалося скопіювати автоматично', true);
                 }
             });
 
             mdDownloadBtn.addEventListener('click', () => {
                 try {
                     this.downloadMarkdownFile(exportDocName, markdownContent);
-                    mdStatus.textContent = `✅ Файл "${exportDocName}.md" успішно завантажено!`;
-                    mdStatus.className = 'share-modal-status success';
+                    setStatusMessage(mdStatus, `Файл "${exportDocName}.md" успішно завантажено!`);
                 } catch (e) {
-                    mdStatus.textContent = 'Помилка при збереженні файлу';
-                    mdStatus.className = 'share-modal-status error';
+                    setStatusMessage(mdStatus, 'Помилка при збереженні файлу', true);
                 }
             });
         },
@@ -939,7 +980,12 @@ window.App = window.App || {};
             rawCopyBtn.addEventListener('click', async () => {
                 try {
                     await navigator.clipboard.writeText(markdownContent);
-                    rawCopyBtn.innerHTML = '<span>✅ Скопійовано!</span>';
+                    rawCopyBtn.innerHTML = `
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>Скопійовано!</span>
+                    `;
                     setTimeout(() => {
                         rawCopyBtn.innerHTML = `
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
