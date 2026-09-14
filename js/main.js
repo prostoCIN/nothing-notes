@@ -57,6 +57,7 @@ import './cloudSync.js';
 import './shareManager.js';
 import './authModal.js';
 import './settingsModal.js';
+import './accountManager.js';
 
 // 5. Головний оркестратор та ініціалізація додатку
 import './app.js';

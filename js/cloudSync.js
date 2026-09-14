@@ -78,6 +78,11 @@ window.App = window.App || {};
                 this.pullFromCloud();
             });
 
+            // Ініціалізуємо менеджер мульти-акаунтів
+            if (window.App.accountManager) {
+                window.App.accountManager.init();
+            }
+
             // Миттєво синхронно оновлюємо стан профілю в сайдбарі для готовності кнопок
             this.updateAuthUI(currentUser);
 
@@ -87,6 +92,9 @@ window.App = window.App || {};
             // Відстежуємо стан сесії користувача
             supabase.auth.getSession()
                 .then(({ data: { session } }) => {
+                    if (session && window.App.accountManager) {
+                        window.App.accountManager.saveAccountFromSession(session);
+                    }
                     this.handleAuthChange(session ? session.user : null);
                 })
                 .catch(err => {
@@ -95,6 +103,9 @@ window.App = window.App || {};
                 });
 
             supabase.auth.onAuthStateChange((event, session) => {
+                if (session && window.App.accountManager) {
+                    window.App.accountManager.saveAccountFromSession(session);
+                }
                 if (event === 'USER_UPDATED') {
                     if (session && session.user) {
                         currentUser = session.user;
@@ -253,6 +264,32 @@ window.App = window.App || {};
         async handleAuthChange(user) {
             const wasLoggedIn = !!currentUser;
             const isSameUser = currentUser && user && currentUser.id === user.id;
+
+            // Якщо змінився користувач (наприклад, перемикання між акаунтами)
+            if (wasLoggedIn && user && !isSameUser) {
+                const state = window.App.state;
+                state.boards = [];
+                state.notes = [];
+                state.readOnlyBoards = [];
+                state.readOnlyNotes = [];
+                state.activeBoardId = null;
+                state.activeChain = [null];
+                state.expandedSidebarNoteIds.clear();
+                state.selectedSidebarNoteIds.clear();
+                state.selectedWorkspaceNoteIds.clear();
+                state.isWorkspaceSelectMode = false;
+
+                if (window.App.storage) {
+                    window.App.storage.clearAll();
+                }
+                if (window.App.imageDb) {
+                    await window.App.imageDb.clearAll();
+                }
+                if (window.App.historyManager) {
+                    window.App.historyManager.reset(true);
+                }
+            }
+
             currentUser = user;
             this.updateAuthUI(user);
 
@@ -263,6 +300,8 @@ window.App = window.App || {};
                 console.log('[CloudSync] Logged in as:', user.email);
                 // Завантажуємо та об'єднуємо нотатки з хмари
                 await this.pullFromCloud();
+                if (window.App.sidebarView) window.App.sidebarView.render();
+                if (window.App.workspaceView) window.App.workspaceView.render();
                 // Запускаємо фоновий збирач сміття для звільнення пам'яті в Storage
                 setTimeout(() => this.cleanupOrphanedImages(), 2000);
             } else {
@@ -1151,11 +1190,16 @@ window.App = window.App || {};
                 const initial = nickname.charAt(0).toUpperCase();
 
                 profileCard.innerHTML = `
-                    <div class="user-profile-clickable" id="user-profile-info-click" title="Налаштування сайту">
+                    <div class="user-profile-clickable" id="user-profile-info-click" title="Керування акаунтами">
                         <div class="user-avatar">${initial}</div>
                         <div class="user-info">
                             <div class="user-email" title="${user.email}">${nickname}</div>
                             <div class="user-status-badge">Зберігається в хмарі</div>
+                        </div>
+                        <div class="user-profile-chevron" title="Керування акаунтами">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
                         </div>
                     </div>
                     <div class="user-profile-actions">
@@ -1165,20 +1209,17 @@ window.App = window.App || {};
                                 <circle cx="12" cy="12" r="3"></circle>
                             </svg>
                         </button>
-                        <button class="user-action-btn user-logout-btn" id="user-logout-btn" title="Вийти з акаунта (${user.email})">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                                <polyline points="16 17 21 12 16 7"></polyline>
-                                <line x1="21" y1="12" x2="9" y2="12"></line>
-                            </svg>
-                        </button>
                     </div>
                 `;
 
                 const clickWrap = profileCard.querySelector('#user-profile-info-click');
                 if (clickWrap) {
                     clickWrap.addEventListener('click', () => {
-                        if (window.App.settingsModal) window.App.settingsModal.open();
+                        if (window.App && window.App.accountManager) {
+                            window.App.accountManager.toggleOverlay();
+                        } else if (window.App && window.App.settingsModal) {
+                            window.App.settingsModal.open();
+                        }
                     });
                 }
 
@@ -1189,11 +1230,6 @@ window.App = window.App || {};
                         if (window.App.settingsModal) window.App.settingsModal.open();
                     });
                 }
-
-                profileCard.querySelector('#user-logout-btn').addEventListener('click', async (e) => {
-                    e.stopPropagation();
-                    await window.App.supabase.auth.signOut();
-                });
             } else {
                 profileCard.innerHTML = `
                     <button class="sidebar-login-btn" id="sidebar-login-btn">
