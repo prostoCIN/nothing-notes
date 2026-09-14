@@ -1194,7 +1194,7 @@ window.App = window.App || {};
                         <div class="user-avatar">${initial}</div>
                         <div class="user-info">
                             <div class="user-email" title="${user.email}">${nickname}</div>
-                            <div class="user-status-badge">Зберігається в хмарі</div>
+                            <div class="user-status-badge">У хмарі</div>
                         </div>
                         <div class="user-profile-chevron" title="Керування акаунтами">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
