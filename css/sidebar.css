@@ -1037,31 +1037,51 @@ body.is-sidebar-dragging .sidebar-nest-drop-zone.active-hover {
    ========================================================================== */
 .share-modal-tabs {
     display: flex;
-    gap: 6px;
+    gap: 4px;
     background: rgba(0, 0, 0, 0.28);
-    padding: 4px;
+    padding: 3px;
     border-radius: 12px;
     border: 1px solid rgba(255, 255, 255, 0.08);
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.share-modal-tabs::-webkit-scrollbar {
+    display: none;
 }
 
 .share-modal-tab-btn {
-    flex: 1;
+    flex: 1 1 0;
+    min-width: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    padding: 8px 10px;
+    gap: 5px;
+    padding: 7px 6px;
     border-radius: 8px;
     border: none;
     background: transparent;
     color: var(--text-muted);
-    font-size: 12px;
+    font-size: 11.5px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.18s ease;
     user-select: none;
     font-family: inherit;
     white-space: nowrap;
+}
+
+.share-modal-tab-btn .share-tab-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.share-tab-icon {
+    flex-shrink: 0;
+    font-size: 13px;
+    line-height: 1;
 }
 
 .share-modal-tab-btn:hover {
@@ -1210,4 +1230,86 @@ body.is-sidebar-dragging .sidebar-nest-drop-zone.active-hover {
     word-break: break-word;
     user-select: text;
     margin: 0;
+}
+
+.raw-markdown-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.raw-markdown-actions .share-copy-btn,
+.raw-markdown-actions .share-secondary-btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+.raw-open-app-btn {
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    flex-shrink: 0;
+}
+
+/* ==========================================================================
+   Мобільна адаптація для модалки шерингу та сторінки Raw перегляду
+   ========================================================================== */
+@media (max-width: 680px) {
+    .raw-markdown-top-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .raw-markdown-actions {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .raw-markdown-actions .share-copy-btn,
+    .raw-markdown-actions .share-secondary-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .share-modal-backdrop {
+        padding: 10px;
+    }
+
+    .share-modal-card {
+        padding: 16px 12px;
+        border-radius: 14px;
+        gap: 12px;
+    }
+
+    .share-modal-tabs {
+        gap: 2px;
+        padding: 2px;
+    }
+
+    .share-modal-tab-btn {
+        padding: 6px 3px;
+        font-size: 10.5px;
+        gap: 3px;
+    }
+
+    .share-tab-icon {
+        font-size: 12px;
+    }
+
+    .share-btn-group {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .share-btn-group .share-copy-btn,
+    .share-btn-group .share-secondary-btn {
+        width: 100%;
+    }
 }

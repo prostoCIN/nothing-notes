@@ -483,14 +483,17 @@ window.App = window.App || {};
 
                     <!-- Вкладки режимів шерингу -->
                     <div class="share-modal-tabs">
-                        <button type="button" class="share-modal-tab-btn ${defaultTab === 'nothingnotes' ? 'active' : ''}" data-tab="nothingnotes">
-                            <span>👥 NothingNotes</span>
+                        <button type="button" class="share-modal-tab-btn ${defaultTab === 'nothingnotes' ? 'active' : ''}" data-tab="nothingnotes" title="NothingNotes">
+                            <span class="share-tab-icon">👥</span>
+                            <span class="share-tab-text">NothingNotes</span>
                         </button>
-                        <button type="button" class="share-modal-tab-btn ${defaultTab === 'ai' ? 'active' : ''}" data-tab="ai">
-                            <span>🤖 ШІ & Raw</span>
+                        <button type="button" class="share-modal-tab-btn ${defaultTab === 'ai' ? 'active' : ''}" data-tab="ai" title="ШІ & Raw">
+                            <span class="share-tab-icon">🤖</span>
+                            <span class="share-tab-text">ШІ & Raw</span>
                         </button>
-                        <button type="button" class="share-modal-tab-btn ${defaultTab === 'export' ? 'active' : ''}" data-tab="export">
-                            <span>📝 Експорт в .md</span>
+                        <button type="button" class="share-modal-tab-btn ${defaultTab === 'export' ? 'active' : ''}" data-tab="export" title="Експорт .md">
+                            <span class="share-tab-icon">📝</span>
+                            <span class="share-tab-text">Експорт .md</span>
                         </button>
                     </div>
 
@@ -791,7 +794,7 @@ window.App = window.App || {};
                             <strong>NothingNotes</strong>
                             <span class="raw-markdown-badge">AI / Raw View</span>
                         </div>
-                        <div class="share-btn-group">
+                        <div class="raw-markdown-actions">
                             <button type="button" class="share-copy-btn" id="raw-copy-btn">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -807,8 +810,13 @@ window.App = window.App || {};
                                 </svg>
                                 <span>Завантажити .md</span>
                             </button>
-                            <a href="${cleanNnUrl}" class="share-secondary-btn">
-                                <span>↗️ Відкрити в NothingNotes</span>
+                            <a href="${cleanNnUrl}" class="share-secondary-btn raw-open-app-btn">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                    <polyline points="15 3 21 3 21 9"></polyline>
+                                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                                </svg>
+                                <span>Відкрити в NothingNotes</span>
                             </a>
                         </div>
                     </div>
