@@ -5,7 +5,6 @@ window.App = window.App || {};
     let container = null;
     let canvas = null;
     let ctx = null;
-    let tooltip = null;
     let nodesLayer = null;
     let searchInput = null;
 
@@ -24,7 +23,7 @@ window.App = window.App || {};
         maxZoom: 3.5
     };
 
-    // Взаємодія з мишею
+    // Взаємодія з мишею / тачем
     let isDraggingCanvas = false;
     let isDraggingNode = false;
     let draggedNode = null;
@@ -32,6 +31,16 @@ window.App = window.App || {};
     let startMousePos = { x: 0, y: 0 };
     let lastMousePos = { x: 0, y: 0 };
     let searchQuery = '';
+
+    // Кеш для фокусованих піддерев (уникнення повторних алокацій у кожному кадрі)
+    let lastFocusNodeId = null;
+    let cachedSubtreeIds = null;
+
+    // Збережені прив'язки подій для чистого unbind
+    let boundPointerMove = null;
+    let boundPointerUp = null;
+    let boundKeyDown = null;
+    let boundResize = null;
 
     // Палітра насичених та виразних кольорів для різних гілок графу
     const BRANCH_COLORS = [
@@ -61,85 +70,12 @@ window.App = window.App || {};
         return BRANCH_COLORS[colorIdx];
     }
 
-    // Кеш для ідеально центрованих емодзі-спрайтів (аналіз реальних пікселів)
-    const emojiCache = new Map();
-
-    function getPerfectEmojiSprite(icon, baseFontSize) {
-        if (emojiCache.has(icon)) return emojiCache.get(icon);
-
-        const tempCanvas = document.createElement('canvas');
-        const tempSize = baseFontSize * 3; // З запасом для будь-яких шрифтових відступів
-        tempCanvas.width = tempSize;
-        tempCanvas.height = tempSize;
-        const tempCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
-
-        tempCtx.font = `${baseFontSize}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
-        tempCtx.textBaseline = 'top';
-        tempCtx.textAlign = 'left';
-        
-        // Малюємо десь посередині з запасом
-        const startX = baseFontSize;
-        const startY = baseFontSize;
-        tempCtx.fillText(icon, startX, startY);
-
-        // Аналізуємо реальні пікселі
-        const imgData = tempCtx.getImageData(0, 0, tempSize, tempSize);
-        const data = imgData.data;
-
-        let minX = tempSize, minY = tempSize, maxX = 0, maxY = 0;
-        let hasPixels = false;
-
-        for (let y = 0; y < tempSize; y++) {
-            for (let x = 0; x < tempSize; x++) {
-                const alpha = data[(y * tempSize + x) * 4 + 3];
-                if (alpha > 5) { // Відкидаємо артефакти антиаліасингу
-                    hasPixels = true;
-                    if (x < minX) minX = x;
-                    if (x > maxX) maxX = x;
-                    if (y < minY) minY = y;
-                    if (y > maxY) maxY = y;
-                }
-            }
-        }
-
-        if (!hasPixels) {
-            minX = startX; maxX = startX + baseFontSize;
-            minY = startY; maxY = startY + baseFontSize;
-        }
-
-        const exactWidth = maxX - minX + 1;
-        const exactHeight = maxY - minY + 1;
-
-        // Створюємо фінальний спрайт (обрізаний точно по краях емодзі)
-        const dpr = window.devicePixelRatio || 2;
-        const spriteCanvas = document.createElement('canvas');
-        spriteCanvas.width = exactWidth * dpr;
-        spriteCanvas.height = exactHeight * dpr;
-        const spriteCtx = spriteCanvas.getContext('2d');
-        spriteCtx.scale(dpr, dpr);
-
-        spriteCtx.drawImage(
-            tempCanvas, 
-            minX, minY, exactWidth, exactHeight, 
-            0, 0, exactWidth, exactHeight
-        );
-
-        const result = {
-            canvas: spriteCanvas,
-            width: exactWidth,
-            height: exactHeight
-        };
-        
-        emojiCache.set(icon, result);
-        return result;
-    }
-
     window.App.graphView = {
-        init() {
-            // Ініціалізація віджетів
-        },
+        init() {},
 
         render() {
+            this.cleanup();
+
             const els = window.App.getElements();
             if (!els.columnsContainer) return;
 
@@ -153,7 +89,7 @@ window.App = window.App || {};
             // Очищаємо робочу область
             els.columnsContainer.innerHTML = '';
 
-            const currentBoard = window.App.boardManager.getActiveBoard();
+            const currentBoard = window.App.boardManager ? window.App.boardManager.getActiveBoard() : null;
             if (!currentBoard) return;
 
             this.createGraphDOM(els.columnsContainer, currentBoard);
@@ -222,18 +158,6 @@ window.App = window.App || {};
                     </div>
                     <span class="graph-legend-hint">Наведення фокусує гілку вниз, клік відкриває нотатку</span>
                 </div>
-
-                <div class="graph-node-tooltip" id="graph-node-tooltip" style="display: none;">
-                    <div class="graph-tooltip-header">
-                        <span class="graph-tooltip-icon" id="graph-tooltip-icon">📄</span>
-                        <span class="graph-tooltip-title" id="graph-tooltip-title">Заголовок</span>
-                    </div>
-                    <div class="graph-tooltip-content" id="graph-tooltip-content">Текст...</div>
-                    <div class="graph-tooltip-footer">
-                        <span id="graph-tooltip-badge">0 піднотаток</span>
-                        <span>Натисніть для перегляду ↗</span>
-                    </div>
-                </div>
             `;
 
             parentEl.appendChild(container);
@@ -241,47 +165,54 @@ window.App = window.App || {};
             canvas = container.querySelector('#graph-canvas');
             ctx = canvas.getContext('2d');
             nodesLayer = container.querySelector('#graph-nodes-layer');
-            tooltip = container.querySelector('#graph-node-tooltip');
             searchInput = container.querySelector('#graph-search-input');
 
             this.bindDOMEvents();
         },
 
         bindDOMEvents() {
-            const state = window.App.state;
+            this.unbindDOMEvents();
 
             const clearBtn = container.querySelector('#graph-search-clear-btn');
             const searchIconRight = container.querySelector('#graph-search-icon-right');
 
             // Пошук
-            searchInput.addEventListener('input', (e) => {
-                searchQuery = e.target.value.toLowerCase().trim();
-                if (clearBtn) clearBtn.style.display = searchQuery ? 'flex' : 'none';
-                if (searchIconRight) searchIconRight.style.display = searchQuery ? 'none' : 'flex';
-            });
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    searchQuery = e.target.value.toLowerCase().trim();
+                    if (clearBtn) clearBtn.style.display = searchQuery ? 'flex' : 'none';
+                    if (searchIconRight) searchIconRight.style.display = searchQuery ? 'none' : 'flex';
+                    this.draw();
+                });
+            }
 
             if (clearBtn) {
                 clearBtn.addEventListener('click', () => {
-                    searchInput.value = '';
-                    searchQuery = '';
+                    if (searchInput) {
+                        searchInput.value = '';
+                        searchQuery = '';
+                        searchInput.focus();
+                    }
                     clearBtn.style.display = 'none';
                     if (searchIconRight) searchIconRight.style.display = 'flex';
-                    searchInput.focus();
+                    this.draw();
                 });
             }
 
             // Шорткат '/' або Escape / Enter
-            window.addEventListener('keydown', (e) => {
+            boundKeyDown = (e) => {
                 if (e.key === '/' && document.activeElement !== searchInput && !document.activeElement.isContentEditable && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
-                    if (window.App.state.isGraphView) {
+                    if (window.App.state && window.App.state.isGraphView) {
                         e.preventDefault();
-                        searchInput.focus();
-                        searchInput.select();
+                        if (searchInput) {
+                            searchInput.focus();
+                            searchInput.select();
+                        }
                     }
                 } else if ((e.key === 'Escape' || e.key === 'Enter') && document.activeElement === searchInput) {
                     searchInput.blur();
                 }
-            });
+            };
 
             // Зум кнопки
             container.querySelector('#graph-zoom-in').addEventListener('click', () => {
@@ -294,27 +225,54 @@ window.App = window.App || {};
                 this.resetCamera();
             });
 
-            // Canvas події (Pan, Zoom, Drag nodes, Hover)
+            // Canvas події
             canvas.addEventListener('pointerdown', this.onPointerDown.bind(this));
-            window.addEventListener('pointermove', this.onPointerMove.bind(this));
-            window.addEventListener('pointerup', this.onPointerUp.bind(this));
-            window.addEventListener('pointercancel', this.onPointerUp.bind(this));
             canvas.addEventListener('wheel', this.onWheel.bind(this), { passive: false });
 
-            // Resize
-            window.addEventListener('resize', this.onResize.bind(this));
+            // Глобальні події вікна з можливістю чистого відписування
+            boundPointerMove = this.onPointerMove.bind(this);
+            boundPointerUp = this.onPointerUp.bind(this);
+            boundResize = this.onResize.bind(this);
+
+            window.addEventListener('pointermove', boundPointerMove);
+            window.addEventListener('pointerup', boundPointerUp);
+            window.addEventListener('pointercancel', boundPointerUp);
+            window.addEventListener('keydown', boundKeyDown);
+            window.addEventListener('resize', boundResize);
+        },
+
+        unbindDOMEvents() {
+            if (boundPointerMove) {
+                window.removeEventListener('pointermove', boundPointerMove);
+                boundPointerMove = null;
+            }
+            if (boundPointerUp) {
+                window.removeEventListener('pointerup', boundPointerUp);
+                window.removeEventListener('pointercancel', boundPointerUp);
+                boundPointerUp = null;
+            }
+            if (boundKeyDown) {
+                window.removeEventListener('keydown', boundKeyDown);
+                boundKeyDown = null;
+            }
+            if (boundResize) {
+                window.removeEventListener('resize', boundResize);
+                boundResize = null;
+            }
         },
 
         buildGraphData() {
             const state = window.App.state;
-            const currentBoard = window.App.boardManager.getActiveBoard();
+            const currentBoard = window.App.boardManager ? window.App.boardManager.getActiveBoard() : null;
             if (!currentBoard) return;
 
-            const boardNotes = state.notes.filter(n => n.boardId === currentBoard.id);
+            const boardNotes = (state.notes || []).filter(n => n.boardId === currentBoard.id);
             const notesMap = new Map();
 
             nodes = [];
             edges = [];
+            lastFocusNodeId = null;
+            cachedSubtreeIds = null;
 
             const dpr = window.devicePixelRatio || 1;
             const width = (canvas && canvas.width > 0) ? (canvas.width / dpr) : (container ? container.clientWidth : 800);
@@ -327,7 +285,6 @@ window.App = window.App || {};
             const rawNotesById = new Map();
             boardNotes.forEach(n => rawNotesById.set(n.id, n));
 
-            // Функція пошуку кореневої нотатки дерева
             function getRootAncestor(noteId) {
                 let curr = rawNotesById.get(noteId);
                 const visited = new Set();
@@ -353,27 +310,19 @@ window.App = window.App || {};
                 const isRoot = !note.parentId;
                 const noteLevel = window.App.noteManager ? window.App.noteManager.getNoteLevel(note.id) : (isRoot ? 0 : 1);
                 const radius = isRoot ? 20 : Math.max(12, 16 - noteLevel);
-                
-                // Визначаємо колір гілки
+
                 const rootAncestor = getRootAncestor(note.id);
                 const rootId = rootAncestor ? rootAncestor.id : note.id;
                 const rootIndex = rootIds.indexOf(rootId);
                 const branchColor = getBranchColor(rootId, rootIndex >= 0 ? rootIndex : undefined);
 
-                // Перетворюємо всі типи розривів рядків, списки та блоки у пробіли
-                const rawContent = (note.content || '');
-                const cleanContent = rawContent
-                    .replace(/<br\s*[\/]?>/gi, ' ')
-                    .replace(/<\/(div|p|li|h[1-6])>/gi, ' ')
-                    .replace(/<div[^>]*>/gi, ' ')
-                    .replace(/<p[^>]*>/gi, ' ')
-                    .replace(/<li[^>]*>/gi, ' ')
-                    .replace(/<[^>]*>/g, ' ')
+                // Очищення тексту для тултіпа/пошуку в один прохід
+                const cleanContent = (note.content || '')
+                    .replace(/<[^>]+>/g, ' ')
                     .replace(/&nbsp;/gi, ' ')
-                    .replace(/\r?\n+/g, ' ')
-                    .replace(/\s+/g, ' ');
+                    .replace(/\s+/g, ' ')
+                    .trim();
 
-                // Стартова позиція акуратно навколо реального центру полотна
                 const angle = Math.random() * Math.PI * 2;
                 const dist = 30 + Math.random() * (isRoot ? 80 : 150);
 
@@ -401,7 +350,7 @@ window.App = window.App || {};
                     el.dataset.level = noteLevel;
                     const levelLabel = noteLevel === 0 ? 'Коренева нотатка (Рівень 0)' : `Піднотатка (Рівень ${noteLevel})`;
                     el.title = `${node.title} — ${levelLabel}\n\n${node.content.substring(0, 100)}...`;
-                    
+
                     const circle = document.createElement('div');
                     circle.className = 'graph-html-node-circle';
                     circle.style.setProperty('--node-branch-color', branchColor);
@@ -411,15 +360,15 @@ window.App = window.App || {};
                         circle.style.boxShadow = `0 0 10px ${branchColor}55`;
                     }
                     circle.innerHTML = node.icon;
-                    
+
                     const label = document.createElement('div');
                     label.className = 'graph-html-node-label';
                     label.textContent = node.title;
-                    
+
                     el.appendChild(circle);
                     el.appendChild(label);
                     nodesLayer.appendChild(el);
-                    
+
                     node.element = el;
                 }
 
@@ -432,7 +381,7 @@ window.App = window.App || {};
                 if (node.parentId && notesMap.has(node.parentId)) {
                     const parentNode = notesMap.get(node.parentId);
                     parentNode.childCount++;
-                    parentNode.radius = Math.min(26, parentNode.radius + 1.8); // Батьківські вершини з більшою кількістю дітей стають масивнішими
+                    parentNode.radius = Math.min(26, parentNode.radius + 1.8);
 
                     edges.push({
                         source: parentNode,
@@ -452,7 +401,7 @@ window.App = window.App || {};
             // Центруємо камеру на старті
             this.resetCamera();
 
-            // Попередній швидкий прогін фізики (Warm-up Physics), щоб вершини з першого ж кадру були красиво розгорнуті в центрі
+            // Warm-up Physics: розгортаємо граф за кілька швидких ітерацій
             for (let i = 0; i < 40; i++) {
                 this.updatePhysics();
             }
@@ -470,8 +419,9 @@ window.App = window.App || {};
         },
 
         onResize() {
-            if (window.App.state.isGraphView && isRunning) {
+            if (window.App.state && window.App.state.isGraphView && isRunning) {
                 this.resizeCanvas();
+                this.draw();
             }
         },
 
@@ -481,22 +431,25 @@ window.App = window.App || {};
             camera.x = rect.width / 2;
             camera.y = rect.height / 2;
             camera.zoom = 1;
+            this.draw();
         },
 
         smoothZoom(factor) {
             const newZoom = Math.max(camera.minZoom, Math.min(camera.maxZoom, camera.zoom * factor));
             camera.zoom = newZoom;
+            this.draw();
         },
 
-        // Фізична симуляція розташування вершин (Force-Directed Graph Simulation)
+        // Фізична симуляція (Force-Directed Graph)
         updatePhysics() {
-            const repulsion = 1200; // Сила відштовхування між вершинами
-            const springK = 0.005; // Пружність зв'язків
-            const damping = 0.88;  // Затухання швидкості
-            const centerAttraction = 0.0008; // Сила тяжіння до центру
+            const repulsion = 1200;
+            const springK = 0.005;
+            const damping = 0.88;
+            const centerAttraction = 0.0008;
 
-            const centerX = canvas ? (canvas.width / (window.devicePixelRatio || 1)) / 2 : 400;
-            const centerY = canvas ? (canvas.height / (window.devicePixelRatio || 1)) / 2 : 300;
+            const dpr = window.devicePixelRatio || 1;
+            const centerX = canvas ? (canvas.width / dpr) / 2 : 400;
+            const centerY = canvas ? (canvas.height / dpr) / 2 : 300;
 
             // 1. Відштовхування кожної пари вершин (Coulomb's Law)
             for (let i = 0; i < nodes.length; i++) {
@@ -548,12 +501,13 @@ window.App = window.App || {};
                     s.vy += fy;
                 }
                 if (t !== draggedNode) {
-                    t.vx -= fx;
-                    t.vy -= fy;
+                    t.vx += fx;
+                    t.vy += fy;
                 }
             });
 
-            // 3. Застосування швидкості та затухання
+            // 3. Застосування швидкості та затухання з розрахунком сумарної енергії
+            let totalMovement = 0;
             nodes.forEach(node => {
                 if (node === draggedNode) return;
 
@@ -562,28 +516,29 @@ window.App = window.App || {};
 
                 node.x += node.vx;
                 node.y += node.vy;
+
+                totalMovement += Math.abs(node.vx) + Math.abs(node.vy);
             });
+
+            return totalMovement;
         },
 
-        // Малювання патерну крапок на фоні графа (Адаптивний LOD для плавності 60 FPS при будь-якому зумі)
+        // Малювання патерну крапок на фоні графа (Адаптивний LOD)
         drawDotGrid(width, height) {
-            // При сильному віддаленні камери автоматично збільшуємо крок сітки, щоб не малювати десятки тисяч крапок одночасно
             let gridSize = 28;
             if (camera.zoom < 0.35) {
-                gridSize = 112; // 4x крок
+                gridSize = 112;
             } else if (camera.zoom < 0.65) {
-                gridSize = 56;  // 2x крок
+                gridSize = 56;
             }
 
             const dotRadius = Math.max(0.75, 1.0 / camera.zoom);
-            
-            // Межі видимої області у просторі світу
+
             const startX = Math.floor((-camera.x / camera.zoom) / gridSize) * gridSize - gridSize;
             const endX = Math.ceil(((width - camera.x) / camera.zoom) / gridSize) * gridSize + gridSize;
             const startY = Math.floor((-camera.y / camera.zoom) / gridSize) * gridSize - gridSize;
             const endY = Math.ceil(((height - camera.y) / camera.zoom) / gridSize) * gridSize + gridSize;
 
-            // Безпечний ліміт: якщо кількість ітерацій надто велика — пропускаємо для миттєвого рендерингу
             const countX = (endX - startX) / gridSize;
             const countY = (endY - startY) / gridSize;
             if (countX * countY > 2500) return;
@@ -602,27 +557,31 @@ window.App = window.App || {};
             ctx.fill();
         },
 
-        // Отримує множину ID вершини та всіх її нащадків тільки вниз по ієрархії (сама нотатка + всі її піднотатки)
-        getDownwardSubtreeIds(nodeId) {
-            const result = new Set();
-            if (!nodeId) return result;
-            result.add(nodeId);
+        // Отримує множину ID вершини та її нащадків з кешуванням
+        getFocusSubtreeIds(focusNodeId) {
+            if (!focusNodeId) return null;
+            if (focusNodeId === lastFocusNodeId && cachedSubtreeIds) {
+                return cachedSubtreeIds;
+            }
 
-            // Рекурсивний збір усіх нащадків виключно вниз по ієрархії (source -> target)
+            lastFocusNodeId = focusNodeId;
+            cachedSubtreeIds = new Set();
+            cachedSubtreeIds.add(focusNodeId);
+
             const collectDescendants = (currentId) => {
                 for (let i = 0; i < edges.length; i++) {
                     const edge = edges[i];
                     if (edge.source && edge.source.id === currentId && edge.target) {
-                        if (!result.has(edge.target.id)) {
-                            result.add(edge.target.id);
+                        if (!cachedSubtreeIds.has(edge.target.id)) {
+                            cachedSubtreeIds.add(edge.target.id);
                             collectDescendants(edge.target.id);
                         }
                     }
                 }
             };
 
-            collectDescendants(nodeId);
-            return result;
+            collectDescendants(focusNodeId);
+            return cachedSubtreeIds;
         },
 
         // Рендеринг кадру на Canvas
@@ -636,30 +595,23 @@ window.App = window.App || {};
             ctx.clearRect(0, 0, width, height);
 
             ctx.save();
-            // Трансформація камери
             ctx.translate(camera.x, camera.y);
             ctx.scale(camera.zoom, camera.zoom);
 
-            // 0. Малювання сітки фонових крапок
             this.drawDotGrid(width, height);
 
             ctx.translate(-width / 2, -height / 2);
 
-            // Визначаємо низхідну гілку активної нотатки (перетягуваної або наведеної)
             const activeFocusNode = draggedNode || hoveredNode;
-            let activeSubtreeIds = null;
-            if (activeFocusNode) {
-                activeSubtreeIds = this.getDownwardSubtreeIds(activeFocusNode.id);
-            }
+            const activeSubtreeIds = activeFocusNode ? this.getFocusSubtreeIds(activeFocusNode.id) : null;
 
             // 1. Малювання зв'язків (Edges)
             edges.forEach(edge => {
-                // Зв'язок підсвічується лише якщо ОБИДВА його кінці належать до низхідної гілки активної нотатки
-                const isHighlighted = !!(activeSubtreeIds && 
-                    activeSubtreeIds.has(edge.source.id) && 
+                const isHighlighted = !!(activeSubtreeIds &&
+                    activeSubtreeIds.has(edge.source.id) &&
                     activeSubtreeIds.has(edge.target.id));
                 const branchColor = edge.color || edge.source.branchColor || '#10b981';
-                
+
                 ctx.beginPath();
                 ctx.moveTo(edge.source.x, edge.source.y);
                 ctx.lineTo(edge.target.x, edge.target.y);
@@ -670,13 +622,11 @@ window.App = window.App || {};
                     ctx.shadowColor = branchColor;
                     ctx.shadowBlur = 14;
                 } else if (activeSubtreeIds) {
-                    // Зв'язки поза вибраною низхідною гілкою сильно приглушуються
-                    ctx.strokeStyle = branchColor + '15'; // ~8% opacity
+                    ctx.strokeStyle = branchColor + '15';
                     ctx.lineWidth = 0.8 / camera.zoom;
                     ctx.shadowBlur = 0;
                 } else {
-                    // Тонка напівпрозора лінія з відтінком своєї гілки
-                    ctx.strokeStyle = branchColor + '40'; // 25% opacity
+                    ctx.strokeStyle = branchColor + '40';
                     ctx.lineWidth = 1.2 / camera.zoom;
                     ctx.shadowBlur = 0;
                 }
@@ -688,7 +638,7 @@ window.App = window.App || {};
             // 2. Оновлення стану та позицій HTML-вершин
             nodes.forEach(node => {
                 if (!node.element) return;
-                
+
                 const isMatch = searchQuery === '' || node.title.toLowerCase().includes(searchQuery) || node.content.toLowerCase().includes(searchQuery);
                 const isDragging = (draggedNode === node);
                 const isHovered = (hoveredNode === node && !draggedNode);
@@ -708,27 +658,47 @@ window.App = window.App || {};
             if (nodesLayer) {
                 nodesLayer.style.transform = 'translate(' + camera.x + 'px, ' + camera.y + 'px) scale(' + camera.zoom + ') translate(' + (-width / 2) + 'px, ' + (-height / 2) + 'px)';
             }
-            
+
             ctx.restore();
         },
 
-        // Головний цикл анімації
+        // Головний цикл анімації з адаптивним засинанням
         startSimulation() {
             if (isRunning) return;
             isRunning = true;
+            this.requestLoop();
+        },
+
+        wakeUpSimulation() {
+            if (!isRunning) return;
+            if (!animationFrameId) {
+                this.requestLoop();
+            }
+        },
+
+        requestLoop() {
+            if (animationFrameId) return;
 
             const loop = () => {
-                if (!isRunning) return;
-                this.updatePhysics();
+                if (!isRunning) {
+                    animationFrameId = null;
+                    return;
+                }
+
+                const totalMovement = this.updatePhysics();
                 this.draw();
 
-                // Якщо є активний hover на вершину (або її перетягують) — тултип синхронно рухається разом з нею
-                
+                // Якщо вузли стабілізувалися і користувач не взаємодіє — зупиняємо RAF loop для збереження енергії
+                const isInteracting = isDraggingNode || isDraggingCanvas;
+                if (totalMovement < 0.15 && !isInteracting) {
+                    animationFrameId = null;
+                    return;
+                }
 
                 animationFrameId = requestAnimationFrame(loop);
             };
 
-            loop();
+            animationFrameId = requestAnimationFrame(loop);
         },
 
         stopSimulation() {
@@ -737,10 +707,34 @@ window.App = window.App || {};
                 cancelAnimationFrame(animationFrameId);
                 animationFrameId = null;
             }
+            this.unbindDOMEvents();
         },
 
-        // Перетворення екранних координат у координати простору графа
+        cleanup() {
+            this.stopSimulation();
+            nodes = [];
+            edges = [];
+            hoveredNode = null;
+            draggedNode = null;
+            lastFocusNodeId = null;
+            cachedSubtreeIds = null;
+        },
+
+        destroy() {
+            this.cleanup();
+            if (container && container.parentNode) {
+                container.parentNode.removeChild(container);
+            }
+            container = null;
+            canvas = null;
+            ctx = null;
+            nodesLayer = null;
+            searchInput = null;
+        },
+
+        // Перетворення координат
         screenToWorld(screenX, screenY) {
+            if (!canvas) return { x: screenX, y: screenY };
             const rect = canvas.getBoundingClientRect();
             const width = rect.width;
             const height = rect.height;
@@ -765,7 +759,7 @@ window.App = window.App || {};
 
         // Події миші та тач-пристроїв
         onPointerDown(e) {
-            if (e.button !== 0 && e.button !== 1) return; // Ліва або середня кнопка
+            if (e.button !== 0 && e.button !== 1) return;
 
             const targetNode = this.getNodeAt(e.clientX, e.clientY);
             startMousePos = { x: e.clientX, y: e.clientY };
@@ -775,10 +769,12 @@ window.App = window.App || {};
                 isDraggingNode = true;
                 draggedNode = targetNode;
                 hoveredNode = targetNode;
+                this.wakeUpSimulation();
             } else {
                 isDraggingCanvas = true;
                 hoveredNode = null;
                 draggedNode = null;
+                this.draw();
             }
         },
 
@@ -795,20 +791,23 @@ window.App = window.App || {};
                 draggedNode.y = world.y;
                 draggedNode.vx = 0;
                 draggedNode.vy = 0;
+                this.wakeUpSimulation();
             } else if (isDraggingCanvas) {
                 camera.x += dx;
                 camera.y += dy;
+                this.draw();
             } else {
-                // Перевірка hover на вершину (тільки для миші на десктопі, щоб на телефонах без перетягування не залипало затемнення)
                 const isTouchDevice = e.pointerType === 'touch' || window.matchMedia('(hover: none)').matches || window.innerWidth <= 768;
                 if (!isTouchDevice) {
                     const hovered = this.getNodeAt(e.clientX, e.clientY);
                     if (hovered !== hoveredNode) {
                         hoveredNode = hovered;
+                        this.draw();
                     }
                 } else {
                     if (hoveredNode && !draggedNode) {
                         hoveredNode = null;
+                        this.draw();
                     }
                 }
             }
@@ -818,7 +817,6 @@ window.App = window.App || {};
             const distMoved = Math.sqrt(Math.pow(e.clientX - startMousePos.x, 2) + Math.pow(e.clientY - startMousePos.y, 2));
             const isTouchDevice = e.pointerType === 'touch' || window.matchMedia('(hover: none)').matches || window.innerWidth <= 768;
 
-            // Якщо це був клік (без значного перетягування) по вершині — відкриваємо нотатку у вигляді колонок
             if (distMoved < 6 && draggedNode) {
                 const clickedNoteId = draggedNode.id;
                 this.openNoteInWorkspace(clickedNoteId);
@@ -828,32 +826,32 @@ window.App = window.App || {};
             isDraggingNode = false;
             draggedNode = null;
 
-            // На смартфонах і планшетах при відпусканні пальця підсвічування миттєво знімається
             if (isTouchDevice) {
                 hoveredNode = null;
             } else {
-                // На ПК перевіряємо, чи миша лишилася над вершиною після відпускання кнопки
                 hoveredNode = this.getNodeAt(e.clientX, e.clientY);
             }
+
+            this.draw();
         },
 
         onWheel(e) {
             e.preventDefault();
             const zoomFactor = e.deltaY < 0 ? 1.12 : 0.88;
-            
+
             const rect = canvas.getBoundingClientRect();
             const mouseX = e.clientX - rect.left;
             const mouseY = e.clientY - rect.top;
 
             const newZoom = Math.max(camera.minZoom, Math.min(camera.maxZoom, camera.zoom * zoomFactor));
 
-            // Зум відносно поточної позиції курсору
             camera.x = mouseX - (mouseX - camera.x) * (newZoom / camera.zoom);
             camera.y = mouseY - (mouseY - camera.y) * (newZoom / camera.zoom);
             camera.zoom = newZoom;
+
+            this.draw();
         },
 
-        // Перетворення координат світу графа в екранні координати контейнера
         worldToScreen(worldX, worldY) {
             const dpr = window.devicePixelRatio || 1;
             const width = canvas ? (canvas.width / dpr) : (container ? container.clientWidth : 800);
@@ -867,10 +865,9 @@ window.App = window.App || {};
         openNoteInWorkspace(noteId) {
             const state = window.App.state;
             const noteManager = window.App.noteManager;
-            const targetNote = noteManager.getNoteById(noteId);
+            const targetNote = noteManager ? noteManager.getNoteById(noteId) : null;
             if (!targetNote) return;
 
-            // Будуємо ланцюжок від кореня до цієї нотатки
             const chain = [null];
             const ancestors = [];
             let curr = targetNote;
@@ -883,13 +880,15 @@ window.App = window.App || {};
             chain.push(...ancestors);
             state.activeChain = chain;
 
-            // Вимикаємо граф і перемикаємо на колонки
             this.stopSimulation();
-            state.isGraphView = false;
-            window.App.storage.saveGraphViewMode(false);
+            if (window.App.store) {
+                window.App.store.setGraphView(false);
+            } else {
+                state.isGraphView = false;
+                window.App.storage.saveGraphViewMode(false);
+            }
             window.App.workspaceView.render();
 
-            // Скролимо та підсвічуємо вибрану нотатку
             setTimeout(() => {
                 window.App.workspaceView.scrollToNote(noteId);
             }, 100);
