@@ -1,0 +1,243 @@
+/* ==========================================================================
+   Каркас сайдбара, брендовий логотип, список блокнотів та футер
+   ========================================================================== */
+
+/* Sidebar Styles */
+.sidebar {
+    width: 260px;
+    background-color: var(--sidebar-bg);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    transition: width 0.3s ease;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Брендовий хедер (Логотип + NothingNotes) */
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 16px 14px 16px;
+    border-bottom: 1px solid var(--border-color);
+    user-select: none;
+    background: rgba(255, 255, 255, 0.01);
+}
+
+.sidebar-brand-logo {
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.sidebar-brand:hover .sidebar-brand-logo {
+    transform: scale(1.06);
+}
+
+.sidebar-brand-title {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    color: var(--text-main);
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+}
+
+.brand-title-accent {
+    background: var(--emerald-gradient-text);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-left: 1px;
+    font-weight: 800;
+    text-shadow: 0 0 20px rgba(172, 249, 223, 0.3);
+}
+
+.sidebar-section {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.boards-section {
+    max-height: 45%;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 8px;
+}
+
+.notes-section {
+    flex-grow: 1;
+    min-height: 0;
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px 8px 14px;
+}
+
+.boards-header {
+    padding: 12px 14px 8px 14px;
+}
+
+.notes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s ease;
+    border-radius: 6px;
+    margin: 4px 8px 0 8px;
+    padding: 10px 10px 8px 10px;
+}
+
+.notes-header.sidebar-root-drop-target {
+    background-color: rgba(16, 185, 129, 0.18) !important;
+    outline: 1.5px dashed #10b981 !important;
+    outline-offset: -1px;
+}
+
+.notes-header.sidebar-root-drop-target h2 {
+    color: #10b981 !important;
+    font-weight: 800 !important;
+}
+
+.sidebar-header h2 {
+    font-size: var(--font-xs);
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sidebar-header-icon {
+    flex-shrink: 0;
+    opacity: 0.75;
+    transition: opacity 0.2s ease;
+}
+
+.sidebar-header:hover .sidebar-header-icon {
+    opacity: 1;
+}
+
+.header-add-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: var(--font-md);
+    font-weight: 400;
+    cursor: pointer;
+    border-radius: 4px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.header-add-btn:hover {
+    background-color: var(--hover-bg);
+    color: var(--text-main);
+}
+
+.sidebar-inline-form {
+    padding: 4px 12px 8px 12px;
+}
+
+.sidebar-inline-form input {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: var(--font-sm);
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-main);
+    outline: none;
+    font-family: inherit;
+}
+
+.sidebar-inline-form input:focus {
+    border-color: var(--accent-color);
+}
+
+.sidebar-list {
+    list-style: none;
+    overflow-y: auto;
+    flex-grow: 1;
+    padding: 0 8px 8px 8px;
+}
+
+.sidebar-note-tree-node {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.sidebar-subnotes-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.note-toggle-arrow {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    margin-right: 2px;
+    flex-shrink: 0;
+    transition: transform var(--transition-fast), color var(--transition-fast), background-color var(--transition-fast);
+    padding: 0;
+}
+
+.note-toggle-arrow:hover {
+    color: var(--text-main);
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.note-toggle-arrow.expanded {
+    transform: rotate(90deg);
+    color: var(--text-main);
+}
+
+.sidebar-child-count {
+    font-size: var(--font-xs);
+    font-weight: 700;
+    line-height: 1;
+    color: var(--text-muted);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: auto;
+    margin-right: 4px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: inherit;
+    letter-spacing: 0.2px;
+    height: 18px;
+    box-sizing: border-box;
+    transition: opacity 0.2s cubic-bezier(0.2, 0, 0, 1), background-color 0.2s ease;
+}
+
+.board-item.active .sidebar-child-count,
+.note-item.is-selected .sidebar-child-count {
+    background: rgba(255, 255, 255, 0.14);
+    color: var(--text-main);
+}

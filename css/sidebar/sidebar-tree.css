@@ -1,0 +1,98 @@
+/* ==========================================================================
+   Дерево нотаток та кольорові рівневі напрямні (Tree Level Indent Guides)
+   ========================================================================== */
+
+/* Дерево нотаток та вертикальні напрямні лінії ієрархії (Сходинки піраміди) */
+.sidebar-note-tree-node {
+    list-style: none;
+    position: relative;
+}
+
+.sidebar-subnotes-list {
+    list-style: none;
+    margin-left: 14px;
+    padding-left: 10px;
+    border-left: 1.5px solid rgba(255, 255, 255, 0.12); /* Базова лінія ієрархії */
+    display: flex;
+    flex-direction: column;
+    margin-top: 1px;
+    margin-bottom: 2px;
+    position: relative;
+    transition: border-color 0.2s ease;
+}
+
+/* Кольорові рівневі напрямні (Tree Level Indent Guides): сходинки піраміди знань */
+.sidebar-subnotes-list[data-level="1"] {
+    border-left-color: rgba(16, 185, 129, 0.35); /* Сходинка 1: смарагдовий */
+}
+.sidebar-subnotes-list[data-level="1"]:hover {
+    border-left-color: rgba(16, 185, 129, 0.8);
+}
+
+.sidebar-subnotes-list[data-level="2"] {
+    border-left-color: rgba(56, 189, 248, 0.35); /* Сходинка 2: небесно-блакитний */
+}
+.sidebar-subnotes-list[data-level="2"]:hover {
+    border-left-color: rgba(56, 189, 248, 0.8);
+}
+
+.sidebar-subnotes-list[data-level="3"] {
+    border-left-color: rgba(168, 85, 247, 0.35); /* Сходинка 3: лавандово-фіолетовий */
+}
+.sidebar-subnotes-list[data-level="3"]:hover {
+    border-left-color: rgba(168, 85, 247, 0.8);
+}
+
+.sidebar-subnotes-list[data-level="4"],
+.sidebar-subnotes-list[data-level="5"],
+.sidebar-subnotes-list[data-level="6"] {
+    border-left-color: rgba(245, 158, 11, 0.35); /* Сходинка 4+: теплий бурштиновий */
+}
+.sidebar-subnotes-list[data-level="4"]:hover,
+.sidebar-subnotes-list[data-level="5"]:hover,
+.sidebar-subnotes-list[data-level="6"]:hover {
+    border-left-color: rgba(245, 158, 11, 0.8);
+}
+
+
+.board-item, .note-item {
+    padding: 6px 8px;
+    cursor: pointer;
+    font-size: var(--font-xs);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 6px;
+    margin-bottom: 2px;
+    min-height: 32px;
+    box-sizing: border-box;
+    transition: background-color var(--transition-fast), opacity var(--transition-fast), color var(--transition-fast);
+    color: var(--text-muted);
+    user-select: none;
+}
+
+.note-item {
+    cursor: grab;
+    touch-action: none;
+}
+
+.note-item:active {
+    cursor: grabbing;
+}
+
+.sidebar-note-tree-node.is-dragging {
+    position: fixed !important;
+    z-index: 10000 !important;
+    pointer-events: none !important;
+    opacity: 0.96 !important;
+    box-sizing: border-box;
+}
+
+.sidebar-note-tree-node.is-dragging > .note-item {
+    border: 1.5px solid #10b981 !important;
+    background-color: #262626 !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 0 2px rgba(16, 185, 129, 0.25) !important;
+    color: #ffffff !important;
+    border-radius: 8px !important;
+    position: relative;
+}

@@ -1,0 +1,116 @@
+/* ==========================================================================
+   Сторінка AI / Raw перегляду (?format=md) та мобільна адаптація
+   ========================================================================== */
+
+/* ==========================================================================
+   Сторінка AI / Raw перегляду (коли відкрито URL з ?format=md)
+   ========================================================================== */
+.raw-markdown-page-wrap {
+    position: fixed;
+    inset: 0;
+    background: var(--bg-color, #141416);
+    color: var(--text-main, #ffffff);
+    z-index: 99999;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    box-sizing: border-box;
+}
+
+.raw-markdown-page-card {
+    max-width: 840px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.raw-markdown-top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+}
+
+.raw-markdown-logo-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.raw-markdown-badge {
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #10b981;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.raw-markdown-content-box {
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 24px 28px;
+    font-family: 'JetBrains Mono', Consolas, monospace;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text-main, #ffffff);
+    white-space: pre-wrap;
+    word-break: break-word;
+    user-select: text;
+    margin: 0;
+}
+
+.raw-markdown-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.raw-markdown-actions .share-copy-btn,
+.raw-markdown-actions .share-secondary-btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+.raw-open-app-btn {
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    flex-shrink: 0;
+}
+
+/* ==========================================================================
+   Мобільна адаптація для модалки шерингу та сторінки Raw перегляду
+   ========================================================================== */
+@media (max-width: 680px) {
+    .raw-markdown-top-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .raw-markdown-actions {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .raw-markdown-actions .share-copy-btn,
+    .raw-markdown-actions .share-secondary-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

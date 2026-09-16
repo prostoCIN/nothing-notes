@@ -1,0 +1,441 @@
+/* ==========================================================================
+   Модальне вікно шерингу (Share Modal) у стилі Liquid Glass та вкладки
+   ========================================================================== */
+
+/* ==========================================================================
+   Модальне вікно шерингу (Share Modal) у стилі Liquid Glass
+   ========================================================================== */
+.share-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: shareFadeIn 0.2s ease;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.share-modal-card {
+    background: var(--modal-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-card-shadow);
+    border-radius: 18px;
+    width: 100%;
+    max-width: 520px;
+    padding: 22px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    color: var(--text-main);
+    animation: sharePop 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes shareFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes sharePop {
+    from { transform: scale(0.94); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.share-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.share-modal-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.share-modal-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-main);
+    flex-shrink: 0;
+}
+
+.share-modal-icon svg {
+    display: block;
+}
+
+.share-modal-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.2px;
+    color: var(--text-main);
+}
+
+.share-modal-close-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+}
+
+.share-modal-close-btn:hover {
+    background: var(--hover-bg);
+    color: var(--text-main);
+}
+
+.share-modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.share-modal-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin: 0;
+}
+
+.share-modal-option-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--hover-bg);
+    border: 1px solid var(--border-color);
+    padding: 12px 14px;
+    border-radius: 12px;
+}
+
+.share-option-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.share-option-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.share-option-hint {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.share-toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 22px;
+    flex-shrink: 0;
+}
+
+.share-toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.share-toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background-color: rgba(255, 255, 255, 0.15);
+    transition: 0.25s;
+    border-radius: 22px;
+}
+
+.share-toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.25s;
+    border-radius: 50%;
+}
+
+.share-toggle-switch input:checked + .share-toggle-slider {
+    background-color: #10b981;
+}
+
+.share-toggle-switch input:checked + .share-toggle-slider:before {
+    transform: translateX(18px);
+}
+
+.share-toggle-switch.disabled,
+.share-toggle-switch input:disabled + .share-toggle-slider {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.share-link-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--hover-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 4px 6px 4px 12px;
+}
+
+.share-link-input {
+    flex-grow: 1;
+    background: none;
+    border: none;
+    color: var(--text-main);
+    font-size: 12.5px;
+    font-family: inherit;
+    outline: none;
+    min-width: 0;
+}
+
+.share-copy-btn {
+    background: var(--accent-color);
+    color: #062419;
+    font-weight: 700;
+    font-size: 12px;
+    font-family: inherit;
+    border: none;
+    border-radius: 8px;
+    padding: 7px 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.15s ease;
+}
+
+.share-copy-btn:hover {
+    filter: brightness(1.1);
+    transform: scale(0.98);
+}
+
+.share-copy-btn.copied {
+    background: #10b981;
+    color: #ffffff;
+}
+
+.share-modal-status {
+    font-size: 12px;
+    line-height: 1.4;
+    min-height: 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.share-modal-status svg {
+    flex-shrink: 0;
+}
+
+.share-modal-status.success {
+    color: #34d399;
+    font-weight: 500;
+}
+
+.share-modal-status.error {
+    color: #ef4444;
+}
+
+/* ==========================================================================
+   Вкладки модального вікна шерингу (Tabs: NothingNotes / ШІ & Raw / Експорт)
+   ========================================================================== */
+.share-modal-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--hover-bg);
+    padding: 3px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.share-modal-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.share-modal-tab-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 7px 6px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    user-select: none;
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+.share-modal-tab-btn .share-tab-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.share-tab-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.share-tab-icon svg {
+    display: block;
+}
+
+.share-modal-tab-btn:hover {
+    color: var(--text-main);
+    background: var(--hover-bg);
+}
+
+.share-modal-tab-btn.active {
+    background: var(--modal-bg);
+    color: var(--text-main);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.share-tab-pane {
+    display: none;
+    flex-direction: column;
+    gap: 14px;
+    animation: shareFadeIn 0.2s ease;
+}
+
+.share-tab-pane.active {
+    display: flex;
+}
+
+/* Блок попереднього перегляду Markdown */
+.share-markdown-preview-box {
+    background: var(--hover-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 12px 14px;
+    max-height: 180px;
+    overflow-y: auto;
+    position: relative;
+}
+
+.share-markdown-preview-box pre {
+    margin: 0;
+    font-family: 'JetBrains Mono', Consolas, monospace;
+    font-size: 11.5px;
+    line-height: 1.55;
+    color: var(--text-main);
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* Група кнопок у футері вкладок */
+.share-btn-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.share-btn-group .share-copy-btn,
+.share-btn-group .share-secondary-btn {
+    flex: 1;
+    justify-content: center;
+}
+
+.share-secondary-btn {
+    background: var(--hover-bg);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    font-weight: 600;
+    font-size: 12px;
+    font-family: inherit;
+    border-radius: 8px;
+    padding: 7px 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.15s ease;
+    text-decoration: none;
+    box-sizing: border-box;
+}
+
+.share-secondary-btn:hover {
+    background: var(--active-bg);
+    color: var(--text-main);
+    border-color: var(--border-color);
+}
+
+
+/* Мобільна адаптація модалки шерингу */
+@media (max-width: 480px) {
+    .share-modal-backdrop {
+        padding: 10px;
+    }
+
+    .share-modal-card {
+        padding: 16px 12px;
+        border-radius: 14px;
+        gap: 12px;
+    }
+
+    .share-modal-tabs {
+        gap: 2px;
+        padding: 2px;
+    }
+
+    .share-modal-tab-btn {
+        padding: 6px 3px;
+        font-size: 10.5px;
+        gap: 3px;
+    }
+
+    .share-tab-icon {
+        font-size: 12px;
+    }
+
+    .share-btn-group {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .share-btn-group .share-copy-btn,
+    .share-btn-group .share-secondary-btn {
+        width: 100%;
+    }
+}

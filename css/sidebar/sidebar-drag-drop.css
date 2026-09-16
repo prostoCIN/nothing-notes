@@ -1,0 +1,175 @@
+/* ==========================================================================
+   Система кишень та зон перетягування нотаток (Google Pick & Drop)
+   ========================================================================== */
+
+/* Бейдж кількості виділених нотаток при груповому перетягуванні */
+.sidebar-drag-count-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #10b981;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    border: 1.5px solid #1e1e1e;
+    z-index: 10001;
+}
+
+.sidebar-drag-placeholder {
+    height: 32px;
+    border: 1.5px dashed var(--accent-color);
+    background-color: rgba(16, 185, 129, 0.12);
+    border-radius: 6px;
+    margin-bottom: 3px;
+    box-sizing: border-box;
+    list-style: none;
+    transition: all 0.15s ease;
+    display: block;
+}
+
+/* Коли відкрита кишеня піднотатки — повністю приховуємо плейсхолдер переміщення */
+body.is-sidebar-pocket-open .sidebar-drag-placeholder {
+    display: none !important;
+}
+
+/* Плавне збільшення висоти плашок нотаток під час режиму перетягування для максимальної зручності */
+body.is-sidebar-dragging .note-item:not(.is-dragging) {
+    padding-top: 9px;
+    padding-bottom: 9px;
+    margin-bottom: 3px;
+    transition: padding 0.2s cubic-bezier(0.2, 0, 0, 1), margin 0.2s ease, background-color 0.15s ease;
+}
+
+body.is-sidebar-dragging .sidebar-drag-placeholder {
+    min-height: 38px;
+    border: 1.5px dashed #10b981 !important;
+    background-color: rgba(16, 185, 129, 0.16) !important;
+}
+
+/* Під час перетягування приховуємо кнопки дій, щоб зона-кишеня була на самому правому краї */
+body.is-sidebar-dragging .delete-btn,
+body.is-sidebar-dragging .note-actions,
+body.is-sidebar-dragging .board-actions,
+body.is-sidebar-dragging .sidebar-action-btn {
+    display: none !important;
+}
+
+/* Виділена зона-іконка для перетворення на піднотатку (розташована праворуч) */
+.sidebar-nest-drop-zone {
+    width: 0;
+    opacity: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: width 0.2s cubic-bezier(0.2, 0, 0, 1), opacity 0.2s ease, margin 0.2s ease, transform 0.15s ease;
+    margin-left: 0;
+}
+
+/* Коли в сайдбарі активне перетягування — іконки-зони плавно виїжджають у самому правому кутку */
+body.is-sidebar-dragging .sidebar-nest-drop-zone {
+    width: 24px;
+    height: 24px;
+    opacity: 0.85;
+    margin-left: auto;
+    border-radius: 5px;
+    border: 1.5px dashed rgba(16, 185, 129, 0.6);
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+}
+
+/* Підсвічування зони-іконки, коли користувач наводить картку прямо на неї */
+body.is-sidebar-dragging .sidebar-nest-drop-zone.active-hover {
+    opacity: 1 !important;
+    background: rgba(16, 185, 129, 0.35) !important;
+    border: 1.5px solid #10b981 !important;
+    transform: scale(1.18);
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.6);
+    color: #ffffff;
+}
+
+/* Розкривна кишеня знизу нотатки для перетягування (Google Pick & Drop Style) */
+.sidebar-nest-pocket {
+    height: 0;
+    opacity: 0;
+    overflow: hidden;
+    margin-left: 8px;
+    margin-right: 4px;
+    margin-top: 0;
+    margin-bottom: 0;
+    border: 2px dashed rgba(16, 185, 129, 0.7);
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(37, 99, 235, 0.06) 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 14px;
+    box-sizing: border-box;
+    transition: height 0.24s cubic-bezier(0.2, 0, 0, 1), opacity 0.22s ease, margin 0.22s ease, transform 0.18s ease;
+    pointer-events: auto;
+    text-align: center;
+}
+
+.sidebar-nest-pocket.is-open {
+    height: 68px;
+    opacity: 1;
+    margin-top: 8px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.25), inset 0 0 12px rgba(16, 185, 129, 0.08);
+}
+
+.nest-pocket-text-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    overflow: hidden;
+    width: 100%;
+}
+
+.nest-pocket-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #ffffff;
+    letter-spacing: 0.2px;
+}
+
+.nest-pocket-subtitle {
+    font-size: 11.5px;
+    font-weight: 400;
+    color: #a7f3d0;
+    white-space: nowrap;
+    opacity: 0.9;
+}
+
+/* Стан наведення на кишеню */
+.sidebar-nest-pocket.active-hover {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.3) 0%, rgba(37, 99, 235, 0.22) 100%) !important;
+    border: 2px dashed #34d399 !important;
+    transform: scale(1.02);
+    box-shadow: 0 6px 24px rgba(16, 185, 129, 0.45), inset 0 0 16px rgba(16, 185, 129, 0.2) !important;
+}
+
+.board-item:hover, .note-item:hover {
+    background-color: var(--hover-bg);
+    color: var(--text-main);
+}
+
+.board-item.active, .note-item.active {
+    background-color: var(--active-bg);
+    color: var(--text-main);
+    font-weight: 500;
+}

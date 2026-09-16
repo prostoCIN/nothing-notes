@@ -1,0 +1,31 @@
+/* ==========================================================================
+   Стилі для режиму тільки для читання (Read-Only Workspace)
+   ========================================================================== */
+
+/* ==========================================================================
+   Стилі для режиму тільки для читання (Read-Only Workspace)
+   ========================================================================== */
+.board-workspace.is-board-readonly #workspace-undo-wrap,
+.board-workspace.is-board-readonly #workspace-redo-wrap,
+.board-workspace.is-board-readonly .header-brush-group,
+.board-workspace.is-board-readonly #workspace-eraser-btn,
+.board-workspace.is-board-readonly #island-select-toggle-btn,
+.board-workspace.is-board-readonly .column-header-emoji-picker .sticker-emoji-btn,
+.board-workspace.is-board-readonly .sticker-select-checkbox {
+    display: none !important;
+}
+
+.board-workspace.is-board-readonly .sticker-perforation-handle {
+    cursor: default !important;
+    pointer-events: none !important;
+}
+
+.board-workspace.is-board-readonly .note-sticker {
+    cursor: default !important;
+}
+
+.board-workspace.is-board-readonly .sticker-title,
+.board-workspace.is-board-readonly .sticker-content {
+    cursor: text !important;
+    user-select: text !important;
+}
