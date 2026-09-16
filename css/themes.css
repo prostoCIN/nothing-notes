@@ -393,18 +393,22 @@ html[data-theme="light"] .sidebar-user-profile {
     background: rgba(0, 0, 0, 0.03);
 }
 
-html[data-theme="light"] .sidebar-login-btn {
+html[data-theme="light"] .sidebar-login-btn,
+html[data-theme="light"] .user-profile-clickable {
     background: rgba(0, 0, 0, 0.05);
     border-color: rgba(0, 0, 0, 0.1);
 }
 
+html[data-theme="light"] .sidebar-login-btn:hover,
+html[data-theme="light"] .user-profile-clickable:hover {
+    background: rgba(0, 0, 0, 0.08);
+    border-color: rgba(0, 0, 0, 0.16);
+}
+
+html[data-theme="light"] .sidebar-settings-btn,
 html[data-theme="light"] .sidebar-settings-guest-btn {
     background: rgba(0, 0, 0, 0.04);
     border-color: rgba(0, 0, 0, 0.08);
-}
-
-html[data-theme="light"] .user-profile-clickable:hover {
-    background: rgba(0, 0, 0, 0.05);
 }
 
 html[data-theme="light"] .graph-html-node-label {
