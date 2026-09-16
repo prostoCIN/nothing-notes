@@ -151,6 +151,42 @@ window.App = window.App || {};
                     }
                 });
 
+                // Копіювання / вирізання із заголовка: передаємо чистий текст без стилів та позначаємо джерело (source: 'title')
+                const handleTitleCopyOrCut = (e) => {
+                    const sel = window.getSelection();
+                    if (!sel || sel.rangeCount === 0) return;
+                    const text = sel.toString();
+                    if (!text) return;
+
+                    window.App = window.App || {};
+                    window.App._clipboardMeta = {
+                        source: 'title',
+                        text: text,
+                        timestamp: Date.now()
+                    };
+
+                    if (e.clipboardData) {
+                        e.preventDefault();
+                        const safeText = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        e.clipboardData.setData('text/plain', text);
+                        e.clipboardData.setData('application/x-notes-source', 'title');
+                        e.clipboardData.setData('text/html', `<span data-note-source="title">${safeText}</span>`);
+                    }
+
+                    if (e.type === 'cut') {
+                        if (document.queryCommandSupported && document.queryCommandSupported('delete')) {
+                            document.execCommand('delete');
+                        } else {
+                            const range = sel.getRangeAt(0);
+                            range.deleteContents();
+                        }
+                        titleDiv.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                };
+
+                titleDiv.addEventListener('copy', handleTitleCopyOrCut);
+                titleDiv.addEventListener('cut', handleTitleCopyOrCut);
+
                 // Вставка тільки чистого тексту без форматування з області контенту чи буфера обміну
                 titleDiv.addEventListener('paste', (e) => {
                     e.preventDefault();

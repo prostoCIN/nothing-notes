@@ -328,12 +328,19 @@ window.App = window.App || {};
             if (matched) markerClass = matched;
         }
 
-        // Визначаємо bold
-        const isBold = (tagName === 'b' || tagName === 'strong' || 
+        const isTitleNode = node.classList?.contains('sticker-title') || 
+                            node.classList?.contains('column-title') || 
+                            node.classList?.contains('column-title-h2') ||
+                            node.getAttribute?.('data-note-source') === 'title' ||
+                            node.getAttribute?.('data-source') === 'note-title' ||
+                            node.getAttribute?.('data-source') === 'title';
+
+        // Визначаємо bold (якщо це заголовок — жирність не переноситься)
+        const isBold = !isTitleNode && (tagName === 'b' || tagName === 'strong' || 
                         node.style.fontWeight === 'bold' || 
                         parseInt(node.style.fontWeight, 10) >= 600) && node.style.fontWeight !== 'normal' && node.style.fontWeight !== '400';
 
-        const fontSize = node.style ? node.style.fontSize : null;
+        const fontSize = !isTitleNode && node.style ? node.style.fontSize : null;
         const isItalic = tagName === 'i' || tagName === 'em' || (node.style && node.style.fontStyle === 'italic');
         const isUnderline = tagName === 'u' || (node.style && node.style.textDecoration?.includes('underline'));
         const isStrike = tagName === 's' || tagName === 'strike' || (node.style && node.style.textDecoration?.includes('line-through'));
@@ -470,8 +477,70 @@ window.App = window.App || {};
         }
     }
 
+    /**
+     * Перевіряє, чи було скопійовано вміст буфера обміну із заголовка нотатки/стовпчика
+     * @param {DataTransfer} clipboardData
+     * @param {string} rawHtml
+     * @param {string} plainText
+     * @returns {boolean}
+     */
+    function isClipboardFromTitle(clipboardData, rawHtml, plainText) {
+        // 1. Чек за спеціальним MIME-типом із буфера обміну
+        try {
+            if (clipboardData && clipboardData.getData && clipboardData.getData('application/x-notes-source') === 'title') {
+                return true;
+            }
+        } catch (e) {}
+
+        // 2. Чек по розмітці HTML (наявність маркерів чи класів заголовка)
+        if (rawHtml) {
+            if (rawHtml.includes('data-note-source="title"') || 
+                rawHtml.includes('data-source="note-title"') ||
+                rawHtml.includes('data-source="title"') ||
+                rawHtml.includes('sticker-title') || 
+                rawHtml.includes('column-title-h2') ||
+                rawHtml.includes('column-title')) {
+                return true;
+            }
+
+            try {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(rawHtml, 'text/html');
+                if (doc.body && doc.body.querySelector('[data-note-source="title"], [data-source="note-title"], [data-source="title"], .sticker-title, .column-title, .column-title-h2')) {
+                    return true;
+                }
+            } catch (e) {}
+        }
+
+        // 3. Чек сесійного трекера останнього копіювання в додатку
+        if (window.App && window.App._clipboardMeta && window.App._clipboardMeta.source === 'title') {
+            const meta = window.App._clipboardMeta;
+            if (meta.text && plainText) {
+                const cleanMeta = meta.text.trim();
+                const cleanPlain = plainText.trim();
+                if (cleanMeta === cleanPlain || cleanMeta.includes(cleanPlain) || cleanPlain.includes(cleanMeta)) {
+                    return true;
+                }
+            } else if (Date.now() - meta.timestamp < 120000) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     function cleanPastedHtml(rawHtml) {
         if (!rawHtml || typeof rawHtml !== 'string') return '';
+
+        // Якщо HTML скопійовано із заголовка, повертаємо порожній рядок (стилі заголовка не переносяться)
+        if (rawHtml.includes('data-note-source="title"') ||
+            rawHtml.includes('data-source="note-title"') ||
+            rawHtml.includes('data-source="title"') ||
+            rawHtml.includes('sticker-title') ||
+            rawHtml.includes('column-title-h2') ||
+            rawHtml.includes('column-title')) {
+            return '';
+        }
 
         try {
             // Витягуємо тільки змістовний фрагмент між маркерами фрагмента браузера
@@ -485,6 +554,10 @@ window.App = window.App || {};
             const doc = parser.parseFromString(rawHtml, 'text/html');
             const body = doc.body;
             if (!body) return '';
+
+            if (body.querySelector('[data-note-source="title"], [data-source="note-title"], [data-source="title"], .sticker-title, .column-title, .column-title-h2')) {
+                return '';
+            }
 
             const hasFormatting = body.querySelector('mark, b, strong, i, em, u, s, strike, span[style], font[style], .note-marker, [class*="hl-"], [style*="background"], [style*="font-weight"], [style*="font-size"], [style*="text-decoration"]') !== null ||
                 (body.firstElementChild && (
@@ -1048,6 +1121,15 @@ window.App = window.App || {};
                         window.App.historyManager.recordState('paste_content');
                     }
 
+                    // Чек джерела: якщо текст скопійовано із заголовка, він не повинен переносити стилі заголовка на звичайний блок тексту
+                    const fromTitle = isClipboardFromTitle(clipboardData, html, plainText);
+                    if (fromTitle) {
+                        if (plainText) {
+                            insertTextAtCaret(plainText, contentDiv, note);
+                        }
+                        return;
+                    }
+
                     if (html) {
                         const cleanHtml = cleanPastedHtml(html);
                         if (cleanHtml) {
@@ -1136,4 +1218,49 @@ window.App = window.App || {};
             return contentDiv;
         }
     };
+
+    // Глобальне відстеження операцій copy та cut для точної детекції джерела виділеного тексту (заголовок vs контент)
+    if (typeof document !== 'undefined') {
+        const trackClipboardSource = (e) => {
+            const sel = window.getSelection();
+            if (!sel || sel.rangeCount === 0) return;
+
+            const anchorEl = sel.anchorNode?.nodeType === Node.ELEMENT_NODE ? sel.anchorNode : sel.anchorNode?.parentElement;
+            const titleEl = anchorEl?.closest('.sticker-title, .column-title, .column-title-h2, [data-note-title], .sticker-header');
+
+            window.App = window.App || {};
+            if (titleEl) {
+                const text = sel.toString();
+                window.App._clipboardMeta = {
+                    source: 'title',
+                    text: text,
+                    timestamp: Date.now()
+                };
+
+                if (e.clipboardData && !e.defaultPrevented) {
+                    try {
+                        const safe = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        e.clipboardData.setData('text/plain', text);
+                        e.clipboardData.setData('application/x-notes-source', 'title');
+                        e.clipboardData.setData('text/html', `<span data-note-source="title">${safe}</span>`);
+                        e.preventDefault();
+
+                        if (e.type === 'cut') {
+                            const range = sel.getRangeAt(0);
+                            range.deleteContents();
+                            titleEl.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                    } catch (err) {}
+                }
+            } else {
+                window.App._clipboardMeta = {
+                    source: 'content',
+                    timestamp: Date.now()
+                };
+            }
+        };
+
+        document.addEventListener('copy', trackClipboardSource);
+        document.addEventListener('cut', trackClipboardSource);
+    }
 })();
