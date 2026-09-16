@@ -1,0 +1,446 @@
+/* ==========================================================================
+   Фіксований тонкий верхній хедер (Workspace Top Header) та інструменти
+   ========================================================================== */
+
+/* Workspace Styles (Multi-Column) */
+.board-workspace {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    background-color: var(--bg-color);
+    overflow: hidden;
+    height: 100vh;
+}
+
+/* ==========================================================================
+   Фіксований тонкий верхній хедер (Workspace Top Header)
+   ========================================================================== */
+.workspace-top-header {
+    height: 48px;
+    min-height: 48px;
+    background: var(--header-bg, rgba(22, 22, 26, 0.75));
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 150;
+    flex-shrink: 0;
+    user-select: none;
+}
+
+.workspace-header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.workspace-header-board-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.workspace-header-board-title {
+    font-size: var(--font-xs);
+    font-weight: 700;
+    color: var(--text-main);
+    letter-spacing: -0.2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
+}
+
+.workspace-header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+/* Кнопки Undo / Redo та Швидкого пензля */
+.header-history-control {
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 3px;
+    gap: 3px;
+}
+
+.header-action-icon-btn {
+    background: rgba(255, 255, 255, 0.055);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 2px 8px rgba(0, 0, 0, 0.12);
+    color: var(--text-muted);
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    padding: 0;
+    flex-shrink: 0;
+}
+
+/* Всередині згрупованих блоків (header-tools-pill) кнопки є компактними елементами групи */
+.header-tools-pill .header-action-icon-btn {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 5px;
+}
+
+.header-action-icon-btn:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.18);
+}
+
+.header-tools-pill .header-action-icon-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: transparent;
+}
+
+.header-action-icon-btn:disabled,
+.header-action-icon-btn.disabled {
+    opacity: 0.35;
+    cursor: default;
+    color: var(--text-muted);
+}
+
+.header-action-icon-btn:disabled:hover,
+.header-action-icon-btn.disabled:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-muted);
+}
+
+.header-action-icon-btn.active {
+    background: var(--emerald-gradient) !important;
+    color: #062419 !important;
+    box-shadow: 0 4px 14px rgba(22, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+}
+
+.header-action-icon-btn.active svg {
+    stroke: #062419 !important;
+}
+
+/* Група швидкого пензля з палітрою (єдина капсула) */
+.header-brush-group {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.055);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 2px 8px rgba(0, 0, 0, 0.12);
+    border-radius: 8px;
+    padding: 0 3px 0 0;
+    gap: 1px;
+    height: 28px;
+    box-sizing: border-box;
+}
+
+.header-brush-group .header-action-icon-btn {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+.header-brush-color-trigger {
+    background: transparent;
+    border: none;
+    padding: 0;
+    height: 28px;
+    width: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background 0.15s ease;
+    flex-shrink: 0;
+}
+
+.header-brush-color-trigger:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.brush-color-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
+    transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.header-brush-color-trigger:hover .brush-color-dot {
+    transform: scale(1.2);
+    border-color: #ffffff;
+}
+
+/* Випадаюча палітра пензля */
+.header-brush-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    background: rgba(26, 26, 30, 0.96);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    padding: 6px;
+    display: none;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    z-index: 200;
+}
+
+.header-brush-dropdown.active {
+    display: flex;
+}
+
+/* Контейнер кнопки з підказкою */
+.header-btn-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Універсальне спливаюче віконечко-підказка для кнопок хедера */
+.header-tooltip {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(-4px);
+    background: rgba(18, 18, 22, 0.98);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 5px 9px;
+    font-size: 11px;
+    line-height: 1.4;
+    color: var(--text-main);
+    white-space: nowrap;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s ease;
+    z-index: 10001;
+}
+
+.header-tooltip b {
+    color: #10b981;
+}
+
+/* Стрілочка зверху підказки */
+.header-tooltip::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 4px;
+    border-style: solid;
+    border-color: transparent transparent rgba(255, 255, 255, 0.15) transparent;
+}
+
+/* Специфічне вирівнювання для підказки пензля (прив'язка до правого краю) */
+.header-brush-tooltip {
+    left: auto;
+    right: 0;
+    transform: translateY(-4px);
+}
+
+.header-brush-tooltip::before {
+    left: auto;
+    right: 18px;
+    transform: none;
+}
+
+/* Показуємо підказку при наведенні на кнопку */
+.header-btn-wrap:hover .header-tooltip,
+.header-search-wrap:hover .header-tooltip,
+.header-brush-group:hover .header-brush-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+.header-brush-group:hover .header-brush-tooltip {
+    transform: translateY(0);
+}
+
+.header-brush-group:has(.header-brush-dropdown.active) .header-brush-tooltip,
+.header-search-wrap:has(.header-search-bar[style*="display: flex"]) .header-tooltip {
+    display: none !important;
+}
+
+.brush-palette-item {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.brush-palette-item:hover {
+    transform: scale(1.25);
+    border-color: #ffffff;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+}
+
+.brush-palette-item.active {
+    outline: 2px solid #ffffff;
+    outline-offset: 1px;
+    transform: scale(1.15);
+}
+
+.header-mini-divider {
+    width: 1px;
+    height: 14px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 0 1px;
+}
+
+.header-action-icon-btn:active:not(:disabled) {
+    transform: scale(0.94);
+}
+
+.workspace-top-header.graph-mode-active .header-extra-tools-wrap,
+.workspace-top-header.graph-mode-active .header-tools-pill,
+.workspace-top-header.graph-mode-active #workspace-undo-wrap,
+.workspace-top-header.graph-mode-active #workspace-redo-wrap,
+.workspace-top-header.graph-mode-active #workspace-search-wrap,
+.workspace-top-header.graph-mode-active #workspace-collapse-wrap,
+.workspace-top-header.graph-mode-active #island-select-toggle-btn {
+    opacity: 0.22 !important;
+    pointer-events: none !important;
+    user-select: none !important;
+    filter: grayscale(0.85);
+    transition: opacity 0.2s ease, filter 0.2s ease;
+}
+
+.header-tools-pill,
+.header-tools-control,
+.header-history-control {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.055);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 9px;
+    padding: 2px 4px;
+    gap: 3px;
+    position: relative;
+}
+
+
+/* ==========================================================================
+   Сегментний перемикач режимів та кнопка вибору в хедері
+   ========================================================================== */
+
+.header-segment-control {
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 2px;
+    gap: 2px;
+}
+
+.header-segment-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: var(--font-xs);
+    font-weight: 600;
+    font-family: inherit;
+    padding: 4px 10px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.header-segment-btn:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.header-segment-btn.active {
+    background: var(--emerald-gradient) !important;
+    color: #062419 !important;
+    font-weight: 700;
+    box-shadow: 0 4px 14px rgba(22, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+}
+
+.header-segment-btn.active svg {
+    stroke: #062419 !important;
+}
+
+.header-divider {
+    width: 1px;
+    height: 18px;
+    background: rgba(255, 255, 255, 0.12);
+    margin: 0 2px;
+}
+
+.header-select-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--text-muted);
+    font-size: var(--font-xs);
+    font-weight: 600;
+    font-family: inherit;
+    padding: 5px 12px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.header-select-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--text-main);
+    border-color: rgba(255, 255, 255, 0.18);
+}
+
+.header-select-btn.active {
+    background: var(--emerald-gradient) !important;
+    border-color: transparent !important;
+    color: #062419 !important;
+    font-weight: 800;
+    box-shadow: 0 4px 14px rgba(22, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+}
+
+.header-select-btn.active svg {
+    stroke: #062419 !important;
+}

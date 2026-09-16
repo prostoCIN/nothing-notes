@@ -1,0 +1,735 @@
+/* ==========================================================================
+   Мульти-колонки, розміри, скрол та шапка колонки
+   ========================================================================== */
+
+.columns-container {
+    display: flex;
+    flex-direction: row;
+    position: relative;
+    gap: 14px; /* Зменшений відступ між усіма колонками */
+    padding: 16px 24px 20px 24px;
+    height: calc(100vh - 48px);
+    width: 100%;
+    min-width: 100%;
+    box-sizing: border-box;
+    align-items: stretch;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+/* Multi-Columns Responsive Widths:
+   1 колонка = 100%
+   2 колонки = 50% / 50%
+   3+ колонок = фіксовано 50% з комфортним горизонтальним скролом */
+.board-column {
+    flex: 1 1 0px;
+    width: 100%;
+    min-width: 420px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--column-bg, rgba(26, 26, 30, 0.45));
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--column-border, rgba(255, 255, 255, 0.08));
+    border-radius: 18px;
+    padding: 22px 24px 20px 24px;
+    box-shadow: var(--glass-specular);
+    box-sizing: border-box;
+    transition: flex 0.25s cubic-bezier(0.16, 1, 0.3, 1), min-width 0.25s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.25s cubic-bezier(0.16, 1, 0.3, 1), width 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Коли колонок 3 і більше — кожна колонка займає рівно 50% ширини екрана (calc((100% - 14px) / 2)) */
+.columns-container.has-many-columns .board-column {
+    flex: 0 0 calc((100% - 14px) / 2) !important;
+    min-width: calc((100% - 14px) / 2) !important;
+    max-width: calc((100% - 14px) / 2) !important;
+}
+
+/* Розтягування певної колонки на всю ширину робочої області (ніби вона одна відкрита) */
+.board-column.column-stretched-full,
+.columns-container.has-many-columns .board-column.column-stretched-full {
+    flex: 0 0 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+/* Якщо якась колонка розтягнута на весь екран — сусідні колонки тримають комфортні 50% ширини для скролу */
+.columns-container.has-stretched-column .board-column:not(.column-stretched-full) {
+    flex: 0 0 calc((100% - 14px) / 2) !important;
+    min-width: calc((100% - 14px) / 2) !important;
+    max-width: calc((100% - 14px) / 2) !important;
+}
+
+.board-column.drag-column-target {
+    border-color: #10b981 !important;
+    background-color: rgba(16, 185, 129, 0.04) !important;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3), 0 8px 30px rgba(0, 0, 0, 0.35) !important;
+}
+
+.board-column.linked-column {
+    border-color: var(--border-color);
+}
+
+.column-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 14px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+    gap: 12px;
+    position: relative;
+    z-index: 20;
+}
+
+.column-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-grow: 1;
+    min-width: 0;
+    position: relative;
+}
+
+.column-header-emoji-picker {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.column-header-emoji-picker .sticker-emoji-btn {
+    font-size: 20px;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    transition: background-color 0.15s ease, transform 0.15s ease, opacity 0.15s ease;
+}
+
+.column-header-emoji-picker .sticker-emoji-btn:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.column-header-emoji-picker .sticker-emoji-btn.empty-icon {
+    opacity: 0.35;
+}
+
+.column-header-emoji-picker .sticker-emoji-btn.empty-icon:hover {
+    opacity: 0.85;
+}
+
+.column-title {
+    font-size: var(--font-md);
+    font-weight: 700;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: -0.2px;
+}
+
+.column-title.editable-board-title {
+    cursor: text;
+    border-radius: 4px;
+    padding: 2px 6px;
+    margin-left: -6px;
+    transition: background-color 0.2s, box-shadow 0.2s;
+    outline: none;
+}
+
+.column-title.editable-board-title:hover {
+    background-color: var(--hover-bg);
+}
+
+.column-title.editable-board-title:focus {
+    background-color: var(--sidebar-bg);
+    box-shadow: 0 0 0 1.5px var(--accent-color);
+    text-overflow: clip;
+}
+
+.column-title-edit-hint {
+    opacity: 0;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: opacity 0.2s ease, color 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 2px;
+    border-radius: 4px;
+}
+
+.column-title-edit-hint:hover {
+    color: var(--text-main);
+    background-color: var(--hover-bg);
+}
+
+.column-title-wrap:hover .column-title-edit-hint {
+    opacity: 0.7;
+}
+
+.column-badge, .column-count-badge {
+    font-size: var(--font-xs);
+    font-weight: 600;
+    line-height: 1;
+    color: var(--text-muted);
+    background: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    min-width: 26px;
+    height: 26px;
+    padding: 0 4px;
+    border-radius: 6px;
+    margin: 0;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: inherit;
+    letter-spacing: -0.2px;
+    box-sizing: border-box;
+    user-select: none;
+    transition: all var(--transition-fast);
+}
+
+.column-count-badge:hover {
+    color: var(--text-main);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Кнопка фільтру тегів у правій частині title-wrap колонки */
+.column-filter-wrap {
+    position: relative;
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+}
+
+.column-filter-btn,
+.column-layout-toggle-btn,
+.column-expand-toggle-btn {
+    background: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: var(--font-xs);
+    height: 26px;
+    padding: 0 8px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+    user-select: none;
+    font-family: inherit;
+}
+
+.column-layout-toggle-btn,
+.column-expand-toggle-btn {
+    width: 26px;
+    padding: 0;
+}
+
+.column-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+/* ==========================================================================
+   Тулбар-меню трьох крапок у шапці колонки (Column Header 3-Dots Menu)
+   ========================================================================== */
+.column-menu-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.column-more-btn {
+    position: relative;
+    background: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+    cursor: pointer;
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+    user-select: none;
+    padding: 0;
+}
+
+.column-more-btn:hover {
+    background-color: var(--hover-bg);
+    color: var(--text-main);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: scale(0.96);
+}
+
+.column-more-btn.active {
+    background-color: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.column-more-btn.has-active-filter {
+    border-color: #10b981;
+    color: #34d399;
+}
+
+.column-filter-active-dot {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 6px;
+    height: 6px;
+    background-color: #10b981;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1.5px #1e1e24;
+}
+
+.column-menu-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background-color: var(--modal-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 8px;
+    width: max-content;
+    min-width: 220px;
+    max-width: 290px;
+    box-sizing: border-box;
+    box-shadow: var(--glass-card-shadow);
+    z-index: 100000;
+    display: none;
+    flex-direction: column;
+    gap: 3px;
+    color: var(--text-main);
+}
+
+.column-menu-dropdown.active {
+    display: flex;
+    animation: menuFadeInUp 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.column-menu-header-info {
+    padding: 4px 8px 6px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.column-menu-header-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.column-menu-header-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+.column-menu-divider {
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 3px 0;
+}
+
+.column-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    font-size: var(--font-xs);
+    font-weight: 500;
+    color: var(--text-main);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.column-menu-item:hover {
+    background-color: var(--hover-bg);
+    color: var(--text-main);
+}
+
+.column-menu-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 8px 3px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.column-menu-clear-filter-btn {
+    background: none;
+    border: none;
+    color: #f87171;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    text-transform: none;
+    transition: opacity 0.15s ease;
+}
+
+.column-menu-clear-filter-btn:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+}
+
+.column-menu-tags-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-height: 155px;
+    overflow-y: auto;
+    padding-right: 2px;
+}
+
+.column-menu-tag-empty {
+    padding: 6px 8px;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.column-menu-tag-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12.5px;
+    color: rgba(255, 255, 255, 0.8);
+    transition: background-color 0.15s ease;
+    user-select: none;
+}
+
+.column-menu-tag-item:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+}
+
+.column-menu-tag-item.active {
+    background-color: rgba(16, 185, 129, 0.12);
+    color: #34d399;
+}
+
+.column-menu-tag-name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.column-tag-svg {
+    color: #10b981;
+    flex-shrink: 0;
+}
+
+.column-menu-tag-check {
+    color: #10b981;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.column-graph-toggle-btn {
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    margin-left: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+}
+
+/* Кнопка "Вибрати" у стилі iOS Галереї */
+.column-select-toggle-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+    font-size: var(--font-xs);
+    font-weight: 600;
+    height: 26px;
+    padding: 0 10px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+    user-select: none;
+    font-family: inherit;
+    margin-left: 6px;
+}
+
+.column-filter-btn:hover,
+.column-layout-toggle-btn:hover,
+.column-expand-toggle-btn:hover,
+.column-graph-toggle-btn:hover,
+.column-select-toggle-btn:hover {
+    background-color: var(--hover-bg);
+    color: var(--text-main);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: scale(0.96);
+}
+
+.column-layout-toggle-btn.active,
+.column-expand-toggle-btn.active {
+    background-color: rgba(16, 185, 129, 0.15);
+    border-color: #10b981;
+    color: #34d399;
+}
+
+.column-select-toggle-btn.active {
+    background-color: #10b981;
+    border-color: #10b981;
+    color: #ffffff;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+}
+
+.column-filter-btn.has-filter {
+    background-color: rgba(16, 185, 129, 0.15);
+    border-color: #10b981;
+    color: #34d399;
+    font-weight: 600;
+}
+
+.column-filter-btn.active {
+    box-shadow: 0 0 0 1.5px #10b981;
+}
+
+
+/* ==========================================================================
+   Випадаюче меню фільтру тегів колонки
+   ========================================================================== */
+
+/* Випадаюче меню фільтру */
+.column-filter-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background-color: #242424;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 12px;
+    padding: 8px;
+    box-sizing: border-box;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7);
+    z-index: 150;
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 200px;
+}
+
+.column-filter-dropdown.active {
+    display: flex !important;
+    animation: menuFadeIn 0.15s ease-out;
+}
+
+.column-filter-header {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 4px 8px 6px 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.column-filter-clear-all {
+    background: none;
+    border: none;
+    color: #34d399;
+    font-size: 11px;
+    cursor: pointer;
+    font-weight: 500;
+    padding: 0;
+    transition: color 0.15s;
+}
+
+.column-filter-clear-all:hover {
+    color: #a7f3d0;
+    text-decoration: underline;
+}
+
+.column-filter-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-height: 155px; /* Максимум 5 тегів, далі скрол */
+    overflow-y: auto;
+    padding-top: 4px;
+}
+
+.column-filter-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 8px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.85);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+    gap: 8px;
+}
+
+.column-filter-item-name {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+}
+
+.column-filter-tag-icon {
+    flex-shrink: 0;
+    opacity: 0.75;
+}
+
+.column-filter-item-check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.column-filter-item:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+}
+
+.column-filter-item:hover .column-filter-tag-icon {
+    opacity: 1;
+}
+
+.column-filter-item.active {
+    background-color: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+    font-weight: 600;
+}
+
+.column-filter-item-empty {
+    padding: 8px;
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.column-close-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 18px;
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.column-close-btn:hover {
+    background-color: var(--hover-bg);
+    color: var(--text-main);
+}
+
+.column-notes-list {
+    flex-grow: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding-right: 4px;
+    min-height: 100px;
+}
+
+
+/* ==========================================================================
+   Кнопка додавання нової нотатки внизу колонки
+   ========================================================================== */
+
+/* Bottom Add Note Button */
+.add-note-bottom-container {
+    margin-top: 24px;
+    width: 100%;
+}
+
+.bottom-add-note-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    background-color: rgba(255, 255, 255, 0.02);
+    border: 2px dashed var(--border-color);
+    border-radius: 12px;
+    color: var(--text-muted);
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.bottom-add-note-btn:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.25);
+    color: var(--text-main);
+    transform: scale(0.99);
+}
+
+.btn-plus-icon {
+    font-size: 18px;
+    line-height: 1;
+    font-weight: 600;
+}

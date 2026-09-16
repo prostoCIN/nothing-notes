@@ -1,0 +1,349 @@
+/* ==========================================================================
+   Нижня плаваюча панель групового вибору (iOS Selection Bar) та субменю
+   ========================================================================== */
+
+/* ==========================================================================
+   Нижня панель масового вибору та дій у стилі iOS Галереї (iOS Selection Bar)
+   ========================================================================== */
+.workspace-selection-bar {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--toolbar-bg, rgba(26, 26, 30, 0.78));
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--toolbar-border, rgba(255, 255, 255, 0.14));
+    border-radius: 22px;
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 0 0 1px rgba(255, 255, 255, 0.04);
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease, box-shadow 0.25s ease;
+    max-width: calc(100vw - 48px);
+    box-sizing: border-box;
+}
+
+.workspace-selection-bar.active {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.selection-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.selection-bar-close-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    color: var(--text-muted);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.selection-bar-close-btn:hover {
+    background: rgba(255, 255, 255, 0.18);
+    color: var(--text-main);
+    transform: scale(0.95);
+}
+
+.selection-bar-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: var(--font-xs);
+}
+
+.selection-bar-count-desktop {
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.2px;
+}
+
+.selection-bar-divider {
+    color: rgba(255, 255, 255, 0.2);
+}
+
+.selection-bar-text-btn {
+    background: none;
+    border: none;
+    color: #34d399;
+    font-size: var(--font-xs);
+    font-weight: 600;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: all var(--transition-fast);
+    font-family: inherit;
+}
+
+.selection-bar-text-btn:hover {
+    background: rgba(16, 185, 129, 0.15);
+    color: #a7f3d0;
+}
+
+.selection-bar-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.selection-action-item {
+    position: relative;
+}
+
+.selection-action-btn {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--text-main);
+    padding: 6px 12px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: var(--font-xs);
+    font-weight: 600;
+    transition: all var(--transition-fast);
+    font-family: inherit;
+    user-select: none;
+}
+
+.selection-action-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+.selection-action-btn.active {
+    background: var(--emerald-gradient) !important;
+    border-color: transparent !important;
+    color: #062419 !important;
+    box-shadow: 0 4px 14px rgba(22, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.selection-action-btn.active svg {
+    stroke: #062419 !important;
+}
+
+.selection-action-delete-btn {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.25);
+    color: #ef4444;
+}
+
+.selection-action-delete-btn:hover:not(:disabled) {
+    background: #ef4444 !important;
+    border-color: #ef4444 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+/* Дефолтні класи видимості для десктопу/мобільного */
+.mobile-only {
+    display: none !important;
+}
+
+.desktop-only {
+    display: inline-flex !important;
+}
+
+/* Випадаючі субменю (Колір, Теги, Шрифт) над панеллю */
+.selection-submenu-dropdown {
+    position: absolute;
+    bottom: calc(100% + 12px);
+    left: 50%;
+    transform: translateX(-50%) translateY(8px);
+    background-color: var(--modal-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    padding: 12px;
+    box-shadow: var(--glass-card-shadow);
+    z-index: 1010;
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    box-sizing: border-box;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    color: var(--text-main);
+}
+
+.selection-submenu-dropdown.active {
+    display: flex !important;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+}
+
+.selection-submenu-title {
+    font-size: var(--font-xs);
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: -0.1px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.selection-color-swatches {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 0;
+}
+
+.selection-color-swatches .color-swatch-btn {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.selection-color-swatches .color-swatch-btn:hover {
+    transform: scale(1.15);
+    border-color: #ffffff;
+}
+
+.selection-tag-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 155px;
+    overflow-y: auto;
+    min-width: 170px;
+}
+
+.selection-tag-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    color: var(--text-main);
+    padding: 3px 6px 3px 8px;
+    border-radius: 8px;
+    font-size: var(--font-xs);
+    font-weight: 600;
+    transition: all var(--transition-fast);
+    font-family: inherit;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.selection-tag-main-action {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-grow: 1;
+    min-width: 0;
+    cursor: pointer;
+    padding: 4px 0;
+}
+
+.selection-tag-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.selection-tag-item.active {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: #10b981;
+    color: #a7f3d0;
+}
+
+.selection-tag-item.partial {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #d1d5db;
+}
+
+.selection-tag-del-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    transition: all 0.15s ease;
+    opacity: 0.45;
+    flex-shrink: 0;
+    padding: 0;
+}
+
+.selection-tag-item:hover .selection-tag-del-btn {
+    opacity: 0.8;
+}
+
+.selection-tag-del-btn:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    opacity: 1 !important;
+}
+
+.selection-tag-status-icon {
+    font-size: 11px;
+    font-weight: 700;
+    margin-left: auto;
+    color: #34d399;
+}
+
+.selection-tag-color-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.selection-tag-clear-btn {
+    background: none;
+    border: 1px dashed rgba(239, 68, 68, 0.4);
+    color: #ef4444;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: var(--font-xs);
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 4px;
+    transition: all var(--transition-fast);
+    font-family: inherit;
+}
+
+.selection-tag-clear-btn:hover {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: #ef4444;
+}
+
+.selection-font-dropdown {
+    min-width: 220px;
+}
