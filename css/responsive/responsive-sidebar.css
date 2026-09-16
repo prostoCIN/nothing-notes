@@ -44,4 +44,14 @@
         overflow: hidden;
     }
 
+    .sidebar-list {
+        touch-action: pan-y !important;
+        -webkit-overflow-scrolling: touch !important;
+        overscroll-behavior-y: contain;
+    }
+
+    .note-item {
+        touch-action: pan-y !important;
+        -webkit-touch-callout: none !important;
+    }
 }

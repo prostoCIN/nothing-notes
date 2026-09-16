@@ -23,9 +23,16 @@ window.App = window.App || {};
                 if (row.classList.contains('is-editing') || e.target.closest('.note-actions') || e.target.closest('.sidebar-action-btn') || e.target.closest('.delete-btn') || e.target.closest('.note-toggle-arrow') || e.button !== 0) return;
 
                 const pointerId = e.pointerId;
-                try {
-                    row.setPointerCapture(pointerId);
-                } catch (err) {}
+                const isTouch = e.pointerType === 'touch' || (window.innerWidth <= 768 && e.pointerType !== 'mouse');
+                let longPressTimer = null;
+                let touchDragReady = false;
+
+                // Для мишки захоплюємо вказівник, для тачу НЕ захоплюємо одразу, щоб працював нативний скрол списку
+                if (!isTouch) {
+                    try {
+                        row.setPointerCapture(pointerId);
+                    } catch (err) {}
+                }
 
                 const startY = e.clientY;
                 const startX = e.clientX;
@@ -257,77 +264,123 @@ window.App = window.App || {};
                     }
                 };
 
+                const initDrag = (currentX, currentY) => {
+                    if (isDragging) return;
+                    isDragging = true;
+                    if (state) {
+                        state.isDraggingNote = true;
+                        state.draggedNoteId = draggedNoteId;
+                    }
+                    document.body.classList.add('is-sidebar-dragging');
+                    initialRect = row.getBoundingClientRect();
+                    shiftX = startX - initialRect.left;
+                    shiftY = startY - initialRect.top;
+
+                    try {
+                        row.setPointerCapture(pointerId);
+                    } catch (err) {}
+
+                    // Розраховуємо висоту зони передперегляду відповідно до кількості перетягуваних нотаток
+                    const singleItemHeight = initialRect.height || 32;
+                    const totalGroupHeight = isGroupDrag 
+                        ? (singleItemHeight * draggedNoteIds.length + (draggedNoteIds.length - 1) * 3) 
+                        : singleItemHeight;
+
+                    // Створюємо пунктирну область передперегляду на вихідному місці
+                    placeholder = document.createElement('li');
+                    placeholder.className = 'sidebar-drag-placeholder';
+                    placeholder.style.height = `${totalGroupHeight}px`;
+                    parentContainer.insertBefore(placeholder, itemWrap);
+
+                    // Якщо це групове перетягування — тимчасово приховуємо інші виділені нотатки зі списку
+                    if (isGroupDrag) {
+                        draggedNoteIds.forEach(dId => {
+                            if (dId !== draggedNoteId) {
+                                const otherNode = notesList.querySelector(`.note-item[data-id="${dId}"]`)?.closest('.sidebar-note-tree-node');
+                                if (otherNode) {
+                                    otherNode.style.display = 'none';
+                                }
+                            }
+                        });
+                    }
+
+                    // Приховуємо дочірні підсписки та кишеню перетягуваного вузла на час польоту
+                    const childSubList = itemWrap.querySelector('.sidebar-subnotes-list');
+                    if (childSubList) childSubList.style.display = 'none';
+                    const ownPocket = itemWrap.querySelector('.sidebar-nest-pocket');
+                    if (ownPocket) ownPocket.style.display = 'none';
+
+                    itemWrap.style.width = `${initialRect.width}px`;
+                    itemWrap.style.left = `${currentX - shiftX}px`;
+                    itemWrap.style.top = `${currentY - shiftY}px`;
+                    itemWrap.style.zIndex = '10000';
+                    itemWrap.style.position = 'fixed';
+                    itemWrap.classList.add('is-dragging');
+
+                    // Додаємо індикатор кількості перетягуваних елементів прямо на картку в руці
+                    if (isGroupDrag) {
+                        const badge = document.createElement('div');
+                        badge.className = 'sidebar-drag-count-badge';
+                        badge.textContent = draggedNoteIds.length;
+                        row.appendChild(badge);
+                    }
+
+                    notesScroller.update(currentX, currentY);
+                    notesScroller.start((x, y) => updatePositions(x, y));
+                };
+
+                // На мобільних пристроях перетягування активується тільки після затискання (Long Press)
+                if (isTouch) {
+                    const LONG_PRESS_DELAY = 380; // мс утримання пальця на місці
+                    longPressTimer = setTimeout(() => {
+                        touchDragReady = true;
+                        row.classList.add('touch-drag-active');
+                        if (navigator.vibrate) {
+                            try { navigator.vibrate(40); } catch (_) {}
+                        }
+                        initDrag(lastClientX, lastClientY);
+                    }, LONG_PRESS_DELAY);
+                }
+
                 const onPointerMove = (moveEvent) => {
                     lastClientX = moveEvent.clientX;
                     lastClientY = moveEvent.clientY;
-                    notesScroller.update(lastClientX, lastClientY);
 
-                    if (!isDragging) {
-                        if (Math.hypot(moveEvent.clientX - startX, moveEvent.clientY - startY) > 5) {
-                            isDragging = true;
-                            if (state) {
-                                state.isDraggingNote = true;
-                                state.draggedNoteId = draggedNoteId;
+                    if (isTouch) {
+                        if (!touchDragReady && !isDragging) {
+                            // Якщо палець зсунувся більше ніж на 8px до завершення таймера — користувач скролить ліву панель
+                            const moveDist = Math.hypot(moveEvent.clientX - startX, moveEvent.clientY - startY);
+                            if (moveDist > 8) {
+                                if (longPressTimer) {
+                                    clearTimeout(longPressTimer);
+                                    longPressTimer = null;
+                                }
+                                return; // Дозволяємо браузеру вільно скролити список нотаток
                             }
-                            document.body.classList.add('is-sidebar-dragging');
-                            initialRect = row.getBoundingClientRect();
-                            shiftX = startX - initialRect.left;
-                            shiftY = startY - initialRect.top;
-
-                            // Розраховуємо висоту зони передперегляду відповідно до кількості перетягуваних нотаток
-                            const singleItemHeight = initialRect.height || 32;
-                            const totalGroupHeight = isGroupDrag 
-                                ? (singleItemHeight * draggedNoteIds.length + (draggedNoteIds.length - 1) * 3) 
-                                : singleItemHeight;
-
-                            // Створюємо пунктирну область передперегляду на вихідному місці
-                            placeholder = document.createElement('li');
-                            placeholder.className = 'sidebar-drag-placeholder';
-                            placeholder.style.height = `${totalGroupHeight}px`;
-                            parentContainer.insertBefore(placeholder, itemWrap);
-
-                            // Якщо це групове перетягування — тимчасово приховуємо інші виділені нотатки зі списку
-                            if (isGroupDrag) {
-                                draggedNoteIds.forEach(dId => {
-                                    if (dId !== draggedNoteId) {
-                                        const otherNode = notesList.querySelector(`.note-item[data-id="${dId}"]`)?.closest('.sidebar-note-tree-node');
-                                        if (otherNode) {
-                                            otherNode.style.display = 'none';
-                                        }
-                                    }
-                                });
-                            }
-
-                            // Приховуємо дочірні підсписки та кишеню перетягуваного вузла на час польоту
-                            const childSubList = itemWrap.querySelector('.sidebar-subnotes-list');
-                            if (childSubList) childSubList.style.display = 'none';
-                            const ownPocket = itemWrap.querySelector('.sidebar-nest-pocket');
-                            if (ownPocket) ownPocket.style.display = 'none';
-
-                            itemWrap.style.width = `${initialRect.width}px`;
-                            itemWrap.style.left = `${moveEvent.clientX - shiftX}px`;
-                            itemWrap.style.top = `${moveEvent.clientY - shiftY}px`;
-                            itemWrap.style.zIndex = '10000';
-                            itemWrap.style.position = 'fixed';
-                            itemWrap.classList.add('is-dragging');
-
-                            // Додаємо індикатор кількості перетягуваних елементів прямо на картку в руці
-                            if (isGroupDrag) {
-                                const badge = document.createElement('div');
-                                badge.className = 'sidebar-drag-count-badge';
-                                badge.textContent = draggedNoteIds.length;
-                                row.appendChild(badge);
-                            }
-
-                            notesScroller.update(moveEvent.clientX, moveEvent.clientY);
-                            notesScroller.start((x, y) => updatePositions(x, y));
+                            return;
                         }
                     } else {
+                        // На десктопі (миша) починаємо перетягування при зміщенні > 5px
+                        if (!isDragging) {
+                            if (Math.hypot(moveEvent.clientX - startX, moveEvent.clientY - startY) > 5) {
+                                initDrag(moveEvent.clientX, moveEvent.clientY);
+                            }
+                        }
+                    }
+
+                    if (isDragging) {
+                        notesScroller.update(lastClientX, lastClientY);
                         updatePositions(lastClientX, lastClientY);
                     }
                 };
 
                 const onPointerUp = () => {
+                    if (longPressTimer) {
+                        clearTimeout(longPressTimer);
+                        longPressTimer = null;
+                    }
+                    row.classList.remove('touch-drag-active');
+
                     try {
                         if (row.hasPointerCapture && row.hasPointerCapture(pointerId)) {
                             row.releasePointerCapture(pointerId);
@@ -340,11 +393,24 @@ window.App = window.App || {};
                     window.removeEventListener('pointerup', onPointerUp);
                     window.removeEventListener('pointercancel', onPointerUp);
                     window.removeEventListener('blur', onPointerUp);
+                    window.removeEventListener('contextmenu', onContextMenu);
                     document.body.classList.remove('is-sidebar-dragging');
+
+                    const wasDragging = isDragging;
 
                     if (state) {
                         state.isDraggingNote = false;
                         state.draggedNoteId = null;
+                    }
+
+                    if (wasDragging) {
+                        // Запобігаємо випадковому відкриттю/вибору нотатки після завершення перетягування
+                        const blockClick = (clickEv) => {
+                            clickEv.stopPropagation();
+                            clickEv.preventDefault();
+                            window.removeEventListener('click', blockClick, true);
+                        };
+                        window.addEventListener('click', blockClick, true);
                     }
 
                     const notesHeader = document.querySelector('.notes-header');
@@ -577,10 +643,21 @@ window.App = window.App || {};
                     }
                 };
 
+                const onContextMenu = (menuEv) => {
+                    if (touchDragReady || isDragging) {
+                        menuEv.preventDefault();
+                    }
+                    if (longPressTimer) {
+                        clearTimeout(longPressTimer);
+                        longPressTimer = null;
+                    }
+                };
+
                 window.addEventListener('pointermove', onPointerMove);
                 window.addEventListener('pointerup', onPointerUp);
                 window.addEventListener('pointercancel', onPointerUp);
                 window.addEventListener('blur', onPointerUp);
+                window.addEventListener('contextmenu', onContextMenu);
             });
         }
     };
