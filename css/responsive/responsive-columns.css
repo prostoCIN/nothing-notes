@@ -1,0 +1,190 @@
+@media screen and (max-width: 768px) {
+    /* 4. Колонки на смартфонах займають 100% ширини (1 колонка на весь екран зі зручним свайпом) */
+    .columns-container {
+        display: flex;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        gap: 0;
+        padding: 0;
+        flex: 1 1 0px !important;
+        height: auto !important;
+        min-height: 0 !important;
+    }
+
+    /* Приховуємо кнопку перемикання списку/сітки (Pinterest) та кнопку розтягування на мобільних, оскільки на телефоні завжди 1-колонковий вигляд на 100% ширини */
+    .column-layout-toggle-btn,
+    .column-expand-toggle-btn {
+        display: none !important;
+    }
+
+    .board-column,
+    .columns-container.has-many-columns .board-column {
+        flex: 0 0 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        scroll-snap-align: start;
+        scroll-snap-stop: always;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        background: transparent !important;
+        padding: 8px 16px 0 16px !important;
+        height: 100% !important;
+        min-height: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Адаптивна шапка колонки: компактний заголовок та іконка фільтра без тексту */
+    .column-header {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+        padding-bottom: 10px !important;
+        margin-bottom: 12px !important;
+        gap: 8px !important;
+        flex-shrink: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .column-title-wrap {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+    }
+
+    .column-header-actions {
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        flex-shrink: 0 !important;
+        margin-left: auto !important;
+    }
+
+    .column-header-icon {
+        font-size: 18px !important;
+    }
+
+    .column-title {
+        font-size: 17px !important;
+        font-weight: 700 !important;
+        letter-spacing: -0.3px;
+    }
+
+    .column-count-badge {
+        font-size: 11px !important;
+        min-width: 26px !important;
+        height: 26px !important;
+        padding: 0 4px !important;
+        border-radius: 6px !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        background: none !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    /* Кнопка фільтра колонки на мобільному стає компактною квадратною іконкою */
+    .column-filter-btn {
+        padding: 5px 8px !important;
+        height: 28px !important;
+        border-radius: 6px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    .column-filter-btn span {
+        display: none !important; /* Ховаємо напис "Фільтр" на телефоні */
+    }
+
+    .column-filter-btn svg {
+        width: 14px !important;
+        height: 14px !important;
+    }
+
+    /* Повнорозмірний вертикальний скрол списку нотаток на мобільному (з прихованою смугою скролу) */
+    .column-notes-list {
+        flex: 1 1 auto !important;
+        height: 100% !important;
+        min-height: 0 !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        scrollbar-width: none !important; /* Firefox */
+        -ms-overflow-style: none !important;  /* IE and Edge */
+        padding: 4px 0 110px 0 !important; /* Забезпечує вільний простір унизу під кнопкою */
+        box-sizing: border-box !important;
+    }
+
+    .column-notes-list::-webkit-scrollbar {
+        display: none !important; /* Safari and Chrome */
+        width: 0 !important;
+        height: 0 !important;
+    }
+
+    .columns-container {
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+    }
+
+    .columns-container::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+    }
+
+    .add-note-bottom-container {
+        margin-top: 20px !important;
+        margin-bottom: 24px !important;
+        padding-bottom: env(safe-area-inset-bottom, 20px) !important;
+    }
+
+
+    /* 6. Мобільний індикатор пагінації колонок (iOS Dots Pagination) */
+    .mobile-columns-pagination {
+        display: none;
+        position: fixed;
+        bottom: max(env(safe-area-inset-bottom, 0px), 14px);
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(22, 22, 26, 0.88);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        padding: 5px 10px;
+        border-radius: 20px;
+        z-index: 100;
+        align-items: center;
+        gap: 6px;
+        transition: opacity 0.25s ease;
+    }
+
+    .mobile-columns-pagination.visible {
+        display: flex;
+    }
+
+    .mobile-pagination-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .mobile-pagination-dot.active {
+        width: 20px;
+        border-radius: 10px;
+        background: #10b981;
+        box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+    }
+
+}

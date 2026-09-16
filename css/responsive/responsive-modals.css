@@ -1,0 +1,76 @@
+@media screen and (max-width: 768px) {
+    /* 7. Модальні вікна та діалоги дій (Mobile Modals & Selection Bar) */
+    .confirm-modal-box {
+        width: calc(100vw - 32px) !important;
+        max-width: none !important;
+        padding: 20px 18px !important;
+        border-radius: 16px !important;
+        gap: 14px !important;
+        margin: auto !important;
+    }
+
+    .confirm-modal-header {
+        gap: 10px !important;
+    }
+
+    .confirm-modal-icon-badge {
+        width: 32px !important;
+        height: 32px !important;
+    }
+
+    .confirm-modal-title {
+        font-size: 16px !important;
+    }
+
+    .confirm-modal-body {
+        font-size: 13px !important;
+        line-height: 1.4 !important;
+    }
+
+    .confirm-modal-actions {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 8px !important;
+        margin-top: 6px !important;
+        width: 100% !important;
+    }
+
+    .modal-cancel-btn {
+        flex: 1 1 0px !important;
+        padding: 10px 8px !important;
+        font-size: 13px !important;
+        text-align: center !important;
+    }
+
+    .hold-delete-btn {
+        flex: 1.6 1 0px !important;
+        padding: 10px 8px !important;
+        font-size: 13px !important;
+        text-align: center !important;
+    }
+
+    .hold-btn-text {
+        font-size: 12px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    /* Перемикання видимості елементів: на мобільних показуємо mobile-only, ховаємо desktop-only */
+    .mobile-only {
+        display: inline-flex !important;
+    }
+    .desktop-only {
+        display: none !important;
+    }
+
+
+    .board-creation-form {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .board-creation-form button {
+        width: 100%;
+    }
+}

@@ -1,0 +1,76 @@
+/* ==========================================================================
+   Базові налаштування інструментів для десктопу (Default PC Toolbar & Overlay)
+   ========================================================================== */
+
+/* ==========================================================================
+   📱 Мобільний адаптив (Mobile Responsive Styles)
+   ========================================================================== */
+
+/* На ПК панель інструментів завжди повністю відкрита горизонтально */
+.header-extra-tools-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Кнопка мобільного меню за замовчуванням прихована на ПК */
+.mobile-menu-btn,
+.mobile-tools-toggle-btn {
+    display: none;
+}
+
+.mobile-menu-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-main);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    align-items: center;
+    justify-content: center;
+    margin-right: 6px;
+    transition: background 0.15s ease;
+}
+
+.mobile-menu-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-close-btn {
+    display: none;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-left: auto;
+}
+
+.sidebar-close-btn:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 998;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+}
+
+.sidebar-overlay.active {
+    display: block;
+    opacity: 1;
+    pointer-events: auto;
+}

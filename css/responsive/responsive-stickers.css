@@ -1,0 +1,205 @@
+@media screen and (max-width: 768px) {
+    /* 5. Картки стікерів та адаптивна типографіка на телефоні */
+    .note-sticker {
+        width: 100%;
+        margin-bottom: 14px;
+        padding: 16px 16px 16px 42px !important;
+        box-sizing: border-box !important;
+        -webkit-tap-highlight-color: transparent !important;
+        outline: none !important;
+    }
+
+    .note-sticker *,
+    .sticker-title,
+    .sticker-content {
+        -webkit-tap-highlight-color: transparent !important;
+        outline: none !important;
+    }
+
+    .sticker-content {
+        overflow: hidden !important;
+        overflow-x: hidden !important;
+        overflow-y: hidden !important;
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+        -webkit-overflow-scrolling: auto !important;
+        border: none !important;
+        box-shadow: none !important;
+        -webkit-appearance: none !important;
+        appearance: none !important;
+        -webkit-user-modify: read-write-plaintext-only !important;
+        background-repeat: repeat-y !important;
+        background-position: left top !important;
+        background-attachment: scroll !important;
+        caret-color: #292524 !important;
+    }
+
+    .sticker-content:focus,
+    .sticker-content:focus-visible,
+    .sticker-content:active {
+        outline: none !important;
+        outline-color: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        -webkit-appearance: none !important;
+        appearance: none !important;
+        overflow: hidden !important;
+        scrollbar-width: none !important;
+    }
+
+    .sticker-content::-webkit-scrollbar,
+    .sticker-content::-webkit-scrollbar-thumb,
+    .sticker-content::-webkit-scrollbar-track {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+        background: transparent !important;
+        opacity: 0 !important;
+    }
+
+    /* Адаптивна шкала шрифтів для мобільних екранів (S / M / L / XL) з ідеальною синхронізацією ліній блокнота */
+    .note-sticker[data-font-step="0"] .sticker-title { font-size: 14px !important; }
+    .note-sticker[data-font-step="0"] .sticker-content { 
+        font-size: 11px !important; 
+        line-height: 22px !important; 
+        background-size: 100% 22px !important;
+        background-position: left top !important;
+        background-repeat: repeat-y !important;
+        background-image: linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 21px,
+            rgba(0, 0, 0, 0.08) 21px,
+            rgba(0, 0, 0, 0.08) 22px
+        ) !important;
+    }
+
+    .note-sticker[data-font-step="1"] .sticker-title,
+    .note-sticker:not([data-font-step]) .sticker-title { font-size: 18px !important; }
+    .note-sticker[data-font-step="1"] .sticker-content,
+    .note-sticker:not([data-font-step]) .sticker-content { 
+        font-size: 14px !important; 
+        line-height: 26px !important; 
+        background-size: 100% 26px !important;
+        background-position: left top !important;
+        background-repeat: repeat-y !important;
+        background-image: linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 25px,
+            rgba(0, 0, 0, 0.08) 25px,
+            rgba(0, 0, 0, 0.08) 26px
+        ) !important;
+    }
+
+    .note-sticker[data-font-step="2"] .sticker-title { font-size: 22px !important; }
+    .note-sticker[data-font-step="2"] .sticker-content { 
+        font-size: 17px !important; 
+        line-height: 30px !important; 
+        background-size: 100% 30px !important;
+        background-position: left top !important;
+        background-repeat: repeat-y !important;
+        background-image: linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 29px,
+            rgba(0, 0, 0, 0.08) 29px,
+            rgba(0, 0, 0, 0.08) 30px
+        ) !important;
+    }
+
+    .note-sticker[data-font-step="3"] .sticker-title { font-size: 26px !important; }
+    .note-sticker[data-font-step="3"] .sticker-content { 
+        font-size: 20px !important; 
+        line-height: 34px !important; 
+        background-size: 100% 34px !important;
+        background-position: left top !important;
+        background-repeat: repeat-y !important;
+        background-image: linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 33px,
+            rgba(0, 0, 0, 0.08) 33px,
+            rgba(0, 0, 0, 0.08) 34px
+        ) !important;
+    }
+
+    /* Адаптив Polaroid-карток під ширину смартфона */
+    .sticker-images-gallery {
+        gap: 8px;
+        padding: 2px;
+    }
+
+    .sticker-image-wrapper {
+        margin: 4px 0;
+        max-width: 100%;
+    }
+
+    .sticker-image-wrapper.size-l {
+        width: 100% !important;
+    }
+
+    .masonry-grid-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .masonry-column {
+        width: 100% !important;
+        gap: 14px;
+    }
+
+
+    /* Компактний тулбар виділеного тексту на смартфонах (тільки перемикач Regular / Bold) */
+    .text-selection-toolbar {
+        padding: 4px 6px !important;
+        border-radius: 12px !important;
+        gap: 0 !important;
+        min-width: 0 !important;
+        width: auto !important;
+        background: rgba(24, 24, 28, 0.95) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.16) !important;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.08) !important;
+        z-index: 10000 !important;
+    }
+
+    .text-selection-toolbar.active {
+        display: flex !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+        opacity: 1 !important;
+    }
+
+    /* На мобільних пристроях ховаємо слайдер розміру, палітру маркерів, кнопку "Всі" та кнопку ресету */
+    .text-selection-toolbar .text-sel-slider-wrap,
+    .text-selection-toolbar .text-sel-colors-wrap,
+    .text-selection-toolbar .text-sel-scope-wrap,
+    .text-selection-toolbar .text-sel-reset-all-btn,
+    .text-selection-toolbar .text-sel-divider {
+        display: none !important;
+    }
+
+    .text-selection-toolbar .text-sel-weight-wrap {
+        background: transparent !important;
+        padding: 0 !important;
+        gap: 4px !important;
+    }
+
+    .text-selection-toolbar .text-sel-weight-btn {
+        width: 32px !important;
+        height: 30px !important;
+        font-size: 13.5px !important;
+        border-radius: 8px !important;
+    }
+
+    /* Адаптація контекстного меню нотатки "три крапки" на мобільних пристроях */
+    .sticker-menu-dropdown {
+        width: 250px !important;
+        min-width: 250px !important;
+        max-width: 250px !important;
+    }
+
+}
