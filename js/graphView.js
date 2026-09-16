@@ -50,6 +50,16 @@ window.App = window.App || {};
     let boundPointerUp = null;
     let boundKeyDown = null;
     let boundResize = null;
+    let boundTouchStart = null;
+    let boundTouchMove = null;
+    let boundTouchEnd = null;
+
+    // Стан сенсорного масштабування двома пальцями (Pinch-to-zoom)
+    let isPinching = false;
+    let touchStartDist = 0;
+    let touchStartZoom = 1;
+    let touchStartCenter = { x: 0, y: 0 };
+    let touchStartCam = { x: 0, y: 0 };
 
     // Палітра насичених та виразних кольорів для різних гілок графу
     const BRANCH_COLORS = [
@@ -142,19 +152,37 @@ window.App = window.App || {};
                 <div class="graph-toolbar">
                     <div class="graph-toolbar-left">
                         <div class="graph-title-pill">
-                            <span class="graph-title-icon">🕸️</span>
+                            <span class="graph-title-icon">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="18" cy="5" r="3"></circle>
+                                    <circle cx="6" cy="12" r="3"></circle>
+                                    <circle cx="18" cy="19" r="3"></circle>
+                                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                                </svg>
+                            </span>
                             <span class="graph-title-text">${currentBoard.name}</span>
                             <span class="graph-nodes-count" id="graph-nodes-counter">0 зв'язків</span>
                         </div>
 
                         <div class="graph-toolbar-filters">
                             <button class="graph-toolbar-filter-btn is-orphans-btn" id="graph-filter-orphans" title="Показати лише ізольовані нотатки без піднотаток та батьків">
-                                <span class="filter-btn-icon">🏝️</span>
-                                <span class="filter-btn-label">Сироти</span>
+                                <span class="filter-btn-icon">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="3.5" fill="currentColor"></circle>
+                                        <circle cx="12" cy="12" r="8" stroke-dasharray="2 3"></circle>
+                                    </svg>
+                                </span>
+                                <span class="filter-btn-label">Острови</span>
                                 <span class="filter-btn-badge" id="graph-orphans-counter">0</span>
                             </button>
                             <button class="graph-toolbar-filter-btn is-active" id="graph-toggle-tag-links" title="Увімкнути/вимкнути пунктирні зв'язки між нотатками зі спільними тегами">
-                                <span class="filter-btn-icon">🏷️</span>
+                                <span class="filter-btn-icon">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                                        <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                                    </svg>
+                                </span>
                                 <span class="filter-btn-label">Зв'язки тегів</span>
                             </button>
                         </div>
@@ -169,20 +197,119 @@ window.App = window.App || {};
                                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                                 </svg>
                             </span>
-                            <button class="graph-search-clear-btn" id="graph-search-clear-btn" style="display: none;">×</button>
+                            <button class="graph-search-clear-btn" id="graph-search-clear-btn" style="display: none;">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
                         </div>
+                        <button class="graph-mobile-filters-trigger" id="graph-mobile-filters-trigger" title="Фільтри та зв'язки графу" aria-label="Фільтри графу">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="4" y1="21" x2="4" y2="14"></line>
+                                <line x1="4" y1="10" x2="4" y2="3"></line>
+                                <line x1="12" y1="21" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12" y2="3"></line>
+                                <line x1="20" y1="21" x2="20" y2="16"></line>
+                                <line x1="20" y1="12" x2="20" y2="3"></line>
+                                <line x1="1" y1="14" x2="7" y2="14"></line>
+                                <line x1="9" y1="8" x2="15" y2="8"></line>
+                                <line x1="17" y1="16" x2="23" y2="16"></line>
+                            </svg>
+                            <span class="graph-filter-dot" id="graph-filter-indicator"></span>
+                        </button>
                     </div>
                 </div>
 
                 <div class="graph-tags-bar" id="graph-tags-bar" style="display: none;"></div>
 
+                <div class="graph-mobile-sheet-backdrop" id="graph-mobile-sheet-backdrop">
+                    <div class="graph-mobile-sheet" id="graph-mobile-sheet">
+                        <div class="graph-mobile-sheet-handle"></div>
+                        <div class="graph-mobile-sheet-header">
+                            <div class="graph-mobile-sheet-title">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="4" y1="21" x2="4" y2="14"></line>
+                                    <line x1="4" y1="10" x2="4" y2="3"></line>
+                                    <line x1="12" y1="21" x2="12" y2="12"></line>
+                                    <line x1="12" y1="8" x2="12" y2="3"></line>
+                                    <line x1="20" y1="21" x2="20" y2="16"></line>
+                                    <line x1="20" y1="12" x2="20" y2="3"></line>
+                                    <line x1="1" y1="14" x2="7" y2="14"></line>
+                                    <line x1="9" y1="8" x2="15" y2="8"></line>
+                                    <line x1="17" y1="16" x2="23" y2="16"></line>
+                                </svg>
+                                <span>Фільтри та зв'язки</span>
+                            </div>
+                            <button class="graph-mobile-sheet-close" id="graph-mobile-sheet-close" aria-label="Закрити">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="graph-mobile-sheet-content">
+                            <div class="graph-mobile-section-label">Режими зв'язків</div>
+                            <div class="graph-mobile-toggles-grid">
+                                <button class="graph-mobile-toggle-btn is-orphans-btn" id="graph-mobile-filter-orphans">
+                                    <div class="graph-mobile-toggle-left">
+                                        <svg class="graph-mobile-toggle-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="3.5" fill="currentColor"></circle>
+                                            <circle cx="12" cy="12" r="8" stroke-dasharray="2 3"></circle>
+                                        </svg>
+                                        <div class="graph-mobile-toggle-info">
+                                            <span class="graph-mobile-toggle-title">Лише острови</span>
+                                            <span class="graph-mobile-toggle-sub">Нотатки без зв'язків</span>
+                                        </div>
+                                    </div>
+                                    <div class="graph-mobile-toggle-right">
+                                        <span class="graph-mobile-badge" id="graph-mobile-orphans-counter">0</span>
+                                        <span class="graph-mobile-checkbox"></span>
+                                    </div>
+                                </button>
+
+                                <button class="graph-mobile-toggle-btn is-active" id="graph-mobile-toggle-tag-links">
+                                    <div class="graph-mobile-toggle-left">
+                                        <svg class="graph-mobile-toggle-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                                            <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                                        </svg>
+                                        <div class="graph-mobile-toggle-info">
+                                            <span class="graph-mobile-toggle-title">Зв'язки тегів</span>
+                                            <span class="graph-mobile-toggle-sub">Лінії спільних тегів</span>
+                                        </div>
+                                    </div>
+                                    <div class="graph-mobile-toggle-right">
+                                        <span class="graph-mobile-checkbox"></span>
+                                    </div>
+                                </button>
+                            </div>
+
+                            <div class="graph-mobile-section-label" id="graph-mobile-tags-label" style="display: none;">Фільтр за тегами</div>
+                            <div class="graph-mobile-tags-wrap" id="graph-mobile-tags-wrap" style="display: none;"></div>
+                        </div>
+                    </div>
+                </div>
+
                 <canvas class="graph-canvas" id="graph-canvas"></canvas>
                 <div class="graph-nodes-layer" id="graph-nodes-layer"></div>
 
                 <div class="graph-preview-card" id="graph-preview-card" style="display: none;">
-                    <button class="graph-preview-close" id="graph-preview-close" title="Закрити прев'ю">×</button>
+                    <button class="graph-preview-close" id="graph-preview-close" title="Закрити прев'ю">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
                     <div class="graph-preview-header">
-                        <span class="graph-preview-icon" id="graph-preview-icon">📄</span>
+                        <span class="graph-preview-icon" id="graph-preview-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                            </svg>
+                        </span>
                         <div class="graph-preview-title-wrap">
                             <h4 class="graph-preview-title" id="graph-preview-title"></h4>
                             <div class="graph-preview-badges" id="graph-preview-badges"></div>
@@ -255,32 +382,69 @@ window.App = window.App || {};
             const clearBtn = container.querySelector('#graph-search-clear-btn');
             const searchIconRight = container.querySelector('#graph-search-icon-right');
             const orphansBtn = container.querySelector('#graph-filter-orphans');
+            const mobileOrphansBtn = container.querySelector('#graph-mobile-filter-orphans');
             const tagLinksBtn = container.querySelector('#graph-toggle-tag-links');
+            const mobileTagLinksBtn = container.querySelector('#graph-mobile-toggle-tag-links');
             const previewCloseBtn = container.querySelector('#graph-preview-close');
 
-            // 1. Фільтр Сироти (Orphans)
-            if (orphansBtn) {
-                orphansBtn.classList.toggle('is-active', isOrphansOnly);
-                orphansBtn.addEventListener('click', () => {
-                    isOrphansOnly = !isOrphansOnly;
-                    orphansBtn.classList.toggle('is-active', isOrphansOnly);
-                    this.hidePreviewCard(true);
-                    this.updateEdgesCounter();
-                    this.draw();
+            const mobileTrigger = container.querySelector('#graph-mobile-filters-trigger');
+            const mobileSheetBackdrop = container.querySelector('#graph-mobile-sheet-backdrop');
+            const mobileSheetClose = container.querySelector('#graph-mobile-sheet-close');
+
+            const openMobileSheet = () => {
+                if (mobileSheetBackdrop) mobileSheetBackdrop.classList.add('is-open');
+            };
+            const closeMobileSheet = () => {
+                if (mobileSheetBackdrop) mobileSheetBackdrop.classList.remove('is-open');
+            };
+
+            if (mobileTrigger) mobileTrigger.addEventListener('click', openMobileSheet);
+            if (mobileSheetClose) mobileSheetClose.addEventListener('click', closeMobileSheet);
+            if (mobileSheetBackdrop) {
+                mobileSheetBackdrop.addEventListener('click', (e) => {
+                    if (e.target === mobileSheetBackdrop) closeMobileSheet();
                 });
             }
 
+            // 1. Фільтр Острови (Orphans)
+            const toggleOrphans = () => {
+                isOrphansOnly = !isOrphansOnly;
+                if (orphansBtn) orphansBtn.classList.toggle('is-active', isOrphansOnly);
+                if (mobileOrphansBtn) mobileOrphansBtn.classList.toggle('is-active', isOrphansOnly);
+                this.updateMobileFilterIndicator();
+                this.hidePreviewCard(true);
+                this.updateEdgesCounter();
+                this.draw();
+            };
+
+            if (orphansBtn) {
+                orphansBtn.classList.toggle('is-active', isOrphansOnly);
+                orphansBtn.addEventListener('click', toggleOrphans);
+            }
+            if (mobileOrphansBtn) {
+                mobileOrphansBtn.classList.toggle('is-active', isOrphansOnly);
+                mobileOrphansBtn.addEventListener('click', toggleOrphans);
+            }
+
             // 2. Перемикач зв'язків за тегами
+            const toggleTagLinks = () => {
+                showTagLinks = !showTagLinks;
+                if (tagLinksBtn) tagLinksBtn.classList.toggle('is-active', showTagLinks);
+                if (mobileTagLinksBtn) mobileTagLinksBtn.classList.toggle('is-active', showTagLinks);
+                this.updateMobileFilterIndicator();
+                this.hidePreviewCard(true);
+                this.updateEdgesCounter();
+                this.wakeUpSimulation();
+                this.draw();
+            };
+
             if (tagLinksBtn) {
                 tagLinksBtn.classList.toggle('is-active', showTagLinks);
-                tagLinksBtn.addEventListener('click', () => {
-                    showTagLinks = !showTagLinks;
-                    tagLinksBtn.classList.toggle('is-active', showTagLinks);
-                    this.hidePreviewCard(true);
-                    this.updateEdgesCounter();
-                    this.wakeUpSimulation();
-                    this.draw();
-                });
+                tagLinksBtn.addEventListener('click', toggleTagLinks);
+            }
+            if (mobileTagLinksBtn) {
+                mobileTagLinksBtn.classList.toggle('is-active', showTagLinks);
+                mobileTagLinksBtn.addEventListener('click', toggleTagLinks);
             }
 
             // 3. Події картки швидкого перегляду
@@ -340,6 +504,8 @@ window.App = window.App || {};
                     }
                 } else if ((e.key === 'Escape' || e.key === 'Enter') && document.activeElement === searchInput) {
                     searchInput.blur();
+                } else if (e.key === 'Escape' && mobileSheetBackdrop && mobileSheetBackdrop.classList.contains('is-open')) {
+                    closeMobileSheet();
                 } else if (e.key === 'Escape' && previewCard && previewCard.classList.contains('active')) {
                     this.hidePreviewCard(true);
                 }
@@ -356,7 +522,7 @@ window.App = window.App || {};
                 this.resetCamera();
             });
 
-            // Canvas події
+            // Canvas події (Pointer)
             canvas.addEventListener('pointerdown', this.onPointerDown.bind(this));
             canvas.addEventListener('dblclick', (e) => {
                 const targetNode = this.getNodeAt(e.clientX, e.clientY);
@@ -365,6 +531,83 @@ window.App = window.App || {};
                 }
             });
             canvas.addEventListener('wheel', this.onWheel.bind(this), { passive: false });
+
+            // Сенсорний жест масштабування камери двома пальцями (Pinch-to-zoom)
+            const getTouchDist = (t1, t2) => {
+                const dx = t2.clientX - t1.clientX;
+                const dy = t2.clientY - t1.clientY;
+                return Math.sqrt(dx * dx + dy * dy);
+            };
+
+            const getTouchCenter = (t1, t2) => {
+                return {
+                    x: (t1.clientX + t2.clientX) / 2,
+                    y: (t1.clientY + t2.clientY) / 2
+                };
+            };
+
+            boundTouchStart = (e) => {
+                if (e.touches.length === 2) {
+                    isPinching = true;
+                    isDraggingNode = false;
+                    isDraggingCanvas = false;
+                    draggedNode = null;
+                    this.hidePreviewCard(true);
+
+                    const t1 = e.touches[0];
+                    const t2 = e.touches[1];
+                    touchStartDist = getTouchDist(t1, t2);
+                    touchStartCenter = getTouchCenter(t1, t2);
+                    touchStartZoom = camera.zoom;
+                    touchStartCam = { x: camera.x, y: camera.y };
+
+                    e.preventDefault();
+                }
+            };
+
+            boundTouchMove = (e) => {
+                if (e.touches.length === 2 && isPinching) {
+                    e.preventDefault();
+                    const t1 = e.touches[0];
+                    const t2 = e.touches[1];
+                    const currentDist = getTouchDist(t1, t2);
+                    const currentCenter = getTouchCenter(t1, t2);
+
+                    if (touchStartDist > 0) {
+                        const scale = currentDist / touchStartDist;
+                        const newZoom = Math.max(camera.minZoom, Math.min(camera.maxZoom, touchStartZoom * scale));
+
+                        const rect = canvas.getBoundingClientRect();
+                        const startCenterX = touchStartCenter.x - rect.left;
+                        const startCenterY = touchStartCenter.y - rect.top;
+
+                        const panX = currentCenter.x - touchStartCenter.x;
+                        const panY = currentCenter.y - touchStartCenter.y;
+
+                        camera.x = startCenterX - (startCenterX - touchStartCam.x) * (newZoom / touchStartZoom) + panX;
+                        camera.y = startCenterY - (startCenterY - touchStartCam.y) * (newZoom / touchStartZoom) + panY;
+                        camera.zoom = newZoom;
+
+                        this.draw();
+                    }
+                }
+            };
+
+            boundTouchEnd = (e) => {
+                if (e.touches.length < 2 && isPinching) {
+                    isPinching = false;
+                    if (e.touches.length === 1) {
+                        const t = e.touches[0];
+                        lastMousePos = { x: t.clientX, y: t.clientY };
+                        startMousePos = { x: t.clientX, y: t.clientY };
+                    }
+                }
+            };
+
+            canvas.addEventListener('touchstart', boundTouchStart, { passive: false });
+            canvas.addEventListener('touchmove', boundTouchMove, { passive: false });
+            canvas.addEventListener('touchend', boundTouchEnd);
+            canvas.addEventListener('touchcancel', boundTouchEnd);
 
             // Глобальні події вікна з можливістю чистого відписування
             boundPointerMove = this.onPointerMove.bind(this);
@@ -376,6 +619,8 @@ window.App = window.App || {};
             window.addEventListener('pointercancel', boundPointerUp);
             window.addEventListener('keydown', boundKeyDown);
             window.addEventListener('resize', boundResize);
+
+            this.updateMobileFilterIndicator();
         },
 
         unbindDOMEvents() {
@@ -395,6 +640,15 @@ window.App = window.App || {};
             if (boundResize) {
                 window.removeEventListener('resize', boundResize);
                 boundResize = null;
+            }
+            if (canvas && boundTouchStart) {
+                canvas.removeEventListener('touchstart', boundTouchStart);
+                canvas.removeEventListener('touchmove', boundTouchMove);
+                canvas.removeEventListener('touchend', boundTouchEnd);
+                canvas.removeEventListener('touchcancel', boundTouchEnd);
+                boundTouchStart = null;
+                boundTouchMove = null;
+                boundTouchEnd = null;
             }
         },
 
@@ -547,8 +801,12 @@ window.App = window.App || {};
             });
 
             const orphansCounter = container.querySelector('#graph-orphans-counter');
+            const mobileOrphansCounter = container.querySelector('#graph-mobile-orphans-counter');
             if (orphansCounter) {
                 orphansCounter.textContent = orphansCount;
+            }
+            if (mobileOrphansCounter) {
+                mobileOrphansCounter.textContent = orphansCount;
             }
 
             // 4. Формуємо зв'язки за спільними тегами та панель тегів
@@ -610,66 +868,96 @@ window.App = window.App || {};
 
         renderTagsBar(tagsCountMap) {
             const bar = container ? container.querySelector('#graph-tags-bar') : null;
-            if (!bar) return;
+            const mobileWrap = container ? container.querySelector('#graph-mobile-tags-wrap') : null;
+            const mobileLabel = container ? container.querySelector('#graph-mobile-tags-label') : null;
 
             if (!tagsCountMap || tagsCountMap.size === 0) {
-                bar.style.display = 'none';
-                bar.innerHTML = '';
+                if (bar) {
+                    bar.style.display = 'none';
+                    bar.innerHTML = '';
+                }
+                if (mobileWrap) {
+                    mobileWrap.style.display = 'none';
+                    mobileWrap.innerHTML = '';
+                }
+                if (mobileLabel) {
+                    mobileLabel.style.display = 'none';
+                }
+                this.updateMobileFilterIndicator();
                 return;
             }
 
-            bar.style.display = 'flex';
-            bar.innerHTML = '';
+            if (bar) {
+                bar.style.display = 'flex';
+                bar.innerHTML = '';
+            }
+            if (mobileWrap) {
+                mobileWrap.style.display = 'flex';
+                mobileWrap.innerHTML = '';
+            }
+            if (mobileLabel) {
+                mobileLabel.style.display = 'block';
+            }
 
-            // Кнопка "Всі нотатки"
-            const allBtn = document.createElement('button');
-            allBtn.className = 'graph-tag-chip' + (activeTagFilter === null ? ' is-active' : '');
-            allBtn.innerHTML = `
-                <span class="graph-tag-dot" style="background: #10b981;"></span>
-                <span class="graph-tag-name">Всі нотатки</span>
-                <span class="graph-tag-count">${nodes.length}</span>
-            `;
-            allBtn.addEventListener('click', () => {
-                activeTagFilter = null;
-                this.updateTagsBarActive();
-                this.hidePreviewCard(true);
-                this.draw();
-            });
-            bar.appendChild(allBtn);
-
-            // Сортуємо теги за спаданням кількості
             const sortedTags = Array.from(tagsCountMap.entries()).sort((a, b) => b[1] - a[1]);
 
-            sortedTags.forEach(([tagText, count]) => {
-                const color = getTagColor(tagText);
-                const chip = document.createElement('button');
-                chip.className = 'graph-tag-chip' + (activeTagFilter === tagText ? ' is-active' : '');
-                chip.dataset.tag = tagText;
-                chip.innerHTML = `
-                    <span class="graph-tag-dot" style="background: ${color};"></span>
-                    <span class="graph-tag-name">#${tagText}</span>
-                    <span class="graph-tag-count">${count}</span>
+            const createAllBtn = () => {
+                const btn = document.createElement('button');
+                btn.className = 'graph-tag-chip' + (activeTagFilter === null ? ' is-active' : '');
+                btn.innerHTML = `
+                    <span class="graph-tag-dot" style="background: #10b981;"></span>
+                    <span class="graph-tag-name">Всі нотатки</span>
+                    <span class="graph-tag-count">${nodes.length}</span>
                 `;
-
-                chip.addEventListener('click', () => {
-                    if (activeTagFilter === tagText) {
-                        activeTagFilter = null;
-                    } else {
-                        activeTagFilter = tagText;
-                    }
+                btn.addEventListener('click', () => {
+                    activeTagFilter = null;
                     this.updateTagsBarActive();
                     this.hidePreviewCard(true);
                     this.draw();
                 });
+                return btn;
+            };
 
-                bar.appendChild(chip);
+            if (bar) bar.appendChild(createAllBtn());
+            if (mobileWrap) mobileWrap.appendChild(createAllBtn());
+
+            sortedTags.forEach(([tagText, count]) => {
+                const color = getTagColor(tagText);
+
+                const createChip = () => {
+                    const chip = document.createElement('button');
+                    chip.className = 'graph-tag-chip' + (activeTagFilter === tagText ? ' is-active' : '');
+                    chip.dataset.tag = tagText;
+                    chip.innerHTML = `
+                        <span class="graph-tag-dot" style="background: ${color};"></span>
+                        <span class="graph-tag-name">#${tagText}</span>
+                        <span class="graph-tag-count">${count}</span>
+                    `;
+
+                    chip.addEventListener('click', () => {
+                        if (activeTagFilter === tagText) {
+                            activeTagFilter = null;
+                        } else {
+                            activeTagFilter = tagText;
+                        }
+                        this.updateTagsBarActive();
+                        this.hidePreviewCard(true);
+                        this.draw();
+                    });
+                    return chip;
+                };
+
+                if (bar) bar.appendChild(createChip());
+                if (mobileWrap) mobileWrap.appendChild(createChip());
             });
+
+            this.updateMobileFilterIndicator();
         },
 
         updateTagsBarActive() {
-            const bar = container ? container.querySelector('#graph-tags-bar') : null;
-            if (!bar) return;
-            bar.querySelectorAll('.graph-tag-chip').forEach(chip => {
+            if (!container) return;
+            const chips = container.querySelectorAll('.graph-tag-chip');
+            chips.forEach(chip => {
                 const tag = chip.dataset.tag;
                 if (!tag) {
                     chip.classList.toggle('is-active', activeTagFilter === null);
@@ -677,6 +965,16 @@ window.App = window.App || {};
                     chip.classList.toggle('is-active', activeTagFilter === tag);
                 }
             });
+            this.updateMobileFilterIndicator();
+        },
+
+        updateMobileFilterIndicator() {
+            if (!container) return;
+            const trigger = container.querySelector('#graph-mobile-filters-trigger');
+            const dot = container.querySelector('#graph-filter-indicator');
+            const hasActive = isOrphansOnly || !showTagLinks || (activeTagFilter !== null);
+            if (trigger) trigger.classList.toggle('has-active-filters', hasActive);
+            if (dot) dot.classList.toggle('is-visible', hasActive);
         },
 
         updateEdgesCounter() {
@@ -722,7 +1020,13 @@ window.App = window.App || {};
             if (badgesEl) {
                 let badgesHtml = '';
                 if (node.isOrphan) {
-                    badgesHtml += `<span class="preview-badge preview-badge-orphan">🏝️ Сирота</span>`;
+                    badgesHtml += `<span class="preview-badge preview-badge-orphan">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 3px;">
+                            <circle cx="12" cy="12" r="3.5" fill="currentColor"></circle>
+                            <circle cx="12" cy="12" r="8" stroke-dasharray="2 3"></circle>
+                        </svg>
+                        Острів
+                    </span>`;
                 }
                 if (node.isRoot) {
                     badgesHtml += `<span class="preview-badge preview-badge-root">Коренева</span>`;
@@ -1210,6 +1514,7 @@ window.App = window.App || {};
             cachedSubtreeIds = null;
             isOrphansOnly = false;
             activeTagFilter = null;
+            isPinching = false;
         },
 
         destroy() {
@@ -1252,6 +1557,7 @@ window.App = window.App || {};
 
         // Події миші та тач-пристроїв
         onPointerDown(e) {
+            if (isPinching) return;
             if (e.button !== 0 && e.button !== 1) return;
 
             const targetNode = this.getNodeAt(e.clientX, e.clientY);
@@ -1274,6 +1580,7 @@ window.App = window.App || {};
         },
 
         onPointerMove(e) {
+            if (isPinching) return;
             if (!canvas) return;
 
             const dx = e.clientX - lastMousePos.x;
@@ -1316,6 +1623,7 @@ window.App = window.App || {};
         },
 
         onPointerUp(e) {
+            if (isPinching) return;
             const distMoved = Math.sqrt(Math.pow(e.clientX - startMousePos.x, 2) + Math.pow(e.clientY - startMousePos.y, 2));
             const isTouchDevice = e.pointerType === 'touch' || window.matchMedia('(hover: none)').matches || window.innerWidth <= 768;
 

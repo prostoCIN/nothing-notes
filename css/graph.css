@@ -188,6 +188,16 @@
 
 .graph-title-icon {
     font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #10b981;
+}
+
+.filter-btn-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .graph-title-text {
@@ -275,6 +285,12 @@
 .graph-toolbar-filter-btn.is-active.is-orphans-btn .filter-btn-badge {
     background: #f59e0b;
     color: #ffffff;
+}
+
+/* Мобільні елементи керування графу (за замовчуванням приховані на ПК) */
+.graph-mobile-filters-trigger,
+.graph-mobile-sheet-backdrop {
+    display: none;
 }
 
 /* Рядок фільтрації за тегами (Tags Bar) під тулбаром */
