@@ -1,0 +1,274 @@
+/* ==========================================================================
+   Зошитовий маркер виділення тексту (Notebook Marker <mark>)
+   ========================================================================== */
+mark.note-marker {
+    color: #111827 !important;
+    padding: 0;
+    margin: 0;
+    border-radius: 2px;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    font-weight: inherit;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    background: transparent;
+}
+
+mark.note-marker.hl-yellow { background-color: rgba(254, 240, 138, 0.9); }
+mark.note-marker.hl-green  { background-color: rgba(187, 247, 208, 0.9); }
+mark.note-marker.hl-blue   { background-color: rgba(186, 230, 253, 0.9); }
+mark.note-marker.hl-pink   { background-color: rgba(251, 207, 232, 0.9); }
+mark.note-marker.hl-orange { background-color: rgba(254, 215, 170, 0.9); }
+mark.note-marker.hl-purple { background-color: rgba(233, 213, 255, 0.9); }
+
+/* ==========================================================================
+   Плаваюче меню форматування тексту (Text Selection Toolbar)
+   ========================================================================== */
+.text-selection-toolbar {
+    position: fixed;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    gap: 12px;
+    background: var(--toolbar-bg, rgba(26, 26, 30, 0.98));
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--toolbar-border, rgba(255, 255, 255, 0.16));
+    border-radius: 14px;
+    padding: 8px 14px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);
+    user-select: none;
+    opacity: 0;
+    transform: scale(0.95);
+    transition: opacity 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
+    pointer-events: none;
+}
+
+.text-selection-toolbar.active {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+}
+
+.text-sel-divider {
+    width: 1px;
+    height: 22px;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* Перемикач Regular / Bold */
+.text-sel-weight-wrap {
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: 8px;
+    padding: 3px;
+    gap: 3px;
+}
+
+.text-sel-weight-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-family: inherit;
+    font-weight: 600;
+    width: 28px;
+    height: 26px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.text-sel-weight-btn:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.text-sel-weight-btn.active {
+    background: #10b981 !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4);
+}
+
+/* Палітра маркерів-хайлайтерів */
+.text-sel-colors-wrap {
+    display: flex;
+    align-items: center;
+}
+
+.text-sel-colors-list {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.text-sel-color-btn {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+    padding: 0;
+    margin: 0;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.text-sel-color-btn.clear-marker-btn svg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 12px;
+    height: 12px;
+    pointer-events: none;
+}
+
+.text-sel-color-btn:hover {
+    transform: scale(1.18);
+    border-color: #ffffff;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.35);
+}
+
+.text-sel-color-btn.clear-marker-btn {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.4);
+}
+
+.text-sel-color-btn.clear-marker-btn:hover {
+    background: #ef4444 !important;
+    color: #ffffff !important;
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.55);
+    transform: scale(1.18);
+}
+
+/* Кнопка перемикача режиму [Виділене / Всі такі слова] з кастомним тултіпом */
+.text-sel-scope-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.text-sel-scope-btn {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 700;
+    font-family: inherit;
+    padding: 3px 11px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 28px;
+    transition: all 0.15s ease;
+}
+
+.text-sel-scope-btn:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.text-sel-scope-btn.active {
+    background: #10b981 !important;
+    border-color: #10b981 !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+}
+
+/* Окреме спливаюче віконечко-підказка під кнопкою "Всі" */
+.text-sel-tooltip {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(-4px);
+    background: rgba(18, 18, 22, 0.98);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 11px;
+    line-height: 1.4;
+    color: var(--text-main);
+    white-space: nowrap;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s ease;
+    z-index: 10001;
+}
+
+.text-sel-tooltip b {
+    color: #34d399;
+}
+
+/* Стрілочка зверху підказки */
+.text-sel-tooltip::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 4px;
+    border-style: solid;
+    border-color: transparent transparent rgba(255, 255, 255, 0.15) transparent;
+}
+
+.text-sel-scope-wrap:hover .text-sel-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+.text-sel-brush-btn.active {
+    background: #10b981 !important;
+    border-color: #10b981 !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+}
+
+/* Індикатор активного режиму швидкого пензля на нотатці */
+body.highlighter-brush-active .sticker-content {
+    cursor: crosshair !important;
+}
+
+/* Кнопка ресету */
+.text-sel-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    padding: 4px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+.text-sel-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-main);
+}
+
+.text-sel-reset-all-btn:hover {
+    background: rgba(239, 68, 68, 0.2) !important;
+    color: #ef4444 !important;
+}
+
+

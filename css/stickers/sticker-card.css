@@ -1,0 +1,540 @@
+/* ==========================================================================
+   Базова картка нотатки (Sticker Card) & Інтерактивні елементи
+   ========================================================================== */
+
+/* Note Sticker Card (Ніжно-жовтий стікер у вигляді відірваного блокнотного листка) */
+.note-sticker {
+    --sticker-bg: #fef08a;
+    --sticker-border: rgba(234, 179, 8, 0.25);
+    background-color: var(--sticker-bg);
+    border: 1px solid var(--sticker-border);
+    border-radius: 12px;
+    padding: 22px 24px 22px 42px;
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.25s ease, border-color 0.25s ease;
+    box-shadow: var(--sticker-shadow, 0 4px 14px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.08));
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    overflow: visible;
+    z-index: 1;
+}
+
+/* Режим мульти-вибору (iOS Gallery Mode) для карток */
+.note-sticker.in-select-mode {
+    cursor: pointer !important;
+}
+
+.note-sticker.in-select-mode:hover {
+    transform: scale(0.985);
+}
+
+.note-sticker.is-ws-selected {
+    box-shadow: 0 0 0 3px #10b981, 0 12px 32px rgba(16, 185, 129, 0.35) !important;
+    transform: scale(0.98);
+}
+
+/* Круглий чекбокс у правому верхньому куті стікера (iOS стиль) */
+.sticker-select-checkbox {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 2px solid rgba(0, 0, 0, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    opacity: 0;
+    transform: scale(0.7);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 25;
+    pointer-events: none;
+}
+
+.note-sticker.in-select-mode .sticker-select-checkbox {
+    opacity: 0.7;
+    transform: scale(1);
+}
+
+.note-sticker.in-select-mode:hover .sticker-select-checkbox {
+    opacity: 1;
+    border-color: #10b981;
+}
+
+.note-sticker.is-ws-selected .sticker-select-checkbox {
+    background-color: #10b981 !important;
+    border-color: #10b981 !important;
+    opacity: 1 !important;
+    transform: scale(1.08);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.5);
+}
+
+.sticker-select-checkbox svg {
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.15s ease;
+}
+
+.note-sticker.is-ws-selected .sticker-select-checkbox svg {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* У режимі вибору вимикаємо випадковий фокус на інпутах і кліки по діях стікера */
+.note-sticker.in-select-mode .sticker-actions,
+.note-sticker.in-select-mode .sticker-emoji-wrap {
+    pointer-events: none;
+    opacity: 0.35;
+}
+
+.note-sticker.in-select-mode .sticker-title,
+.note-sticker.in-select-mode .sticker-content {
+    user-select: none;
+    pointer-events: none;
+}
+
+/* Підняття стікера, коли в ньому відкрито пікер емодзі, меню 3 крапки або меню тегів */
+.note-sticker:focus-within,
+.note-sticker.has-active-tag,
+.note-sticker:has(.sticker-emoji-picker-dropdown.active),
+.note-sticker:has(.sticker-menu-dropdown.active),
+.note-sticker:has(.sticker-tag-dropdown.active) {
+    z-index: 30 !important;
+}
+
+/* Кольорові теми для нотаток */
+.note-sticker.color-yellow { --sticker-bg: #fef08a; --sticker-border: rgba(234, 179, 8, 0.3); }
+.note-sticker.color-green  { --sticker-bg: #bbf7d0; --sticker-border: rgba(34, 197, 94, 0.3); }
+.note-sticker.color-blue   { --sticker-bg: #bae6fd; --sticker-border: rgba(14, 165, 233, 0.3); }
+.note-sticker.color-purple { --sticker-bg: #e9d5ff; --sticker-border: rgba(168, 85, 247, 0.3); }
+.note-sticker.color-pink   { --sticker-bg: #fbcfe8; --sticker-border: rgba(236, 72, 153, 0.3); }
+.note-sticker.color-orange { --sticker-bg: #fed7aa; --sticker-border: rgba(249, 115, 22, 0.3); }
+.note-sticker.color-gray   { --sticker-bg: #e2e8f0; --sticker-border: rgba(100, 116, 139, 0.3); }
+
+/* Смужка перфорації з дірочками по лівому краю (інтерактивна область перетягування) */
+.sticker-perforation-handle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 34px;
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+    z-index: 2;
+    border-radius: 12px 0 0 12px;
+    transition: background-color 0.15s ease;
+}
+
+.sticker-perforation-handle:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+.sticker-perforation-handle:active {
+    cursor: grabbing;
+}
+
+/* Дірочки блокнота всередині перфорації */
+.sticker-perforation-handle::before {
+    content: '';
+    position: absolute;
+    top: 14px;
+    bottom: 14px;
+    left: 10px;
+    width: 11px;
+    background-image: radial-gradient(circle at center, #191919 4.5px, transparent 5.5px);
+    background-size: 11px 26px;
+    background-repeat: repeat-y;
+    filter: drop-shadow(0.5px 0.5px 0.5px rgba(255, 255, 255, 0.5)) drop-shadow(-0.5px -0.5px 0.5px rgba(0, 0, 0, 0.25));
+    pointer-events: none;
+}
+
+/* Пунктирна лінія відриву */
+.sticker-perforation-handle::after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    bottom: 8px;
+    left: 28px;
+    width: 1px;
+    border-left: 1.5px dashed rgba(0, 0, 0, 0.15);
+    pointer-events: none;
+}
+
+.note-sticker:hover {
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3);
+    transform: scale(0.995); /* Легке мікро-зменшення замість підйому */
+}
+
+.note-sticker:focus-within {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.note-sticker.is-dragging {
+    opacity: 0.95;
+    transform: none !important;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45), 0 0 0 2px rgba(16, 185, 129, 0.6) !important;
+    cursor: grabbing !important;
+    pointer-events: none !important;
+    user-select: none !important;
+    touch-action: none !important;
+    z-index: 1000 !important;
+    overflow: hidden !important;
+    transition: height 0.22s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s ease, opacity 0.2s ease !important;
+}
+
+body.is-sticker-dragging {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    cursor: grabbing !important;
+}
+
+body.is-sticker-dragging * {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+}
+
+/* Приховуємо піднотатки та маркування повністю під час перетягування, щоб вони не просвічували і не вилазили */
+.note-sticker.is-dragging .sticker-subnotes-container,
+.note-sticker.is-dragging .sticker-tag-container {
+    display: none !important;
+}
+
+.note-sticker.is-dragging .sticker-content {
+    max-height: 80px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+/* Підсвічування цільової нотатки, коли на неї навели іншу нотатку для створення піднотатки */
+.note-sticker.drag-nest-target {
+    border: 2px dashed #10b981 !important;
+    background-color: #dbeafe !important;
+    transform: scale(0.99);
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.25), 0 10px 25px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Підсвічування для режиму Swap (обмін місцями в сітці) */
+.note-sticker.drag-swap-target {
+    outline: 2.5px solid #10b981 !important;
+    outline-offset: 2px;
+    transform: scale(0.98);
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35) !important;
+    transition: transform 0.15s ease, outline-color 0.15s ease;
+}
+
+.sticker-drag-placeholder {
+    background-color: rgba(16, 185, 129, 0.08);
+    border: 2px dashed rgba(16, 185, 129, 0.5);
+    border-radius: 12px;
+    box-sizing: border-box;
+    width: 100%;
+    flex-shrink: 0 !important;
+    min-height: 160px;
+}
+
+.note-sticker.highlight-pulse {
+    animation: pulseSticker 1.2s ease-out;
+}
+
+@keyframes pulseSticker {
+    0% {
+        transform: scale(0.99);
+        box-shadow: 0 0 0 3px #10b981, 0 12px 32px rgba(0, 0, 0, 0.4);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+    }
+}
+
+.sticker-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 10;
+}
+
+.sticker-title-wrap {
+    display: flex;
+    align-items: center; /* Центрування по вертикалі */
+    gap: 8px;
+    flex-grow: 1;
+    min-width: 0;
+    position: relative;
+}
+
+.sticker-emoji-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* Notion-стиль кнопки іконки емодзі */
+.sticker-emoji-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 26px;
+    line-height: 1;
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background-color 0.15s ease, transform 0.15s ease, opacity 0.15s ease;
+    padding: 0;
+    margin: 0;
+    user-select: none;
+}
+
+.sticker-emoji-btn:hover {
+    background-color: rgba(0, 0, 0, 0.08);
+    transform: scale(0.96); /* Делікатне мікро-зменшення */
+}
+
+.sticker-emoji-btn.empty-icon {
+    opacity: 0.25;
+    font-size: 24px;
+    border: none;
+    border-radius: 6px;
+}
+
+.note-sticker:hover .sticker-emoji-btn.empty-icon {
+    opacity: 0.65;
+}
+
+.sticker-emoji-btn.empty-icon:hover {
+    opacity: 1 !important;
+    background-color: rgba(0, 0, 0, 0.08);
+}
+
+.sticker-title {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    background-clip: padding-box !important;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    color: #1a1810 !important;
+    caret-color: #1a1810 !important;
+    font-size: var(--font-lg) !important;
+    font-weight: 700 !important;
+    line-height: 1.3 !important;
+    letter-spacing: -0.5px !important;
+    width: 100% !important;
+    font-family: inherit !important;
+    padding: 2px 0 !important;
+    margin: 0 !important;
+    min-height: 28px;
+    display: block !important;
+    word-break: break-word;
+    position: relative;
+}
+
+.sticker-title *,
+.sticker-title span,
+.sticker-title font,
+.sticker-title b,
+.sticker-title strong,
+.sticker-title em,
+.sticker-title i,
+.sticker-title div,
+.sticker-title p {
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    line-height: inherit !important;
+    color: inherit !important;
+    font-family: inherit !important;
+    letter-spacing: inherit !important;
+    background: transparent !important;
+}
+
+.sticker-title:focus,
+.sticker-title:focus-visible,
+.sticker-title:active,
+.sticker-title:hover {
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+
+.sticker-title[data-empty="true"]:before {
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    color: rgba(0, 0, 0, 0.38) !important;
+    font-weight: 700 !important;
+    pointer-events: none;
+    line-height: inherit;
+    white-space: nowrap;
+}
+
+.sticker-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    position: relative;
+}
+
+
+/* ==========================================================================
+   Інтерактивний блок списку піднотаток всередині стікера
+   ========================================================================== */
+
+/* Інтерактивний блок списку піднотаток всередині стікера */
+.sticker-subnotes-container {
+    margin-top: 14px;
+    padding: 10px 12px;
+    background-color: rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.sticker-subnotes-container:hover {
+    background-color: rgba(0, 0, 0, 0.07);
+    border-color: rgba(0, 0, 0, 0.14);
+    transform: scale(0.995);
+}
+
+.sticker-subnotes-container.chain-active {
+    background-color: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.35);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
+}
+
+.sticker-subnotes-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 700;
+    color: #292524;
+    letter-spacing: 0.2px;
+}
+
+.subnotes-header-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #292524;
+}
+
+.subnotes-pill-badge {
+    background: rgba(0, 0, 0, 0.12);
+    color: #1c1917;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 10px;
+}
+
+.sticker-subnotes-container.is-expanded .subnotes-pill-badge {
+    background: #10b981;
+    color: #ffffff;
+}
+
+.subnotes-header-right {
+    display: flex;
+    align-items: center;
+}
+
+.subnotes-toggle-status {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.45);
+    transition: color 0.15s ease;
+}
+
+.sticker-subnotes-container:hover .subnotes-toggle-status {
+    color: #059669;
+}
+
+.sticker-subnotes-preview-list {
+    margin-top: 7px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-left: 2px;
+}
+
+.subnotes-preview-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #44403c;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.subnotes-preview-bullet {
+    font-size: 10px;
+    opacity: 0.5;
+    color: #78716c;
+}
+
+.subnotes-preview-icon {
+    font-size: 12px;
+    line-height: 1;
+}
+
+.subnotes-preview-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #292524;
+    font-weight: 500;
+}
+
+.subnotes-preview-more {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.45);
+    margin-top: 2px;
+    padding-left: 14px;
+}
+
+
+/* ==========================================================================
+   Ефект підсвічування стікера при виборі з бічної панелі
+   ========================================================================== */
+
+/* Ефект делікатного підсвічування стікера при виборі з бічної панелі (з мікро-зменшенням 0.96) */
+.sticker-highlight-pulse {
+    animation: stickerPulseHighlight 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards !important;
+}
+
+@keyframes stickerPulseHighlight {
+    0% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.85), 0 8px 24px rgba(0, 0, 0, 0.35);
+        transform: scale(0.96);
+    }
+    35% {
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.5), 0 10px 26px rgba(16, 185, 129, 0.25);
+        transform: scale(0.975);
+    }
+    100% {
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22), 0 1px 4px rgba(0, 0, 0, 0.08);
+        transform: scale(1);
+    }
+}

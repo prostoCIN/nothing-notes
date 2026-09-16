@@ -1,0 +1,328 @@
+/* ==========================================================================
+   Контекстне меню стікера (3 крапки) та повзунок розміру шрифту
+   ========================================================================== */
+
+/* Меню "три крапки" */
+.sticker-menu-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.sticker-more-btn {
+    position: relative;
+    background: none;
+    border: none;
+    color: #78716c;
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    opacity: 0.45;
+}
+
+.note-sticker:hover .sticker-more-btn {
+    opacity: 0.75;
+}
+
+.sticker-more-btn:hover {
+    opacity: 1 !important;
+    background-color: rgba(0, 0, 0, 0.08);
+    color: #1f1d13;
+}
+
+.sticker-more-btn.has-active-chain {
+    opacity: 1;
+    background-color: rgba(16, 185, 129, 0.15);
+    color: #059669;
+}
+
+.more-subnotes-dot {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 6px;
+    height: 6px;
+    background-color: #10b981;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1.5px var(--sticker-bg);
+}
+
+.sticker-menu-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    background-color: var(--modal-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 8px;
+    width: max-content;
+    min-width: 220px;
+    max-width: 320px;
+    box-sizing: border-box;
+    box-shadow: var(--glass-card-shadow);
+    z-index: 100000;
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+    color: var(--text-main);
+}
+
+/* Шапка меню стікера: заголовок та дата додавання */
+.sticker-menu-header-info {
+    padding: 4px 6px 6px 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    user-select: none;
+}
+
+.sticker-menu-header-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text-main);
+    line-height: 1.3;
+}
+
+.sticker-menu-header-icon {
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.sticker-menu-header-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 240px;
+}
+
+.sticker-menu-header-date {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-weight: 500;
+    line-height: 1.2;
+    margin-top: 1px;
+}
+
+/* Відкриття меню "три крапки" вгору, якщо знизу недостатньо місця на екрані */
+.sticker-menu-dropdown.open-upward {
+    top: auto !important;
+    bottom: calc(100% + 4px) !important;
+    box-shadow: 0 -16px 36px rgba(0, 0, 0, 0.65) !important;
+}
+
+.sticker-menu-dropdown.active {
+    display: flex !important;
+    animation: menuFadeIn 0.15s ease-out;
+}
+
+.sticker-menu-dropdown.active.open-upward {
+    animation: menuFadeInUp 0.15s ease-out;
+}
+
+/* Контекстне меню бічної панелі використовує ідентичні стилі, змінюючи лише позиціонування на fixed */
+.sidebar-context-menu {
+    position: fixed !important;
+    z-index: 100000 !important;
+}
+
+@keyframes menuFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes menuFadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.sticker-menu-divider {
+    height: 1px;
+    background-color: rgba(255, 255, 255, 0.08);
+    margin: 3px 0;
+}
+
+.sticker-menu-section-title {
+    font-size: var(--font-xs);
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 4px 8px 2px 8px;
+}
+
+
+/* Секція повзунка розміру шрифту у меню стікера */
+.sticker-font-size-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.font-size-value-badge {
+    font-size: 10px;
+    font-weight: 700;
+    color: #34d399;
+    background: rgba(16, 185, 129, 0.15);
+    padding: 1px 6px;
+    border-radius: 8px;
+    font-family: inherit;
+}
+
+.sticker-font-slider-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px 6px 8px;
+}
+
+.note-font-slider-track-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    position: relative;
+}
+
+.slider-min-icon {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    user-select: none;
+    line-height: 1;
+}
+
+.slider-max-icon {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text-main);
+    user-select: none;
+    line-height: 1;
+}
+
+.sticker-font-slider {
+    width: 100%;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.15);
+    outline: none;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    margin: 0;
+    padding: 0;
+}
+
+.sticker-font-slider:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.sticker-font-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #10b981;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+    transition: transform var(--transition-fast), background var(--transition-fast);
+}
+
+.sticker-font-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    background: #34d399;
+}
+
+.sticker-font-slider::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #10b981;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+    transition: transform var(--transition-fast), background var(--transition-fast);
+}
+
+/* Засічки на шкалі повзунка меню нотатки */
+.note-font-slider-ticks {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: calc(100% - 8px);
+    padding: 0;
+    box-sizing: border-box;
+    margin-top: 2px;
+}
+
+.note-font-tick-line {
+    width: 2px;
+    height: 4px;
+    border-radius: 1px;
+    background: rgba(255, 255, 255, 0.25);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.note-font-tick-line:hover {
+    height: 6px;
+    background: #34d399;
+}
+
+.note-font-tick-line.active {
+    height: 6px;
+    background: #10b981;
+    box-shadow: 0 0 5px rgba(16, 185, 129, 0.8);
+}
+
+.sticker-content:focus,
+.sticker-content:focus-visible {
+    outline: none !important;
+}
+
+.sticker-content[data-empty="true"]:before {
+    content: attr(data-placeholder);
+    position: absolute;
+    top: 0;
+    left: 0;
+    color: rgba(0, 0, 0, 0.42);
+    pointer-events: none;
+    line-height: inherit;
+    white-space: pre-wrap;
+}
+
+.sticker-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: 14px;
+    padding-top: 8px;
+    font-size: 12px;
+    color: var(--text-muted);
+    opacity: 0.6;
+}

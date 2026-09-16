@@ -1,0 +1,323 @@
+/* ==========================================================================
+   Теги (Мультитеги) нотатки
+   ========================================================================== */
+.sticker-tags-container {
+    position: relative;
+    margin-top: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    user-select: none;
+    z-index: 5;
+}
+
+/* Окремий бейдж тегу у вигляді наклейки / шматочка декоративного скотчу (Washi Tape) */
+.sticker-tag-badge {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 12px 5px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.25px;
+    border-radius: 4px;
+    cursor: default;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+    box-shadow: 0 1.5px 4px rgba(0, 0, 0, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(2px);
+    transform: rotate(-0.6deg);
+}
+
+.sticker-tag-badge:nth-child(even) {
+    transform: rotate(0.9deg);
+}
+
+.sticker-tag-badge:hover {
+    transform: scale(1.05) rotate(0deg);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+/* 6 пастельних варіацій шматочків скотчу (Washi Tape Colors) */
+.tag-tape-color-0 {
+    background-color: rgba(16, 185, 129, 0.25);
+    color: #1e3a8a;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    border-left: 3px dashed rgba(16, 185, 129, 0.6);
+    border-right: 3px dashed rgba(16, 185, 129, 0.6);
+}
+
+.tag-tape-color-1 {
+    background-color: rgba(16, 185, 129, 0.25);
+    color: #064e3b;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    border-left: 3px dashed rgba(16, 185, 129, 0.6);
+    border-right: 3px dashed rgba(16, 185, 129, 0.6);
+}
+
+.tag-tape-color-2 {
+    background-color: rgba(245, 158, 11, 0.26);
+    color: #78350f;
+    border: 1px solid rgba(245, 158, 11, 0.42);
+    border-left: 3px dashed rgba(245, 158, 11, 0.6);
+    border-right: 3px dashed rgba(245, 158, 11, 0.6);
+}
+
+.tag-tape-color-3 {
+    background-color: rgba(236, 72, 153, 0.25);
+    color: #831843;
+    border: 1px solid rgba(236, 72, 153, 0.4);
+    border-left: 3px dashed rgba(236, 72, 153, 0.6);
+    border-right: 3px dashed rgba(236, 72, 153, 0.6);
+}
+
+.tag-tape-color-4 {
+    background-color: rgba(139, 92, 246, 0.25);
+    color: #4c1d95;
+    border: 1px solid rgba(139, 92, 246, 0.4);
+    border-left: 3px dashed rgba(139, 92, 246, 0.6);
+    border-right: 3px dashed rgba(139, 92, 246, 0.6);
+}
+
+.tag-tape-color-5 {
+    background-color: rgba(239, 68, 68, 0.22);
+    color: #7f1d1d;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    border-left: 3px dashed rgba(239, 68, 68, 0.6);
+    border-right: 3px dashed rgba(239, 68, 68, 0.6);
+}
+
+.sticker-tag-badge-text {
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+/* Хрестик видалення окремого тегу */
+.sticker-tag-badge-remove {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    line-height: 1;
+    color: currentColor;
+    opacity: 0.5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 4px;
+    border-radius: 50%;
+    margin-left: 2px;
+    transition: all 0.15s ease;
+}
+
+.sticker-tag-badge-remove:hover {
+    opacity: 1;
+    background-color: rgba(0, 0, 0, 0.14);
+    transform: scale(1.2);
+}
+
+/* Кнопка додавання нового тегу (+ Тег) */
+.sticker-add-tag-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 11px;
+    background: none;
+    border: 1px dashed rgba(0, 0, 0, 0.22);
+    border-radius: 6px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.6);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.sticker-add-tag-btn:hover {
+    background-color: rgba(0, 0, 0, 0.06);
+    border-color: rgba(0, 0, 0, 0.3);
+    color: #1a1810;
+}
+
+.sticker-add-tag-btn.active {
+    background-color: rgba(16, 185, 129, 0.1);
+    border-color: #10b981;
+    color: #059669;
+}
+
+/* Випадаюче вікно вибору та створення тегів */
+.sticker-tag-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    background-color: #242424;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 12px;
+    padding: 10px;
+    box-sizing: border-box;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7);
+    z-index: 120;
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 230px;
+}
+
+.sticker-tag-dropdown.open-upward {
+    top: auto !important;
+    bottom: calc(100% + 6px) !important;
+    box-shadow: 0 -16px 36px rgba(0, 0, 0, 0.7) !important;
+}
+
+.sticker-tag-dropdown.active {
+    display: flex !important;
+    animation: menuFadeIn 0.15s ease-out;
+}
+
+.sticker-tag-dropdown.active.open-upward {
+    animation: menuFadeInUp 0.15s ease-out;
+}
+
+.tag-options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    max-height: 155px; /* Рівно ~5 рядків тегів */
+    overflow-y: auto;
+    padding-right: 2px;
+}
+
+.tag-option-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    color: var(--text-main);
+    padding: 3px 6px 3px 8px;
+    border-radius: 8px;
+    font-size: var(--font-xs);
+    font-weight: 600;
+    transition: all var(--transition-fast);
+    font-family: inherit;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.tag-option-main-action {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-grow: 1;
+    min-width: 0;
+    cursor: pointer;
+    padding: 4px 0;
+}
+
+.tag-option-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.tag-option-item.active {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: #10b981;
+    color: #a7f3d0;
+}
+
+.tag-option-status-icon {
+    font-size: 11px;
+    font-weight: 700;
+    margin-left: auto;
+    color: #34d399;
+}
+
+.tag-option-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12.5px;
+}
+
+.tag-option-del-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    transition: all 0.15s ease;
+    opacity: 0.45;
+    flex-shrink: 0;
+    padding: 0;
+}
+
+.tag-option-item:hover .tag-option-del-btn {
+    opacity: 0.8;
+}
+
+.tag-option-del-btn:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    opacity: 1 !important;
+}
+
+.tag-add-option-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.09);
+    padding-top: 8px;
+    margin-top: 2px;
+}
+
+.tag-add-input {
+    flex-grow: 1;
+    background: #181818;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 6px;
+    padding: 6px 8px;
+    font-size: 12.5px;
+    color: #ffffff;
+    outline: none;
+    font-family: inherit;
+    box-sizing: border-box;
+    transition: border-color 0.15s ease;
+}
+
+.tag-add-input:focus {
+    border-color: #10b981;
+}
+
+.tag-add-input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.tag-add-btn {
+    background: rgba(16, 185, 129, 0.2);
+    border: 1px solid rgba(16, 185, 129, 0.45);
+    color: #34d399;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+.tag-add-btn:hover {
+    background: #059669;
+    color: #ffffff;
+}

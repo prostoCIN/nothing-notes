@@ -1,0 +1,209 @@
+/* ==========================================================================
+   Палітра кольорів та кольорові теми стікерів
+   ========================================================================== */
+
+/* Палітра кольорів у меню */
+.sticker-color-palette {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px 6px 8px;
+}
+
+.color-swatch-btn {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.color-swatch-btn:hover {
+    transform: scale(0.92);
+}
+
+.color-swatch-btn.active {
+    border-color: #ffffff;
+    box-shadow: 0 0 0 2px #10b981;
+    transform: scale(0.96);
+}
+
+.sticker-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    font-size: var(--font-sm);
+    color: var(--text-main);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    white-space: nowrap;
+}
+
+.sticker-menu-item:hover {
+    background-color: var(--hover-bg);
+    color: var(--text-main);
+}
+
+.sticker-menu-item-delete {
+    color: #f87171 !important;
+}
+
+.sticker-menu-item-delete:hover {
+    background-color: rgba(239, 68, 68, 0.15) !important;
+    color: #fca5a5 !important;
+}
+
+.sticker-menu-item.active {
+    color: #10b981;
+    background-color: rgba(16, 185, 129, 0.12);
+}
+
+.menu-item-badge {
+    margin-left: auto;
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 8px;
+}
+
+.sticker-menu-item.active .menu-item-badge {
+    background: #10b981;
+}
+
+.sticker-drag-handle {
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    color: #78716c;
+    opacity: 0.4;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.sticker-drag-handle:hover {
+    opacity: 1;
+    background-color: rgba(0, 0, 0, 0.08);
+    color: #1f1d13;
+}
+
+.sticker-drag-handle:active {
+    cursor: grabbing;
+}
+
+.note-sticker:hover .sticker-drag-handle {
+    opacity: 0.75;
+}
+
+.note-sticker:hover .sticker-drag-handle:hover {
+    opacity: 1;
+}
+
+.sticker-delete-btn {
+    background: none;
+    border: none;
+    color: #78716c;
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, color 0.2s, opacity 0.2s;
+    opacity: 0.4;
+}
+
+.note-sticker:hover .sticker-delete-btn {
+    opacity: 0.8;
+}
+
+.sticker-delete-btn:hover {
+    background-color: rgba(220, 38, 38, 0.15);
+    color: #b91c1c;
+    opacity: 1 !important;
+}
+
+.sticker-content {
+    min-height: 90px;
+    height: auto;
+    overflow: hidden !important;
+    overflow-x: hidden !important;
+    overflow-y: hidden !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+    -webkit-overflow-scrolling: auto !important;
+    outline: none !important;
+    outline-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+    caret-color: #292524 !important;
+    font-size: 16px;
+    line-height: 30px;
+    color: #292524;
+    font-weight: 400;
+    word-break: break-word;
+    white-space: pre-wrap;
+    position: relative;
+    /* Чіткі тонкі горизонтальні лінії блокнота під кожним рядком тексту як у Moleskine */
+    background-image: linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 29px,
+        rgba(0, 0, 0, 0.08) 29px,
+        rgba(0, 0, 0, 0.08) 30px
+    );
+    background-size: 100% 30px;
+    background-repeat: repeat-y;
+    background-position: left top;
+    background-attachment: scroll;
+    padding-bottom: 4px;
+}
+
+.sticker-content::-webkit-scrollbar,
+.sticker-content::-webkit-scrollbar-thumb,
+.sticker-content::-webkit-scrollbar-track {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+    opacity: 0 !important;
+}
+
+.sticker-content[contenteditable="true"] {
+    -webkit-user-modify: read-write-plaintext-only;
+}
+
+.sticker-content[contenteditable="false"],
+.note-sticker.is-readonly .sticker-content {
+    -webkit-user-modify: read-only !important;
+    user-modify: read-only !important;
+    cursor: default !important;
+    caret-color: transparent !important;
+}
+
+.sticker-content:focus,
+.sticker-content:focus-visible,
+.sticker-content:active {
+    outline: none !important;
+    outline-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    overflow: hidden !important;
+    scrollbar-width: none !important;
+}

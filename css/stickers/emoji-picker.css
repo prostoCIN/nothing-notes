@@ -1,0 +1,191 @@
+/* Випадаюче вікно вибору Notion-емодзі (повноцінний пікер з пошуком і категоріями) */
+.sticker-emoji-picker-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    background-color: #242424;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 14px;
+    padding: 10px;
+    width: 290px;
+    box-sizing: border-box;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.65);
+    z-index: 120;
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    overflow-x: hidden;
+}
+
+/* Відкриття пікера емодзі вгору, якщо знизу картки мало місця */
+.sticker-emoji-picker-dropdown.open-upward {
+    top: auto !important;
+    bottom: calc(100% + 6px) !important;
+    box-shadow: 0 -16px 36px rgba(0, 0, 0, 0.65) !important;
+}
+
+.sticker-emoji-picker-dropdown.active {
+    display: flex !important;
+    animation: menuFadeIn 0.15s ease-out;
+}
+
+.sticker-emoji-picker-dropdown.active.open-upward {
+    animation: menuFadeInUp 0.15s ease-out;
+}
+
+.emoji-picker-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.emoji-search-input {
+    flex-grow: 1;
+    min-width: 0;
+    background: #181818;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 13px;
+    color: #ffffff;
+    outline: none;
+    font-family: inherit;
+    box-sizing: border-box;
+    transition: border-color 0.15s ease;
+}
+
+.emoji-search-input:focus {
+    border-color: #10b981;
+}
+
+.emoji-search-input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.emoji-remove-btn {
+    background: none;
+    border: none;
+    color: #ef4444;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background-color 0.15s;
+    font-family: inherit;
+    flex-shrink: 0;
+}
+
+.emoji-remove-btn:hover {
+    background-color: rgba(239, 68, 68, 0.15);
+}
+
+.emoji-picker-scroll {
+    height: 220px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-right: 2px;
+    box-sizing: border-box;
+    width: 100%;
+    scroll-behavior: smooth;
+}
+
+.emoji-picker-scroll::-webkit-scrollbar {
+    width: 4px;
+}
+
+.emoji-picker-scroll::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+.emoji-category-section {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.emoji-category-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+
+.emoji-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.emoji-grid-item {
+    background: none;
+    border: none;
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", sans-serif !important;
+    font-size: 22px !important;
+    line-height: 1 !important;
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.12s ease, background-color 0.15s ease;
+    padding: 0;
+    margin: 0 auto;
+    box-sizing: border-box;
+    user-select: none;
+    aspect-ratio: 1 / 1;
+}
+
+.emoji-grid-item:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+    transform: scale(0.92); /* Делікатне мікро-зменшення емодзі */
+}
+
+/* Нижня панель категорій (як в iOS/Android) */
+.emoji-categories-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    gap: 2px;
+}
+
+.emoji-cat-tab-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    padding: 4px;
+    border-radius: 6px;
+    transition: background-color 0.15s, transform 0.15s, opacity 0.15s;
+    opacity: 0.45;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.emoji-cat-tab-btn:hover {
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.emoji-cat-tab-btn.active {
+    opacity: 1;
+    background-color: rgba(16, 185, 129, 0.2);
+    box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.4);
+    transform: scale(0.95);
+}

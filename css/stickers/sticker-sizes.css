@@ -1,0 +1,80 @@
+/* ==========================================================================
+   Розміри шрифтів (S / M / L) та типографіка стікера
+   ========================================================================== */
+
+/* Потужне та виразне Bold накреслення (ExtraBold 800) */
+.sticker-content b,
+.sticker-content strong,
+.sticker-content [style*="font-weight: bold"],
+.sticker-content [style*="font-weight: 700"],
+.sticker-content [style*="font-weight: 800"] {
+    font-weight: 800 !important;
+    color: #0c0a09 !important;
+    letter-spacing: -0.2px;
+}
+
+/* Безконфліктне відображення окремих слів зі зміненим розміром шрифту */
+.sticker-content span[style*="font-size"] {
+    display: inline;
+    line-height: inherit;
+    vertical-align: baseline;
+}
+
+/* Розміри шрифтів для стікера (S / M / L) */
+.note-sticker.font-size-small .sticker-title {
+    font-size: 22px !important;
+}
+.note-sticker.font-size-small .sticker-content {
+    font-size: 12.5px !important;
+    line-height: 24px !important;
+    background-size: 100% 24px !important;
+    background-image: linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 23px,
+        rgba(0, 0, 0, 0.08) 23px,
+        rgba(0, 0, 0, 0.08) 24px
+    ) !important;
+}
+
+.note-sticker.font-size-medium .sticker-title {
+    font-size: 28px !important;
+}
+.note-sticker.font-size-medium .sticker-content {
+    font-size: 14.5px !important;
+    line-height: 28px !important;
+}
+
+.note-sticker.font-size-large .sticker-title {
+    font-size: 34px !important;
+}
+.note-sticker.font-size-large .sticker-content {
+    font-size: 17px !important;
+    line-height: 32px !important;
+    background-size: 100% 32px !important;
+    background-image: linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 31px,
+        rgba(0, 0, 0, 0.08) 31px,
+        rgba(0, 0, 0, 0.08) 32px
+    ) !important;
+}
+
+/* Підтримка динамічного розміру шрифту через повзунок */
+.note-sticker.has-custom-font-size .sticker-title {
+    font-size: var(--custom-title-font-size, 28px) !important;
+}
+
+.note-sticker.has-custom-font-size .sticker-content {
+    font-size: var(--custom-content-font-size, 14.5px) !important;
+    line-height: var(--custom-line-height, 28px) !important;
+    background-size: 100% var(--custom-line-height, 28px) !important;
+    background-image: linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent calc(var(--custom-line-height, 28px) - 1px),
+        rgba(0, 0, 0, 0.08) calc(var(--custom-line-height, 28px) - 1px),
+        rgba(0, 0, 0, 0.08) var(--custom-line-height, 28px)
+    ) !important;
+}
