@@ -164,6 +164,9 @@
         border: 1px solid rgba(255, 255, 255, 0.16) !important;
         box-shadow: 0 12px 32px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.08) !important;
         z-index: 10000 !important;
+        user-select: none !important;
+        -webkit-user-select: none !important;
+        -webkit-touch-callout: none !important;
     }
 
     .text-selection-toolbar.active {
@@ -189,10 +192,11 @@
     }
 
     .text-selection-toolbar .text-sel-weight-btn {
-        width: 32px !important;
-        height: 30px !important;
-        font-size: 13.5px !important;
+        width: 36px !important;
+        height: 32px !important;
+        font-size: 14px !important;
         border-radius: 8px !important;
+        touch-action: manipulation !important;
     }
 
     /* Адаптація контекстного меню нотатки "три крапки" на мобільних пристроях */

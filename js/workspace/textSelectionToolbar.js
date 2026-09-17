@@ -96,6 +96,37 @@ window.App = window.App || {};
             const boldBtn = toolbarEl.querySelector('#text-sel-weight-bold');
             const scopeBtn = toolbarEl.querySelector('#text-sel-scope-btn');
 
+            // Універсальний біндинг натискань для кнопок тулбара (тач + клік без зняття виділення в Safari)
+            const bindButtonAction = (btn, actionFn) => {
+                if (!btn) return;
+                let handled = false;
+
+                const trigger = (e) => {
+                    if (handled) return;
+                    handled = true;
+                    setTimeout(() => { handled = false; }, 250);
+                    actionFn(e);
+                };
+
+                btn.addEventListener('pointerdown', (e) => {
+                    isInteracting = true;
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
+
+                btn.addEventListener('touchend', (e) => {
+                    isInteracting = true;
+                    e.preventDefault();
+                    e.stopPropagation();
+                    trigger(e);
+                });
+
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    trigger(e);
+                });
+            };
+
             // Позначаємо взаємодію з тулбаром, щоб сторонні кліки не закривали його
             toolbarEl.addEventListener('pointerdown', (e) => {
                 isInteracting = true;
@@ -115,31 +146,28 @@ window.App = window.App || {};
             }, { passive: true });
 
             // Перемикач режиму "Всі слова"
-            scopeBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
+            bindButtonAction(scopeBtn, (e) => {
                 isApplyToAll = !isApplyToAll;
                 scopeBtn.classList.toggle('active', isApplyToAll);
                 console.log(`[TextToolbar] Режим "Всі слова": ${isApplyToAll ? 'УВІМКНЕНО' : 'ВИМКНЕНО'}`);
             });
 
-
             const getTargetWord = () => {
                 let text = savedSelectedText;
                 if (!text && currentRange) {
-                    text = currentRange.toString().trim();
+                    text = currentRange.toString().replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
                 }
                 if (!text) {
                     const sel = window.getSelection();
                     if (sel && !sel.isCollapsed) {
-                        text = sel.toString().trim();
+                        text = sel.toString().replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
                     }
                 }
                 return text || '';
             };
 
             // Regular / Bold
-            regularBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
+            bindButtonAction(regularBtn, (e) => {
                 const textTarget = getTargetWord();
                 console.log('[TextToolbar] Regular click:', { isApplyToAll, textTarget });
 
@@ -154,8 +182,7 @@ window.App = window.App || {};
                 boldBtn.classList.remove('active');
             });
 
-            boldBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
+            bindButtonAction(boldBtn, (e) => {
                 const textTarget = getTargetWord();
                 console.log('[TextToolbar] Bold click:', { isApplyToAll, textTarget });
 
@@ -172,8 +199,7 @@ window.App = window.App || {};
 
             // Клік по кольорах маркера
             toolbarEl.querySelectorAll('.text-sel-color-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
+                bindButtonAction(btn, (e) => {
                     const markerClass = btn.dataset.marker;
                     const textTarget = getTargetWord();
                     console.log('[TextToolbar] Color marker click:', { isApplyToAll, textTarget, markerClass });
@@ -197,8 +223,7 @@ window.App = window.App || {};
             });
 
             // Кнопка повного ресету форматування
-            resetBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
+            bindButtonAction(resetBtn, (e) => {
                 const textTarget = getTargetWord();
                 console.log('[TextToolbar] Reset click:', { isApplyToAll, textTarget });
 
@@ -213,11 +238,14 @@ window.App = window.App || {};
                 boldBtn.classList.remove('active');
             });
 
-            window.addEventListener('pointerup', () => {
+            const endInteraction = () => {
                 setTimeout(() => {
                     isInteracting = false;
-                }, 100);
-            });
+                }, 200);
+            };
+
+            window.addEventListener('pointerup', endInteraction);
+            window.addEventListener('touchend', endInteraction);
         },
 
         enableBrushMode(markerClass) {
@@ -240,17 +268,99 @@ window.App = window.App || {};
             activeContentDiv = div;
         },
 
+        getRangeRect(range) {
+            if (!range) return null;
+            try {
+                const rect = range.getBoundingClientRect();
+                if (rect && (rect.width > 0 || rect.height > 0)) {
+                    return rect;
+                }
+                const rects = range.getClientRects();
+                if (rects && rects.length > 0) {
+                    for (let i = 0; i < rects.length; i++) {
+                        if (rects[i].width > 0 || rects[i].height > 0) {
+                            return rects[i];
+                        }
+                    }
+                }
+                const startNode = range.startContainer;
+                const parent = startNode ? (startNode.nodeType === Node.ELEMENT_NODE ? startNode : startNode.parentElement) : null;
+                if (parent) {
+                    const parentRect = parent.getBoundingClientRect();
+                    if (parentRect && (parentRect.width > 0 || parentRect.height > 0)) {
+                        return parentRect;
+                    }
+                }
+            } catch (e) {}
+            return null;
+        },
+
         bindEvents() {
+            let checkTimer = null;
+            const debouncedCheck = (delay = 30) => {
+                if (checkTimer) clearTimeout(checkTimer);
+                checkTimer = setTimeout(() => {
+                    checkTimer = null;
+                    const isBrush = window.App.brushTool && window.App.brushTool.isActive();
+                    const isEraser = (window.App.eraserTool && window.App.eraserTool.isActive()) || document.body.classList.contains('global-eraser-active');
+                    if (isInteracting || isBrush || isEraser) return;
+                    this.checkSelection();
+                }, delay);
+            };
+
             document.addEventListener('selectionchange', () => {
                 const isBrush = window.App.brushTool && window.App.brushTool.isActive();
                 const isEraser = (window.App.eraserTool && window.App.eraserTool.isActive()) || document.body.classList.contains('global-eraser-active');
                 if (isInteracting || isBrush || isEraser) return;
+
+                // Перевіряємо негайно
                 this.checkSelection();
+                // Також плануємо повторні перевірки після завершення жесту виділення в WebKit/Safari
+                debouncedCheck(50);
+                debouncedCheck(150);
             });
 
-            window.addEventListener('scroll', () => {
-                if (!isInteracting) this.hide();
-            }, true);
+            // Відстежуємо події завершення жестів (тач, дабл-тап) на мобільних пристроях
+            document.addEventListener('touchend', () => debouncedCheck(60), { passive: true });
+            document.addEventListener('pointerup', () => debouncedCheck(40), { passive: true });
+            document.addEventListener('mouseup', () => debouncedCheck(40), { passive: true });
+            document.addEventListener('dblclick', () => debouncedCheck(20), { passive: true });
+
+            const onScrollOrResize = () => {
+                if (isInteracting) return;
+
+                const selection = window.getSelection();
+                if (!selection || selection.isCollapsed || selection.rangeCount === 0 || !currentRange) {
+                    this.hide();
+                    return;
+                }
+
+                if (toolbarEl && toolbarEl.classList.contains('active')) {
+                    const rect = this.getRangeRect(currentRange);
+                    if (!rect) {
+                        this.hide();
+                        return;
+                    }
+
+                    const vpHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+                    const vpTop = window.visualViewport ? window.visualViewport.offsetTop : 0;
+
+                    // Якщо виділений текст проскролили далеко за межі екрана — ховаємо
+                    if (rect.bottom < vpTop - 40 || rect.top > vpTop + vpHeight + 40) {
+                        this.hide();
+                        return;
+                    }
+
+                    // Оновлюємо координати тулбара, щоб він слідував за текстом при автоскролі Safari
+                    this.updatePosition();
+                }
+            };
+
+            window.addEventListener('scroll', onScrollOrResize, { passive: true, capture: true });
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('scroll', onScrollOrResize, { passive: true });
+                window.visualViewport.addEventListener('resize', onScrollOrResize, { passive: true });
+            }
 
             document.addEventListener('pointerdown', (e) => {
                 if (toolbarEl && !toolbarEl.contains(e.target) && !e.target.closest('.sticker-content')) {
@@ -281,7 +391,10 @@ window.App = window.App || {};
 
             const range = selection.getRangeAt(0);
             const commonAncestor = range.commonAncestorContainer;
-            const contentDiv = (commonAncestor.nodeType === Node.ELEMENT_NODE ? commonAncestor : commonAncestor.parentElement)?.closest('.sticker-content');
+            const startNode = range.startContainer;
+            const startEl = startNode ? (startNode.nodeType === Node.ELEMENT_NODE ? startNode : startNode.parentElement) : null;
+            const ancestorEl = commonAncestor ? (commonAncestor.nodeType === Node.ELEMENT_NODE ? commonAncestor : commonAncestor.parentElement) : null;
+            const contentDiv = ancestorEl?.closest('.sticker-content') || startEl?.closest('.sticker-content');
 
             if (!contentDiv || contentDiv.contentEditable === 'false' || contentDiv.getAttribute('contenteditable') === 'false') {
                 this.hide();
@@ -294,7 +407,7 @@ window.App = window.App || {};
                 return;
             }
 
-            const text = selection.toString().trim();
+            const text = selection.toString().replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
             if (!text) {
                 this.hide();
                 return;
@@ -331,35 +444,77 @@ window.App = window.App || {};
             // Залишаємо тулбар відкритим для зручного комбінування параметрів (розмір, колір, жирність)
         },
 
-        show(range) {
-            if (!toolbarEl) return;
+        updatePosition() {
+            if (!toolbarEl || !currentRange || !toolbarEl.classList.contains('active')) return;
+            const rect = this.getRangeRect(currentRange);
+            if (!rect || (rect.width === 0 && rect.height === 0)) return;
 
-            const rect = range.getBoundingClientRect();
-            if (rect.width === 0 && rect.height === 0) {
-                this.hide();
-                return;
-            }
+            const isMobile = this.isMobileDevice();
+            const tbWidth = toolbarEl.offsetWidth || (isMobile ? 80 : 350);
+            const tbHeight = toolbarEl.offsetHeight || 38;
 
-            // Точне визначення кеглю та жирності виділених символів
-            let currentFontSize = 16;
-            if (activeContentDiv) {
-                const compContent = window.getComputedStyle(activeContentDiv);
-                const parsedContentSize = parseInt(compContent.fontSize, 10);
-                if (!isNaN(parsedContentSize) && parsedContentSize > 0) {
-                    currentFontSize = parsedContentSize;
+            const vpWidth = window.visualViewport ? window.visualViewport.width : window.innerWidth;
+            const vpHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+            const vpTop = window.visualViewport ? window.visualViewport.offsetTop : 0;
+            const vpLeft = window.visualViewport ? window.visualViewport.offsetLeft : 0;
+
+            let top;
+            let left = rect.left + (rect.width / 2) - (tbWidth / 2);
+
+            if (isMobile) {
+                // На мобільних пристроях: системне меню iOS (Copy/Share) майже завжди з'являється ЗВЕРХУ виділеного слова.
+                // Щоб вони не перекривали один одного, розміщуємо наш компактний тулбар [R | B] ЗНИЗУ слова!
+                const spaceBelow = (vpTop + vpHeight) - rect.bottom;
+                if (spaceBelow >= tbHeight + 14) {
+                    top = rect.bottom + 10;
+                    toolbarEl.classList.add('open-below');
+                } else if (rect.top - vpTop >= tbHeight + 14) {
+                    top = rect.top - tbHeight - 10;
+                    toolbarEl.classList.remove('open-below');
+                } else {
+                    top = Math.max(vpTop + 10, rect.bottom + 10);
+                    toolbarEl.classList.add('open-below');
+                }
+            } else {
+                top = rect.top - tbHeight - 10;
+                if (top < 56) {
+                    top = rect.bottom + 10;
+                    toolbarEl.classList.add('open-below');
+                } else {
+                    toolbarEl.classList.remove('open-below');
                 }
             }
 
-            let isBold = false;
+            left = Math.max(vpLeft + 10, Math.min(vpLeft + vpWidth - tbWidth - 10, left));
 
+            toolbarEl.style.top = `${top}px`;
+            toolbarEl.style.left = `${left}px`;
+        },
+
+        show(range) {
+            if (!toolbarEl) return;
+
+            const rect = this.getRangeRect(range);
+            if (!rect || (rect.width === 0 && rect.height === 0)) {
+                // На мобільних WebKit розраховує геометрію асинхронно
+                requestAnimationFrame(() => {
+                    if (!currentRange) return;
+                    const retryRect = this.getRangeRect(currentRange);
+                    if (retryRect && (retryRect.width > 0 || retryRect.height > 0)) {
+                        this.show(currentRange);
+                    }
+                });
+                return;
+            }
+
+            let isBold = false;
             const textNodes = this.getTextNodesInRange(range);
             if (textNodes.length > 0) {
-                // Перевіряємо чи всі виділені вузли є жирними
                 const boldNodesCount = textNodes.filter(node => {
                     const parent = node.parentElement;
                     if (!parent) return false;
                     const bTag = parent.closest('b, strong');
-                    if (bTag && activeContentDiv.contains(bTag)) return true;
+                    if (bTag && activeContentDiv && activeContentDiv.contains(bTag)) return true;
                     const comp = window.getComputedStyle(parent);
                     const fw = parseInt(comp.fontWeight, 10);
                     return fw >= 600 || comp.fontWeight === 'bold';
@@ -367,11 +522,10 @@ window.App = window.App || {};
 
                 isBold = (boldNodesCount === textNodes.length && textNodes.length > 0);
 
-                // Визначаємо розмір шрифту: якщо є локальний span зі стилем — беремо його, інакше розмір нотатки
                 const firstParent = textNodes[0].parentElement;
                 if (firstParent) {
                     const customSpan = firstParent.closest('span[style*="font-size"]');
-                    if (customSpan && activeContentDiv.contains(customSpan)) {
+                    if (customSpan && activeContentDiv && activeContentDiv.contains(customSpan)) {
                         const parsed = parseInt(customSpan.style.fontSize, 10);
                         if (!isNaN(parsed) && parsed > 0) currentFontSize = parsed;
                     }
@@ -381,32 +535,18 @@ window.App = window.App || {};
             const regularBtn = toolbarEl.querySelector('#text-sel-weight-regular');
             const boldBtn = toolbarEl.querySelector('#text-sel-weight-bold');
 
-            if (isBold) {
-                boldBtn.classList.add('active');
-                regularBtn.classList.remove('active');
-            } else {
-                regularBtn.classList.add('active');
-                boldBtn.classList.remove('active');
+            if (regularBtn && boldBtn) {
+                if (isBold) {
+                    boldBtn.classList.add('active');
+                    regularBtn.classList.remove('active');
+                } else {
+                    regularBtn.classList.add('active');
+                    boldBtn.classList.remove('active');
+                }
             }
 
             toolbarEl.style.display = 'flex';
-            const tbWidth = toolbarEl.offsetWidth || 350;
-            const tbHeight = toolbarEl.offsetHeight || 38;
-
-            let top = rect.top - tbHeight - 10;
-            let left = rect.left + (rect.width / 2) - (tbWidth / 2);
-
-            if (top < 56) {
-                top = rect.bottom + 10;
-                toolbarEl.classList.add('open-below');
-            } else {
-                toolbarEl.classList.remove('open-below');
-            }
-
-            left = Math.max(12, Math.min(window.innerWidth - tbWidth - 12, left));
-
-            toolbarEl.style.top = `${top}px`;
-            toolbarEl.style.left = `${left}px`;
+            this.updatePosition();
             toolbarEl.classList.add('active');
         },
 
