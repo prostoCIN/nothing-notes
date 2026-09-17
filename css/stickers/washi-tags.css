@@ -153,7 +153,7 @@
     position: absolute;
     top: calc(100% + 6px);
     left: 0;
-    background-color: #242424;
+    background-color: var(--modal-bg, #242424);
     border: 1px solid rgba(255, 255, 255, 0.14);
     border-radius: 12px;
     padding: 10px;

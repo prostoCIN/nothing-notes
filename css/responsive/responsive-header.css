@@ -66,8 +66,8 @@
         align-items: center !important;
         justify-content: center !important;
         border-radius: 8px !important;
-        background: rgba(255, 255, 255, 0.05) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        background: var(--hover-bg, rgba(255, 255, 255, 0.05)) !important;
+        border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1)) !important;
         color: var(--text-main) !important;
         transition: all 0.15s ease !important;
     }
@@ -78,7 +78,7 @@
     .header-search-wrap .header-action-icon-btn:active,
     #workspace-collapse-wrap .header-action-icon-btn:active,
     .header-select-btn:active {
-        background: rgba(255, 255, 255, 0.12) !important;
+        background: var(--active-bg, rgba(255, 255, 255, 0.12)) !important;
         transform: scale(0.95);
     }
 
@@ -112,8 +112,8 @@
 
     /* Компактний перемикач режимів "Колонки / Граф" тільки з іконками */
     .header-segment-control {
-        background: rgba(255, 255, 255, 0.05) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        background: var(--hover-bg, rgba(255, 255, 255, 0.05)) !important;
+        border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1)) !important;
         border-radius: 8px !important;
         padding: 2px !important;
         height: 36px !important;
@@ -167,11 +167,11 @@
         right: 12px !important;
         width: calc(100vw - 24px) !important;
         max-width: none !important;
-        background: rgba(24, 24, 28, 0.98) !important;
+        background: var(--modal-bg, rgba(24, 24, 28, 0.98)) !important;
         backdrop-filter: blur(20px) !important;
         -webkit-backdrop-filter: blur(20px) !important;
-        border: 1px solid rgba(255, 255, 255, 0.18) !important;
-        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(16, 185, 129, 0.3) !important;
+        border: 1px solid var(--border-color, rgba(255, 255, 255, 0.18)) !important;
+        box-shadow: var(--glass-card-shadow, 0 16px 40px rgba(0, 0, 0, 0.8)) !important;
         border-radius: 12px !important;
         padding: 10px 14px !important;
         z-index: 10005 !important;

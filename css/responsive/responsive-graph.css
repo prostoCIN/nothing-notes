@@ -140,7 +140,7 @@
     }
 
     .graph-mobile-sheet {
-        background: var(--bg-card, #1e1e24);
+        background: var(--modal-bg, #1e1e24);
         border-top: 1px solid var(--border-color, rgba(255, 255, 255, 0.14));
         border-radius: 20px 20px 0 0;
         padding: 12px 18px max(env(safe-area-inset-bottom, 16px), 20px);
