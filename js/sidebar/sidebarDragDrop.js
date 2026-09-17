@@ -272,6 +272,9 @@ window.App = window.App || {};
                         state.draggedNoteId = draggedNoteId;
                     }
                     document.body.classList.add('is-sidebar-dragging');
+                    if (notesList) {
+                        notesList.style.touchAction = 'none';
+                    }
                     initialRect = row.getBoundingClientRect();
                     shiftX = startX - initialRect.left;
                     shiftY = startY - initialRect.top;
@@ -330,16 +333,75 @@ window.App = window.App || {};
                 };
 
                 // На мобільних пристроях перетягування активується тільки після затискання (Long Press)
+                let touchMoveListener = null;
+                let touchEndListener = null;
+
+                const removeTouchListeners = () => {
+                    if (touchMoveListener) {
+                        window.removeEventListener('touchmove', touchMoveListener, { passive: false });
+                        touchMoveListener = null;
+                    }
+                    if (touchEndListener) {
+                        window.removeEventListener('touchend', touchEndListener);
+                        window.removeEventListener('touchcancel', touchEndListener);
+                        touchEndListener = null;
+                    }
+                };
+
                 if (isTouch) {
                     const LONG_PRESS_DELAY = 380; // мс утримання пальця на місці
                     longPressTimer = setTimeout(() => {
                         touchDragReady = true;
                         row.classList.add('touch-drag-active');
+                        if (notesList) {
+                            notesList.style.touchAction = 'none';
+                        }
                         if (navigator.vibrate) {
                             try { navigator.vibrate(40); } catch (_) {}
                         }
                         initDrag(lastClientX, lastClientY);
                     }, LONG_PRESS_DELAY);
+
+                    touchMoveListener = (touchEv) => {
+                        const touch = touchEv.touches && touchEv.touches[0];
+                        if (!touch) return;
+
+                        lastClientX = touch.clientX;
+                        lastClientY = touch.clientY;
+
+                        if (!touchDragReady && !isDragging) {
+                            // Якщо палець зсунувся більше ніж на 8px до завершення таймера — користувач скролить ліву панель
+                            const moveDist = Math.hypot(touch.clientX - startX, touch.clientY - startY);
+                            if (moveDist > 8) {
+                                if (longPressTimer) {
+                                    clearTimeout(longPressTimer);
+                                    longPressTimer = null;
+                                }
+                                removeTouchListeners();
+                                return; // Дозволяємо браузеру вільно скролити список нотаток
+                            }
+                            return;
+                        }
+
+                        // Таймер спрацював або драг уже активний — повністю блокуємо нативний скрол сайдбару
+                        if (touchEv.cancelable) {
+                            touchEv.preventDefault();
+                        }
+
+                        if (isDragging) {
+                            notesScroller.update(lastClientX, lastClientY);
+                            updatePositions(lastClientX, lastClientY);
+                        }
+                    };
+
+                    touchEndListener = () => {
+                        removeTouchListeners();
+                        onPointerUp();
+                    };
+
+                    window.addEventListener('touchmove', touchMoveListener, { passive: false });
+                    window.addEventListener('touchend', touchEndListener, { passive: true });
+                    window.addEventListener('touchcancel', touchEndListener, { passive: true });
                 }
 
                 const onPointerMove = (moveEvent) => {
@@ -355,6 +417,7 @@ window.App = window.App || {};
                                     clearTimeout(longPressTimer);
                                     longPressTimer = null;
                                 }
+                                removeTouchListeners();
                                 return; // Дозволяємо браузеру вільно скролити список нотаток
                             }
                             return;
@@ -380,6 +443,10 @@ window.App = window.App || {};
                         longPressTimer = null;
                     }
                     row.classList.remove('touch-drag-active');
+                    if (notesList) {
+                        notesList.style.touchAction = '';
+                    }
+                    removeTouchListeners();
 
                     try {
                         if (row.hasPointerCapture && row.hasPointerCapture(pointerId)) {
@@ -644,10 +711,10 @@ window.App = window.App || {};
                 };
 
                 const onContextMenu = (menuEv) => {
-                    if (touchDragReady || isDragging) {
+                    if (isTouch || touchDragReady || isDragging) {
                         menuEv.preventDefault();
                     }
-                    if (longPressTimer) {
+                    if (!isTouch && longPressTimer) {
                         clearTimeout(longPressTimer);
                         longPressTimer = null;
                     }

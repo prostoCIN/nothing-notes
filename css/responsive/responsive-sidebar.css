@@ -53,5 +53,13 @@
     .note-item {
         touch-action: pan-y !important;
         -webkit-touch-callout: none !important;
+        -webkit-user-select: none !important;
+        user-select: none !important;
+    }
+
+    body.is-sidebar-dragging .sidebar-list,
+    body.is-sidebar-dragging #notes-list,
+    body.is-sidebar-dragging .note-item {
+        touch-action: none !important;
     }
 }

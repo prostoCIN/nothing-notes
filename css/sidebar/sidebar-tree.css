@@ -87,14 +87,20 @@
     border: 1px solid rgba(16, 185, 129, 0.4) !important;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
     transition: transform 0.15s ease, background-color 0.15s ease;
+    touch-action: none !important;
 }
 
 .sidebar-note-tree-node.is-dragging {
     position: fixed !important;
     z-index: 10000 !important;
-    pointer-events: none !important;
+    pointer-events: auto !important;
+    touch-action: none !important;
     opacity: 0.96 !important;
     box-sizing: border-box;
+}
+
+.sidebar-note-tree-node.is-dragging * {
+    touch-action: none !important;
 }
 
 .sidebar-note-tree-node.is-dragging > .note-item {
