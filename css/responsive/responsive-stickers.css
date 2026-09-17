@@ -206,4 +206,22 @@
         max-width: 250px !important;
     }
 
+    /* Збільшуємо зону дотику та видимість ручки перетягування картки на смартфонах */
+    .sticker-drag-handle {
+        width: 36px !important;
+        height: 36px !important;
+        opacity: 0.85 !important;
+        touch-action: none !important;
+        -webkit-tap-highlight-color: transparent !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    .sticker-drag-handle svg {
+        width: 17px !important;
+        height: 17px !important;
+        pointer-events: none !important;
+    }
+
 }

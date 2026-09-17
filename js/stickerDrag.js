@@ -19,6 +19,18 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
             if (e.button !== 0) return;
             e.preventDefault();
 
+            const pointerId = e.pointerId;
+            try {
+                dragHandle.setPointerCapture(pointerId);
+            } catch (err) {}
+
+            const onTouchMove = (touchEv) => {
+                if (isDragging && touchEv.cancelable) {
+                    touchEv.preventDefault();
+                }
+            };
+            window.addEventListener('touchmove', onTouchMove, { passive: false });
+
             const noteManager = window.App.noteManager;
             const confirmModal = window.App.confirmModal;
             const boardManager = window.App.boardManager;
@@ -308,6 +320,13 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
             }
 
             function onPointerUp(upEvent) {
+                try {
+                    if (dragHandle.hasPointerCapture && dragHandle.hasPointerCapture(pointerId)) {
+                        dragHandle.releasePointerCapture(pointerId);
+                    }
+                } catch (err) {}
+                window.removeEventListener('touchmove', onTouchMove, { passive: false });
+
                 window.removeEventListener('pointermove', onPointerMove);
                 window.removeEventListener('pointerup', onPointerUp);
                 window.removeEventListener('pointercancel', onPointerUp);
