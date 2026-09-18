@@ -13,6 +13,8 @@
     transition: width 0.3s ease;
     height: 100vh;
     overflow: hidden;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
 }
 
 /* Брендовий хедер (Логотип + NothingNotes) */

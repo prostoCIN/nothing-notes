@@ -49,7 +49,7 @@ html[data-theme="asphalt"] {
 html[data-theme="light"] {
     --theme-name: 'light';
     --bg-color: #f7f7fa;
-    --sidebar-bg: #eceef3;
+    --sidebar-bg: rgba(255, 255, 255, 0.78);
     --modal-bg: rgba(255, 255, 255, 0.94);
     --header-bg: rgba(247, 247, 250, 0.88);
     --column-bg: rgba(255, 255, 255, 0.78);
@@ -397,8 +397,23 @@ html[data-theme="light"] .share-toggle-slider {
     border: 1px solid rgba(0, 0, 0, 0.15) !important;
 }
 
+html[data-theme="light"] .sidebar {
+    background-color: var(--column-bg, rgba(255, 255, 255, 0.78)) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-right-color: rgba(0, 0, 0, 0.08) !important;
+}
+
 html[data-theme="light"] .sidebar-user-profile {
-    background: rgba(0, 0, 0, 0.03);
+    background: transparent;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+html[data-theme="light"] .sidebar-inline-form input {
+    background-color: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.14) !important;
+    color: #18181b !important;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04) !important;
 }
 
 html[data-theme="light"] .sidebar-login-btn,
