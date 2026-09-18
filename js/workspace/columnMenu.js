@@ -72,6 +72,27 @@ window.App = window.App || {};
                 divider1.className = 'column-menu-divider';
                 dropdown.appendChild(divider1);
 
+                // 1.5. Дія: Створити нотатку / піднотатку
+                if (!isReadOnly && noteManager) {
+                    const addItem = document.createElement('div');
+                    addItem.className = 'column-menu-item column-menu-item-create';
+                    const addLabel = isRoot ? 'Створити нотатку' : 'Створити піднотатку';
+                    addItem.innerHTML = `
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="column-menu-create-icon">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        <span>${addLabel}</span>
+                    `;
+                    addItem.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        dropdown.classList.remove('active');
+                        moreBtn.classList.remove('active');
+                        noteManager.createNewNote(parentNoteId, true);
+                    });
+                    dropdown.appendChild(addItem);
+                }
+
                 // 2. Дія: Поділитися (тільки якщо доступно)
                 if (window.App.shareManager) {
                     const shareItem = document.createElement('div');

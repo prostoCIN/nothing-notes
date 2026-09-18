@@ -376,6 +376,20 @@
     color: var(--text-main);
 }
 
+.column-menu-item-create {
+    font-weight: 600;
+    color: #34d399;
+}
+
+.column-menu-item-create svg {
+    stroke: #34d399;
+}
+
+.column-menu-item-create:hover {
+    background-color: rgba(16, 185, 129, 0.12) !important;
+    color: #34d399 !important;
+}
+
 .column-menu-section-header {
     display: flex;
     align-items: center;
