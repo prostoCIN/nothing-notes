@@ -265,6 +265,95 @@ window.App = window.App || {};
                     });
                     titleWrap.appendChild(editHint);
                 }
+
+                // Додаємо послідовність відкритих рівнів вище у форматі навігаційних лінків (breadcrumbs)
+                if (colIndex > 0 && state && Array.isArray(state.activeChain)) {
+                    const breadcrumbs = document.createElement('div');
+                    breadcrumbs.className = 'column-title-breadcrumbs';
+                    breadcrumbs.setAttribute('aria-label', 'Шлях до нотатки');
+
+                    // Будуємо ланцюжок відкритих рівнів: від кореня (блокнота) до попередньої нотатки (colIndex - 1)
+                    const ancestors = [];
+
+                    // 1. Рівень 0 - Головний блокнот
+                    ancestors.push({
+                        title: (currentBoard && currentBoard.name) ? currentBoard.name : 'Головна',
+                        icon: (currentBoard && currentBoard.icon) ? currentBoard.icon : '📋',
+                        colIndex: 0,
+                        noteId: null
+                    });
+
+                    // 2. Усі батьківські нотатки на вищих рівнях ланцюжка
+                    for (let lvl = 1; lvl < colIndex; lvl++) {
+                        const ancestorNoteId = state.activeChain[lvl];
+                        if (ancestorNoteId && noteManager) {
+                            const ancNote = noteManager.getNoteById(ancestorNoteId);
+                            ancestors.push({
+                                title: (ancNote && ancNote.title && ancNote.title.trim()) ? ancNote.title.trim() : 'Без назви',
+                                icon: (ancNote && ancNote.icon) ? ancNote.icon : '📄',
+                                colIndex: lvl,
+                                noteId: ancestorNoteId
+                            });
+                        }
+                    }
+
+                    ancestors.forEach((anc, idx) => {
+                        if (idx > 0) {
+                            const sep = document.createElement('span');
+                            sep.className = 'column-breadcrumb-sep';
+                            sep.innerHTML = `
+                                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                </svg>
+                            `;
+                            breadcrumbs.appendChild(sep);
+                        }
+
+                        const linkBtn = document.createElement('button');
+                        linkBtn.type = 'button';
+                        linkBtn.className = 'column-breadcrumb-link';
+                        linkBtn.title = `Перейти до: ${anc.title}`;
+
+                        const iconSpan = document.createElement('span');
+                        iconSpan.className = 'column-breadcrumb-icon';
+                        iconSpan.textContent = anc.icon;
+
+                        const textSpan = document.createElement('span');
+                        textSpan.className = 'column-breadcrumb-text';
+                        textSpan.textContent = anc.title;
+
+                        linkBtn.appendChild(iconSpan);
+                        linkBtn.appendChild(textSpan);
+
+                        linkBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            const colsContainer = document.getElementById('columns-container');
+                            if (!colsContainer) return;
+                            const targetCol = colsContainer.querySelector(`.board-column[data-col-index="${anc.colIndex}"]`);
+                            if (targetCol) {
+                                targetCol.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                                targetCol.classList.remove('column-nav-highlight');
+                                void targetCol.offsetWidth;
+                                targetCol.classList.add('column-nav-highlight');
+                                setTimeout(() => targetCol.classList.remove('column-nav-highlight'), 1400);
+
+                                if (anc.noteId) {
+                                    const card = document.querySelector(`.note-sticker[data-id="${anc.noteId}"]`);
+                                    if (card) {
+                                        card.classList.remove('note-nav-highlight');
+                                        void card.offsetWidth;
+                                        card.classList.add('note-nav-highlight');
+                                        setTimeout(() => card.classList.remove('note-nav-highlight'), 1400);
+                                    }
+                                }
+                            }
+                        });
+
+                        breadcrumbs.appendChild(linkBtn);
+                    });
+
+                    titleWrap.appendChild(breadcrumbs);
+                }
             }
 
             // Кнопка перемикання вигляду: Список (по порядку вниз) / Сітка 2 колонки (Pinterest Masonry)
