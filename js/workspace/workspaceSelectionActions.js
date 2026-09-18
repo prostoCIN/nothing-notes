@@ -233,6 +233,87 @@ window.App = window.App || {};
             if (window.App.shareManager) {
                 window.App.shareManager.showShareModal(state.activeBoardId, noteIds);
             }
+        },
+
+        // Перенести вибрані нотатки як піднотатки в іншу нотатку (або в корінь)
+        moveNotesToParent(noteIds, targetParentId) {
+            if (!noteIds || noteIds.length === 0) return false;
+            const state = window.App.state;
+            const storage = window.App.storage;
+            const noteManager = window.App.noteManager;
+            if (!state || !noteManager || !storage) return false;
+
+            if (window.App.historyManager) {
+                window.App.historyManager.recordState('batch_move_to_parent');
+            }
+
+            const targetParent = targetParentId ? noteManager.getNoteById(targetParentId) : null;
+            if (targetParentId && !targetParent) return false;
+
+            const movedNoteIds = [];
+            noteIds.forEach(id => {
+                if (id === targetParentId) return;
+
+                // Запобігаємо циклічному переміщенню (якщо targetParentId є нащадком id)
+                const descendants = new Set(noteManager.getDescendantIds ? noteManager.getDescendantIds(id) : []);
+                if (targetParentId && descendants.has(targetParentId)) return;
+
+                const note = noteManager.getNoteById(id);
+                if (!note) return;
+
+                note.parentId = targetParentId;
+                note.updatedAt = Date.now();
+                movedNoteIds.push(id);
+
+                if (window.App.cloudSync) {
+                    window.App.cloudSync.syncNote(note);
+                }
+            });
+
+            if (movedNoteIds.length > 0) {
+                storage.saveNotes(state.notes);
+
+                // Автоматично розгортаємо цільову батьківську нотатку в сайдбарі
+                if (targetParentId) {
+                    state.expandedSidebarNoteIds.add(targetParentId);
+                }
+
+                // Перевіряємо чи activeChain не містить переміщених нотаток у застарілому порядку
+                if (Array.isArray(state.activeChain)) {
+                    const validChain = [null];
+                    for (let i = 1; i < state.activeChain.length; i++) {
+                        const pId = state.activeChain[i];
+                        const n = noteManager.getNoteById(pId);
+                        if (n && n.parentId === state.activeChain[i - 1]) {
+                            validChain.push(pId);
+                        } else {
+                            break;
+                        }
+                    }
+                    state.activeChain = validChain;
+                }
+
+                // Очищаємо виділення та виходимо з режиму вибору
+                state.selectedWorkspaceNoteIds.clear();
+                if (window.App.workspaceSelectionBar) {
+                    window.App.workspaceSelectionBar.exitSelectMode();
+                }
+
+                // Сповіщаємо додаток про зміни
+                noteManager.notifyNotesChanged({ type: 'moveMultiple', noteIds: movedNoteIds, targetParentId });
+
+                if (window.App.workspaceView) {
+                    window.App.workspaceView.render();
+                }
+                if (window.App.sidebarView) {
+                    window.App.sidebarView.render();
+                }
+                if (window.App.graphView && window.App.graphView.isOpen) {
+                    window.App.graphView.refresh();
+                }
+            }
+
+            return true;
         }
     };
 })();

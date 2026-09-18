@@ -174,4 +174,16 @@
         border-radius: 16px !important;
     }
 
+    .move-notes-modal-card {
+        width: calc(100vw - 24px) !important;
+        max-width: none !important;
+        padding: 16px !important;
+        border-radius: 16px !important;
+        max-height: 82vh !important;
+    }
+
+    .move-notes-list-container {
+        max-height: 50vh !important;
+    }
+
 }
