@@ -44,24 +44,25 @@
 .emoji-search-input {
     flex-grow: 1;
     min-width: 0;
-    background: #181818;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: var(--hover-bg, rgba(255, 255, 255, 0.06));
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12));
     border-radius: 8px;
     padding: 6px 10px;
     font-size: 13px;
-    color: #ffffff;
+    color: var(--text-main, #ffffff);
     outline: none;
     font-family: inherit;
     box-sizing: border-box;
-    transition: border-color 0.15s ease;
+    transition: border-color 0.15s ease, background 0.15s ease;
 }
 
 .emoji-search-input:focus {
     border-color: #10b981;
+    background: var(--active-bg, rgba(255, 255, 255, 0.1));
 }
 
 .emoji-search-input::placeholder {
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--text-muted, rgba(255, 255, 255, 0.4));
 }
 
 .emoji-remove-btn {

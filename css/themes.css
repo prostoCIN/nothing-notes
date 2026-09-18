@@ -426,13 +426,15 @@ html[data-theme="light"] .sidebar-close-btn:hover {
 
 /* 6. Граф зв'язків у світлій темі (Obsidian Graph View & Preview Card) */
 html[data-theme="light"] .graph-html-node-label {
-    color: #18181b;
-    text-shadow: 0 1px 4px rgba(255, 255, 255, 0.8);
+    color: #0f172a !important;
+    font-weight: 700 !important;
+    text-shadow: 0 0 5px #ffffff, 0 0 8px #ffffff, 0 1px 2px #ffffff !important;
 }
 
 html[data-theme="light"] .graph-html-node.is-root .graph-html-node-label {
-    color: #0f172a;
-    text-shadow: 0 1px 6px rgba(255, 255, 255, 0.9);
+    color: #0f172a !important;
+    font-weight: 800 !important;
+    text-shadow: 0 0 6px #ffffff, 0 0 10px #ffffff, 0 1px 2px #ffffff !important;
 }
 
 html[data-theme="light"] .graph-html-node-circle {
@@ -446,9 +448,25 @@ html[data-theme="light"] .graph-html-node.is-root .graph-html-node-circle {
 
 html[data-theme="light"] .graph-html-node.is-hovered .graph-html-node-label,
 html[data-theme="light"] .graph-html-node.is-dragging .graph-html-node-label {
-    color: #18181b !important;
-    text-shadow: 0 1px 4px rgba(255, 255, 255, 0.9) !important;
-    font-weight: 700;
+    color: #0f172a !important;
+    text-shadow: 0 0 6px #ffffff, 0 0 12px #ffffff !important;
+    font-weight: 800 !important;
+}
+
+html[data-theme="light"] .graph-html-node.is-match .graph-html-node-label {
+    color: #b45309 !important;
+    text-shadow: 0 0 6px #ffffff, 0 0 10px #ffffff !important;
+    font-weight: 800 !important;
+}
+
+html[data-theme="light"] .graph-html-node.is-orphan.is-match .graph-html-node-label {
+    color: #b45309 !important;
+    text-shadow: 0 0 6px #ffffff, 0 0 10px #ffffff !important;
+    font-weight: 800 !important;
+}
+
+html[data-theme="light"] .graph-html-node.is-faded {
+    opacity: 0.35 !important;
 }
 
 html[data-theme="light"] .graph-html-node.is-hovered .graph-html-node-circle,
@@ -466,6 +484,10 @@ html[data-theme="light"] .graph-empty-title {
     color: #18181b !important;
 }
 
+html[data-theme="light"] .graph-empty-desc {
+    color: #52525b !important;
+}
+
 html[data-theme="light"] .graph-legend-dot.subnote {
     background-color: rgba(0, 0, 0, 0.4) !important;
     box-shadow: 0 0 4px rgba(0, 0, 0, 0.15) !important;
@@ -473,7 +495,7 @@ html[data-theme="light"] .graph-legend-dot.subnote {
 
 html[data-theme="light"] .graph-legend-hint {
     border-left: 1px solid rgba(0, 0, 0, 0.1) !important;
-    color: rgba(0, 0, 0, 0.45) !important;
+    color: #52525b !important;
 }
 
 html[data-theme="light"] .graph-preview-card {
@@ -562,6 +584,39 @@ html[data-theme="light"] .graph-toolbar-filter-btn:hover {
 html[data-theme="light"] .filter-btn-badge {
     background: rgba(0, 0, 0, 0.06) !important;
     color: #18181b !important;
+}
+
+html[data-theme="light"] .graph-nodes-count {
+    background: rgba(16, 185, 129, 0.12) !important;
+    border: 1px solid rgba(16, 185, 129, 0.35) !important;
+    color: #047857 !important;
+    font-weight: 700 !important;
+}
+
+html[data-theme="light"] .graph-toolbar-filter-btn.is-active {
+    background: rgba(16, 185, 129, 0.14) !important;
+    border-color: #10b981 !important;
+    color: #047857 !important;
+    box-shadow: 0 2px 10px rgba(16, 185, 129, 0.2) !important;
+}
+
+html[data-theme="light"] .graph-toolbar-filter-btn.is-active.is-orphans-btn {
+    background: rgba(245, 158, 11, 0.14) !important;
+    border-color: #d97706 !important;
+    color: #b45309 !important;
+    box-shadow: 0 2px 10px rgba(245, 158, 11, 0.2) !important;
+}
+
+html[data-theme="light"] .graph-preview-open-btn {
+    background: rgba(16, 185, 129, 0.14) !important;
+    border: 1px solid rgba(16, 185, 129, 0.35) !important;
+    color: #047857 !important;
+    font-weight: 600 !important;
+}
+
+html[data-theme="light"] .graph-preview-open-btn:hover {
+    background: #10b981 !important;
+    color: #ffffff !important;
 }
 
 /* Мобільні контроли графу */
@@ -673,17 +728,27 @@ html[data-theme="light"] .column-filter-header {
     border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
 }
 
-html[data-theme="light"] .column-filter-item {
-    color: #18181b !important;
+html[data-theme="light"] .column-filter-item,
+html[data-theme="light"] .column-filter-item * {
+    color: #18181b;
 }
 
-html[data-theme="light"] .column-filter-item:hover {
+html[data-theme="light"] .column-filter-item:hover,
+html[data-theme="light"] .column-filter-item:hover * {
     background-color: rgba(0, 0, 0, 0.05) !important;
     color: #18181b !important;
 }
 
-html[data-theme="light"] .column-filter-item.active {
-    background-color: rgba(16, 185, 129, 0.12) !important;
+html[data-theme="light"] .column-filter-item.active,
+html[data-theme="light"] .column-filter-item.active * {
+    background-color: rgba(16, 185, 129, 0.14) !important;
+    color: #047857 !important;
+    font-weight: 700;
+}
+
+html[data-theme="light"] .column-filter-item.active:hover,
+html[data-theme="light"] .column-filter-item.active:hover * {
+    background-color: rgba(16, 185, 129, 0.22) !important;
     color: #047857 !important;
 }
 
@@ -691,19 +756,46 @@ html[data-theme="light"] .column-menu-dropdown {
     background-color: rgba(255, 255, 255, 0.96) !important;
     border: 1px solid rgba(0, 0, 0, 0.1) !important;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04) !important;
-}
-
-html[data-theme="light"] .column-menu-tag-item {
     color: #18181b !important;
 }
 
-html[data-theme="light"] .column-menu-tag-item:hover {
+html[data-theme="light"] .column-menu-header-title,
+html[data-theme="light"] .column-menu-header-text,
+html[data-theme="light"] .column-menu-item {
+    color: #18181b !important;
+}
+
+html[data-theme="light"] .column-menu-item:hover {
     background-color: rgba(0, 0, 0, 0.05) !important;
     color: #18181b !important;
 }
 
-html[data-theme="light"] .column-menu-tag-item.active {
-    background-color: rgba(16, 185, 129, 0.12) !important;
+html[data-theme="light"] .column-menu-section-header,
+html[data-theme="light"] .column-menu-tag-empty {
+    color: #71717a !important;
+}
+
+html[data-theme="light"] .column-menu-tag-item,
+html[data-theme="light"] .column-menu-tag-item * {
+    color: #18181b;
+}
+
+html[data-theme="light"] .column-menu-tag-item:hover,
+html[data-theme="light"] .column-menu-tag-item:hover * {
+    background-color: rgba(0, 0, 0, 0.05) !important;
+    color: #18181b !important;
+}
+
+html[data-theme="light"] .column-menu-tag-item.active,
+html[data-theme="light"] .column-menu-tag-item.active * {
+    background-color: rgba(16, 185, 129, 0.14) !important;
+    color: #047857 !important;
+    font-weight: 700;
+}
+
+html[data-theme="light"] .column-menu-tag-item.active:hover,
+html[data-theme="light"] .column-menu-tag-item.active:hover * {
+    background-color: rgba(16, 185, 129, 0.22) !important;
     color: #047857 !important;
 }
 
@@ -730,13 +822,20 @@ html[data-theme="light"] .sticker-emoji-picker-dropdown {
 }
 
 html[data-theme="light"] .emoji-search-input {
-    background: rgba(0, 0, 0, 0.04) !important;
-    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    background: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.16) !important;
     color: #18181b !important;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+html[data-theme="light"] .emoji-search-input:focus {
+    border-color: #10b981 !important;
+    background: #ffffff !important;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2) !important;
 }
 
 html[data-theme="light"] .emoji-search-input::placeholder {
-    color: rgba(0, 0, 0, 0.4) !important;
+    color: rgba(0, 0, 0, 0.42) !important;
 }
 
 html[data-theme="light"] .emoji-categories-bar {
@@ -779,13 +878,32 @@ html[data-theme="light"] .tag-add-option-row {
 }
 
 html[data-theme="light"] .tag-add-input {
-    background: rgba(0, 0, 0, 0.04) !important;
-    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    background: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.16) !important;
     color: #18181b !important;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+html[data-theme="light"] .tag-add-input:focus {
+    border-color: #10b981 !important;
+    background: #ffffff !important;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2) !important;
 }
 
 html[data-theme="light"] .tag-add-input::placeholder {
-    color: rgba(0, 0, 0, 0.4) !important;
+    color: rgba(0, 0, 0, 0.42) !important;
+}
+
+html[data-theme="light"] .tag-add-btn {
+    background: rgba(16, 185, 129, 0.12) !important;
+    border: 1px solid rgba(16, 185, 129, 0.3) !important;
+    color: #047857 !important;
+    font-weight: 600 !important;
+}
+
+html[data-theme="light"] .tag-add-btn:hover {
+    background: #10b981 !important;
+    color: #ffffff !important;
 }
 
 html[data-theme="light"] .sticker-menu-divider {

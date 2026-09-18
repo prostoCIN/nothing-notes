@@ -210,7 +210,7 @@
 .graph-nodes-count {
     background: rgba(16, 185, 129, 0.2);
     border: 1px solid rgba(16, 185, 129, 0.4);
-    color: #a7f3d0;
+    color: var(--accent-color, #10b981);
     font-size: 11px;
     font-weight: 700;
     padding: 2px 7px;
@@ -255,7 +255,7 @@
 .graph-toolbar-filter-btn.is-active {
     background: rgba(16, 185, 129, 0.22);
     border-color: #10b981;
-    color: #a7f3d0;
+    color: var(--accent-color, #10b981);
     box-shadow: 0 0 16px rgba(16, 185, 129, 0.35);
 }
 
@@ -347,7 +347,7 @@
 .graph-tag-chip.is-active {
     background: rgba(16, 185, 129, 0.25);
     border-color: #10b981;
-    color: #a7f3d0;
+    color: var(--accent-color, #10b981);
     font-weight: 700;
     box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
 }
@@ -568,9 +568,9 @@
 }
 
 .graph-legend-hint {
-    border-left: 1px solid rgba(255, 255, 255, 0.15);
+    border-left: 1px solid var(--border-color, rgba(255, 255, 255, 0.15));
     padding-left: 10px;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--text-muted, rgba(255, 255, 255, 0.4));
 }
 
 /* Інтерактивна плаваюча картка швидкого перегляду нотатки (Quick Preview Card) */
@@ -820,7 +820,7 @@
 
 .graph-empty-title {
     font-size: var(--font-md);
-    color: #ffffff;
+    color: var(--text-main, #ffffff);
     font-weight: 700;
     margin-bottom: 6px;
 }
