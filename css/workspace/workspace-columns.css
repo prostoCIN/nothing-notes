@@ -164,13 +164,25 @@
     scrollbar-width: none;
     -ms-overflow-style: none;
     white-space: nowrap;
-    mask-image: linear-gradient(to right, black calc(100% - 16px), transparent 100%);
-    -webkit-mask-image: linear-gradient(to right, black calc(100% - 16px), transparent 100%);
-    padding-right: 6px;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: pan-x;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    padding-right: 4px;
 }
 
 .column-title-breadcrumbs::-webkit-scrollbar {
     display: none;
+}
+
+.column-title-breadcrumbs.is-dragging-breadcrumbs {
+    cursor: grabbing !important;
+}
+
+.column-title-breadcrumbs.is-dragging-breadcrumbs .column-breadcrumb-link {
+    cursor: grabbing !important;
 }
 
 .column-title-pipe {

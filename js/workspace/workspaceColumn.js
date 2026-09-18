@@ -2,6 +2,34 @@
 window.App = window.App || {};
 
 (function() {
+    function updateBreadcrumbsMask(el) {
+        if (!el) return;
+        const maxScroll = el.scrollWidth - el.clientWidth;
+        if (maxScroll <= 2) {
+            el.style.maskImage = 'none';
+            el.style.webkitMaskImage = 'none';
+            return;
+        }
+        const hasLeft = el.scrollLeft > 3;
+        const hasRight = el.scrollLeft < maxScroll - 3;
+        if (hasLeft && hasRight) {
+            const mask = 'linear-gradient(to right, transparent 0, black 16px, black calc(100% - 16px), transparent 100%)';
+            el.style.maskImage = mask;
+            el.style.webkitMaskImage = mask;
+        } else if (hasLeft) {
+            const mask = 'linear-gradient(to right, transparent 0, black 16px, black 100%)';
+            el.style.maskImage = mask;
+            el.style.webkitMaskImage = mask;
+        } else if (hasRight) {
+            const mask = 'linear-gradient(to right, black 0, black calc(100% - 16px), transparent 100%)';
+            el.style.maskImage = mask;
+            el.style.webkitMaskImage = mask;
+        } else {
+            el.style.maskImage = 'none';
+            el.style.webkitMaskImage = 'none';
+        }
+    }
+
     window.App.workspaceColumn = {
         /**
          * Створює повний DOM-елемент колонки (board-column)
@@ -249,6 +277,63 @@ window.App = window.App || {};
                         }
                     }
 
+                    // Скрол коліщатком миші по горизонталі
+                    breadcrumbs.addEventListener('wheel', (e) => {
+                        if (breadcrumbs.scrollWidth > breadcrumbs.clientWidth) {
+                            const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+                            if (delta !== 0) {
+                                breadcrumbs.scrollLeft += delta;
+                                e.preventDefault();
+                                e.stopPropagation();
+                            }
+                        }
+                    }, { passive: false });
+
+                    // Перетягування мишею (drag-to-scroll)
+                    let isDown = false;
+                    let startX = 0;
+                    let scrollStart = 0;
+                    let hasDragged = false;
+
+                    breadcrumbs.addEventListener('mousedown', (e) => {
+                        if (e.button !== 0) return;
+                        isDown = true;
+                        hasDragged = false;
+                        startX = e.pageX - breadcrumbs.offsetLeft;
+                        scrollStart = breadcrumbs.scrollLeft;
+                    });
+
+                    const onMouseMove = (e) => {
+                        if (!isDown) return;
+                        const x = e.pageX - breadcrumbs.offsetLeft;
+                        const walk = x - startX;
+                        if (Math.abs(walk) > 4) {
+                            hasDragged = true;
+                            breadcrumbs.classList.add('is-dragging-breadcrumbs');
+                        }
+                        breadcrumbs.scrollLeft = scrollStart - walk;
+                    };
+
+                    const onMouseUp = () => {
+                        if (isDown) {
+                            isDown = false;
+                            breadcrumbs.classList.remove('is-dragging-breadcrumbs');
+                            setTimeout(() => {
+                                hasDragged = false;
+                            }, 50);
+                        }
+                    };
+
+                    breadcrumbs.addEventListener('mousemove', onMouseMove);
+                    breadcrumbs.addEventListener('mouseup', onMouseUp);
+                    breadcrumbs.addEventListener('mouseleave', onMouseUp);
+                    window.addEventListener('mouseup', onMouseUp);
+
+                    // Оновлення динамічної маски країв при скролі
+                    breadcrumbs.addEventListener('scroll', () => {
+                        updateBreadcrumbsMask(breadcrumbs);
+                    });
+
                     ancestors.forEach((anc) => {
                         const pipe = document.createElement('span');
                         pipe.className = 'column-title-pipe';
@@ -271,7 +356,14 @@ window.App = window.App || {};
                         linkBtn.appendChild(iconSpan);
                         linkBtn.appendChild(textSpan);
 
+                        linkBtn.addEventListener('dragstart', (e) => e.preventDefault());
+
                         linkBtn.addEventListener('click', (e) => {
+                            if (hasDragged) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                return;
+                            }
                             e.stopPropagation();
                             const colsContainer = document.getElementById('columns-container');
                             if (!colsContainer) return;
@@ -299,6 +391,14 @@ window.App = window.App || {};
                     });
 
                     titleWrap.appendChild(breadcrumbs);
+
+                    if (typeof ResizeObserver !== 'undefined') {
+                        const ro = new ResizeObserver(() => {
+                            updateBreadcrumbsMask(breadcrumbs);
+                        });
+                        ro.observe(breadcrumbs);
+                    }
+                    requestAnimationFrame(() => updateBreadcrumbsMask(breadcrumbs));
                 }
             }
 
