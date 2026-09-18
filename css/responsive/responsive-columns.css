@@ -55,9 +55,10 @@
     .column-title-wrap {
         display: flex !important;
         align-items: center !important;
-        gap: 8px !important;
+        gap: 4px !important;
         flex: 1 1 auto !important;
         min-width: 0 !important;
+        overflow: hidden !important;
     }
 
     .column-header-actions {
@@ -73,9 +74,33 @@
     }
 
     .column-title {
-        font-size: 17px !important;
+        font-size: 16px !important;
         font-weight: 700 !important;
         letter-spacing: -0.3px;
+        max-width: 130px !important;
+        flex-shrink: 1 !important;
+    }
+
+    .column-title-breadcrumbs {
+        max-width: calc(100% - 140px) !important;
+        mask-image: linear-gradient(to right, black calc(100% - 16px), transparent 100%) !important;
+        -webkit-mask-image: linear-gradient(to right, black calc(100% - 16px), transparent 100%) !important;
+        padding-right: 6px !important;
+    }
+
+    .column-title-pipe {
+        margin: 0 2px !important;
+        font-size: 11px !important;
+    }
+
+    .column-breadcrumb-link {
+        font-size: 11.5px !important;
+        max-width: 95px !important;
+        padding: 2px 4px !important;
+    }
+
+    .column-breadcrumb-text {
+        max-width: 75px !important;
     }
 
     .column-count-badge {

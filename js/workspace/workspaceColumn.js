@@ -297,17 +297,11 @@ window.App = window.App || {};
                         }
                     }
 
-                    ancestors.forEach((anc, idx) => {
-                        if (idx > 0) {
-                            const sep = document.createElement('span');
-                            sep.className = 'column-breadcrumb-sep';
-                            sep.innerHTML = `
-                                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="9 18 15 12 9 6"></polyline>
-                                </svg>
-                            `;
-                            breadcrumbs.appendChild(sep);
-                        }
+                    ancestors.forEach((anc) => {
+                        const pipe = document.createElement('span');
+                        pipe.className = 'column-title-pipe';
+                        pipe.textContent = '|';
+                        breadcrumbs.appendChild(pipe);
 
                         const linkBtn = document.createElement('button');
                         linkBtn.type = 'button';

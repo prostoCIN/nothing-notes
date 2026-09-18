@@ -285,22 +285,17 @@ html[data-theme="light"] .column-header-title {
     color: #18181b;
 }
 
-html[data-theme="light"] .column-title-breadcrumbs {
-    background: rgba(0, 0, 0, 0.035);
-    border-color: rgba(0, 0, 0, 0.08);
+html[data-theme="light"] .column-title-pipe {
+    color: rgba(0, 0, 0, 0.28);
 }
 
 html[data-theme="light"] .column-breadcrumb-link {
-    color: rgba(0, 0, 0, 0.6);
+    color: rgba(0, 0, 0, 0.55);
 }
 
 html[data-theme="light"] .column-breadcrumb-link:hover {
-    background: rgba(22, 185, 129, 0.12);
+    background: rgba(22, 185, 129, 0.1);
     color: #059669;
-}
-
-html[data-theme="light"] .column-breadcrumb-sep {
-    color: rgba(0, 0, 0, 0.35);
 }
 
 html[data-theme="light"] .column-item {
