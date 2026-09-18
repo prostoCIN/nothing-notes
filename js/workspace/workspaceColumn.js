@@ -140,30 +140,6 @@ window.App = window.App || {};
 
                 titleWrap.appendChild(boardIconPicker);
                 titleWrap.appendChild(titleH2);
-
-                if (!isBoardReadOnly) {
-                    const editHint = document.createElement('span');
-                    editHint.className = 'column-title-edit-hint';
-                    editHint.title = 'Редагувати назву блокнота';
-                    editHint.innerHTML = `
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 20h9"></path>
-                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                        </svg>
-                    `;
-                    editHint.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        titleH2.focus();
-                        const sel = window.getSelection();
-                        if (sel) {
-                            const range = document.createRange();
-                            range.selectNodeContents(titleH2);
-                            sel.removeAllRanges();
-                            sel.addRange(range);
-                        }
-                    });
-                    titleWrap.appendChild(editHint);
-                }
             } else {
                 const parentNote = noteManager ? noteManager.getNoteById(parentNoteId) : null;
                 const parentTitle = parentNote ? parentNote.title.trim() : 'Без назви';
@@ -241,30 +217,6 @@ window.App = window.App || {};
 
                 titleWrap.appendChild(noteIconPicker);
                 titleWrap.appendChild(titleH2);
-
-                if (!isBoardReadOnly && parentNote) {
-                    const editHint = document.createElement('span');
-                    editHint.className = 'column-title-edit-hint';
-                    editHint.title = 'Редагувати назву нотатки';
-                    editHint.innerHTML = `
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 20h9"></path>
-                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                        </svg>
-                    `;
-                    editHint.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        titleH2.focus();
-                        const sel = window.getSelection();
-                        if (sel) {
-                            const range = document.createRange();
-                            range.selectNodeContents(titleH2);
-                            sel.removeAllRanges();
-                            sel.addRange(range);
-                        }
-                    });
-                    titleWrap.appendChild(editHint);
-                }
 
                 // Додаємо послідовність відкритих рівнів вище у форматі навігаційних лінків (breadcrumbs)
                 if (colIndex > 0 && state && Array.isArray(state.activeChain)) {
