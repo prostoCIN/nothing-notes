@@ -286,7 +286,7 @@ window.App = window.App || {};
                 nestPocket.title = 'Перетягніть сюди, щоб створити піднотатку';
                 nestPocket.innerHTML = `
                     <div class="nest-pocket-icon-wrapper">
-                        <svg class="nest-pocket-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg class="nest-pocket-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M4 4v7a3 3 0 0 0 3 3h4"></path>
                             <polyline points="9 11 12 14 9 17"></polyline>
                             <rect x="13" y="6" width="8" height="12" rx="2"></rect>
