@@ -156,7 +156,8 @@ window.DOMPurify = window.DOMPurify || DOMPurify;
                 color: inheritedColor,
                 orderIndex: nextOrderIndex,
                 createdAt: now,
-                updatedAt: now
+                updatedAt: now,
+                isOfflineCreated: true
             };
 
             if (window.App.historyManager) {
@@ -167,7 +168,7 @@ window.DOMPurify = window.DOMPurify || DOMPurify;
             storage.saveNotes(state.notes);
 
             if (window.App.cloudSync) {
-                window.App.cloudSync.syncNote(newNote);
+                window.App.cloudSync.syncNote(newNote, true);
             }
 
             this.notifyNotesChanged({ type: 'create', note: newNote });
@@ -497,7 +498,9 @@ window.DOMPurify = window.DOMPurify || DOMPurify;
                     tags: Array.isArray(noteToClone.tags) ? [...noteToClone.tags] : (noteToClone.tag ? [noteToClone.tag.text || noteToClone.tag] : []),
                     images: Array.isArray(noteToClone.images) ? JSON.parse(JSON.stringify(noteToClone.images)) : [],
                     fontSize: noteToClone.fontSize !== undefined ? noteToClone.fontSize : 16,
-                    updatedAt: Date.now()
+                    createdAt: Date.now(),
+                    updatedAt: Date.now(),
+                    isOfflineCreated: true
                 };
 
                 state.notes.push(newNote);
@@ -518,7 +521,7 @@ window.DOMPurify = window.DOMPurify || DOMPurify;
             // Синхронізуємо всі клоновані нотатки з базою даних Supabase
             if (window.App.cloudSync) {
                 clonedNotesList.forEach(clonedNote => {
-                    window.App.cloudSync.syncNote(clonedNote);
+                    window.App.cloudSync.syncNote(clonedNote, true);
                 });
             }
 

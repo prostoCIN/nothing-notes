@@ -278,7 +278,8 @@ window.App = window.App || {};
                     tags: Array.isArray(oldNote.tags) ? [...oldNote.tags] : [],
                     orderIndex: oldNote.orderIndex || 0,
                     createdAt: now,
-                    updatedAt: now
+                    updatedAt: now,
+                    isOfflineCreated: true
                 };
             });
 
@@ -288,7 +289,7 @@ window.App = window.App || {};
             // 3. Синхронізуємо новий блокнот з хмарою
             if (window.App.cloudSync) {
                 window.App.cloudSync.syncBoards();
-                clonedNotes.forEach(n => window.App.cloudSync.syncNote(n));
+                clonedNotes.forEach(n => window.App.cloudSync.syncNote(n, true));
                 if (window.App.cloudSync.flushPendingNotes) window.App.cloudSync.flushPendingNotes();
             }
 

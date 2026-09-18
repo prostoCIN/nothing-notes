@@ -5,6 +5,7 @@ window.App = window.App || {};
     let currentUser = null;
     let syncDebounceTimer = null;
     let reorderDebounceTimer = null;
+    let _pendingSyncNotesMap = new Map();
     let _pendingReorderNotesMap = new Map();
     let isPullingFromCloud = false;
     let _rePullNeeded = false;
@@ -12,6 +13,32 @@ window.App = window.App || {};
     let _deferredPulledNotes = null;
     let pullDebounceTimer = null;
     let lastLocalEditTimestamps = new Map(); // id -> timestamp
+
+    // Персистентний кеш локально створених офлайн нотаток (до першого успішного синку)
+    let offlineCreatedNoteIds = new Set();
+    try {
+        const savedCreated = JSON.parse(localStorage.getItem('minimal_offline_created_ids'));
+        if (Array.isArray(savedCreated)) {
+            offlineCreatedNoteIds = new Set(savedCreated);
+        }
+    } catch (e) {}
+
+    function markOfflineCreated(id) {
+        if (!id) return;
+        offlineCreatedNoteIds.add(id);
+        try {
+            localStorage.setItem('minimal_offline_created_ids', JSON.stringify(Array.from(offlineCreatedNoteIds)));
+        } catch (e) {}
+    }
+
+    function unmarkOfflineCreated(id) {
+        if (!id) return;
+        if (offlineCreatedNoteIds.delete(id)) {
+            try {
+                localStorage.setItem('minimal_offline_created_ids', JSON.stringify(Array.from(offlineCreatedNoteIds)));
+            } catch (e) {}
+        }
+    }
 
     // Персистентний кеш локально видалених ID для надійного захисту від воскресіння нотаток
     let locallyDeletedNoteIds = new Set();
@@ -25,6 +52,10 @@ window.App = window.App || {};
     function persistDeletedId(id) {
         if (!id) return;
         locallyDeletedNoteIds.add(id);
+        if (locallyDeletedNoteIds.size > 500) {
+            const arr = Array.from(locallyDeletedNoteIds);
+            locallyDeletedNoteIds = new Set(arr.slice(arr.length - 500));
+        }
         try {
             localStorage.setItem('minimal_locally_deleted_ids', JSON.stringify(Array.from(locallyDeletedNoteIds)));
         } catch (e) {}
@@ -174,7 +205,11 @@ window.App = window.App || {};
                         // Якщо це подія ВИДАЛЕННЯ (DELETE)
                         if (payload.eventType === 'DELETE' && payload.old && payload.old.id) {
                             const deletedId = payload.old.id;
-                            locallyDeletedNoteIds.add(deletedId);
+                            persistDeletedId(deletedId);
+                            removeOfflineAction(deletedId);
+                            unmarkOfflineCreated(deletedId);
+                            _pendingSyncNotesMap.delete(deletedId);
+                            _pendingReorderNotesMap.delete(deletedId);
                             
                             // Якщо прямо зараз користувач перетягує цю нотатку — відкладаємо до кінця драгу
                             if (window.App.state && window.App.state.isDraggingNote && window.App.state.draggedNoteId === deletedId) {
@@ -184,7 +219,7 @@ window.App = window.App || {};
 
                             // Якщо нотатка все ще є у локальному стані (прийшло з іншого пристрою) — видаляємо її
                             const state = window.App.state;
-                            if (state.notes.some(n => n.id === deletedId)) {
+                            if (state && state.notes && state.notes.some(n => n.id === deletedId)) {
                                 state.notes = state.notes.filter(n => n.id !== deletedId);
                                 window.App.storage.saveNotes(state.notes, true);
                                 if (window.App.sidebarView) window.App.sidebarView.render();
@@ -489,14 +524,22 @@ window.App = window.App || {};
                         }
 
                         const cloudUpdatedAt = n.updated_at ? new Date(n.updated_at).getTime() : 0;
-                        const hasPendingSync = (this._pendingSyncNotesMap && this._pendingSyncNotesMap.has(n.id)) || pendingUpsertIds.has(n.id);
-                        const isLocalNewer = localNote && localNote.updatedAt && (localNote.updatedAt > cloudUpdatedAt);
+                        const localUpdatedAt = (localNote && localNote.updatedAt) ? Number(localNote.updatedAt) : 0;
+                        const hasPendingSync = (_pendingSyncNotesMap && _pendingSyncNotesMap.has(n.id)) || pendingUpsertIds.has(n.id);
+                        const isLocalStrictlyNewer = localNote && (localUpdatedAt > cloudUpdatedAt);
 
-                        if (localNote && (hasPendingSync || isLocalNewer)) {
-                            // Локальна версія новіша або містить несинхронізовані зміни — зберігаємо її
+                        if (localNote && isLocalStrictlyNewer && hasPendingSync) {
+                            // Локальна версія строго новіша і містить несинхронізовані зміни — зберігаємо її
                             queueOfflineAction({ type: 'upsert_note', id: localNote.id });
                             return { ...localNote, boardId: resolvedBoardId };
                         }
+
+                        // У всіх інших випадках перемагає версія з хмари (хмара новіша або актуальна)
+                        // Очищаємо застарілі локальні черги для цієї нотатки, щоб не перетерти свіжі серверні дані
+                        removeOfflineAction(n.id, 'upsert_note');
+                        if (_pendingSyncNotesMap) _pendingSyncNotesMap.delete(n.id);
+                        if (_pendingReorderNotesMap) _pendingReorderNotesMap.delete(n.id);
+                        unmarkOfflineCreated(n.id);
 
                         return {
                             id: n.id,
@@ -517,13 +560,26 @@ window.App = window.App || {};
                         };
                     });
 
-                    // Зберігаємо локальні нотатки, яких ще немає в хмарі (офлайн створення)
+                    // Зберігаємо ТІЛЬКИ ті локальні нотатки, які реально були створені офлайн на ЦЬОМУ пристрої
                     const cloudIds = new Set(cloudNotes.map(n => n.id));
                     state.notes.forEach(localNote => {
-                        if (!cloudIds.has(localNote.id) && !locallyDeletedNoteIds.has(localNote.id) && !pendingDeleteIds.has(localNote.id)) {
-                            console.log('[CloudSync] 💾 Preserving offline-created note:', localNote.id);
-                            formattedNotes.push(localNote);
-                            queueOfflineAction({ type: 'upsert_note', id: localNote.id });
+                        if (!cloudIds.has(localNote.id)) {
+                            const isOfflineCreated = (localNote.isOfflineCreated || offlineCreatedNoteIds.has(localNote.id))
+                                && !locallyDeletedNoteIds.has(localNote.id)
+                                && !pendingDeleteIds.has(localNote.id);
+
+                            if (isOfflineCreated) {
+                                console.log('[CloudSync] 💾 Preserving genuine offline-created note:', localNote.id);
+                                formattedNotes.push(localNote);
+                                queueOfflineAction({ type: 'upsert_note', id: localNote.id });
+                            } else {
+                                // Нотатка відсутня в хмарі і НЕ була створена офлайн — значить вона була видалена в хмарі.
+                                // Очищаємо застарілі локальні черги, щоб вона ніколи не воскресала!
+                                removeOfflineAction(localNote.id);
+                                if (_pendingSyncNotesMap) _pendingSyncNotesMap.delete(localNote.id);
+                                if (_pendingReorderNotesMap) _pendingReorderNotesMap.delete(localNote.id);
+                                unmarkOfflineCreated(localNote.id);
+                            }
                         }
                     });
 
@@ -724,8 +780,21 @@ window.App = window.App || {};
         },
 
         // 2. Відправка нотатки в хмару (пакетна черга Map для кількох нотаток одночасно)
-        syncNote(note) {
+        syncNote(note, isNew = false) {
             if (!note) return;
+
+            // Якщо нотатка була відновлена (наприклад через Undo) — прибираємо зі списку видалених
+            if (locallyDeletedNoteIds.has(note.id)) {
+                locallyDeletedNoteIds.delete(note.id);
+                try {
+                    localStorage.setItem('minimal_locally_deleted_ids', JSON.stringify(Array.from(locallyDeletedNoteIds)));
+                } catch (e) {}
+            }
+            removeOfflineAction(note.id, 'delete_note');
+
+            if (isNew || note.isOfflineCreated) {
+                markOfflineCreated(note.id);
+            }
 
             // Завжди фіксуємо в персистентній офлайн-черзі
             queueOfflineAction({ type: 'upsert_note', id: note.id });
@@ -733,11 +802,8 @@ window.App = window.App || {};
             if (!currentUser || !window.App.supabase) return;
 
             lastLocalEditTimestamps.set(note.id, Date.now());
-            
-            if (!this._pendingSyncNotesMap) {
-                this._pendingSyncNotesMap = new Map();
-            }
-            this._pendingSyncNotesMap.set(note.id, note);
+            _pendingSyncNotesMap.set(note.id, note);
+            this._pendingSyncNotesMap = _pendingSyncNotesMap;
 
             clearTimeout(syncDebounceTimer);
             syncDebounceTimer = setTimeout(async () => {
@@ -749,17 +815,23 @@ window.App = window.App || {};
         syncReorderNotes(notes) {
             if (!notes || notes.length === 0) return;
 
-            notes.forEach(note => {
+            const offlineQueue = getOfflineQueue();
+            const pendingDeleteIds = new Set(offlineQueue.filter(i => i.type === 'delete_note').map(i => i.id));
+            const validNotes = notes.filter(n => !locallyDeletedNoteIds.has(n.id) && !pendingDeleteIds.has(n.id));
+            if (validNotes.length === 0) return;
+
+            validNotes.forEach(note => {
                 queueOfflineAction({ type: 'upsert_note', id: note.id });
             });
 
             if (!currentUser || !window.App.supabase) return;
 
             const now = Date.now();
-            notes.forEach(note => {
+            validNotes.forEach(note => {
                 lastLocalEditTimestamps.set(note.id, now);
                 _pendingReorderNotesMap.set(note.id, note);
             });
+            this._pendingReorderNotesMap = _pendingReorderNotesMap;
 
             clearTimeout(reorderDebounceTimer);
             reorderDebounceTimer = setTimeout(async () => {
@@ -782,10 +854,10 @@ window.App = window.App || {};
         },
 
         async flushPendingNotes() {
-            if (!this._pendingSyncNotesMap || this._pendingSyncNotesMap.size === 0) return;
+            if (!_pendingSyncNotesMap || _pendingSyncNotesMap.size === 0) return;
 
-            const notesToPush = Array.from(this._pendingSyncNotesMap.values());
-            this._pendingSyncNotesMap.clear();
+            const notesToPush = Array.from(_pendingSyncNotesMap.values());
+            _pendingSyncNotesMap.clear();
             clearTimeout(syncDebounceTimer);
             syncDebounceTimer = null;
 
@@ -804,11 +876,17 @@ window.App = window.App || {};
             if (!supabase || !currentUser || !notes || notes.length === 0) return;
             const state = window.App.state;
 
+            // Фільтруємо будь-які видалені нотатки перед відправкою
+            const offlineQueue = getOfflineQueue();
+            const pendingDeleteIds = new Set(offlineQueue.filter(i => i.type === 'delete_note').map(i => i.id));
+            const validNotes = notes.filter(n => !locallyDeletedNoteIds.has(n.id) && !pendingDeleteIds.has(n.id));
+            if (validNotes.length === 0) return;
+
             // Захист від ехо: штампуємо актуальний час для всіх нотаток у пакеті
             const now = Date.now();
-            notes.forEach(n => lastLocalEditTimestamps.set(n.id, now));
+            validNotes.forEach(n => lastLocalEditTimestamps.set(n.id, now));
 
-            const payloads = notes.map(note => {
+            const payloads = validNotes.map(note => {
                 const noteIndex = typeof note.orderIndex === 'number'
                     ? note.orderIndex
                     : state.notes.findIndex(n => n.id === note.id);
@@ -840,8 +918,12 @@ window.App = window.App || {};
                 if (error) {
                     console.warn('[CloudSync] Bulk note upsert error:', error.message);
                 } else {
-                    console.log(`[CloudSync] ⚡ Successfully batch synced ${notes.length} notes to cloud.`);
-                    notes.forEach(n => removeOfflineAction(n.id, 'upsert_note'));
+                    console.log(`[CloudSync] ⚡ Successfully batch synced ${validNotes.length} notes to cloud.`);
+                    validNotes.forEach(n => {
+                        removeOfflineAction(n.id, 'upsert_note');
+                        unmarkOfflineCreated(n.id);
+                        if (n.isOfflineCreated) delete n.isOfflineCreated;
+                    });
                 }
             } catch (err) {
                 console.warn('[CloudSync] Bulk upsert exception:', err);
@@ -852,6 +934,14 @@ window.App = window.App || {};
             const supabase = window.App.supabase;
             if (!supabase || !currentUser || !note) return;
             const state = window.App.state;
+
+            // Фільтруємо видалену нотатку
+            const offlineQueue = getOfflineQueue();
+            const isPendingDelete = offlineQueue.some(i => i.type === 'delete_note' && i.id === note.id);
+            if (locallyDeletedNoteIds.has(note.id) || isPendingDelete) {
+                console.log('[CloudSync] Skipping push for deleted note:', note.id);
+                return;
+            }
 
             lastLocalEditTimestamps.set(note.id, Date.now());
 
@@ -886,6 +976,8 @@ window.App = window.App || {};
                     console.warn('[CloudSync] Note upsert error:', error.message);
                 } else {
                     removeOfflineAction(note.id, 'upsert_note');
+                    unmarkOfflineCreated(note.id);
+                    if (note.isOfflineCreated) delete note.isOfflineCreated;
                 }
             } catch (err) {
                 console.warn('[CloudSync] Upsert exception:', err);
@@ -898,8 +990,10 @@ window.App = window.App || {};
             persistDeletedId(noteId);
             removeOfflineAction(noteId, 'upsert_note');
             queueOfflineAction({ type: 'delete_note', id: noteId });
+            unmarkOfflineCreated(noteId);
 
-            if (this._pendingSyncNotesMap) this._pendingSyncNotesMap.delete(noteId);
+            _pendingSyncNotesMap.delete(noteId);
+            _pendingReorderNotesMap.delete(noteId);
 
             if (!currentUser || !window.App.supabase) return;
             const supabase = window.App.supabase;
@@ -920,7 +1014,9 @@ window.App = window.App || {};
                 persistDeletedId(id);
                 removeOfflineAction(id, 'upsert_note');
                 queueOfflineAction({ type: 'delete_note', id });
-                if (this._pendingSyncNotesMap) this._pendingSyncNotesMap.delete(id);
+                unmarkOfflineCreated(id);
+                _pendingSyncNotesMap.delete(id);
+                _pendingReorderNotesMap.delete(id);
             });
 
             if (!currentUser || !window.App.supabase) return;
@@ -980,7 +1076,16 @@ window.App = window.App || {};
 
             // 3. Відправка накопичених оновлень/створень нотаток
             if (upsertNoteIds.size > 0 && state && state.notes) {
-                const notesToPush = state.notes.filter(n => upsertNoteIds.has(n.id));
+                const currentNoteIds = new Set(state.notes.map(n => n.id));
+                // Прибираємо з черги нотатки, які вже були видалені або яких немає в локальному стані
+                upsertNoteIds.forEach(id => {
+                    if (!currentNoteIds.has(id) || locallyDeletedNoteIds.has(id) || deleteNoteIds.includes(id)) {
+                        removeOfflineAction(id, 'upsert_note');
+                        upsertNoteIds.delete(id);
+                    }
+                });
+
+                const notesToPush = state.notes.filter(n => upsertNoteIds.has(n.id) && !locallyDeletedNoteIds.has(n.id));
                 if (notesToPush.length > 0) {
                     await this._pushMultipleNotesToCloud(notesToPush);
                 }
@@ -1041,6 +1146,10 @@ window.App = window.App || {};
                 if (error) console.warn('[CloudSync] Bulk push error:', error.message);
                 else {
                     console.log('[CloudSync] Synced all local notes & images to cloud');
+                    state.notes.forEach(n => {
+                        unmarkOfflineCreated(n.id);
+                        if (n.isOfflineCreated) delete n.isOfflineCreated;
+                    });
                     window.App.storage.saveNotes(state.notes, true);
                 }
             } catch (err) {
