@@ -61,6 +61,12 @@ window.App = window.App || {};
 
             // Клік по картці в режимі вибору перемикає виділення (як в iOS галереї)
             card.addEventListener('click', (e) => {
+                if (card.dataset.justDragged === 'true') {
+                    delete card.dataset.justDragged;
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return;
+                }
                 if (window.App.state && window.App.state.isWorkspaceSelectMode) {
                     e.preventDefault();
                     e.stopPropagation();

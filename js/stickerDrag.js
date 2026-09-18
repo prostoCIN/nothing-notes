@@ -1,6 +1,16 @@
 // js/stickerDrag.js - Логіка Drag & Drop: переміщення піднотаток в інші піднотатки, в інші колонки та в корінь
 window.App = window.App || {};
 
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
 window.App.initStickerDrag = function(card, handles, originalParentId) {
     const handleList = Array.isArray(handles) ? handles : [handles];
 
@@ -37,6 +47,18 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
             const state = window.App.state;
             const draggedNoteId = card.dataset.noteId;
 
+            // Перевіряємо чи нотатка перетягується в рамках мульти-вибору
+            const isMultiSelectDrag = Boolean(
+                state &&
+                state.selectedWorkspaceNoteIds &&
+                state.selectedWorkspaceNoteIds.has(draggedNoteId) &&
+                state.selectedWorkspaceNoteIds.size > 1
+            );
+
+            const notesToMoveIds = isMultiSelectDrag
+                ? Array.from(state.selectedWorkspaceNoteIds)
+                : [draggedNoteId];
+
             const startColumnList = card.closest('.column-notes-list');
             if (!startColumnList) return;
 
@@ -70,7 +92,16 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
 
             let currentNestTarget = null;
             let currentColumnDropTarget = null;
-            const invalidTargetIds = new Set([draggedNoteId, ...(noteManager ? noteManager.getDescendantIds(draggedNoteId) : [])]);
+
+            // Заборонені цілі для вкладення (усі вибрані нотатки та їхні нащадки, щоб уникнути циклів)
+            const invalidTargetIds = new Set();
+            notesToMoveIds.forEach(id => {
+                invalidTargetIds.add(id);
+                if (noteManager && noteManager.getDescendantIds) {
+                    const desc = noteManager.getDescendantIds(id);
+                    if (desc) desc.forEach(dId => invalidTargetIds.add(dId));
+                }
+            });
 
             function startDrag(clientX, clientY) {
                 isDragging = true;
@@ -79,6 +110,21 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                     state.draggedNoteId = draggedNoteId;
                 }
                 document.body.classList.add('is-sticker-dragging');
+
+                // Візуальна індикація групового перетягування
+                if (isMultiSelectDrag) {
+                    const badge = document.createElement('div');
+                    badge.className = 'sticker-drag-count-badge';
+                    badge.textContent = `${notesToMoveIds.length}`;
+                    card.appendChild(badge);
+
+                    notesToMoveIds.forEach(id => {
+                        if (id !== draggedNoteId) {
+                            const partnerCard = document.querySelector(`.note-sticker[data-note-id="${id}"]`);
+                            if (partnerCard) partnerCard.classList.add('is-group-drag-partner');
+                        }
+                    });
+                }
 
                 // Очищаємо можливі застарілі дублікати цієї картки в DOM перед початком перетягування
                 document.querySelectorAll(`.note-sticker[data-note-id="${draggedNoteId}"]`).forEach(dup => {
@@ -345,6 +391,18 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                 }
                 document.body.classList.remove('is-sticker-dragging');
 
+                // Очищаємо візуальні ефекти групового перетягування
+                const dragCountBadge = card.querySelector('.sticker-drag-count-badge');
+                if (dragCountBadge) dragCountBadge.remove();
+                document.querySelectorAll('.note-sticker.is-group-drag-partner').forEach(el => {
+                    el.classList.remove('is-group-drag-partner');
+                });
+
+                card.dataset.justDragged = 'true';
+                setTimeout(() => {
+                    delete card.dataset.justDragged;
+                }, 200);
+
                 const nestTarget = currentNestTarget;
                 if (currentNestTarget) {
                     currentNestTarget.classList.remove('drag-nest-target');
@@ -392,23 +450,73 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                 // Варіант 1: Відпустили над іншою нотаткою у зоні вкладення (зробити піднотаткою)
                 if (nestTarget && nestTarget.dataset.noteId && noteManager) {
                     const targetParentId = nestTarget.dataset.noteId;
-                    const draggedNote = noteManager.getNoteById(draggedNoteId);
                     const parentNote = noteManager.getNoteById(targetParentId);
-
-                    const draggedTitle = (draggedNote && draggedNote.title.trim()) ? draggedNote.title.trim() : 'Без назви';
                     const parentTitle = (parentNote && parentNote.title.trim()) ? parentNote.title.trim() : 'Без назви';
+
+                    if (isMultiSelectDrag && notesToMoveIds.length > 1) {
+                        const count = notesToMoveIds.length;
+                        let countPhrase = `${count} виділених нотаток`;
+                        if (count === 2) {
+                            countPhrase = 'цих 2 виділених нотаток';
+                        } else if (count === 3 || count === 4) {
+                            countPhrase = `цих ${count} виділених нотаток`;
+                        } else if (count % 10 === 1 && count % 100 !== 11) {
+                            countPhrase = `${count} виділену нотатку`;
+                        } else if ([2, 3, 4].includes(count % 10) && ![12, 13, 14].includes(count % 100)) {
+                            countPhrase = `${count} виділені нотатки`;
+                        }
+
+                        if (confirmModal) {
+                            confirmModal.show({
+                                title: 'Зробити піднотатками?',
+                                message: `Ви дійсно хочете зробити з ${countPhrase} піднотатки для <span class="confirm-modal-highlight">"${escapeHtml(parentTitle)}"</span>?`,
+                                confirmText: 'Затисніть для переміщення',
+                                type: 'info',
+                                onConfirm: () => {
+                                    if (window.App.workspaceSelectionActions && window.App.workspaceSelectionActions.moveNotesToParent) {
+                                        window.App.workspaceSelectionActions.moveNotesToParent(notesToMoveIds, targetParentId);
+                                    } else {
+                                        notesToMoveIds.forEach(id => noteManager.moveNoteToParent(id, targetParentId));
+                                    }
+                                }
+                            });
+                        } else {
+                            if (window.App.workspaceSelectionActions && window.App.workspaceSelectionActions.moveNotesToParent) {
+                                window.App.workspaceSelectionActions.moveNotesToParent(notesToMoveIds, targetParentId);
+                            } else {
+                                notesToMoveIds.forEach(id => noteManager.moveNoteToParent(id, targetParentId));
+                            }
+                        }
+                        return;
+                    }
+
+                    // Звичайне одиночне вкладення (коли перетягується 1 нотатка)
+                    const draggedNote = noteManager.getNoteById(draggedNoteId);
+                    const draggedTitle = (draggedNote && draggedNote.title.trim()) ? draggedNote.title.trim() : 'Без назви';
 
                     if (confirmModal) {
                         confirmModal.show({
                             title: 'Зробити піднотаткою?',
-                            message: `Ви дійсно хочете зробити нотатку <span class="confirm-modal-highlight">"${draggedTitle}"</span> піднотаткою для <span class="confirm-modal-highlight">"${parentTitle}"</span>?`,
+                            message: `Ви дійсно хочете зробити нотатку <span class="confirm-modal-highlight">"${escapeHtml(draggedTitle)}"</span> піднотаткою для <span class="confirm-modal-highlight">"${escapeHtml(parentTitle)}"</span>?`,
                             confirmText: 'Затисніть для переміщення',
                             type: 'info',
                             onConfirm: () => {
+                                if (state && state.selectedWorkspaceNoteIds && state.selectedWorkspaceNoteIds.has(draggedNoteId)) {
+                                    if (window.App.workspaceSelectionActions && window.App.workspaceSelectionActions.moveNotesToParent) {
+                                        window.App.workspaceSelectionActions.moveNotesToParent([draggedNoteId], targetParentId);
+                                        return;
+                                    }
+                                }
                                 noteManager.moveNoteToParent(draggedNoteId, targetParentId);
                             }
                         });
                     } else {
+                        if (state && state.selectedWorkspaceNoteIds && state.selectedWorkspaceNoteIds.has(draggedNoteId)) {
+                            if (window.App.workspaceSelectionActions && window.App.workspaceSelectionActions.moveNotesToParent) {
+                                window.App.workspaceSelectionActions.moveNotesToParent([draggedNoteId], targetParentId);
+                                return;
+                            }
+                        }
                         noteManager.moveNoteToParent(draggedNoteId, targetParentId);
                     }
                     return;
@@ -418,8 +526,6 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                 if (colTarget && noteManager) {
                     const newParentId = colTarget.dataset.parentId === 'root' ? null : colTarget.dataset.parentId;
                     if (newParentId !== originalParentId) {
-                        const draggedNote = noteManager.getNoteById(draggedNoteId);
-                        const draggedTitle = (draggedNote && draggedNote.title.trim()) ? draggedNote.title.trim() : 'Без назви';
                         const currentActiveBoard = boardManager ? boardManager.getActiveBoard() : null;
                         const boardName = currentActiveBoard ? currentActiveBoard.name : 'блокнот';
 
@@ -429,17 +535,69 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                             targetName = `колонку піднотаток для "${pNote ? (pNote.title.trim() || 'Без назви') : ''}"`;
                         }
 
+                        if (isMultiSelectDrag && notesToMoveIds.length > 1) {
+                            const count = notesToMoveIds.length;
+                            let countPhrase = `${count} виділених нотаток`;
+                            if (count === 2) {
+                                countPhrase = 'цих 2 виділених нотаток';
+                            } else if (count === 3 || count === 4) {
+                                countPhrase = `цих ${count} виділених нотаток`;
+                            } else if (count % 10 === 1 && count % 100 !== 11) {
+                                countPhrase = `${count} виділену нотатку`;
+                            } else if ([2, 3, 4].includes(count % 10) && ![12, 13, 14].includes(count % 100)) {
+                                countPhrase = `${count} виділені нотатки`;
+                            }
+
+                            if (confirmModal) {
+                                confirmModal.show({
+                                    title: newParentId === null ? 'Перемістити в головні нотатки?' : 'Перемістити в іншу колонку?',
+                                    message: `Ви дійсно хочете перемістити ${countPhrase} в ${targetName}?`,
+                                    confirmText: 'Затисніть для переміщення',
+                                    type: 'info',
+                                    onConfirm: () => {
+                                        if (window.App.workspaceSelectionActions && window.App.workspaceSelectionActions.moveNotesToParent) {
+                                            window.App.workspaceSelectionActions.moveNotesToParent(notesToMoveIds, newParentId);
+                                        } else {
+                                            notesToMoveIds.forEach(id => noteManager.moveNoteToParent(id, newParentId));
+                                        }
+                                    }
+                                });
+                            } else {
+                                if (window.App.workspaceSelectionActions && window.App.workspaceSelectionActions.moveNotesToParent) {
+                                    window.App.workspaceSelectionActions.moveNotesToParent(notesToMoveIds, newParentId);
+                                } else {
+                                    notesToMoveIds.forEach(id => noteManager.moveNoteToParent(id, newParentId));
+                                }
+                            }
+                            return;
+                        }
+
+                        const draggedNote = noteManager.getNoteById(draggedNoteId);
+                        const draggedTitle = (draggedNote && draggedNote.title.trim()) ? draggedNote.title.trim() : 'Без назви';
+
                         if (confirmModal) {
                             confirmModal.show({
                                 title: newParentId === null ? 'Перемістити в головні нотатки?' : 'Перемістити в іншу колонку?',
-                                message: `Ви дійсно хочете перемістити <span class="confirm-modal-highlight">"${draggedTitle}"</span> в ${targetName}?`,
+                                message: `Ви дійсно хочете перемістити <span class="confirm-modal-highlight">"${escapeHtml(draggedTitle)}"</span> в ${targetName}?`,
                                 confirmText: 'Затисніть для переміщення',
                                 type: 'info',
                                 onConfirm: () => {
+                                    if (state && state.selectedWorkspaceNoteIds && state.selectedWorkspaceNoteIds.has(draggedNoteId)) {
+                                        if (window.App.workspaceSelectionActions && window.App.workspaceSelectionActions.moveNotesToParent) {
+                                            window.App.workspaceSelectionActions.moveNotesToParent([draggedNoteId], newParentId);
+                                            return;
+                                        }
+                                    }
                                     noteManager.moveNoteToParent(draggedNoteId, newParentId);
                                 }
                             });
                         } else {
+                            if (state && state.selectedWorkspaceNoteIds && state.selectedWorkspaceNoteIds.has(draggedNoteId)) {
+                                if (window.App.workspaceSelectionActions && window.App.workspaceSelectionActions.moveNotesToParent) {
+                                    window.App.workspaceSelectionActions.moveNotesToParent([draggedNoteId], newParentId);
+                                    return;
+                                }
+                            }
                             noteManager.moveNoteToParent(draggedNoteId, newParentId);
                         }
                         return;

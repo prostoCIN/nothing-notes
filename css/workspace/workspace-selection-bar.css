@@ -348,278 +348,38 @@
     min-width: 220px;
 }
 
-/* ==========================================================================
-   Модальне вікно перенесення нотаток в піднотатки (Move Notes Modal)
-   ========================================================================== */
-.move-notes-modal-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.65);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+/* Візуальні ефекти перетягування групи виділених нотаток */
+.note-sticker.is-group-drag-partner {
+    opacity: 0.45 !important;
+    transform: scale(0.97) !important;
+    transition: opacity 0.2s ease, transform 0.2s ease !important;
+}
+
+.sticker-drag-count-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #10b981;
+    color: #062419;
+    font-weight: 800;
+    font-size: 12px;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 6px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 100000;
-    animation: moveNotesFadeIn 0.2s ease;
-    padding: 20px;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.45), 0 0 0 2px rgba(255, 255, 255, 0.9);
+    z-index: 1000000;
+    pointer-events: none;
     box-sizing: border-box;
+    animation: badgePop 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes moveNotesFadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes moveNotesPop {
-    from { transform: scale(0.94); opacity: 0; }
+@keyframes badgePop {
+    from { transform: scale(0.6); opacity: 0; }
     to { transform: scale(1); opacity: 1; }
 }
 
-.move-notes-modal-card {
-    background: var(--modal-bg, rgba(20, 20, 24, 0.92));
-    backdrop-filter: var(--glass-blur, blur(24px));
-    -webkit-backdrop-filter: var(--glass-blur, blur(24px));
-    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.12));
-    box-shadow: var(--glass-card-shadow, 0 24px 60px rgba(0, 0, 0, 0.6));
-    border-radius: 20px;
-    width: 100%;
-    max-width: 480px;
-    max-height: 85vh;
-    padding: 22px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    color: var(--text-main, #ffffff);
-    animation: moveNotesPop 0.24s cubic-bezier(0.16, 1, 0.3, 1);
-    position: relative;
-    user-select: none;
-}
-
-.move-notes-modal-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
-}
-
-.move-notes-header-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    min-width: 0;
-}
-
-.move-notes-header-icon {
-    width: 38px;
-    height: 38px;
-    border-radius: 12px;
-    background: rgba(16, 185, 129, 0.15);
-    border: 1px solid rgba(16, 185, 129, 0.3);
-    color: #34d399;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.move-notes-modal-title {
-    margin: 0;
-    font-size: var(--font-md, 16px);
-    font-weight: 700;
-    color: var(--text-main, #ffffff);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    line-height: 1.25;
-    white-space: nowrap;
-}
-
-.move-notes-count-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2px 8px;
-    font-size: 11px;
-    font-weight: 700;
-    border-radius: 10px;
-    background: rgba(16, 185, 129, 0.2);
-    color: #34d399;
-    border: 1px solid rgba(16, 185, 129, 0.35);
-}
-
-.move-notes-modal-subtitle {
-    margin: 4px 0 0 0;
-    font-size: var(--font-xs, 12px);
-    color: var(--text-muted, rgba(255, 255, 255, 0.55));
-    line-height: 1.35;
-}
-
-.move-notes-close-btn {
-    background: rgba(255, 255, 255, 0.08);
-    border: none;
-    color: var(--text-muted, rgba(255, 255, 255, 0.6));
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 13px;
-    transition: all var(--transition-fast, 0.15s ease);
-    flex-shrink: 0;
-}
-
-.move-notes-close-btn:hover {
-    background: rgba(255, 255, 255, 0.18);
-    color: var(--text-main, #ffffff);
-    transform: scale(0.95);
-}
-
-.move-notes-search-wrap {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-
-.move-notes-search-icon {
-    position: absolute;
-    left: 12px;
-    color: var(--text-muted, rgba(255, 255, 255, 0.45));
-    pointer-events: none;
-}
-
-.move-notes-search-input {
-    width: 100%;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-    padding: 8px 12px 8px 34px;
-    font-size: var(--font-sm, 13px);
-    color: var(--text-main, #ffffff);
-    font-family: inherit;
-    outline: none;
-    box-sizing: border-box;
-    transition: border-color var(--transition-fast, 0.15s ease), background var(--transition-fast, 0.15s ease);
-}
-
-.move-notes-search-input:focus {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: #34d399;
-}
-
-.move-notes-list-container {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    max-height: 360px;
-    overflow-y: auto;
-    padding-right: 4px;
-    margin-right: -4px;
-}
-
-.move-notes-list-container::-webkit-scrollbar {
-    width: 5px;
-}
-
-.move-notes-list-container::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 4px;
-}
-
-.move-notes-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 12px;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.035);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    cursor: pointer;
-    transition: all var(--transition-fast, 0.15s ease);
-}
-
-.move-notes-item:hover {
-    background: rgba(255, 255, 255, 0.09);
-    border-color: rgba(255, 255, 255, 0.16);
-    transform: translateX(2px);
-}
-
-.move-notes-item.is-root-option {
-    background: rgba(16, 185, 129, 0.08);
-    border: 1px dashed rgba(16, 185, 129, 0.35);
-    margin-bottom: 4px;
-}
-
-.move-notes-item.is-root-option:hover {
-    background: rgba(16, 185, 129, 0.15);
-    border-color: rgba(16, 185, 129, 0.5);
-}
-
-.move-notes-item-icon {
-    font-size: 18px;
-    flex-shrink: 0;
-    line-height: 1;
-}
-
-.move-notes-item-info {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    flex: 1;
-    min-width: 0;
-}
-
-.move-notes-item-title {
-    font-size: var(--font-sm, 13px);
-    font-weight: 600;
-    color: var(--text-main, #ffffff);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.move-notes-item-meta {
-    font-size: 11px;
-    color: var(--text-muted, rgba(255, 255, 255, 0.5));
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.move-notes-item-action {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-shrink: 0;
-}
-
-.move-notes-item-badge {
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    padding: 2px 6px;
-    border-radius: 6px;
-    background: rgba(16, 185, 129, 0.2);
-    color: #34d399;
-}
-
-.move-notes-item-arrow {
-    color: var(--text-muted, rgba(255, 255, 255, 0.35));
-    transition: transform var(--transition-fast, 0.15s ease), color var(--transition-fast, 0.15s ease);
-}
-
-.move-notes-item:hover .move-notes-item-arrow {
-    color: var(--text-main, #ffffff);
-    transform: translateX(2px);
-}
-
-.move-notes-empty {
-    text-align: center;
-    padding: 28px 16px;
-    font-size: var(--font-sm, 13px);
-    color: var(--text-muted, rgba(255, 255, 255, 0.5));
-}
 
