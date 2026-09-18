@@ -1040,15 +1040,36 @@ html[data-theme="light"] .selection-bar-divider {
     color: rgba(0, 0, 0, 0.15) !important;
 }
 
-html[data-theme="light"] .selection-action-btn {
+html[data-theme="light"] .selection-action-btn:not(.selection-action-delete-btn) {
     background: rgba(0, 0, 0, 0.04) !important;
     border: 1px solid rgba(0, 0, 0, 0.08) !important;
     color: #18181b !important;
 }
 
-html[data-theme="light"] .selection-action-btn:hover:not(:disabled) {
+html[data-theme="light"] .selection-action-btn:not(.selection-action-delete-btn):hover:not(:disabled) {
     background: rgba(0, 0, 0, 0.08) !important;
     border-color: rgba(0, 0, 0, 0.15) !important;
+}
+
+html[data-theme="light"] .selection-action-delete-btn {
+    background: rgba(239, 68, 68, 0.12) !important;
+    border: 1px solid rgba(239, 68, 68, 0.25) !important;
+    color: #ef4444 !important;
+}
+
+html[data-theme="light"] .selection-action-delete-btn svg {
+    stroke: #ef4444 !important;
+}
+
+html[data-theme="light"] .selection-action-delete-btn:hover:not(:disabled) {
+    background: #ef4444 !important;
+    border-color: #ef4444 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4) !important;
+}
+
+html[data-theme="light"] .selection-action-delete-btn:hover:not(:disabled) svg {
+    stroke: #ffffff !important;
 }
 
 html[data-theme="light"] .selection-bar-icon-btn {
