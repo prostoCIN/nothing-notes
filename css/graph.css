@@ -1226,7 +1226,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
+    gap: 12px;
     padding: 14px 20px;
     border-top: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
     background: rgba(0, 0, 0, 0.2);
@@ -1235,12 +1235,17 @@
 .graph-export-footer-hint {
     font-size: 11px;
     color: var(--text-muted, #777);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .graph-export-actions {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    flex-shrink: 0;
 }
 
 .graph-export-copy-btn {
@@ -1248,7 +1253,7 @@
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 8px;
     color: var(--text-main, #ffffff);
-    padding: 7px 14px;
+    padding: 8px 14px;
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
@@ -1256,6 +1261,8 @@
     display: flex;
     align-items: center;
     gap: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
     transition: all 0.15s ease;
 }
 
@@ -1268,7 +1275,7 @@
     border: 1px solid #10b981;
     border-radius: 8px;
     color: #ffffff;
-    padding: 7px 14px;
+    padding: 8px 16px;
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
@@ -1276,6 +1283,8 @@
     display: flex;
     align-items: center;
     gap: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
     transition: all 0.15s ease;
     box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
 }
@@ -1283,6 +1292,38 @@
 .graph-export-download-btn:hover {
     background: #059669;
     border-color: #059669;
+}
+
+@media (max-width: 600px) {
+    .graph-export-modal-backdrop {
+        padding: 12px;
+    }
+
+    .graph-export-modal-footer {
+        flex-direction: column-reverse;
+        align-items: stretch;
+        gap: 10px;
+        padding: 12px 16px;
+    }
+
+    .graph-export-actions {
+        width: 100%;
+        display: flex;
+        gap: 8px;
+    }
+
+    .graph-export-copy-btn,
+    .graph-export-download-btn {
+        flex: 1;
+        justify-content: center;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .graph-export-footer-hint {
+        white-space: normal;
+        text-align: center;
+    }
 }
 
 /* Випадаюче вікно швидкого вибору цільової нотатки */
