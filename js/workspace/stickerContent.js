@@ -131,14 +131,6 @@ window.App = window.App || {};
                 ancestorWrappers.push({ type: 'mark', colorClass: markerColor });
             } else if (tagName === 'b' || tagName === 'strong' || ancestor.style.fontWeight === 'bold' || parseInt(ancestor.style.fontWeight, 10) >= 600) {
                 ancestorWrappers.push({ type: 'b' });
-            } else if (ancestor.style && ancestor.style.fontSize) {
-                ancestorWrappers.push({ type: 'fontSize', fontSize: ancestor.style.fontSize });
-            } else if (tagName === 'i' || tagName === 'em' || ancestor.style.fontStyle === 'italic') {
-                ancestorWrappers.push({ type: 'i' });
-            } else if (tagName === 'u' || ancestor.style.textDecoration?.includes('underline')) {
-                ancestorWrappers.push({ type: 'u' });
-            } else if (tagName === 's' || tagName === 'strike' || ancestor.style.textDecoration?.includes('line-through')) {
-                ancestorWrappers.push({ type: 's' });
             }
 
             ancestor = ancestor.parentElement;
@@ -170,15 +162,6 @@ window.App = window.App || {};
             } else if (wrapper.type === 'b') {
                 wrapperEl = document.createElement('b');
                 wrapperEl.style.fontWeight = 'bold';
-            } else if (wrapper.type === 'fontSize') {
-                wrapperEl = document.createElement('span');
-                wrapperEl.style.fontSize = wrapper.fontSize;
-            } else if (wrapper.type === 'i') {
-                wrapperEl = document.createElement('i');
-            } else if (wrapper.type === 'u') {
-                wrapperEl = document.createElement('u');
-            } else if (wrapper.type === 's') {
-                wrapperEl = document.createElement('s');
             }
 
             if (wrapperEl) {
@@ -340,11 +323,6 @@ window.App = window.App || {};
                         node.style.fontWeight === 'bold' || 
                         parseInt(node.style.fontWeight, 10) >= 600) && node.style.fontWeight !== 'normal' && node.style.fontWeight !== '400';
 
-        const fontSize = !isTitleNode && node.style ? node.style.fontSize : null;
-        const isItalic = tagName === 'i' || tagName === 'em' || (node.style && node.style.fontStyle === 'italic');
-        const isUnderline = tagName === 'u' || (node.style && node.style.textDecoration?.includes('underline'));
-        const isStrike = tagName === 's' || tagName === 'strike' || (node.style && node.style.textDecoration?.includes('line-through'));
-
         const childFrag = document.createDocumentFragment();
         for (let child = node.firstChild; child; child = child.nextSibling) {
             const sanitizedChild = sanitizePastedNode(child);
@@ -356,31 +334,6 @@ window.App = window.App || {};
         const isBlock = ['p', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li'].includes(tagName);
 
         let currentWrapper = childFrag;
-
-        if (fontSize) {
-            const span = document.createElement('span');
-            span.style.fontSize = fontSize;
-            span.appendChild(currentWrapper);
-            currentWrapper = span;
-        }
-
-        if (isItalic) {
-            const it = document.createElement('i');
-            it.appendChild(currentWrapper);
-            currentWrapper = it;
-        }
-
-        if (isUnderline) {
-            const u = document.createElement('u');
-            u.appendChild(currentWrapper);
-            currentWrapper = u;
-        }
-
-        if (isStrike) {
-            const s = document.createElement('s');
-            s.appendChild(currentWrapper);
-            currentWrapper = s;
-        }
 
         if (isBold) {
             const b = document.createElement('b');
@@ -434,6 +387,18 @@ window.App = window.App || {};
                 parent.insertBefore(innerBold.firstChild, innerBold);
             }
             parent.removeChild(innerBold);
+        });
+
+        // Видаляємо сторонні форматувальні теги (i, em, u, s, strike, font, span без класу note-marker), залишаючи їх чистий текст
+        const foreignElements = container.querySelectorAll('i, em, u, s, strike, font, span:not(.note-marker)');
+        foreignElements.forEach(el => {
+            const parent = el.parentNode;
+            if (parent) {
+                while (el.firstChild) {
+                    parent.insertBefore(el.firstChild, el);
+                }
+                parent.removeChild(el);
+            }
         });
 
         // Видаляємо порожні форматувальні теги без тексту
@@ -559,14 +524,24 @@ window.App = window.App || {};
                 return '';
             }
 
-            const hasFormatting = body.querySelector('mark, b, strong, i, em, u, s, strike, span[style], font[style], .note-marker, [class*="hl-"], [style*="background"], [style*="font-weight"], [style*="font-size"], [style*="text-decoration"]') !== null ||
-                (body.firstElementChild && (
-                    body.firstElementChild.style.backgroundColor || 
-                    body.firstElementChild.style.fontWeight || 
-                    body.firstElementChild.style.fontSize
-                ));
+            // Перевіряємо, чи є в HTML РЕАЛЬНЕ підтримуване нотатками форматування:
+            // 1. Маркери (тег mark, клас note-marker, клас hl-* або фоновий колір, що точно відповідає маркеру)
+            const hasMarkers = body.querySelector('mark, .note-marker, [class*="hl-"]') !== null ||
+                Array.from(body.querySelectorAll('*')).some(el => {
+                    const bg = el.style && el.style.backgroundColor;
+                    return bg && matchColorToMarkerClass(bg) !== null;
+                });
 
-            if (!hasFormatting) return '';
+            // 2. Жирний шрифт (тег b, strong, або явний font-weight bold/700/800)
+            const hasBold = body.querySelector('b, strong') !== null ||
+                Array.from(body.querySelectorAll('*')).some(el => {
+                    const fw = el.style && el.style.fontWeight;
+                    return fw === 'bold' || parseInt(fw, 10) >= 600;
+                });
+
+            // Якщо немає ані маркерів, ані жирного шрифту — не парсимо сторонні span/div теги зі сміттям,
+            // а повертаємо порожній рядок, щоб insertTextAtCaret вставив чистий текст!
+            if (!hasMarkers && !hasBold) return '';
 
             const frag = document.createDocumentFragment();
             for (let child = body.firstChild; child; child = child.nextSibling) {
@@ -630,6 +605,32 @@ window.App = window.App || {};
                 span.parentNode.replaceChild(mark, span);
                 changed = true;
             }
+        });
+
+        // Очищаємо залишки чужих сторонніх тегів (i, em, u, s, strike, font, span без класу note-marker)
+        const foreignElements = contentDiv.querySelectorAll('span:not(.note-marker), font, i, em, u, s, strike');
+        foreignElements.forEach(el => {
+            const parent = el.parentNode;
+            if (parent) {
+                while (el.firstChild) {
+                    parent.insertBefore(el.firstChild, el);
+                }
+                parent.removeChild(el);
+                changed = true;
+            }
+        });
+
+        // Очищаємо залишки чужих інлайн-стилів (розмір шрифту, курсив, товщина шрифту тощо)
+        const styledElements = contentDiv.querySelectorAll('[style*="font-size"], [style*="font-style"], [style*="font-family"]');
+        styledElements.forEach(el => {
+            if (el.style.fontSize) { el.style.fontSize = ''; changed = true; }
+            if (el.style.fontStyle) { el.style.fontStyle = ''; changed = true; }
+            if (el.style.fontFamily) { el.style.fontFamily = ''; changed = true; }
+            if (el.style.fontWeight && el.style.fontWeight !== 'bold' && parseInt(el.style.fontWeight, 10) < 600) {
+                el.style.fontWeight = '';
+                changed = true;
+            }
+            if (el.getAttribute('style') === '') el.removeAttribute('style');
         });
 
         if (changed) {
