@@ -207,6 +207,8 @@ export const ua = {
         }
     },
     auth: {
+        inCloud: 'У хмарі',
+        accountManagement: 'Керування акаунтами',
         brandSubtitle: 'Увійдіть за допомогою логіну або email, щоб синхронізувати нотатки.',
         registerSubtitle: 'Створіть акаунт для надійної синхронізації ваших нотаток.',
         tabLogin: 'Вхід',

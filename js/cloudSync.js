@@ -1346,14 +1346,24 @@ window.App = window.App || {};
                 const nickname = (user.user_metadata && (user.user_metadata.username || user.user_metadata.nickname || user.user_metadata.display_name)) || user.email.split('@')[0];
                 const initial = nickname.charAt(0).toUpperCase();
 
+                const i18n = window.App?.i18n;
+                const inCloudTitle = i18n ? i18n.t('auth.inCloud') : 'У хмарі';
+                const manageAccountsTitle = i18n ? i18n.t('auth.accountManagement') : 'Керування акаунтами';
+
                 profileCard.innerHTML = `
-                    <div class="user-profile-clickable" id="user-profile-info-click" title="Керування акаунтами">
+                    <div class="user-profile-clickable" id="user-profile-info-click" title="${manageAccountsTitle}">
                         <div class="user-avatar">${initial}</div>
                         <div class="user-info">
-                            <div class="user-email" title="${user.email}">${nickname}</div>
-                            <div class="user-status-badge">У хмарі</div>
+                            <div class="user-name-row">
+                                <span class="user-email" title="${user.email}">${nickname}</span>
+                                <span class="user-cloud-icon" title="${inCloudTitle}">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
+                                    </svg>
+                                </span>
+                            </div>
                         </div>
-                        <div class="user-profile-chevron" title="Керування акаунтами">
+                        <div class="user-profile-chevron" title="${manageAccountsTitle}">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <polyline points="6 9 12 15 18 9"></polyline>
                             </svg>

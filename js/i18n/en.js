@@ -207,6 +207,8 @@ export const en = {
         }
     },
     auth: {
+        inCloud: 'In cloud',
+        accountManagement: 'Manage accounts',
         brandSubtitle: 'Sign in with your username or email to sync notes.',
         registerSubtitle: 'Create an account for reliable cloud sync.',
         tabLogin: 'Sign In',

@@ -129,6 +129,16 @@
 .user-info {
     flex: 1;
     min-width: 0;
+    display: flex;
+    align-items: center;
+}
+
+.user-name-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    max-width: 100%;
 }
 
 .user-email {
@@ -140,10 +150,20 @@
     text-overflow: ellipsis;
 }
 
-.user-status-badge {
-    font-size: 10px;
-    color: #10b981;
-    font-weight: 500;
+.user-cloud-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-color, #10b981);
+    flex-shrink: 0;
+    line-height: 1;
+    filter: drop-shadow(0 1px 3px rgba(16, 185, 129, 0.25));
+}
+
+.user-cloud-icon svg {
+    display: block;
+    width: 14px;
+    height: 14px;
 }
 
 .user-profile-actions {
