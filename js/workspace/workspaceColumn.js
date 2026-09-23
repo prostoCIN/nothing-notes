@@ -78,10 +78,12 @@ window.App = window.App || {};
 
             const totalNoteCount = allColNotes.length;
 
+            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
+
             const badgeSpan = document.createElement('span');
             badgeSpan.className = 'column-count-badge';
             badgeSpan.textContent = totalNoteCount;
-            badgeSpan.title = `Кількість нотаток: ${totalNoteCount}`;
+            badgeSpan.title = t('column.notesCount', { count: totalNoteCount });
 
             // 1. Хедер колонки
             const header = document.createElement('div');
@@ -343,7 +345,7 @@ window.App = window.App || {};
                         const linkBtn = document.createElement('button');
                         linkBtn.type = 'button';
                         linkBtn.className = 'column-breadcrumb-link';
-                        linkBtn.title = `Перейти до: ${anc.title}`;
+                        linkBtn.title = t('column.goTo', { title: anc.title });
 
                         const iconSpan = document.createElement('span');
                         iconSpan.className = 'column-breadcrumb-icon';
@@ -406,7 +408,7 @@ window.App = window.App || {};
             const currentLayout = (state && state.columnLayouts && state.columnLayouts[parentKey]) || 'list';
             const layoutToggleBtn = document.createElement('button');
             layoutToggleBtn.className = `column-layout-toggle-btn ${currentLayout === 'grid' ? 'active' : ''}`;
-            layoutToggleBtn.title = currentLayout === 'grid' ? 'Перемкнути на звичайний список' : 'Перемкнути на сітку в 2 колонки (Pinterest)';
+            layoutToggleBtn.title = currentLayout === 'grid' ? t('column.layoutGridTitle') : t('column.layoutListTitle');
             
             layoutToggleBtn.innerHTML = currentLayout === 'grid' 
                 ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -446,7 +448,7 @@ window.App = window.App || {};
 
             const expandColumnBtn = document.createElement('button');
             expandColumnBtn.className = `column-expand-toggle-btn ${isStretched ? 'active' : ''}`;
-            expandColumnBtn.title = isStretched ? 'Відновити звичайну ширину колонки' : 'Розтягнути колонку на весь екран';
+            expandColumnBtn.title = isStretched ? t('column.fullscreenCollapse') : t('column.fullscreenStretch');
 
             const updateExpandIcon = (btn, stretched) => {
                 btn.innerHTML = stretched
@@ -516,7 +518,7 @@ window.App = window.App || {};
                     if (state) state.stretchedColumnKey = null;
                     columnEl.classList.remove('column-stretched-full');
                     expandColumnBtn.classList.remove('active');
-                    expandColumnBtn.title = 'Розтягнути колонку на весь екран';
+                    expandColumnBtn.title = t('column.fullscreenStretch');
                     updateExpandIcon(expandColumnBtn, false);
                     if (container) {
                         container.classList.remove('has-stretched-column');
@@ -530,14 +532,14 @@ window.App = window.App || {};
                         });
                         container.querySelectorAll('.column-expand-toggle-btn.active').forEach(btn => {
                             btn.classList.remove('active');
-                            btn.title = 'Розтягнути колонку на весь екран';
+                            btn.title = t('column.fullscreenStretch');
                             updateExpandIcon(btn, false);
                         });
                         container.classList.add('has-stretched-column');
                     }
                     columnEl.classList.add('column-stretched-full');
                     expandColumnBtn.classList.add('active');
-                    expandColumnBtn.title = 'Відновити звичайну ширину колонки';
+                    expandColumnBtn.title = t('column.fullscreenCollapse');
                     updateExpandIcon(expandColumnBtn, true);
 
                     // Плавно розширюємо і центруємо розтягнуту колонку
@@ -572,7 +574,7 @@ window.App = window.App || {};
             if (colIndex > 0) {
                 const closeBtn = document.createElement('button');
                 closeBtn.className = 'column-close-btn';
-                closeBtn.title = 'Закрити цю колонку';
+                closeBtn.title = t('column.closeColumn');
                 closeBtn.innerHTML = '×';
                 closeBtn.addEventListener('click', () => {
                     if (onCloseColumn) onCloseColumn(colIndex);

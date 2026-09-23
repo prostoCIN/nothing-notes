@@ -25,7 +25,7 @@ window.App = window.App || {};
             if (options.share) {
                 const shareBtn = document.createElement('button');
                 shareBtn.className = 'sidebar-action-btn share-btn';
-                shareBtn.title = options.share.title || 'Поділитись';
+                shareBtn.title = options.share.title || ((window.App && window.App.i18n) ? window.App.i18n.t('sidebar.actions.share') : 'Поділитись');
                 shareBtn.innerHTML = `
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="18" cy="5" r="3"></circle>
@@ -46,7 +46,7 @@ window.App = window.App || {};
             if (options.edit) {
                 const editBtn = document.createElement('button');
                 editBtn.className = 'sidebar-action-btn edit-btn';
-                editBtn.title = options.edit.title || 'Перейменувати';
+                editBtn.title = options.edit.title || ((window.App && window.App.i18n) ? window.App.i18n.t('sidebar.actions.rename') : 'Перейменувати');
                 editBtn.innerHTML = `
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M12 20h9"></path>
@@ -64,7 +64,7 @@ window.App = window.App || {};
             if (options.delete) {
                 const delBtn = document.createElement('button');
                 delBtn.className = 'sidebar-action-btn delete-btn';
-                delBtn.title = options.delete.title || 'Видалити';
+                delBtn.title = options.delete.title || ((window.App && window.App.i18n) ? window.App.i18n.t('sidebar.actions.delete') : 'Видалити');
                 delBtn.innerHTML = `
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M3 6h18"></path>

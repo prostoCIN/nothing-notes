@@ -33,12 +33,14 @@ window.App = window.App || {};
             const isRoot = colIndex === 0;
             const isReadOnly = !!(currentBoard && currentBoard.isReadOnly) || (state.activeBoardId && state.activeBoardId.startsWith('shared_'));
 
+            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
+
             const menuWrap = document.createElement('div');
             menuWrap.className = 'column-menu-wrap';
 
             const moreBtn = document.createElement('button');
             moreBtn.className = `column-more-btn ${currentColumnFilter.size > 0 ? 'has-active-filter' : ''}`;
-            moreBtn.title = 'Опції колонки';
+            moreBtn.title = t('column.menuTitle');
             moreBtn.innerHTML = `
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
                     <circle cx="12" cy="5" r="2.2"></circle>
@@ -58,7 +60,7 @@ window.App = window.App || {};
                 const headerInfo = document.createElement('div');
                 headerInfo.className = 'column-menu-header-info';
                 const parentNote = !isRoot ? noteManager.getNoteById(parentNoteId) : null;
-                const colTitle = isRoot ? (currentBoard?.name || 'Блокнот') : (parentNote?.title?.trim() || 'Піднотатки');
+                const colTitle = isRoot ? (currentBoard?.name || t('common.defaultBoard')) : (parentNote?.title?.trim() || t('common.untitled'));
                 const colIcon = isRoot ? (currentBoard?.icon || '📁') : (parentNote?.icon || '📄');
                 headerInfo.innerHTML = `
                     <div class="column-menu-header-title">
@@ -76,7 +78,7 @@ window.App = window.App || {};
                 if (!isReadOnly && noteManager) {
                     const addItem = document.createElement('div');
                     addItem.className = 'column-menu-item column-menu-item-create';
-                    const addLabel = isRoot ? 'Створити нотатку' : 'Створити піднотатку';
+                    const addLabel = isRoot ? t('column.createNote') : t('sidebar.notes');
                     addItem.innerHTML = `
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="column-menu-create-icon">
                             <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -105,7 +107,7 @@ window.App = window.App || {};
                             <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
                             <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
                         </svg>
-                        <span>${isRoot ? 'Поділитись блокнотом' : 'Поділитись цією гілкою'}</span>
+                        <span>${isRoot ? t('share.modalTitle') : t('common.share')}</span>
                     `;
                     shareItem.addEventListener('click', (e) => {
                         e.stopPropagation();
@@ -132,7 +134,7 @@ window.App = window.App || {};
                             <path d="M12 20h9"></path>
                             <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
                         </svg>
-                        <span>Перейменувати</span>
+                        <span>${t('common.rename')}</span>
                     `;
                     renameItem.addEventListener('click', (e) => {
                         e.stopPropagation();
@@ -161,13 +163,13 @@ window.App = window.App || {};
                 const filterSectionTitle = document.createElement('div');
                 filterSectionTitle.className = 'column-menu-section-header';
                 filterSectionTitle.innerHTML = `
-                    <span>Фільтр за тегами ${currentColumnFilter.size > 0 ? `(${currentColumnFilter.size})` : ''}</span>
+                    <span>${t('column.filterByTags')} ${currentColumnFilter.size > 0 ? `(${currentColumnFilter.size})` : ''}</span>
                 `;
 
                 if (currentColumnFilter.size > 0) {
                     const clearBtn = document.createElement('button');
                     clearBtn.className = 'column-menu-clear-filter-btn';
-                    clearBtn.textContent = 'Скинути';
+                    clearBtn.textContent = t('column.clearFilter');
                     clearBtn.addEventListener('click', (e) => {
                         e.stopPropagation();
                         state.activeTagFilters.delete(parentKey);

@@ -43,10 +43,10 @@ window.App = window.App || {};
                 Ви впевнені, що хочете виконати цю дію?
             </div>
             <div class="confirm-modal-actions">
-                <button class="modal-cancel-btn" id="confirm-modal-cancel">Скасувати</button>
+                <button class="modal-cancel-btn" id="confirm-modal-cancel" data-i18n="common.cancel">Скасувати</button>
                 <button class="hold-delete-btn" id="confirm-modal-hold-delete">
                     <span class="hold-btn-progress"></span>
-                    <span class="hold-btn-text">Затисніть для підтвердження</span>
+                    <span class="hold-btn-text" data-i18n="common.holdToConfirm">Затисніть для видалення</span>
                 </button>
             </div>
         `;
@@ -144,9 +144,12 @@ window.App = window.App || {};
         show({ title, message, confirmText, type = 'danger', onConfirm, onCancel }) {
             createModalDOM();
 
-            titleEl.textContent = title || 'Підтвердження дії';
-            descEl.innerHTML = message || 'Ви впевнені, що хочете продовжити?';
-            holdBtnText.textContent = confirmText || (type === 'danger' ? 'Затисніть для видалення' : 'Затисніть для підтвердження');
+            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
+
+            titleEl.textContent = title || t('common.confirm');
+            descEl.innerHTML = message || '';
+            cancelBtn.textContent = t('common.cancel');
+            holdBtnText.textContent = confirmText || (type === 'danger' ? t('common.holdToConfirm') : t('common.confirm'));
             onConfirmCallback = onConfirm;
             onCancelCallback = onCancel;
 

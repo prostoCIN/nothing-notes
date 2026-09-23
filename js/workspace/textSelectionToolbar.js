@@ -71,7 +71,7 @@ window.App = window.App || {};
                             <circle cx="11" cy="11" r="8"></circle>
                             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                         </svg>
-                        <span>Всі</span>
+                        <span data-i18n="common.all">Всі</span>
                     </button>
                     <div class="text-sel-tooltip">
                         Застосувати обраний колір маркера до <b>всіх однакових слів</b> у цій нотатці
@@ -81,13 +81,17 @@ window.App = window.App || {};
                 <div class="text-sel-divider"></div>
 
                 <!-- 4. Кнопка повного ресету (скидання всіх стилів до чистого тексту) -->
-                <button class="text-sel-btn text-sel-reset-all-btn" id="text-sel-reset-btn" title="Скинути ВСЕ форматування виділеного тексту">
+                <button class="text-sel-btn text-sel-reset-all-btn" id="text-sel-reset-btn" title="Скинути ВСЕ форматування виділеного тексту" data-i18n-title="textToolbar.clearFormat">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="1 4 1 10 7 10"></polyline>
                         <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
                     </svg>
                 </button>
             `;
+
+            if (window.App && window.App.i18n && window.App.i18n.updateDOM) {
+                window.App.i18n.updateDOM(toolbarEl);
+            }
 
             document.body.appendChild(toolbarEl);
 

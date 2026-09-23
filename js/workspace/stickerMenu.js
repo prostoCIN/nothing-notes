@@ -43,9 +43,11 @@ window.App = window.App || {};
     function buildColorPalette(note, card, menuDropdown, onClose) {
         const noteManager = window.App.noteManager;
 
+        const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
+
         const colorTitle = document.createElement('div');
         colorTitle.className = 'sticker-menu-section-title';
-        colorTitle.textContent = 'Колір стікера';
+        colorTitle.textContent = t('sticker.changeColor');
 
         const colorPalette = document.createElement('div');
         colorPalette.className = 'sticker-color-palette';
@@ -190,6 +192,7 @@ window.App = window.App || {};
     function appendMenuItems(menuDropdown, note, card, colIndex, isChainOpen, onClose) {
         const noteManager = window.App.noteManager;
         const workspaceView = window.App.workspaceView;
+        const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
 
         // 1. Пункт "Додати піднотатку"
         const addSubnoteItem = document.createElement('div');
@@ -199,7 +202,7 @@ window.App = window.App || {};
                 <line x1="12" y1="5" x2="12" y2="19"></line>
                 <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
-            <span>Додати піднотатку</span>
+            <span>${t('sidebar.notes')}</span>
         `;
         addSubnoteItem.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -223,7 +226,7 @@ window.App = window.App || {};
                 <circle cx="9" cy="9" r="2"></circle>
                 <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path>
             </svg>
-            <span>Додати фото</span>
+            <span>${t('sticker.attachImage')}</span>
         `;
 
         const fileInput = document.createElement('input');
@@ -260,7 +263,7 @@ window.App = window.App || {};
                 <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
                 <line x1="7" y1="7" x2="7.01" y2="7"></line>
             </svg>
-            <span>Додати тег</span>
+            <span>${t('sticker.addTag')}</span>
         `;
         addTagMenuItem.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -300,7 +303,7 @@ window.App = window.App || {};
                 <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
                 <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
             </svg>
-            <span>Поділитись нотаткою</span>
+            <span>${t('common.share')}</span>
         `;
         shareItem.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -321,7 +324,7 @@ window.App = window.App || {};
                 <polyline points="7 10 12 15 17 10"></polyline>
                 <line x1="12" y1="15" x2="12" y2="3"></line>
             </svg>
-            <span>Експорт нотатки (.md)</span>
+            <span>${t('common.share')} (.md)</span>
         `;
         exportItem.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -341,7 +344,7 @@ window.App = window.App || {};
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
             </svg>
-            <span>Дублювати нотатку</span>
+            <span>${t('sticker.duplicate')}</span>
         `;
         duplicateItem.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -361,7 +364,7 @@ window.App = window.App || {};
                 <path d="M3 6h18"></path>
                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
             </svg>
-            <span>Видалити нотатку</span>
+            <span>${t('sticker.deleteNote')}</span>
         `;
         deleteItem.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -385,7 +388,7 @@ window.App = window.App || {};
                     <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
                     <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
                 </svg>
-                <span>${isChainOpen ? 'Закрити' : 'Піднотатки'}</span>
+                <span>${isChainOpen ? t('common.close') : t('sidebar.notes')}</span>
                 <span class="menu-item-badge">${childCount}</span>
             `;
             viewSubnotesItem.addEventListener('click', (e) => {

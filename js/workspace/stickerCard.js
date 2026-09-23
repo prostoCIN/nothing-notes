@@ -79,7 +79,8 @@ window.App = window.App || {};
             // Смужка перфорації з дірочками по лівому краю (ручка перетягування)
             const perforationHandle = document.createElement('div');
             perforationHandle.className = 'sticker-perforation-handle';
-            perforationHandle.title = 'Перетягніть для зміни порядку';
+            const i18n = window.App.i18n;
+            perforationHandle.title = i18n ? i18n.t('sticker.dragHandle') : 'Перетягніть для зміни порядку';
             card.appendChild(perforationHandle);
 
             const isChainOpen = state && state.activeChain && state.activeChain[colIndex + 1] === note.id;

@@ -44,8 +44,8 @@ window.App = window.App || {};
             titleDiv.contentEditable = isReadOnly ? 'false' : 'true';
             titleDiv.spellcheck = false;
             titleDiv.autocapitalize = 'sentences';
-            titleDiv.autocomplete = 'off';
-            titleDiv.dataset.placeholder = isReadOnly ? '' : 'Заголовок...';
+            const i18n = window.App.i18n;
+            titleDiv.dataset.placeholder = isReadOnly ? '' : (i18n ? i18n.t('sticker.titlePlaceholder') : 'Заголовок...');
             titleDiv.innerText = note.title || '';
 
             function updateTitlePlaceholder() {
@@ -286,7 +286,7 @@ window.App = window.App || {};
                 // Ручка перетягування (Drag Handle)
                 dragHandle = document.createElement('div');
                 dragHandle.className = 'sticker-drag-handle';
-                dragHandle.title = 'Перетягніть для зміни порядку або між колонками';
+                dragHandle.title = i18n ? i18n.t('sticker.dragHandle') : 'Перетягніть для зміни порядку або між колонками';
                 dragHandle.innerHTML = `
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                         <circle cx="8" cy="4" r="2"></circle>
@@ -301,7 +301,7 @@ window.App = window.App || {};
                 // Кнопка швидкого видалення
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'sticker-delete-btn';
-                deleteBtn.title = 'Видалити нотатку';
+                deleteBtn.title = i18n ? i18n.t('sticker.deleteBtn') : 'Видалити нотатку';
                 deleteBtn.innerHTML = `
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M3 6h18"></path>

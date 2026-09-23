@@ -36,7 +36,7 @@
                 <img src="img/Logo.svg" alt="NothingNotes Logo" class="welcome-brand-logo">
                 <span class="welcome-brand-title">Nothing<span class="brand-title-accent">Notes</span></span>
             </div>
-            <p>Ваш персональний простір для думок, ідей та нотаток з синхронізацією між усіма пристроями.</p>
+            <p data-i18n="welcome.subtitle">Ваш персональний простір для думок, ідей та нотаток з синхронізацією між усіма пристроями.</p>
             
             <div class="welcome-actions">
                 <!-- Головний варіант: Увійти або зареєструватися -->
@@ -46,11 +46,11 @@
                         <polyline points="10 17 15 12 10 7"></polyline>
                         <line x1="15" y1="12" x2="3" y2="12"></line>
                     </svg>
-                    <span>Увійти / Зареєструватися</span>
+                    <span data-i18n="welcome.loginBtn">Увійти / Зареєструватися</span>
                 </button>
 
                 <div class="welcome-auth-divider">
-                    <span>або</span>
+                    <span data-i18n="common.or">або</span>
                 </div>
 
                 <!-- Другий варіант: Продовжити без збереження в хмарі -->
@@ -59,7 +59,7 @@
                         <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path>
                         <line x1="1" y1="1" x2="23" y2="23"></line>
                     </svg>
-                    <span>Продовжити без збереження в хмарі</span>
+                    <span data-i18n="welcome.guestBtn">Продовжити без збереження в хмарі</span>
                 </button>
             </div>
         </div>
@@ -76,7 +76,7 @@
             <div class="sidebar-brand">
                 <img src="img/Logo.svg" alt="NothingNotes Logo" class="sidebar-brand-logo">
                 <span class="sidebar-brand-title">Nothing<span class="brand-title-accent">Notes</span></span>
-                <button id="sidebar-close-btn" class="sidebar-close-btn" title="Закрити меню">✕</button>
+                <button id="sidebar-close-btn" class="sidebar-close-btn" title="Закрити меню" data-i18n-title="sidebar.closeMenu">✕</button>
             </div>
 
             <!-- Секція Блокнотів -->
@@ -87,12 +87,12 @@
                             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
                             <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
                         </svg>
-                        <span>Блокноти</span>
+                        <span data-i18n="sidebar.boards">Блокноти</span>
                     </h2>
-                    <button id="sidebar-add-board-btn" class="header-add-btn" title="Створити блокнот">+</button>
+                    <button id="sidebar-add-board-btn" class="header-add-btn" title="Створити блокнот" data-i18n-title="sidebar.createBoard">+</button>
                 </div>
                 <div id="sidebar-new-board-form" class="sidebar-inline-form" style="display: none;">
-                    <input type="text" id="sidebar-new-board-input" placeholder="Назва блокнота..." autocomplete="off">
+                    <input type="text" id="sidebar-new-board-input" placeholder="Назва блокнота..." data-i18n-placeholder="sidebar.boardNamePlaceholder" autocomplete="off">
                 </div>
                 <ul id="sidebar-boards-list" class="sidebar-list boards-list-sidebar">
                     <!-- Список блокнотів -->
@@ -109,7 +109,7 @@
                             <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
                             <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                         </svg>
-                        <span>Спільні для читання</span>
+                        <span data-i18n="sidebar.sharedBoards">Спільні для читання</span>
                     </h2>
                 </div>
                 <ul id="sidebar-shared-boards-list" class="sidebar-list boards-list-sidebar">
@@ -128,9 +128,9 @@
                             <line x1="16" y1="17" x2="8" y2="17"></line>
                             <polyline points="10 9 9 9 8 9"></polyline>
                         </svg>
-                        <span>Нотатки</span>
+                        <span data-i18n="sidebar.notes">Нотатки</span>
                     </h2>
-                    <button id="add-note-btn" class="header-add-btn" title="Додати нотатку">+</button>
+                    <button id="add-note-btn" class="header-add-btn" title="Додати нотатку" data-i18n-title="sidebar.addNote">+</button>
                 </div>
                 <ul id="notes-list" class="sidebar-list notes-list">
                     <!-- Нотатки поточного блокнота -->
@@ -145,9 +145,9 @@
                         <polyline points="10 17 15 12 10 7"></polyline>
                         <line x1="15" y1="12" x2="3" y2="12"></line>
                     </svg>
-                    <span>Увійти / Реєстрація</span>
+                    <span data-i18n="sidebar.loginRegister">Увійти / Реєстрація</span>
                 </button>
-                <button class="sidebar-settings-guest-btn" id="sidebar-settings-btn" title="Налаштування сайту">
+                <button class="sidebar-settings-guest-btn" id="sidebar-settings-btn" title="Налаштування сайту" data-i18n-title="sidebar.siteSettings">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
                         <circle cx="12" cy="12" r="3"></circle>
@@ -161,7 +161,7 @@
             <!-- Фіксований тонкий верхній хедер над колонками (Workspace Top Header) -->
             <header class="workspace-top-header" id="workspace-top-header">
                 <div class="workspace-header-left">
-                    <button id="mobile-menu-btn" class="mobile-menu-btn" title="Меню блокнотів">
+                    <button id="mobile-menu-btn" class="mobile-menu-btn" title="Меню блокнотів" data-i18n-title="workspace.mobileMenu">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="3" y1="12" x2="21" y2="12"></line>
                             <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -175,26 +175,26 @@
                 <div class="workspace-header-right">
                     <!-- 1. Блок історії дій Undo / Redo (доступний і на ПК, і на смартфонах) -->
                     <div class="header-btn-wrap" id="workspace-undo-wrap">
-                        <button class="header-action-icon-btn disabled" id="workspace-undo-btn" disabled title="Скасувати (Ctrl+Z)">
+                        <button class="header-action-icon-btn disabled" id="workspace-undo-btn" disabled title="Скасувати (Ctrl+Z)" data-i18n-title="workspace.undoTitle">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M3 7v6h6"></path>
                                 <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path>
                             </svg>
                         </button>
                         <div class="header-tooltip">
-                            <b>Скасувати</b> (Ctrl+Z)
+                            <b data-i18n="workspace.undoTooltip">Скасувати</b> (Ctrl+Z)
                         </div>
                     </div>
 
                     <div class="header-btn-wrap" id="workspace-redo-wrap">
-                        <button class="header-action-icon-btn disabled" id="workspace-redo-btn" disabled title="Повторити (Ctrl+Y)">
+                        <button class="header-action-icon-btn disabled" id="workspace-redo-btn" disabled title="Повторити (Ctrl+Y)" data-i18n-title="workspace.redoTitle">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M21 7v6h-6"></path>
                                 <path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"></path>
                             </svg>
                         </button>
                         <div class="header-tooltip">
-                            <b>Повторити</b> (Ctrl+Y)
+                            <b data-i18n="workspace.redoTooltip">Повторити</b> (Ctrl+Y)
                         </div>
                     </div>
 
@@ -216,17 +216,17 @@
 
                             <!-- Спливаюча підказка для пензля -->
                             <div class="header-tooltip header-brush-tooltip">
-                                <b>Швидкий маркер</b>: фарбує слова по виділенню (вимкнення — <b>Esc</b>)
+                                <span data-i18n="workspace.brushTooltip"><b>Швидкий маркер</b>: фарбує слова по виділенню (вимкнення — <b>Esc</b>)</span>
                             </div>
 
                             <!-- Випадаюча палітра кольорів пензля -->
                             <div class="header-brush-dropdown" id="workspace-brush-dropdown">
-                                <button class="brush-palette-item active" data-color="hl-green" style="background-color: #bbf7d0;" title="Зелений маркер"></button>
-                                <button class="brush-palette-item" data-color="hl-yellow" style="background-color: #fef08a;" title="Жовтий маркер"></button>
-                                <button class="brush-palette-item" data-color="hl-blue" style="background-color: #bae6fd;" title="Блакитний маркер"></button>
-                                <button class="brush-palette-item" data-color="hl-pink" style="background-color: #fbcfe8;" title="Рожевий маркер"></button>
-                                <button class="brush-palette-item" data-color="hl-orange" style="background-color: #fed7aa;" title="Помаранчевий маркер"></button>
-                                <button class="brush-palette-item" data-color="hl-purple" style="background-color: #e9d5ff;" title="Фіолетовий маркер"></button>
+                                <button class="brush-palette-item active" data-color="hl-green" style="background-color: #bbf7d0;" title="Зелений маркер" data-i18n-title="workspace.brushColors.green"></button>
+                                <button class="brush-palette-item" data-color="hl-yellow" style="background-color: #fef08a;" title="Жовтий маркер" data-i18n-title="workspace.brushColors.yellow"></button>
+                                <button class="brush-palette-item" data-color="hl-blue" style="background-color: #bae6fd;" title="Блакитний маркер" data-i18n-title="workspace.brushColors.blue"></button>
+                                <button class="brush-palette-item" data-color="hl-pink" style="background-color: #fbcfe8;" title="Рожевий маркер" data-i18n-title="workspace.brushColors.pink"></button>
+                                <button class="brush-palette-item" data-color="hl-orange" style="background-color: #fed7aa;" title="Помаранчевий маркер" data-i18n-title="workspace.brushColors.orange"></button>
+                                <button class="brush-palette-item" data-color="hl-purple" style="background-color: #e9d5ff;" title="Фіолетовий маркер" data-i18n-title="workspace.brushColors.purple"></button>
                             </div>
                         </div>
 
@@ -240,7 +240,7 @@
                                 </svg>
                             </button>
                             <div class="header-tooltip">
-                                <b>Швидка гумка</b>: стирає маркери по виділенню (вимкнення — <b>Esc</b>)
+                                <span data-i18n="workspace.eraserTooltip"><b>Швидка гумка</b>: стирає маркери по виділенню (вимкнення — <b>Esc</b>)</span>
                             </div>
                         </div>
 
@@ -255,7 +255,7 @@
                                 </svg>
                             </button>
                             <div class="header-tooltip">
-                                <b>Режим фокусу</b> (без панелей)
+                                <span data-i18n="workspace.zenTooltip"><b>Режим фокусу</b> (без панелей)</span>
                             </div>
                         </div>
 
@@ -264,37 +264,37 @@
 
                     <!-- Швидкий пошук (доступний і на ПК, і на смартфонах) -->
                     <div class="header-search-wrap" id="workspace-search-wrap">
-                        <button class="header-action-icon-btn" id="workspace-search-btn" title="Пошук слів">
+                        <button class="header-action-icon-btn" id="workspace-search-btn" title="Пошук слів" data-i18n-title="workspace.searchTitle">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                 <circle cx="11" cy="11" r="8"></circle>
                                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                             </svg>
                         </button>
                         <div class="header-tooltip">
-                            <b>Пошук на дошці</b> (Ctrl+F)
+                            <b data-i18n="workspace.searchTooltip">Пошук на дошці</b> (Ctrl+F)
                         </div>
                         <div class="header-search-bar" id="workspace-search-bar" style="display: none;">
-                            <input type="text" id="workspace-search-input" placeholder="Знайти слово..." autocomplete="off">
+                            <input type="text" id="workspace-search-input" placeholder="Знайти слово..." data-i18n-placeholder="workspace.searchPlaceholder" autocomplete="off">
                             <span class="header-search-count" id="workspace-search-count" style="display: none;">0/0</span>
                             <div class="header-search-nav-btns" id="workspace-search-nav" style="display: none;">
-                                <button class="header-search-nav-btn" id="workspace-search-prev" title="Попередній збіг (Shift+Enter або ↑)">
+                                <button class="header-search-nav-btn" id="workspace-search-prev" title="Попередній збіг (Shift+Enter або ↑)" data-i18n-title="workspace.searchPrev">
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                         <polyline points="18 15 12 9 6 15"></polyline>
                                     </svg>
                                 </button>
-                                <button class="header-search-nav-btn" id="workspace-search-next" title="Наступний збіг (Enter або ↓)">
+                                <button class="header-search-nav-btn" id="workspace-search-next" title="Наступний збіг (Enter або ↓)" data-i18n-title="workspace.searchNext">
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                         <polyline points="6 9 12 15 18 9"></polyline>
                                     </svg>
                                 </button>
                             </div>
-                            <button class="header-search-close" id="workspace-search-close" title="Закрити пошук (Esc)">×</button>
+                            <button class="header-search-close" id="workspace-search-close" title="Закрити пошук (Esc)" data-i18n-title="workspace.searchClose">×</button>
                         </div>
                     </div>
 
                     <!-- Згорнути всі ланцюжки піднотаток (доступний і на ПК, і на смартфонах) -->
                     <div class="header-btn-wrap" id="workspace-collapse-wrap">
-                        <button class="header-action-icon-btn" id="workspace-collapse-btn" title="Згорнути всі піднотатки">
+                        <button class="header-action-icon-btn" id="workspace-collapse-btn" title="Згорнути всі піднотатки" data-i18n-title="workspace.collapseTitle">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                 <polyline points="4 14 10 14 10 20"></polyline>
                                 <polyline points="20 10 14 10 14 4"></polyline>
@@ -303,21 +303,21 @@
                             </svg>
                         </button>
                         <div class="header-tooltip">
-                            <b>Згорнути піднотатки</b> (до кореня)
+                            <b data-i18n="workspace.collapseTooltip">Згорнути піднотатки</b> (до кореня)
                         </div>
                     </div>
 
                     <div class="header-divider"></div>
 
                     <div class="header-segment-control">
-                        <button class="header-segment-btn active" id="island-view-columns-btn" title="Колонковий режим стікерів">
+                        <button class="header-segment-btn active" id="island-view-columns-btn" title="Колонковий режим стікерів" data-i18n-title="workspace.viewColumnsTitle">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                 <rect x="3" y="3" width="7" height="18" rx="1.5"></rect>
                                 <rect x="14" y="3" width="7" height="18" rx="1.5"></rect>
                             </svg>
-                            <span>Колонки</span>
+                            <span data-i18n="workspace.viewColumns">Колонки</span>
                         </button>
-                        <button class="header-segment-btn" id="island-view-graph-btn" title="Карта нотаток (граф зв'язків Obsidian)">
+                        <button class="header-segment-btn" id="island-view-graph-btn" title="Карта нотаток (граф зв'язків Obsidian)" data-i18n-title="workspace.viewGraphTitle">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                 <circle cx="18" cy="5" r="3"></circle>
                                 <circle cx="6" cy="12" r="3"></circle>
@@ -325,18 +325,18 @@
                                 <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
                                 <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
                             </svg>
-                            <span>Граф</span>
+                            <span data-i18n="workspace.viewGraph">Граф</span>
                         </button>
                     </div>
 
                     <div class="header-divider"></div>
 
-                    <button class="header-select-btn" id="island-select-toggle-btn" title="Режим мульти-вибору нотаток (як в iOS Галереї)">
+                    <button class="header-select-btn" id="island-select-toggle-btn" title="Режим мульти-вибору нотаток (як в iOS Галереї)" data-i18n-title="workspace.selectTitle">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="9"></circle>
                             <polyline points="16 9 11 14 8 11"></polyline>
                         </svg>
-                        <span id="island-select-text">Вибрати</span>
+                        <span id="island-select-text" data-i18n="workspace.selectBtn">Вибрати</span>
                     </button>
                 </div>
             </header>

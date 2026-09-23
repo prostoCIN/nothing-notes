@@ -7,10 +7,10 @@ window.App = window.App || {};
     const STORAGE_KEY_THEME = 'nothing_notes_theme';
 
     const THEMES = [
-        { key: 'asphalt', name: 'Асфальт', desc: 'Темна (поточна)', metaColor: '#141416' },
-        { key: 'light', name: 'Біла', desc: 'Світла', metaColor: '#f7f7fa' },
-        { key: 'night-sky', name: 'Нічне небо', desc: 'Темно-синя', metaColor: '#0b0f19' },
-        { key: 'forest', name: 'Темний ліс', desc: 'Приглушена жовто-зелена', metaColor: '#1d1e19' }
+        { key: 'asphalt', nameKey: 'settings.theme.asphalt.name', descKey: 'settings.theme.asphalt.desc', metaColor: '#141416' },
+        { key: 'light', nameKey: 'settings.theme.light.name', descKey: 'settings.theme.light.desc', metaColor: '#f7f7fa' },
+        { key: 'night-sky', nameKey: 'settings.theme.nightSky.name', descKey: 'settings.theme.nightSky.desc', metaColor: '#0b0f19' },
+        { key: 'forest', nameKey: 'settings.theme.forest.name', descKey: 'settings.theme.forest.desc', metaColor: '#1d1e19' }
     ];
 
     let modalOverlayEl = null;
@@ -19,10 +19,25 @@ window.App = window.App || {};
     let currentTheme = 'asphalt';
     let currentTab = 'general';
 
+    function t(key, params) {
+        if (window.App && window.App.i18n && window.App.i18n.t) {
+            return window.App.i18n.t(key, params);
+        }
+        return key;
+    }
+
+    function getLang() {
+        if (window.App && window.App.i18n && window.App.i18n.getLanguage) {
+            return window.App.i18n.getLanguage();
+        }
+        return 'ua';
+    }
+
     window.App.settingsModal = {
+        isOpen: false,
+
         init() {
             this.loadPreferences();
-            this.createModalDOM();
             this.bindGlobalKeys();
             this.applyPreferences();
         },
@@ -73,10 +88,8 @@ window.App = window.App || {};
             }
             currentTheme = themeKey;
 
-            // Застосовуємо тему до html елемента
             document.documentElement.setAttribute('data-theme', themeKey);
 
-            // Оновлюємо theme-color для браузерів на мобільних пристроях
             const themeObj = THEMES.find(t => t.key === themeKey);
             if (themeObj) {
                 let metaTheme = document.querySelector('meta[name="theme-color"]');
@@ -96,9 +109,8 @@ window.App = window.App || {};
                 }
             }
 
-            // Оновлюємо вигляд карток у модальному вікні
             if (modalOverlayEl) {
-                const cards = modalOverlayEl.querySelectorAll('.settings-theme-card');
+                const cards = modalOverlayEl.querySelectorAll('#settings-theme-grid .settings-theme-card');
                 cards.forEach(card => {
                     if (card.getAttribute('data-theme') === themeKey) {
                         card.classList.add('active');
@@ -108,12 +120,10 @@ window.App = window.App || {};
                 });
             }
 
-            // Якщо активний режим графа — миттєво перемальовуємо його
             if (window.App.state && window.App.state.isGraphView && window.App.graphView) {
                 window.App.graphView.render();
             }
         },
-
 
         isAutoCapitalizeEnabled() {
             return autoCapitalize;
@@ -150,10 +160,19 @@ window.App = window.App || {};
             modalOverlayEl.className = 'settings-modal-overlay';
             modalOverlayEl.style.display = 'none';
 
+            document.body.appendChild(modalOverlayEl);
+            this.render();
+        },
+
+        render() {
+            if (!modalOverlayEl) return;
+
+            const currentLang = getLang();
+
             modalOverlayEl.innerHTML = `
                 <div class="settings-modal-backdrop" id="settings-backdrop"></div>
                 <div class="settings-modal-card">
-                    <button class="settings-modal-close" id="settings-close-btn" title="Закрити (Esc)">✕</button>
+                    <button class="settings-modal-close" id="settings-close-btn" title="${t('settings.closeTitle')}">✕</button>
                     
                     <div class="settings-modal-header">
                         <div class="settings-header-icon-badge">
@@ -163,28 +182,28 @@ window.App = window.App || {};
                             </svg>
                         </div>
                         <div class="settings-header-titles">
-                            <h2 class="settings-modal-title">Налаштування</h2>
-                            <p class="settings-modal-subtitle">Параметри теми, інтерфейсу та облікового запису</p>
+                            <h2 class="settings-modal-title" data-i18n="settings.title">${t('settings.title')}</h2>
+                            <p class="settings-modal-subtitle" data-i18n="settings.subtitle">${t('settings.subtitle')}</p>
                         </div>
                     </div>
 
                     <!-- Таби навігації -->
                     <div class="settings-tabs" id="settings-tabs">
-                        <button type="button" class="settings-tab-btn active" data-tab="general">
+                        <button type="button" class="settings-tab-btn ${currentTab === 'general' ? 'active' : ''}" data-tab="general">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <circle cx="12" cy="12" r="3"></circle>
                                 <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                             </svg>
-                            <span>Загальні</span>
+                            <span data-i18n="settings.tabs.general">${t('settings.tabs.general')}</span>
                         </button>
-                        <button type="button" class="settings-tab-btn" data-tab="account">
+                        <button type="button" class="settings-tab-btn ${currentTab === 'account' ? 'active' : ''}" data-tab="account">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                                 <circle cx="12" cy="7" r="4"></circle>
                             </svg>
-                            <span>Акаунт і хмара</span>
+                            <span data-i18n="settings.tabs.account">${t('settings.tabs.account')}</span>
                         </button>
-                        <button type="button" class="settings-tab-btn" data-tab="shortcuts">
+                        <button type="button" class="settings-tab-btn ${currentTab === 'shortcuts' ? 'active' : ''}" data-tab="shortcuts">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <rect x="2" y="4" width="20" height="16" rx="2"></rect>
                                 <path d="M6 8h.001"></path>
@@ -196,22 +215,44 @@ window.App = window.App || {};
                                 <path d="M16 12h.001"></path>
                                 <path d="M7 16h10"></path>
                             </svg>
-                            <span>Гарячі клавіші</span>
+                            <span data-i18n="settings.tabs.shortcuts">${t('settings.tabs.shortcuts')}</span>
                         </button>
                     </div>
 
                     <!-- Вміст: Загальні -->
-                    <div class="settings-tab-content" id="settings-tab-general">
+                    <div class="settings-tab-content" id="settings-tab-general" style="display: ${currentTab === 'general' ? 'flex' : 'none'};">
+                        <!-- Блок 0: Вибір мови додатку -->
+                        <div class="settings-section-title" data-i18n="settings.language.title">${t('settings.language.title')}</div>
+                        <div class="settings-theme-grid settings-lang-grid" id="settings-lang-grid">
+                            <button type="button" class="settings-theme-card ${currentLang === 'ua' ? 'active' : ''}" data-lang="ua">
+                                <div class="settings-lang-flag">🇺🇦</div>
+                                <div class="settings-theme-label">
+                                    <span class="settings-theme-name" data-i18n="settings.language.ua">${t('settings.language.ua')}</span>
+                                    <span class="settings-theme-sub">Ukrainian</span>
+                                </div>
+                                <div class="settings-theme-check">✓</div>
+                            </button>
+
+                            <button type="button" class="settings-theme-card ${currentLang === 'en' ? 'active' : ''}" data-lang="en">
+                                <div class="settings-lang-flag">🇬🇧</div>
+                                <div class="settings-theme-label">
+                                    <span class="settings-theme-name" data-i18n="settings.language.en">${t('settings.language.en')}</span>
+                                    <span class="settings-theme-sub">English</span>
+                                </div>
+                                <div class="settings-theme-check">✓</div>
+                            </button>
+                        </div>
+
                         <!-- Блок 1: Вибір теми оформлення сайту -->
-                        <div class="settings-section-title">Тема оформлення</div>
+                        <div class="settings-section-title" style="margin-top: 10px;" data-i18n="settings.theme.title">${t('settings.theme.title')}</div>
                         <div class="settings-theme-grid" id="settings-theme-grid">
                             <button type="button" class="settings-theme-card ${currentTheme === 'asphalt' ? 'active' : ''}" data-theme="asphalt">
                                 <div class="settings-theme-preview asphalt-preview">
                                     <div class="theme-preview-dot"></div>
                                 </div>
                                 <div class="settings-theme-label">
-                                    <span class="settings-theme-name">Асфальт</span>
-                                    <span class="settings-theme-sub">Темна (поточна)</span>
+                                    <span class="settings-theme-name" data-i18n="settings.theme.asphalt.name">${t('settings.theme.asphalt.name')}</span>
+                                    <span class="settings-theme-sub" data-i18n="settings.theme.asphalt.desc">${t('settings.theme.asphalt.desc')}</span>
                                 </div>
                                 <div class="settings-theme-check">✓</div>
                             </button>
@@ -221,8 +262,8 @@ window.App = window.App || {};
                                     <div class="theme-preview-dot"></div>
                                 </div>
                                 <div class="settings-theme-label">
-                                    <span class="settings-theme-name">Біла</span>
-                                    <span class="settings-theme-sub">Світла</span>
+                                    <span class="settings-theme-name" data-i18n="settings.theme.light.name">${t('settings.theme.light.name')}</span>
+                                    <span class="settings-theme-sub" data-i18n="settings.theme.light.desc">${t('settings.theme.light.desc')}</span>
                                 </div>
                                 <div class="settings-theme-check">✓</div>
                             </button>
@@ -232,8 +273,8 @@ window.App = window.App || {};
                                     <div class="theme-preview-dot"></div>
                                 </div>
                                 <div class="settings-theme-label">
-                                    <span class="settings-theme-name">Нічне небо</span>
-                                    <span class="settings-theme-sub">Темно-синя</span>
+                                    <span class="settings-theme-name" data-i18n="settings.theme.nightSky.name">${t('settings.theme.nightSky.name')}</span>
+                                    <span class="settings-theme-sub" data-i18n="settings.theme.nightSky.desc">${t('settings.theme.nightSky.desc')}</span>
                                 </div>
                                 <div class="settings-theme-check">✓</div>
                             </button>
@@ -243,19 +284,19 @@ window.App = window.App || {};
                                     <div class="theme-preview-dot"></div>
                                 </div>
                                 <div class="settings-theme-label">
-                                    <span class="settings-theme-name">Темний ліс</span>
-                                    <span class="settings-theme-sub">Приглушена жовто-зелена</span>
+                                    <span class="settings-theme-name" data-i18n="settings.theme.forest.name">${t('settings.theme.forest.name')}</span>
+                                    <span class="settings-theme-sub" data-i18n="settings.theme.forest.desc">${t('settings.theme.forest.desc')}</span>
                                 </div>
                                 <div class="settings-theme-check">✓</div>
                             </button>
                         </div>
 
                         <!-- Блок 2: Параметри редактора та нотаток -->
-                        <div class="settings-section-title" style="margin-top: 14px;">Редактор та нотатки</div>
+                        <div class="settings-section-title" style="margin-top: 14px;" data-i18n="settings.editor.title">${t('settings.editor.title')}</div>
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-title">Велика літера після крапки</div>
-                                <div class="settings-item-desc">Автоматично робити першу літеру великою на початку рядка та після крапки (. ! ?)</div>
+                                <div class="settings-item-title" data-i18n="settings.editor.autocapTitle">${t('settings.editor.autocapTitle')}</div>
+                                <div class="settings-item-desc" data-i18n="settings.editor.autocapDesc">${t('settings.editor.autocapDesc')}</div>
                             </div>
                             <label class="settings-toggle-switch">
                                 <input type="checkbox" id="settings-autocap-toggle">
@@ -265,8 +306,8 @@ window.App = window.App || {};
 
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-title">Компактний режим нотаток</div>
-                                <div class="settings-item-desc">Зменшити внутрішні відступи стікерів для більш щільного розташування карток</div>
+                                <div class="settings-item-title" data-i18n="settings.editor.compactTitle">${t('settings.editor.compactTitle')}</div>
+                                <div class="settings-item-desc" data-i18n="settings.editor.compactDesc">${t('settings.editor.compactDesc')}</div>
                             </div>
                             <label class="settings-toggle-switch">
                                 <input type="checkbox" id="settings-compact-toggle">
@@ -276,14 +317,14 @@ window.App = window.App || {};
 
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-title">Швидкий маркер та гумка</div>
-                                <div class="settings-item-desc">Використовуйте інструменти маркера у верхньому меню для виділення важливого кольорами</div>
+                                <div class="settings-item-title" data-i18n="settings.editor.toolsTitle">${t('settings.editor.toolsTitle')}</div>
+                                <div class="settings-item-desc" data-i18n="settings.editor.toolsDesc">${t('settings.editor.toolsDesc')}</div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Вміст: Акаунт і хмара -->
-                    <div class="settings-tab-content" id="settings-tab-account" style="display: none;">
+                    <div class="settings-tab-content" id="settings-tab-account" style="display: ${currentTab === 'account' ? 'flex' : 'none'};">
                         <div class="settings-account-card" id="settings-account-container">
                             <!-- Заповнюється динамічно -->
                         </div>
@@ -291,19 +332,19 @@ window.App = window.App || {};
                         <div class="settings-stats-row">
                             <div class="settings-stat-box">
                                 <div class="settings-stat-num" id="settings-stat-boards">0</div>
-                                <div class="settings-stat-label">Блокнотів</div>
+                                <div class="settings-stat-label" data-i18n="settings.account.boardsStat">${t('settings.account.boardsStat')}</div>
                             </div>
                             <div class="settings-stat-box">
                                 <div class="settings-stat-num" id="settings-stat-notes">0</div>
-                                <div class="settings-stat-label">Нотаток на дошці</div>
+                                <div class="settings-stat-label" data-i18n="settings.account.notesStat">${t('settings.account.notesStat')}</div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Вміст: Гарячі клавіші -->
-                    <div class="settings-tab-content settings-shortcuts-list" id="settings-tab-shortcuts" style="display: none;">
+                    <div class="settings-tab-content settings-shortcuts-list" id="settings-tab-shortcuts" style="display: ${currentTab === 'shortcuts' ? 'flex' : 'none'};">
                         <div class="settings-shortcut-row">
-                            <span class="settings-shortcut-label">Скасувати дію</span>
+                            <span class="settings-shortcut-label" data-i18n="settings.shortcuts.undo">${t('settings.shortcuts.undo')}</span>
                             <div class="settings-shortcut-keys">
                                 <kbd class="settings-kbd">Ctrl</kbd>
                                 <span>+</span>
@@ -311,7 +352,7 @@ window.App = window.App || {};
                             </div>
                         </div>
                         <div class="settings-shortcut-row">
-                            <span class="settings-shortcut-label">Повторити дію</span>
+                            <span class="settings-shortcut-label" data-i18n="settings.shortcuts.redo">${t('settings.shortcuts.redo')}</span>
                             <div class="settings-shortcut-keys">
                                 <kbd class="settings-kbd">Ctrl</kbd>
                                 <span>+</span>
@@ -319,7 +360,7 @@ window.App = window.App || {};
                             </div>
                         </div>
                         <div class="settings-shortcut-row">
-                            <span class="settings-shortcut-label">Пошук слів на дошці</span>
+                            <span class="settings-shortcut-label" data-i18n="settings.shortcuts.search">${t('settings.shortcuts.search')}</span>
                             <div class="settings-shortcut-keys">
                                 <kbd class="settings-kbd">Ctrl</kbd>
                                 <span>+</span>
@@ -327,7 +368,7 @@ window.App = window.App || {};
                             </div>
                         </div>
                         <div class="settings-shortcut-row">
-                            <span class="settings-shortcut-label">Жирний текст</span>
+                            <span class="settings-shortcut-label" data-i18n="settings.shortcuts.bold">${t('settings.shortcuts.bold')}</span>
                             <div class="settings-shortcut-keys">
                                 <kbd class="settings-kbd">Ctrl</kbd>
                                 <span>+</span>
@@ -335,13 +376,13 @@ window.App = window.App || {};
                             </div>
                         </div>
                         <div class="settings-shortcut-row">
-                            <span class="settings-shortcut-label">Закрити вікно / вийти з маркера</span>
+                            <span class="settings-shortcut-label" data-i18n="settings.shortcuts.close">${t('settings.shortcuts.close')}</span>
                             <div class="settings-shortcut-keys">
                                 <kbd class="settings-kbd">Esc</kbd>
                             </div>
                         </div>
                         <div class="settings-shortcut-row">
-                            <span class="settings-shortcut-label">Навігація по збігах пошуку</span>
+                            <span class="settings-shortcut-label" data-i18n="settings.shortcuts.searchNav">${t('settings.shortcuts.searchNav')}</span>
                             <div class="settings-shortcut-keys">
                                 <kbd class="settings-kbd">Enter</kbd>
                                 <span>/</span>
@@ -352,8 +393,10 @@ window.App = window.App || {};
                 </div>
             `;
 
-            document.body.appendChild(modalOverlayEl);
             this.bindEvents();
+            if (currentTab === 'account') {
+                this.renderAccountInfo();
+            }
         },
 
         bindEvents() {
@@ -364,10 +407,22 @@ window.App = window.App || {};
             const autoCapToggle = modalOverlayEl.querySelector('#settings-autocap-toggle');
             const compactToggle = modalOverlayEl.querySelector('#settings-compact-toggle');
             const tabButtons = modalOverlayEl.querySelectorAll('.settings-tab-btn');
-            const themeCards = modalOverlayEl.querySelectorAll('.settings-theme-card');
+            const themeCards = modalOverlayEl.querySelectorAll('#settings-theme-grid .settings-theme-card');
+            const langCards = modalOverlayEl.querySelectorAll('#settings-lang-grid .settings-theme-card');
 
             if (closeBtn) closeBtn.addEventListener('click', () => this.close());
             if (backdrop) backdrop.addEventListener('click', () => this.close());
+
+            // Вибір мови
+            langCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    const lang = card.getAttribute('data-lang');
+                    if (lang && window.App.i18n) {
+                        window.App.i18n.setLanguage(lang);
+                        this.render();
+                    }
+                });
+            });
 
             // Вибір теми
             themeCards.forEach(card => {
@@ -451,7 +506,6 @@ window.App = window.App || {};
             const boardsCountEl = modalOverlayEl.querySelector('#settings-stat-boards');
             const notesCountEl = modalOverlayEl.querySelector('#settings-stat-notes');
 
-            // Оновлюємо лічильники
             const state = window.App.state;
             if (boardsCountEl) boardsCountEl.textContent = (state && state.boards ? state.boards.length : 0);
             if (notesCountEl) notesCountEl.textContent = (state && state.notes ? state.notes.length : 0);
@@ -482,7 +536,7 @@ window.App = window.App || {};
                     </div>
                     <div class="settings-account-badge online">
                         <span class="settings-badge-dot"></span>
-                        <span>Синхронізація активна (Supabase)</span>
+                        <span data-i18n="settings.account.loggedInTitle">${t('settings.account.loggedInTitle')}</span>
                     </div>
                     <div class="settings-account-actions">
                         <button class="settings-btn-danger" id="settings-logout-btn">
@@ -491,7 +545,7 @@ window.App = window.App || {};
                                 <polyline points="16 17 21 12 16 7"></polyline>
                                 <line x1="21" y1="12" x2="9" y2="12"></line>
                             </svg>
-                            <span>Вийти з акаунта</span>
+                            <span data-i18n="settings.account.logoutBtn">${t('settings.account.logoutBtn')}</span>
                         </button>
                     </div>
                 `;
@@ -515,13 +569,13 @@ window.App = window.App || {};
                             </svg>
                         </div>
                         <div class="settings-account-details">
-                            <div class="settings-account-name">Гостьовий режим</div>
-                            <div class="settings-account-email">Дані зберігаються локально в браузері</div>
+                            <div class="settings-account-name" data-i18n="settings.account.guestTitle">${t('settings.account.guestTitle')}</div>
+                            <div class="settings-account-email" data-i18n="settings.account.guestDesc">${t('settings.account.guestDesc')}</div>
                         </div>
                     </div>
                     <div class="settings-account-badge offline">
                         <span class="settings-badge-dot"></span>
-                        <span>Без збереження в хмарі</span>
+                        <span data-i18n="welcome.guestBtn">${t('welcome.guestBtn')}</span>
                     </div>
                     <div class="settings-account-actions">
                         <button class="settings-btn-primary" id="settings-login-btn">
@@ -530,7 +584,7 @@ window.App = window.App || {};
                                 <polyline points="10 17 15 12 10 7"></polyline>
                                 <line x1="15" y1="12" x2="3" y2="12"></line>
                             </svg>
-                            <span>Увійти або зареєструватися</span>
+                            <span data-i18n="welcome.loginBtn">${t('welcome.loginBtn')}</span>
                         </button>
                     </div>
                 `;
@@ -548,10 +602,10 @@ window.App = window.App || {};
         },
 
         open(tab = 'general') {
+            this.isOpen = true;
             this.createModalDOM();
             this.switchTab(tab);
 
-            // Оновлюємо стан чекбоксів та тем
             const autoCapToggle = modalOverlayEl.querySelector('#settings-autocap-toggle');
             const compactToggle = modalOverlayEl.querySelector('#settings-compact-toggle');
             if (autoCapToggle) autoCapToggle.checked = autoCapitalize;
@@ -566,6 +620,7 @@ window.App = window.App || {};
         },
 
         close() {
+            this.isOpen = false;
             if (!modalOverlayEl) return;
             modalOverlayEl.classList.remove('active');
             setTimeout(() => {

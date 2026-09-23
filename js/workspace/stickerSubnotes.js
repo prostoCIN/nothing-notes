@@ -21,9 +21,17 @@ window.App = window.App || {};
 
             if (childCount === 0) return null;
 
+            const i18n = window.App.i18n;
             const subnotesBox = document.createElement('div');
             subnotesBox.className = `sticker-subnotes-container ${isChainOpen ? 'is-expanded' : ''}`;
-            subnotesBox.title = isChainOpen ? 'Приховати колонку піднотаток' : 'Відкрити колонку піднотаток';
+            subnotesBox.title = isChainOpen 
+                ? (i18n ? i18n.t('sticker.hideSubnotesCol') : 'Приховати колонку піднотаток') 
+                : (i18n ? i18n.t('sticker.openSubnotesCol') : 'Відкрити колонку піднотаток');
+
+            const subnotesTitleText = i18n ? i18n.t('sticker.subnotesTitle') : 'Піднотатки';
+            const subnotesStatusText = isChainOpen 
+                ? (i18n ? i18n.t('sticker.subnotesOpened') : 'Відкрито')
+                : (i18n ? i18n.t('sticker.subnotesView') : 'Переглянути');
 
             const subnotesHeader = document.createElement('div');
             subnotesHeader.className = 'sticker-subnotes-header';
@@ -33,17 +41,18 @@ window.App = window.App || {};
                         <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
                         <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
                     </svg>
-                    <span>Піднотатки</span>
+                    <span>${subnotesTitleText}</span>
                     <span class="subnotes-pill-badge">${childCount}</span>
                 </div>
                 <div class="subnotes-header-right">
-                    <span class="subnotes-toggle-status">${isChainOpen ? 'Відкрито' : 'Переглянути'}</span>
+                    <span class="subnotes-toggle-status">${subnotesStatusText}</span>
                 </div>
             `;
 
             const previewList = document.createElement('div');
             previewList.className = 'sticker-subnotes-preview-list';
 
+            const defaultUntitled = i18n ? i18n.t('sticker.untitled') : 'Без назви';
             const maxPreview = 3;
             childNotes.slice(0, maxPreview).forEach(child => {
                 const item = document.createElement('div');
@@ -51,7 +60,7 @@ window.App = window.App || {};
                 item.innerHTML = `
                     <span class="subnotes-preview-bullet">•</span>
                     <span class="subnotes-preview-icon">${child.icon || '📄'}</span>
-                    <span class="subnotes-preview-title">${child.title ? child.title.trim() : 'Без назви'}</span>
+                    <span class="subnotes-preview-title">${child.title ? child.title.trim() : defaultUntitled}</span>
                 `;
                 previewList.appendChild(item);
             });
@@ -59,7 +68,8 @@ window.App = window.App || {};
             if (childCount > maxPreview) {
                 const moreItem = document.createElement('div');
                 moreItem.className = 'subnotes-preview-more';
-                moreItem.textContent = `+ ще ${childCount - maxPreview}...`;
+                const moreCount = childCount - maxPreview;
+                moreItem.textContent = i18n ? i18n.t('sticker.moreSubnotes', { count: moreCount }) : `+ ще ${moreCount}...`;
                 previewList.appendChild(moreItem);
             }
 

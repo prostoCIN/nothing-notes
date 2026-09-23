@@ -26,34 +26,34 @@ window.App = window.App || {};
             modalEl.innerHTML = `
                 <div class="auth-modal-backdrop"></div>
                 <div class="auth-modal-card">
-                    <button class="auth-modal-close" id="auth-close-btn" title="Закрити">×</button>
+                    <button class="auth-modal-close" id="auth-close-btn" title="Закрити" data-i18n-title="common.close">×</button>
                     
                     <div class="auth-modal-header">
                         <div class="auth-brand">
                             <img src="img/Logo.svg" alt="NothingNotes Logo" class="auth-logo">
                             <h2>Nothing<span class="brand-title-accent">Notes</span></h2>
                         </div>
-                        <p id="auth-subtitle">Увійдіть за допомогою логіну або email, щоб синхронізувати нотатки.</p>
+                        <p id="auth-subtitle" data-i18n="auth.brandSubtitle">Увійдіть за допомогою логіну або email, щоб синхронізувати нотатки.</p>
                     </div>
 
                     <div class="auth-tabs" id="auth-tabs">
-                        <button type="button" class="auth-tab-btn active" id="auth-tab-login">Вхід</button>
-                        <button type="button" class="auth-tab-btn" id="auth-tab-register">Реєстрація</button>
+                        <button type="button" class="auth-tab-btn active" id="auth-tab-login" data-i18n="auth.tabLogin">Вхід</button>
+                        <button type="button" class="auth-tab-btn" id="auth-tab-register" data-i18n="auth.tabRegister">Реєстрація</button>
                     </div>
 
                     <form id="auth-form" class="auth-form" novalidate>
                         <!-- Секція входу -->
                         <div id="auth-login-section" class="auth-form-section">
                             <div class="auth-input-group">
-                                <label for="auth-identifier">Логін або Email</label>
-                                <input type="text" id="auth-identifier" placeholder="Логін або your@email.com" autocomplete="username">
+                                <label for="auth-identifier" data-i18n="auth.identifierLabel">Логін або Email</label>
+                                <input type="text" id="auth-identifier" placeholder="Логін або your@email.com" data-i18n-placeholder="auth.identifierPlaceholder" autocomplete="username">
                             </div>
 
                             <div class="auth-input-group">
-                                <label for="auth-login-password">Пароль</label>
+                                <label for="auth-login-password" data-i18n="auth.loginPasswordLabel">Пароль</label>
                                 <div class="auth-password-wrapper">
-                                    <input type="password" id="auth-login-password" placeholder="Введіть пароль" autocomplete="current-password">
-                                    <button type="button" class="auth-password-toggle-btn" data-target="auth-login-password" title="Показати/приховати пароль" tabindex="-1">
+                                    <input type="password" id="auth-login-password" placeholder="Введіть пароль" data-i18n-placeholder="auth.loginPasswordPlaceholder" autocomplete="current-password">
+                                    <button type="button" class="auth-password-toggle-btn" data-target="auth-login-password" title="Показати/приховати пароль" data-i18n-title="auth.showHidePassword" tabindex="-1">
                                         <svg class="icon-eye" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                             <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
                                             <circle cx="12" cy="12" r="3"></circle>
@@ -72,22 +72,22 @@ window.App = window.App || {};
                         <!-- Секція реєстрації -->
                         <div id="auth-register-section" class="auth-form-section" style="display: none;">
                             <div class="auth-input-group">
-                                <label for="auth-reg-username">Логін (нікнейм)</label>
-                                <input type="text" id="auth-reg-username" placeholder="alex_notes" autocomplete="username" minlength="3" maxlength="30">
-                                <span class="auth-input-hint">Від 3 до 30 символів (букви, цифри, _ або -)</span>
+                                <label for="auth-reg-username" data-i18n="auth.regUsernameLabel">Логін (нікнейм)</label>
+                                <input type="text" id="auth-reg-username" placeholder="alex_notes" data-i18n-placeholder="auth.regUsernamePlaceholder" autocomplete="username" minlength="3" maxlength="30">
+                                <span class="auth-input-hint" data-i18n="auth.regUsernameHint">Від 3 до 30 символів (букви, цифри, _ або -)</span>
                             </div>
 
                             <div class="auth-input-group">
-                                <label for="auth-reg-email">Email</label>
-                                <input type="email" id="auth-reg-email" placeholder="your@email.com" autocomplete="email">
-                                <span class="auth-input-hint">Для відновлення доступу та синхронізації</span>
+                                <label for="auth-reg-email" data-i18n="auth.regEmailLabel">Email</label>
+                                <input type="email" id="auth-reg-email" placeholder="your@email.com" data-i18n-placeholder="auth.regEmailPlaceholder" autocomplete="email">
+                                <span class="auth-input-hint" data-i18n="auth.regEmailHint">Для відновлення доступу та синхронізації</span>
                             </div>
 
                             <div class="auth-input-group">
-                                <label for="auth-reg-password">Пароль</label>
+                                <label for="auth-reg-password" data-i18n="auth.regPasswordLabel">Пароль</label>
                                 <div class="auth-password-wrapper">
-                                    <input type="password" id="auth-reg-password" placeholder="Мінімум 6 символів" autocomplete="new-password">
-                                    <button type="button" class="auth-password-toggle-btn" data-target="auth-reg-password" title="Показати/приховати пароль" tabindex="-1">
+                                    <input type="password" id="auth-reg-password" placeholder="Мінімум 6 символів" data-i18n-placeholder="auth.regPasswordPlaceholder" autocomplete="new-password">
+                                    <button type="button" class="auth-password-toggle-btn" data-target="auth-reg-password" title="Показати/приховати пароль" data-i18n-title="auth.showHidePassword" tabindex="-1">
                                         <svg class="icon-eye" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                             <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
                                             <circle cx="12" cy="12" r="3"></circle>
@@ -103,10 +103,10 @@ window.App = window.App || {};
                             </div>
 
                             <div class="auth-input-group">
-                                <label for="auth-reg-confirm">Повтор пароля</label>
+                                <label for="auth-reg-confirm" data-i18n="auth.regConfirmLabel">Повтор пароля</label>
                                 <div class="auth-password-wrapper">
-                                    <input type="password" id="auth-reg-confirm" placeholder="Повторіть пароль" autocomplete="new-password">
-                                    <button type="button" class="auth-password-toggle-btn" data-target="auth-reg-confirm" title="Показати/приховати пароль" tabindex="-1">
+                                    <input type="password" id="auth-reg-confirm" placeholder="Повторіть пароль" data-i18n-placeholder="auth.regConfirmPlaceholder" autocomplete="new-password">
+                                    <button type="button" class="auth-password-toggle-btn" data-target="auth-reg-confirm" title="Показати/приховати пароль" data-i18n-title="auth.showHidePassword" tabindex="-1">
                                         <svg class="icon-eye" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                             <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
                                             <circle cx="12" cy="12" r="3"></circle>
@@ -126,13 +126,13 @@ window.App = window.App || {};
                         <div id="auth-success-msg" class="auth-success-msg" style="display: none;"></div>
 
                         <button type="submit" class="auth-submit-btn" id="auth-submit-btn">
-                            <span id="auth-btn-text">Увійти</span>
+                            <span id="auth-btn-text" data-i18n="auth.submitLogin">Увійти</span>
                         </button>
                     </form>
 
                     <div class="auth-footer">
-                        <span id="auth-toggle-text">Ще немає акаунту?</span>
-                        <button type="button" class="auth-toggle-btn" id="auth-toggle-mode-btn">Зареєструватися</button>
+                        <span id="auth-toggle-text" data-i18n="auth.noAccount">Ще немає акаунту?</span>
+                        <button type="button" class="auth-toggle-btn" id="auth-toggle-mode-btn" data-i18n="auth.toggleRegister">Зареєструватися</button>
                     </div>
                 </div>
             `;
@@ -198,20 +198,22 @@ window.App = window.App || {};
                     tabRegister.classList.add('active');
                     loginSection.style.display = 'none';
                     registerSection.style.display = 'flex';
-                    subtitle.textContent = 'Створіть акаунт для надійної синхронізації ваших нотаток.';
-                    btnText.textContent = 'Створити акаунт';
-                    toggleText.textContent = 'Вже маєте акаунт?';
-                    toggleBtn.textContent = 'Увійти';
+                    const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
+                    subtitle.textContent = t('auth.registerSubtitle');
+                    btnText.textContent = t('auth.submitRegister');
+                    toggleText.textContent = t('auth.haveAccount');
+                    toggleBtn.textContent = t('auth.toggleLogin');
                     setTimeout(() => regUsernameInput && regUsernameInput.focus(), 50);
                 } else {
+                    const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
                     tabRegister.classList.remove('active');
                     tabLogin.classList.add('active');
                     registerSection.style.display = 'none';
                     loginSection.style.display = 'flex';
-                    subtitle.textContent = 'Увійдіть за допомогою логіну або email, щоб синхронізувати нотатки.';
-                    btnText.textContent = 'Увійти';
-                    toggleText.textContent = 'Ще немає акаунту?';
-                    toggleBtn.textContent = 'Зареєструватися';
+                    subtitle.textContent = t('auth.brandSubtitle');
+                    btnText.textContent = t('auth.submitLogin');
+                    toggleText.textContent = t('auth.noAccount');
+                    toggleBtn.textContent = t('auth.toggleRegister');
                     setTimeout(() => identifierInput && identifierInput.focus(), 50);
                 }
             };
@@ -407,6 +409,9 @@ window.App = window.App || {};
         open(isSignUp = false) {
             this.createModalDOM();
             if (!modalEl) return;
+            if (window.App && window.App.i18n && window.App.i18n.updateDOM) {
+                window.App.i18n.updateDOM(modalEl);
+            }
             modalEl.style.display = 'flex';
             // Force reflow for guaranteed transition triggering
             void modalEl.offsetHeight;

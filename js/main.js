@@ -11,6 +11,7 @@ window.DOMPurify = window.DOMPurify || DOMPurify;
 // 1. Базові модулі ядра та стану
 import './dom.js';
 import './eventBus.js';
+import './i18n.js';
 import './imageDb.js';
 import './state.js';
 import './historyManager.js';

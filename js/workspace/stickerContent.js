@@ -891,7 +891,7 @@ window.App = window.App || {};
             contentDiv.spellcheck = false;
             contentDiv.autocapitalize = 'sentences';
             contentDiv.autocomplete = 'off';
-            contentDiv.dataset.placeholder = isReadOnly ? '' : 'Напишіть текст нотатки...';
+            contentDiv.dataset.placeholder = isReadOnly ? '' : ((window.App && window.App.i18n) ? window.App.i18n.t('sticker.contentPlaceholder') : 'Напишіть текст нотатки...');
 
             // Очищаємо контент від старих вбудованих зображень (щоб вони жили ТІЛЬКИ в галереї)
             let initialContent = note.content || '';

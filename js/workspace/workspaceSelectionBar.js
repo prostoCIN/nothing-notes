@@ -20,7 +20,7 @@ window.App = window.App || {};
 
             barElement.innerHTML = `
                 <div class="selection-bar-left">
-                    <button class="selection-bar-close-btn" id="ws-sel-cancel-btn" title="Скасувати вибір">
+                    <button class="selection-bar-close-btn" id="ws-sel-cancel-btn" title="Скасувати вибір" data-i18n-title="selectionBar.cancelSelection">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="18" y1="6" x2="6" y2="18"></line>
                             <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -30,8 +30,8 @@ window.App = window.App || {};
                         <span class="selection-bar-count-desktop desktop-only" id="ws-sel-count-desktop">Вибрано 0</span>
                         <span class="selection-bar-count-badge mobile-only" id="ws-sel-count-mobile">0</span>
                         <span class="selection-bar-divider desktop-only">|</span>
-                        <button class="selection-bar-text-btn desktop-only" id="ws-sel-all-btn-desktop">Вибрати всі</button>
-                        <button class="selection-bar-text-btn desktop-only" id="ws-sel-clear-btn-desktop">Зняти всі</button>
+                        <button class="selection-bar-text-btn desktop-only" id="ws-sel-all-btn-desktop" data-i18n="common.all">Вибрати всі</button>
+                        <button class="selection-bar-text-btn desktop-only" id="ws-sel-clear-btn-desktop" data-i18n="column.clearFilter">Зняти всі</button>
                         <div class="selection-bar-quick-btns mobile-only">
                             <button class="selection-bar-icon-btn" id="ws-sel-all-btn-mobile" title="Вибрати всі нотатки">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -203,19 +203,23 @@ window.App = window.App || {};
                             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                         </svg>
-                        <span class="selection-btn-label desktop-only">Дублювати</span>
+                        <span class="selection-btn-label desktop-only" data-i18n="sticker.duplicate">Дублювати</span>
                     </button>
 
                     <!-- 3. Видалити -->
-                    <button class="selection-action-btn selection-action-delete-btn" id="ws-action-delete-btn" title="Видалити виділені">
+                    <button class="selection-action-btn selection-action-delete-btn" id="ws-action-delete-btn" title="Видалити виділені" data-i18n-title="selectionBar.deleteSelected">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M3 6h18"></path>
                             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                         </svg>
-                        <span class="selection-btn-label desktop-only">Видалити</span>
+                        <span class="selection-btn-label desktop-only" data-i18n="selectionBar.deleteSelected">Видалити</span>
                     </button>
                 </div>
             `;
+
+            if (window.App && window.App.i18n && window.App.i18n.updateDOM) {
+                window.App.i18n.updateDOM(barElement);
+            }
 
             document.body.appendChild(barElement);
             this.buildSubmenus();
@@ -712,7 +716,8 @@ window.App = window.App || {};
                 const count = state.selectedWorkspaceNoteIds.size;
                 const countDesktop = barElement.querySelector('#ws-sel-count-desktop');
                 const countMobile = barElement.querySelector('#ws-sel-count-mobile');
-                if (countDesktop) countDesktop.textContent = `Вибрано ${count}`;
+                const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
+                if (countDesktop) countDesktop.textContent = t('selectionBar.selectedCount', { count });
                 if (countMobile) countMobile.textContent = count;
 
                 // Робимо кнопки дій активними або приглушеними, якщо нічого не вибрано

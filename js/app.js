@@ -99,6 +99,18 @@ function bootstrapApp() {
                 window.App.workspaceSelectionBar.exitSelectMode();
             }
         });
+
+        window.App.events.on('language:changed', () => {
+            if (sidebarView && sidebarView.render) {
+                sidebarView.render();
+            }
+            if (workspaceView && workspaceView.render) {
+                workspaceView.render();
+            }
+            if (window.App.settingsModal && window.App.settingsModal.isOpen) {
+                window.App.settingsModal.render();
+            }
+        });
     }
 
     boardManager.init();
@@ -163,6 +175,10 @@ function bootstrapApp() {
             return;
         }
     });
+
+    if (window.App.i18n && window.App.i18n.updateDOM) {
+        window.App.i18n.updateDOM();
+    }
 
     // Початкова перевірка стану
     initApp();
