@@ -2581,8 +2581,15 @@ window.App = window.App || {};
             const oCtx = offCanvas.getContext('2d');
             oCtx.scale(dpr, dpr);
 
-            const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-            oCtx.fillStyle = isLight ? '#f9fafb' : '#141418';
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'asphalt';
+            const isLight = currentTheme === 'light';
+            const themeBgMap = {
+                'light': '#f7f7fa',
+                'night-sky': '#0b0f19',
+                'forest': '#1d1e19',
+                'asphalt': '#141416'
+            };
+            oCtx.fillStyle = themeBgMap[currentTheme] || '#141416';
             oCtx.fillRect(0, 0, w, h);
 
             // Grid dots

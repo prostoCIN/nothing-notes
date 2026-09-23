@@ -1058,15 +1058,15 @@
 }
 
 .graph-export-modal-card {
-    background: var(--bg-secondary, #1e1e24);
-    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.14));
+    background: var(--modal-bg, var(--bg-secondary));
+    border: 1px solid var(--border-color);
     border-radius: 16px;
     width: 100%;
     max-width: 680px;
     max-height: 85vh;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    box-shadow: var(--modal-shadow);
     animation: graphModalZoomIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     overflow: hidden;
 }
@@ -1081,7 +1081,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 16px 20px;
-    border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+    border-bottom: 1px solid var(--border-color);
 }
 
 .graph-export-modal-title-wrap {
@@ -1093,20 +1093,20 @@
 .graph-export-modal-title {
     font-size: 16px;
     font-weight: 700;
-    color: var(--text-main, #ffffff);
+    color: var(--text-main);
     margin: 0;
 }
 
 .graph-export-modal-subtitle {
     font-size: 11.5px;
-    color: var(--text-muted, #888);
+    color: var(--text-muted);
     margin: 0;
 }
 
 .graph-export-modal-close {
     background: transparent;
     border: none;
-    color: var(--text-muted, #888);
+    color: var(--text-muted);
     width: 32px;
     height: 32px;
     border-radius: 8px;
@@ -1118,8 +1118,8 @@
 }
 
 .graph-export-modal-close:hover {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-main);
+    background: var(--btn-secondary-hover, rgba(255, 255, 255, 0.1));
 }
 
 .graph-export-tabs {
@@ -1127,8 +1127,8 @@
     align-items: center;
     gap: 6px;
     padding: 10px 20px 0 20px;
-    background: rgba(0, 0, 0, 0.15);
-    border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+    background: var(--tab-bg);
+    border-bottom: 1px solid var(--tab-border);
     overflow-x: auto;
 }
 
@@ -1136,7 +1136,7 @@
     background: transparent;
     border: none;
     border-bottom: 2px solid transparent;
-    color: var(--text-muted, #888);
+    color: var(--text-muted);
     font-size: 12px;
     font-weight: 600;
     font-family: inherit;
@@ -1148,8 +1148,8 @@
 }
 
 .graph-export-tab-btn:hover {
-    color: var(--text-main, #ffffff);
-    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-main);
+    background: var(--btn-secondary-bg, rgba(255, 255, 255, 0.04));
 }
 
 .graph-export-tab-btn.is-active {
@@ -1173,11 +1173,11 @@
     flex-wrap: wrap;
     gap: 8px;
     padding: 8px 12px;
-    background: rgba(16, 185, 129, 0.08);
-    border: 1px solid rgba(16, 185, 129, 0.2);
+    background: var(--stats-banner-bg);
+    border: 1px solid var(--stats-banner-border);
     border-radius: 8px;
     font-size: 11px;
-    color: #a7f3d0;
+    color: var(--stats-banner-text);
 }
 
 .graph-export-stats-banner.has-cycles {
@@ -1187,13 +1187,13 @@
 }
 
 .graph-export-preview-box {
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
     border-radius: 10px;
     padding: 12px;
     font-family: 'SF Mono', Consolas, Monaco, monospace;
     font-size: 11px;
-    color: #d1d5db;
+    color: var(--code-text);
     max-height: 280px;
     overflow: auto;
     white-space: pre-wrap;
@@ -1206,8 +1206,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
     border-radius: 10px;
     padding: 16px;
     max-height: 280px;
@@ -1219,7 +1219,7 @@
     max-height: 240px;
     object-fit: contain;
     border-radius: 6px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
 }
 
 .graph-export-modal-footer {
@@ -1228,13 +1228,13 @@
     justify-content: space-between;
     gap: 12px;
     padding: 14px 20px;
-    border-top: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
-    background: rgba(0, 0, 0, 0.2);
+    border-top: 1px solid var(--border-color);
+    background: var(--modal-footer-bg);
 }
 
 .graph-export-footer-hint {
     font-size: 11px;
-    color: var(--text-muted, #777);
+    color: var(--text-muted);
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1249,10 +1249,10 @@
 }
 
 .graph-export-copy-btn {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: var(--btn-secondary-bg);
+    border: 1px solid var(--btn-secondary-border);
     border-radius: 8px;
-    color: var(--text-main, #ffffff);
+    color: var(--text-main);
     padding: 8px 14px;
     font-size: 12px;
     font-weight: 600;
@@ -1267,7 +1267,7 @@
 }
 
 .graph-export-copy-btn:hover {
-    background: rgba(255, 255, 255, 0.16);
+    background: var(--btn-secondary-hover);
 }
 
 .graph-export-download-btn {
@@ -1332,12 +1332,12 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: var(--bg-secondary, #222228);
-    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.18));
+    background: var(--modal-bg, var(--bg-secondary));
+    border: 1px solid var(--border-color);
     border-radius: 12px;
     width: 290px;
     max-height: 360px;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65);
+    box-shadow: var(--modal-shadow);
     z-index: 100;
     display: flex;
     flex-direction: column;
@@ -1352,9 +1352,9 @@
     justify-content: space-between;
     font-size: 12px;
     font-weight: 700;
-    color: var(--text-main, #ffffff);
+    color: var(--text-main);
     padding-bottom: 6px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .graph-link-selector-list {
@@ -1374,7 +1374,7 @@
     cursor: pointer;
     background: transparent;
     border: none;
-    color: var(--text-main, #eee);
+    color: var(--text-main);
     font-family: inherit;
     font-size: 12px;
     text-align: left;
