@@ -87,9 +87,9 @@ window.App = window.App || {};
                 addNoteBtn.title = addNoteTitle;
                 addNoteBtn.setAttribute('aria-label', addNoteTitle);
                 addNoteBtn.innerHTML = `
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="6" x2="12" y2="18"></line>
+                        <line x1="6" y1="12" x2="18" y2="12"></line>
                     </svg>
                 `;
                 addNoteBtn.addEventListener('click', (e) => {
@@ -619,7 +619,13 @@ window.App = window.App || {};
                 if (!isBoardReadOnly && noteManager) {
                     const createFirstBtn = document.createElement('button');
                     createFirstBtn.className = 'btn-create-first-note';
-                    createFirstBtn.innerHTML = `<span class="btn-plus-icon">+</span> ${colIndex === 0 ? 'Створити першу нотатку' : 'Додати першу піднотатку'}`;
+                    createFirstBtn.innerHTML = `
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="btn-plus-icon">
+                            <line x1="12" y1="6" x2="12" y2="18"></line>
+                            <line x1="6" y1="12" x2="18" y2="12"></line>
+                        </svg>
+                        <span>${colIndex === 0 ? 'Створити першу нотатку' : 'Додати першу піднотатку'}</span>
+                    `;
                     createFirstBtn.addEventListener('click', () => noteManager.createNewNote(parentNoteId, true));
                     emptyState.appendChild(createFirstBtn);
                 }
@@ -668,7 +674,13 @@ window.App = window.App || {};
 
                     const addBtn = document.createElement('button');
                     addBtn.className = 'bottom-add-note-btn';
-                    addBtn.innerHTML = `<span class="btn-plus-icon">+</span> Додати ${colIndex === 0 ? 'нотатку' : 'піднотатку'}`;
+                    addBtn.innerHTML = `
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="btn-plus-icon">
+                            <line x1="12" y1="6" x2="12" y2="18"></line>
+                            <line x1="6" y1="12" x2="18" y2="12"></line>
+                        </svg>
+                        <span>Додати ${colIndex === 0 ? 'нотатку' : 'піднотатку'}</span>
+                    `;
                     addBtn.addEventListener('click', () => noteManager.createNewNote(parentNoteId, true));
 
                     bottomBtnContainer.appendChild(addBtn);
