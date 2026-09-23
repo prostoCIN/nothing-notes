@@ -123,6 +123,7 @@ export const en = {
         layoutGridTitle: 'Switch to single list',
         menuTitle: 'Column options',
         createNote: 'Create note',
+        createSubnote: 'Add subnote',
         fullscreenStretch: 'Fullscreen view',
         fullscreenCollapse: 'Standard view',
         filterByTags: 'Filter by tags',

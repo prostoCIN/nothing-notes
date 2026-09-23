@@ -123,6 +123,7 @@ export const ua = {
         layoutGridTitle: 'Перемкнути на звичайний список',
         menuTitle: 'Опції колонки',
         createNote: 'Створити нотатку',
+        createSubnote: 'Додати піднотатку',
         fullscreenStretch: 'Розтягнути на весь екран',
         fullscreenCollapse: 'Згорнути в звичайний розмір',
         filterByTags: 'Фільтр за тегами',

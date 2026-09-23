@@ -318,7 +318,8 @@
 
 .column-filter-btn,
 .column-layout-toggle-btn,
-.column-expand-toggle-btn {
+.column-expand-toggle-btn,
+.column-add-note-btn {
     background: none;
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: var(--text-muted);
@@ -338,7 +339,8 @@
 }
 
 .column-layout-toggle-btn,
-.column-expand-toggle-btn {
+.column-expand-toggle-btn,
+.column-add-note-btn {
     width: 26px;
     padding: 0;
 }
@@ -483,18 +485,39 @@
     color: var(--text-main);
 }
 
-.column-menu-item-create {
-    font-weight: 600;
-    color: #34d399;
+.column-menu-item-count {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    cursor: default;
+    user-select: none;
+    color: var(--text-muted);
 }
 
-.column-menu-item-create svg {
-    stroke: #34d399;
+.column-menu-item-count:hover {
+    background-color: transparent !important;
+    color: var(--text-muted) !important;
 }
 
-.column-menu-item-create:hover {
-    background-color: rgba(16, 185, 129, 0.12) !important;
-    color: #34d399 !important;
+.column-menu-count-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.column-menu-count-icon {
+    flex-shrink: 0;
+    opacity: 0.8;
+}
+
+.column-menu-count-badge {
+    min-width: 22px;
+    height: 20px;
+    padding: 0 5px;
+    font-size: 11px;
+    border-radius: 5px;
+    margin-left: auto;
 }
 
 .column-menu-section-header {
@@ -629,11 +652,22 @@
 .column-layout-toggle-btn:hover,
 .column-expand-toggle-btn:hover,
 .column-graph-toggle-btn:hover,
-.column-select-toggle-btn:hover {
+.column-select-toggle-btn:hover,
+.column-add-note-btn:hover {
     background-color: var(--hover-bg);
     color: var(--text-main);
     border-color: rgba(255, 255, 255, 0.2);
     transform: scale(0.96);
+}
+
+.column-add-note-btn:hover {
+    color: #34d399;
+    border-color: rgba(52, 211, 153, 0.35);
+    background-color: rgba(16, 185, 129, 0.08);
+}
+
+.column-add-note-btn:active {
+    transform: scale(0.92);
 }
 
 .column-layout-toggle-btn.active,

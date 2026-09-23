@@ -76,14 +76,27 @@ window.App = window.App || {};
                 });
             }
 
-            const totalNoteCount = allColNotes.length;
-
             const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
 
-            const badgeSpan = document.createElement('span');
-            badgeSpan.className = 'column-count-badge';
-            badgeSpan.textContent = totalNoteCount;
-            badgeSpan.title = t('column.notesCount', { count: totalNoteCount });
+            // Кнопка "+" для додавання нотатки в цю колонку
+            let addNoteBtn = null;
+            if (!isBoardReadOnly && noteManager) {
+                addNoteBtn = document.createElement('button');
+                addNoteBtn.className = 'column-add-note-btn';
+                const addNoteTitle = colIndex === 0 ? t('column.createNote') : (t('column.createSubnote') || 'Додати піднотатку');
+                addNoteBtn.title = addNoteTitle;
+                addNoteBtn.setAttribute('aria-label', addNoteTitle);
+                addNoteBtn.innerHTML = `
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                `;
+                addNoteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    noteManager.createNewNote(parentNoteId, true);
+                });
+            }
 
             // 1. Хедер колонки
             const header = document.createElement('div');
@@ -547,13 +560,15 @@ window.App = window.App || {};
                 }
             });
 
-            // Блок дій у шапці колонки праворуч (Actions: перемикач сітки, розтягування колонки, лічильник, меню "три крапки", кнопка закриття)
+            // Блок дій у шапці колонки праворуч (Actions: перемикач сітки, розтягування колонки, кнопка "+", меню "три крапки", кнопка закриття)
             const actionsWrap = document.createElement('div');
             actionsWrap.className = 'column-header-actions';
 
             actionsWrap.appendChild(layoutToggleBtn);
             actionsWrap.appendChild(expandColumnBtn);
-            actionsWrap.appendChild(badgeSpan);
+            if (addNoteBtn) {
+                actionsWrap.appendChild(addNoteBtn);
+            }
 
             // Тулбар-меню "три крапки" (з фільтрами, перейменуванням та поширенням)
             if (window.App.columnMenu) {
