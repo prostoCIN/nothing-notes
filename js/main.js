@@ -43,6 +43,7 @@ import './workspace/columnMenu.js';
 import './workspace/columnFilter.js';
 import './workspace/workspaceSelectionActions.js';
 import './workspace/workspaceSelectionBar.js';
+import './workspace/workspaceMarquee.js';
 import './workspace/textSelectionToolbar.js';
 import './workspace/brushTool.js';
 import './workspace/eraserTool.js';

@@ -382,4 +382,24 @@
     to { transform: scale(1); opacity: 1; }
 }
 
+/* ==========================================================================
+   Прямокутна рамка гумового мульти-вибору нотаток у робочій області (Marquee Selection)
+   ========================================================================== */
+.workspace-marquee-selection {
+    position: fixed;
+    border: 1.5px solid var(--accent-color, #10b981);
+    background-color: rgba(16, 185, 129, 0.16);
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.28), inset 0 0 8px rgba(16, 185, 129, 0.1);
+    pointer-events: none;
+    z-index: 99999;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+html[data-theme="light"] .workspace-marquee-selection {
+    border-color: #059669;
+    background-color: rgba(16, 185, 129, 0.22);
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.2);
+}
+
 

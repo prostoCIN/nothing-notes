@@ -129,6 +129,9 @@ function bootstrapApp() {
     if (window.App.workspaceSelectionBar) {
         window.App.workspaceSelectionBar.init();
     }
+    if (window.App.workspaceMarquee) {
+        window.App.workspaceMarquee.init();
+    }
     if (window.App.textSelectionToolbar) {
         window.App.textSelectionToolbar.init();
     }
