@@ -16,6 +16,10 @@ window.App = window.App || {};
             if (window.App.sidebarSelection) {
                 window.App.sidebarSelection.init();
             }
+
+            if (window.App.sidebarResizer && window.App.sidebarResizer.init) {
+                window.App.sidebarResizer.init();
+            }
         },
 
         bindEvents() {

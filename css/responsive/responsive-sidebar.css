@@ -4,8 +4,9 @@
         position: fixed;
         top: 0;
         left: 0;
-        width: 84vw;
-        max-width: 320px;
+        width: 84vw !important;
+        max-width: 320px !important;
+        min-width: 0 !important;
         height: 100vh;
         height: 100dvh;
         padding-top: env(safe-area-inset-top, 0px);

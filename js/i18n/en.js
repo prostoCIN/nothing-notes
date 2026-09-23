@@ -40,6 +40,7 @@ export const en = {
         addNote: 'Add note',
         loginRegister: 'Sign In / Register',
         siteSettings: 'Settings',
+        resizerTooltip: 'Drag to resize sidebar (double click to reset)',
         dropPocketTitle: 'Drop here to create subnote',
         actions: {
             share: 'Share',

@@ -26,6 +26,7 @@ window.App.getElements = function() {
         sidebarSharedBoardsList: document.getElementById('sidebar-shared-boards-list'),
         addNoteBtn: document.getElementById('add-note-btn'),
         notesList: document.getElementById('notes-list'),
+        sidebarResizer: document.getElementById('sidebar-resizer'),
 
         // Робоча область
         boardWorkspace: document.getElementById('board-workspace'),

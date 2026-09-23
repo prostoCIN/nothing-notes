@@ -1,0 +1,70 @@
+/* ==========================================================================
+   Стилі ручки зміни розміру сайдбара (Sidebar Resizer Handle)
+   ========================================================================== */
+
+.sidebar-resizer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 6px;
+    height: 100%;
+    cursor: col-resize;
+    z-index: 50;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    outline: none;
+    transition: background-color 0.15s ease;
+}
+
+/* Візуальна вертикальна лінія-акцент на правій межі панелі */
+.sidebar-resizer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 2px;
+    height: 100%;
+    background-color: transparent;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, width 0.15s ease;
+}
+
+.sidebar-resizer:hover::after,
+.sidebar-resizer:focus-visible::after,
+body.is-sidebar-resizing .sidebar-resizer::after {
+    background-color: var(--accent-color, #10b981);
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.45);
+    width: 3px;
+}
+
+.sidebar-resizer:hover,
+.sidebar-resizer:focus-visible {
+    background-color: rgba(16, 185, 129, 0.08);
+}
+
+body.is-sidebar-resizing .sidebar-resizer {
+    background-color: rgba(16, 185, 129, 0.12);
+}
+
+/* Глобальний стан під час активного перетягування */
+body.is-sidebar-resizing,
+body.is-sidebar-resizing * {
+    cursor: col-resize !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+}
+
+/* Вимикаємо CSS-анімації під час перетягування для 60fps плавності без затримок */
+body.is-sidebar-resizing .sidebar,
+body.is-sidebar-resizing .board-workspace,
+body.is-sidebar-resizing .columns-container,
+body.is-sidebar-resizing .board-column {
+    transition: none !important;
+}
+
+/* На мобільних пристроях ручка прихована — сайдбар працює як висувна шторка */
+@media screen and (max-width: 768px) {
+    .sidebar-resizer {
+        display: none !important;
+    }
+}

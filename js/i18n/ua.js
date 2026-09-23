@@ -40,6 +40,7 @@ export const ua = {
         addNote: 'Додати нотатку',
         loginRegister: 'Увійти / Реєстрація',
         siteSettings: 'Налаштування сайту',
+        resizerTooltip: 'Потягніть для зміни ширини (подвійний клік — скинути)',
         dropPocketTitle: 'Перетягніть сюди для створення піднотатки',
         actions: {
             share: 'Поділитись',

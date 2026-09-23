@@ -28,6 +28,7 @@ import './sidebar/sidebarSelection.js';
 import './sidebar/sidebarDragDrop.js';
 import './sidebar/sidebarTree.js';
 import './sidebar/sidebarBoards.js';
+import './sidebar/sidebarResizer.js';
 import './sidebarView.js';
 
 // 3. Модулі робочої області та стікерів (Workspace)
