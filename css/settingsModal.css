@@ -582,15 +582,163 @@ body.compact-notes-mode .masonry-column {
     box-shadow: 0 0 0 1px var(--accent-color, #10b981), 0 4px 14px rgba(0, 0, 0, 0.25);
 }
 
-.settings-lang-flag {
-    font-size: 22px;
-    line-height: 1;
+/* ==========================================================================
+   Випадаючий список мов (Language Dropdown)
+   ========================================================================== */
+.lang-flag-svg {
+    display: inline-block;
+    vertical-align: middle;
+    border-radius: 3px;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.16), 0 1px 3px rgba(0, 0, 0, 0.3);
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.settings-lang-item {
+    margin-bottom: 16px;
+}
+
+.settings-lang-dropdown-wrap {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.settings-lang-dropdown-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: var(--bg-primary, #1e1e1e);
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12));
+    border-radius: 9px;
+    padding: 8px 12px;
+    color: var(--text-main, #ffffff);
+    font-size: var(--font-sm, 13px);
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    min-width: 155px;
+    user-select: none;
+}
+
+.settings-lang-dropdown-btn:hover {
+    background: var(--hover-bg, rgba(255, 255, 255, 0.08));
+    border-color: rgba(255, 255, 255, 0.24);
+}
+
+.settings-lang-dropdown-wrap.open .settings-lang-dropdown-btn {
+    border-color: var(--accent-color, #10b981);
+    box-shadow: 0 0 0 1px var(--accent-color, #10b981);
+}
+
+.settings-lang-btn-left {
     display: flex;
     align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
+    gap: 8px;
+}
+
+.settings-lang-btn-label {
+    line-height: 1;
+}
+
+.settings-lang-chevron {
+    color: var(--text-muted, #888);
+    transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
     flex-shrink: 0;
+}
+
+.settings-lang-dropdown-wrap.open .settings-lang-chevron {
+    transform: rotate(180deg);
+}
+
+.settings-lang-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    min-width: 100%;
+    background: var(--bg-secondary, #252526);
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.15));
+    border-radius: 10px;
+    padding: 5px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+    z-index: 1000;
+    display: none;
+    flex-direction: column;
+    gap: 3px;
+    backdrop-filter: blur(16px);
+    animation: settingsLangFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes settingsLangFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.settings-lang-dropdown-wrap.open .settings-lang-dropdown-menu {
+    display: flex;
+}
+
+.settings-lang-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 10px;
+    border: none;
+    background: transparent;
+    color: var(--text-main, #eee);
+    font-size: var(--font-sm, 13px);
+    font-family: inherit;
+    font-weight: 500;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: all 0.12s ease;
+    text-align: left;
+    user-select: none;
+}
+
+.settings-lang-option:hover {
+    background: var(--hover-bg, rgba(255, 255, 255, 0.08));
+    color: var(--text-main, #fff);
+}
+
+.settings-lang-option.selected {
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--accent-color, #10b981);
+    font-weight: 600;
+}
+
+.settings-lang-option-name {
+    flex: 1;
+    white-space: nowrap;
+}
+
+.settings-lang-option-check {
+    color: var(--accent-color, #10b981);
+    font-size: 13px;
+    font-weight: 800;
+    margin-left: 6px;
+}
+
+@media (max-width: 480px) {
+    .settings-item.settings-lang-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    .settings-item.settings-lang-item .settings-lang-dropdown-wrap {
+        width: 100%;
+    }
+    .settings-item.settings-lang-item .settings-lang-dropdown-btn {
+        width: 100%;
+    }
 }
 
 .settings-theme-preview {

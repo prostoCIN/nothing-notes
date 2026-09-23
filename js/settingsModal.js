@@ -221,26 +221,35 @@ window.App = window.App || {};
 
                     <!-- Вміст: Загальні -->
                     <div class="settings-tab-content" id="settings-tab-general" style="display: ${currentTab === 'general' ? 'flex' : 'none'};">
-                        <!-- Блок 0: Вибір мови додатку -->
-                        <div class="settings-section-title" data-i18n="settings.language.title">${t('settings.language.title')}</div>
-                        <div class="settings-theme-grid settings-lang-grid" id="settings-lang-grid">
-                            <button type="button" class="settings-theme-card ${currentLang === 'ua' ? 'active' : ''}" data-lang="ua">
-                                <div class="settings-lang-flag">🇺🇦</div>
-                                <div class="settings-theme-label">
-                                    <span class="settings-theme-name" data-i18n="settings.language.ua">${t('settings.language.ua')}</span>
-                                    <span class="settings-theme-sub">Ukrainian</span>
+                        <!-- Блок 0: Вибір мови додатку (випадаючий список з прапорами) -->
+                        <div class="settings-item settings-lang-item">
+                            <div class="settings-item-info">
+                                <div class="settings-item-title" data-i18n="settings.language.title">${t('settings.language.title')}</div>
+                                <div class="settings-item-desc" data-i18n="settings.language.desc">${t('settings.language.desc')}</div>
+                            </div>
+                            <div class="settings-lang-dropdown-wrap" id="settings-lang-dropdown-wrap">
+                                <button type="button" class="settings-lang-dropdown-btn" id="settings-lang-btn" aria-haspopup="listbox" aria-expanded="false">
+                                    <span class="settings-lang-btn-left">
+                                        ${(window.App && window.App.i18n && window.App.i18n.getFlagSvg) ? window.App.i18n.getFlagSvg(currentLang) : ''}
+                                        <span class="settings-lang-btn-label">${currentLang === 'ua' ? t('settings.language.ua') : t('settings.language.en')}</span>
+                                    </span>
+                                    <svg class="settings-lang-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </button>
+                                <div class="settings-lang-dropdown-menu" id="settings-lang-menu" role="listbox">
+                                    <button type="button" class="settings-lang-option ${currentLang === 'ua' ? 'selected' : ''}" data-lang="ua" role="option">
+                                        ${(window.App && window.App.i18n && window.App.i18n.getFlagSvg) ? window.App.i18n.getFlagSvg('ua') : ''}
+                                        <span class="settings-lang-option-name" data-i18n="settings.language.ua">${t('settings.language.ua')}</span>
+                                        ${currentLang === 'ua' ? '<span class="settings-lang-option-check">✓</span>' : ''}
+                                    </button>
+                                    <button type="button" class="settings-lang-option ${currentLang === 'en' ? 'selected' : ''}" data-lang="en" role="option">
+                                        ${(window.App && window.App.i18n && window.App.i18n.getFlagSvg) ? window.App.i18n.getFlagSvg('en') : ''}
+                                        <span class="settings-lang-option-name" data-i18n="settings.language.en">${t('settings.language.en')}</span>
+                                        ${currentLang === 'en' ? '<span class="settings-lang-option-check">✓</span>' : ''}
+                                    </button>
                                 </div>
-                                <div class="settings-theme-check">✓</div>
-                            </button>
-
-                            <button type="button" class="settings-theme-card ${currentLang === 'en' ? 'active' : ''}" data-lang="en">
-                                <div class="settings-lang-flag">🇬🇧</div>
-                                <div class="settings-theme-label">
-                                    <span class="settings-theme-name" data-i18n="settings.language.en">${t('settings.language.en')}</span>
-                                    <span class="settings-theme-sub">English</span>
-                                </div>
-                                <div class="settings-theme-check">✓</div>
-                            </button>
+                            </div>
                         </div>
 
                         <!-- Блок 1: Вибір теми оформлення сайту -->
@@ -408,21 +417,41 @@ window.App = window.App || {};
             const compactToggle = modalOverlayEl.querySelector('#settings-compact-toggle');
             const tabButtons = modalOverlayEl.querySelectorAll('.settings-tab-btn');
             const themeCards = modalOverlayEl.querySelectorAll('#settings-theme-grid .settings-theme-card');
-            const langCards = modalOverlayEl.querySelectorAll('#settings-lang-grid .settings-theme-card');
+            const langDropdownWrap = modalOverlayEl.querySelector('#settings-lang-dropdown-wrap');
+            const langBtn = modalOverlayEl.querySelector('#settings-lang-btn');
+            const langOptions = modalOverlayEl.querySelectorAll('.settings-lang-option');
 
             if (closeBtn) closeBtn.addEventListener('click', () => this.close());
             if (backdrop) backdrop.addEventListener('click', () => this.close());
 
-            // Вибір мови
-            langCards.forEach(card => {
-                card.addEventListener('click', () => {
-                    const lang = card.getAttribute('data-lang');
-                    if (lang && window.App.i18n) {
-                        window.App.i18n.setLanguage(lang);
-                        this.render();
+            // Вибір мови через випадаючий список
+            if (langBtn && langDropdownWrap) {
+                langBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isOpen = langDropdownWrap.classList.toggle('open');
+                    langBtn.setAttribute('aria-expanded', String(isOpen));
+                });
+
+                langOptions.forEach(opt => {
+                    opt.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const lang = opt.getAttribute('data-lang');
+                        langDropdownWrap.classList.remove('open');
+                        langBtn.setAttribute('aria-expanded', 'false');
+                        if (lang && window.App.i18n) {
+                            window.App.i18n.setLanguage(lang);
+                            this.render();
+                        }
+                    });
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (langDropdownWrap && !langDropdownWrap.contains(e.target)) {
+                        langDropdownWrap.classList.remove('open');
+                        langBtn.setAttribute('aria-expanded', 'false');
                     }
                 });
-            });
+            }
 
             // Вибір теми
             themeCards.forEach(card => {

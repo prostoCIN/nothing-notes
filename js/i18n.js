@@ -135,12 +135,26 @@ export function updateDOM(root = document) {
     });
 }
 
+/**
+ * Отримати чистий векторний SVG прапор для мови (прапор України або Великобританії)
+ * @param {'ua'|'en'} lang
+ * @returns {string}
+ */
+export function getFlagSvg(lang) {
+    if (lang === 'ua') {
+        return `<svg class="lang-flag-svg" viewBox="0 0 24 16" width="20" height="14" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="24" height="8" fill="#0057B7"/><rect y="8" width="24" height="8" fill="#FFD700"/></svg>`;
+    }
+    // Great Britain (UK)
+    return `<svg class="lang-flag-svg" viewBox="0 0 60 30" width="20" height="14" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="60" height="30" fill="#012169"/><path d="M0 0L60 30M60 0L0 30" stroke="#ffffff" stroke-width="6"/><path d="M0 0L30 15M60 30L30 15" stroke="#C8102E" stroke-width="2" transform="translate(0, 1)"/><path d="M60 0L30 15M0 30L30 15" stroke="#C8102E" stroke-width="2" transform="translate(0, -1)"/><path d="M30 0v30M0 15h60" stroke="#ffffff" stroke-width="10"/><path d="M30 0v30M0 15h60" stroke="#C8102E" stroke-width="6"/></svg>`;
+}
+
 // Ініціалізація глобального об'єкта
 if (!window.App) window.App = {};
 window.App.i18n = {
     t,
     getLanguage,
     setLanguage,
+    getFlagSvg,
     updateDOM,
     supported: SUPPORTED_LANGS
 };
