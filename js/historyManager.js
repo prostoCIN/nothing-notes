@@ -238,7 +238,7 @@ window.App = window.App || {};
             // Оновлюємо стан: нотатки інших блокнотів залишаються неторканими
             const otherBoardsNotes = state.notes.filter(n => n.boardId !== activeBoardId);
             state.notes = [...otherBoardsNotes, ...targetBoardNotes];
-            storage.saveNotes(state.notes);
+            storage.saveNotes(state.notes, true);
 
             // 3. ТОЧКОВА синхронізація з Supabase: пушимо тільки реальні зміни!
             if (window.App.cloudSync) {

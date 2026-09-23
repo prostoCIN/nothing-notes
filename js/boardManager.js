@@ -151,7 +151,7 @@ window.App = window.App || {};
                 });
 
                 state.notes = state.notes.filter(n => n.boardId !== id);
-                storage.saveNotes(state.notes);
+                storage.saveNotes(state.notes, true);
 
                 if (window.App.events) {
                     window.App.events.emit('board:deleted', { boardId: id });
@@ -162,7 +162,13 @@ window.App = window.App || {};
                         window.App.cloudSync.deleteBoardFromCloud(id);
                     }
                     window.App.cloudSync.syncBoards();
-                    deletedNotes.forEach(dn => window.App.cloudSync.deleteNoteFromCloud(dn.id));
+                    if (deletedNotes.length > 0) {
+                        if (window.App.cloudSync.deleteNotesFromCloud) {
+                            window.App.cloudSync.deleteNotesFromCloud(deletedNotes.map(dn => dn.id));
+                        } else {
+                            deletedNotes.forEach(dn => window.App.cloudSync.deleteNoteFromCloud(dn.id));
+                        }
+                    }
                     // Видаляємо посилання шерингу цього блокнота, щоб не лишати «мертвих» записів у базі
                     if (window.App.supabase) {
                         window.App.supabase.from('board_shares').delete().eq('board_id', id).then(() => {});

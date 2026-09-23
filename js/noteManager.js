@@ -250,7 +250,7 @@ window.DOMPurify = window.DOMPurify || DOMPurify;
                 state.selectedSidebarNoteIds.clear();
                 state.selectedWorkspaceNoteIds.clear();
 
-                storage.saveNotes(state.notes);
+                storage.saveNotes(state.notes, true);
 
                 const deletedIds = Array.from(toDeleteIds);
                 this.notifyNotesChanged({ type: 'delete', deletedIds });

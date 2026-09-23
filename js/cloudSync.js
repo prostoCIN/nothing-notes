@@ -561,24 +561,29 @@ window.App = window.App || {};
                     });
 
                     // Зберігаємо ТІЛЬКИ ті локальні нотатки, які реально були створені офлайн на ЦЬОМУ пристрої
+                    // ТА очікують первинного вивантаження в хмару (знаходяться в черзі pendingUpsertIds).
+                    // Якщо локальної нотатки немає в черзі очікування відправки — отже, вона вже колись була в хмарі
+                    // і була видалена з іншого девайсу. Її НЕ МОЖНА воскрешати!
                     const cloudIds = new Set(cloudNotes.map(n => n.id));
                     state.notes.forEach(localNote => {
                         if (!cloudIds.has(localNote.id)) {
-                            const isOfflineCreated = (localNote.isOfflineCreated || offlineCreatedNoteIds.has(localNote.id))
+                            const isPendingOfflineCreation = pendingUpsertIds.has(localNote.id)
+                                && (localNote.isOfflineCreated || offlineCreatedNoteIds.has(localNote.id))
                                 && !locallyDeletedNoteIds.has(localNote.id)
                                 && !pendingDeleteIds.has(localNote.id);
 
-                            if (isOfflineCreated) {
-                                console.log('[CloudSync] 💾 Preserving genuine offline-created note:', localNote.id);
+                            if (isPendingOfflineCreation) {
+                                console.log('[CloudSync] 💾 Preserving genuine offline-created note awaiting upload:', localNote.id);
                                 formattedNotes.push(localNote);
-                                queueOfflineAction({ type: 'upsert_note', id: localNote.id });
                             } else {
-                                // Нотатка відсутня в хмарі і НЕ була створена офлайн — значить вона була видалена в хмарі.
-                                // Очищаємо застарілі локальні черги, щоб вона ніколи не воскресала!
+                                // Нотатка відсутня в хмарі і НЕ є невідправленим офлайн-створенням —
+                                // значить вона була видалена в хмарі на іншому девайсі. Видаляємо її локально!
+                                console.log('[CloudSync] 🗑️ Discarding note deleted in cloud from another device:', localNote.id);
                                 removeOfflineAction(localNote.id);
                                 if (_pendingSyncNotesMap) _pendingSyncNotesMap.delete(localNote.id);
                                 if (_pendingReorderNotesMap) _pendingReorderNotesMap.delete(localNote.id);
                                 unmarkOfflineCreated(localNote.id);
+                                if (localNote.isOfflineCreated) delete localNote.isOfflineCreated;
                             }
                         }
                     });
@@ -924,6 +929,9 @@ window.App = window.App || {};
                         unmarkOfflineCreated(n.id);
                         if (n.isOfflineCreated) delete n.isOfflineCreated;
                     });
+                    // Фіксуємо очищення прапорця isOfflineCreated у LocalStorage,
+                    // щоб після перезавантаження нотатки не вважалися знову офлайн-створеними
+                    window.App.storage.saveNotes(state.notes, true);
                 }
             } catch (err) {
                 console.warn('[CloudSync] Bulk upsert exception:', err);
@@ -978,6 +986,8 @@ window.App = window.App || {};
                     removeOfflineAction(note.id, 'upsert_note');
                     unmarkOfflineCreated(note.id);
                     if (note.isOfflineCreated) delete note.isOfflineCreated;
+                    // Фіксуємо очищення прапорця isOfflineCreated у LocalStorage
+                    window.App.storage.saveNotes(state.notes, true);
                 }
             } catch (err) {
                 console.warn('[CloudSync] Upsert exception:', err);
@@ -999,9 +1009,17 @@ window.App = window.App || {};
             const supabase = window.App.supabase;
 
             try {
-                const { error } = await supabase.from('notes').delete().eq('id', noteId);
-                if (!error) {
+                // Обнуляємо parent_id у дочірніх нотатках про всяк випадок перед видаленням
+                try {
+                    await supabase.from('notes').update({ parent_id: null }).eq('id', noteId);
+                } catch (e) {}
+
+                const { data, error } = await supabase.from('notes').delete().eq('id', noteId).select('id');
+                if (error) {
+                    console.error('[CloudSync] ❌ Delete single note error:', error.message, error);
+                } else {
                     removeOfflineAction(noteId, 'delete_note');
+                    console.log(`[CloudSync] 🗑️ Note "${noteId}" deleted from cloud database.`);
                 }
             } catch (err) {
                 console.warn('[CloudSync] Delete exception:', err);
@@ -1023,11 +1041,28 @@ window.App = window.App || {};
             const supabase = window.App.supabase;
 
             try {
-                const { error } = await supabase.from('notes').delete().in('id', noteIds);
-                if (!error) {
+                // 1. Скидаємо parent_id у видаляємих нотатках, щоб foreign key constraints
+                // між батьківськими та дочірніми нотатками ніколи не блокували каскадне видалення в Postgres
+                try {
+                    await supabase.from('notes').update({ parent_id: null }).in('id', noteIds);
+                } catch (e) {}
+
+                const { data, error } = await supabase.from('notes').delete().in('id', noteIds).select('id');
+                if (error) {
+                    console.error('[CloudSync] ❌ Batch delete error from Supabase:', error.message, error);
+                    // Fallback: якщо batch delete по .in() дав збій, пробуємо видалити поодинці
+                    for (const singleId of noteIds) {
+                        try {
+                            const { error: singleErr } = await supabase.from('notes').delete().eq('id', singleId);
+                            if (!singleErr) {
+                                removeOfflineAction(singleId, 'delete_note');
+                            }
+                        } catch (e) {}
+                    }
+                } else {
                     noteIds.forEach(id => removeOfflineAction(id, 'delete_note'));
+                    console.log(`[CloudSync] 🗑️ Batch deleted ${noteIds.length} notes from cloud.`);
                 }
-                console.log(`[CloudSync] 🗑️ Batch deleted ${noteIds.length} notes from cloud.`);
             } catch (err) {
                 console.warn('[CloudSync] Batch delete exception:', err);
             }
@@ -1049,10 +1084,23 @@ window.App = window.App || {};
             // 1. Видалення накопичених нотаток
             if (deleteNoteIds.length > 0) {
                 try {
+                    try {
+                        await window.App.supabase.from('notes').update({ parent_id: null }).in('id', deleteNoteIds);
+                    } catch (e) {}
+
                     const { error } = await window.App.supabase.from('notes').delete().in('id', deleteNoteIds);
                     if (!error) {
                         deleteNoteIds.forEach(id => removeOfflineAction(id, 'delete_note'));
                         console.log(`[CloudSync] ⚡ Successfully flushed ${deleteNoteIds.length} offline note deletes.`);
+                    } else {
+                        console.error('[CloudSync] ❌ Error flushing delete notes queue:', error);
+                        // Fallback поодинокого видалення
+                        for (const sId of deleteNoteIds) {
+                            try {
+                                const { error: sErr } = await window.App.supabase.from('notes').delete().eq('id', sId);
+                                if (!sErr) removeOfflineAction(sId, 'delete_note');
+                            } catch (e) {}
+                        }
                     }
                 } catch (e) {
                     console.warn('[CloudSync] Error flushing delete notes queue:', e);
