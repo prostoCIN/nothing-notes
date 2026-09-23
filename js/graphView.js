@@ -35,6 +35,11 @@ window.App = window.App || {};
     // Стан нових інтелектуальних фільтрів та попереднього перегляду
     let isOrphansOnly = false;
     let showTagLinks = true;
+    let showDirectedLinks = true;
+    let isConnectMode = false;
+    let connectSourceNode = null;
+    let connectBannerEl = null;
+    let exportModalEl = null;
     let activeTagFilter = null;
     let previewCard = null;
     let previewNode = null;
@@ -185,6 +190,24 @@ window.App = window.App || {};
                                 </span>
                                 <span class="filter-btn-label">Зв'язки тегів</span>
                             </button>
+                            <button class="graph-toolbar-filter-btn is-active" id="graph-toggle-directed-links" title="Увімкнути/вимкнути спрямовані зв'язки (пайплайни)">
+                                <span class="filter-btn-icon">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                        <polyline points="12 5 19 12 12 19"></polyline>
+                                    </svg>
+                                </span>
+                                <span class="filter-btn-label">Спрямовані</span>
+                            </button>
+                            <button class="graph-toolbar-filter-btn is-connect-btn" id="graph-connect-mode-btn" title="Режим створення зв'язків: клікніть дві нотатки, щоб створити спрямовану стрілку">
+                                <span class="filter-btn-icon">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                                    </svg>
+                                </span>
+                                <span class="filter-btn-label">З'єднати</span>
+                            </button>
                         </div>
                     </div>
 
@@ -204,6 +227,14 @@ window.App = window.App || {};
                                 </svg>
                             </button>
                         </div>
+                        <button class="graph-export-btn" id="graph-export-btn" title="Експорт графу для ШІ (JSON, Mermaid, PNG, Markdown)">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            <span>Експорт</span>
+                        </button>
                         <button class="graph-mobile-filters-trigger" id="graph-mobile-filters-trigger" title="Фільтри та зв'язки графу" aria-label="Фільтри графу">
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                 <line x1="4" y1="21" x2="4" y2="14"></line>
@@ -283,6 +314,50 @@ window.App = window.App || {};
                                         <span class="graph-mobile-checkbox"></span>
                                     </div>
                                 </button>
+
+                                <button class="graph-mobile-toggle-btn is-active" id="graph-mobile-toggle-directed-links">
+                                    <div class="graph-mobile-toggle-left">
+                                        <svg class="graph-mobile-toggle-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                                            <polyline points="12 5 19 12 12 19"></polyline>
+                                        </svg>
+                                        <div class="graph-mobile-toggle-info">
+                                            <span class="graph-mobile-toggle-title">Спрямовані зв'язки</span>
+                                            <span class="graph-mobile-toggle-sub">Стрілки пайплайну</span>
+                                        </div>
+                                    </div>
+                                    <div class="graph-mobile-toggle-right">
+                                        <span class="graph-mobile-checkbox"></span>
+                                    </div>
+                                </button>
+
+                                <button class="graph-mobile-toggle-btn is-connect-btn" id="graph-mobile-connect-mode-btn">
+                                    <div class="graph-mobile-toggle-left">
+                                        <svg class="graph-mobile-toggle-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                                            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                                        </svg>
+                                        <div class="graph-mobile-toggle-info">
+                                            <span class="graph-mobile-toggle-title">З'єднати нотатки</span>
+                                            <span class="graph-mobile-toggle-sub">Режим створення стрілки</span>
+                                        </div>
+                                    </div>
+                                    <div class="graph-mobile-toggle-right">
+                                        <span class="graph-mobile-badge" style="display:none;">ON</span>
+                                    </div>
+                                </button>
+                            </div>
+
+                            <div class="graph-mobile-section-label">Експорт графу</div>
+                            <div style="margin-bottom: 12px;">
+                                <button class="graph-export-btn" id="graph-mobile-export-btn" style="width: 100%; justify-content: center; height: 42px;">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="7 10 12 15 17 10"></polyline>
+                                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                                    </svg>
+                                    <span>Експорт графу (JSON / Mermaid / PNG)</span>
+                                </button>
                             </div>
 
                             <div class="graph-mobile-section-label" id="graph-mobile-tags-label" style="display: none;">Фільтр за тегами</div>
@@ -317,6 +392,18 @@ window.App = window.App || {};
                     </div>
                     <div class="graph-preview-tags" id="graph-preview-tags"></div>
                     <div class="graph-preview-body" id="graph-preview-body"></div>
+
+                    <!-- Спрямовані зв'язки нотатки (пайплайн) -->
+                    <div class="graph-preview-links-section" id="graph-preview-links-section">
+                        <div class="graph-preview-links-header">
+                            <span class="graph-preview-links-title">Спрямовані зв'язки</span>
+                            <button type="button" class="graph-preview-add-link-btn" id="graph-preview-add-link-btn" title="Додати зв'язок з іншою нотаткою">
+                                <span>+ З'єднати</span>
+                            </button>
+                        </div>
+                        <div class="graph-preview-links-list" id="graph-preview-links-list"></div>
+                    </div>
+
                     <div class="graph-preview-footer">
                         <span class="graph-preview-meta" id="graph-preview-meta"></span>
                         <button class="graph-preview-open-btn" id="graph-preview-open-btn">
@@ -356,6 +443,10 @@ window.App = window.App || {};
                     <div class="graph-legend-item">
                         <span class="graph-legend-dot subnote"></span>
                         <span>Піднотатки</span>
+                    </div>
+                    <div class="graph-legend-item">
+                        <span class="graph-legend-dot" style="background: #10b981;"></span>
+                        <span>Спрямовані (пайплайн)</span>
                     </div>
                     <div class="graph-legend-item">
                         <span class="graph-legend-dot" style="background: #f59e0b; border: 1px dashed #f59e0b;"></span>
@@ -447,6 +538,48 @@ window.App = window.App || {};
                 mobileTagLinksBtn.addEventListener('click', toggleTagLinks);
             }
 
+            // 2b. Перемикач спрямованих зв'язків (Directed links)
+            const directedLinksBtn = container.querySelector('#graph-toggle-directed-links');
+            const mobileDirectedLinksBtn = container.querySelector('#graph-mobile-toggle-directed-links');
+            const toggleDirectedLinks = () => {
+                showDirectedLinks = !showDirectedLinks;
+                if (directedLinksBtn) directedLinksBtn.classList.toggle('is-active', showDirectedLinks);
+                if (mobileDirectedLinksBtn) mobileDirectedLinksBtn.classList.toggle('is-active', showDirectedLinks);
+                this.updateMobileFilterIndicator();
+                this.hidePreviewCard(true);
+                this.updateEdgesCounter();
+                this.wakeUpSimulation();
+                this.draw();
+            };
+            if (directedLinksBtn) {
+                directedLinksBtn.classList.toggle('is-active', showDirectedLinks);
+                directedLinksBtn.addEventListener('click', toggleDirectedLinks);
+            }
+            if (mobileDirectedLinksBtn) {
+                mobileDirectedLinksBtn.classList.toggle('is-active', showDirectedLinks);
+                mobileDirectedLinksBtn.addEventListener('click', toggleDirectedLinks);
+            }
+
+            // 2c. Режим з'єднання нотаток (Connect Mode)
+            const connectBtn = container.querySelector('#graph-connect-mode-btn');
+            const mobileConnectBtn = container.querySelector('#graph-mobile-connect-mode-btn');
+            const handleConnectToggle = () => {
+                this.toggleConnectMode();
+                closeMobileSheet();
+            };
+            if (connectBtn) connectBtn.addEventListener('click', handleConnectToggle);
+            if (mobileConnectBtn) mobileConnectBtn.addEventListener('click', handleConnectToggle);
+
+            // 2d. Кнопка експорту графу
+            const exportBtn = container.querySelector('#graph-export-btn');
+            const mobileExportBtn = container.querySelector('#graph-mobile-export-btn');
+            const handleOpenExport = () => {
+                closeMobileSheet();
+                this.openExportModal();
+            };
+            if (exportBtn) exportBtn.addEventListener('click', handleOpenExport);
+            if (mobileExportBtn) mobileExportBtn.addEventListener('click', handleOpenExport);
+
             // 3. Події картки швидкого перегляду
             if (previewCard) {
                 previewCard.addEventListener('pointerenter', () => {
@@ -506,6 +639,10 @@ window.App = window.App || {};
                     searchInput.blur();
                 } else if (e.key === 'Escape' && mobileSheetBackdrop && mobileSheetBackdrop.classList.contains('is-open')) {
                     closeMobileSheet();
+                } else if (e.key === 'Escape' && isConnectMode) {
+                    this.toggleConnectMode(false);
+                } else if (e.key === 'Escape' && exportModalEl) {
+                    this.closeExportModal();
                 } else if (e.key === 'Escape' && previewCard && previewCard.classList.contains('active')) {
                     this.hidePreviewCard(true);
                 }
@@ -736,7 +873,9 @@ window.App = window.App || {};
                     vx: 0,
                     vy: 0,
                     childCount: 0,
-                    isOrphan: false
+                    isOrphan: false,
+                    outgoingLinks: [],
+                    incomingLinks: []
                 };
 
                 if (nodesLayer) {
@@ -771,6 +910,14 @@ window.App = window.App || {};
                 notesMap.set(note.id, node);
             });
 
+            // Мапа заголовків для швидкого пошуку цілей wiki-посилань [[Заголовок]]
+            const rawNotesByTitle = new Map();
+            boardNotes.forEach(n => {
+                if (n.title && n.title.trim()) {
+                    rawNotesByTitle.set(n.title.trim().toLowerCase(), n.id);
+                }
+            });
+
             // 2. Формуємо ребра (Edges) між батьківськими та дочірніми нотатками
             nodes.forEach(node => {
                 if (node.parentId && notesMap.has(node.parentId)) {
@@ -788,10 +935,74 @@ window.App = window.App || {};
                 }
             });
 
+            // 2b. Формуємо спрямовані зв'язки (пайплайни) через note.links або [[wiki-links]]
+            const directedEdgePairs = new Set();
+            boardNotes.forEach(rawNote => {
+                const sourceNode = notesMap.get(rawNote.id);
+                if (!sourceNode) return;
+
+                const targetIds = new Set();
+
+                // 1) Зі структурованого масиву rawNote.links
+                if (Array.isArray(rawNote.links)) {
+                    rawNote.links.forEach(t => {
+                        const tid = typeof t === 'string' ? t : (t && t.id ? t.id : null);
+                        if (tid && tid !== rawNote.id) targetIds.add(tid);
+                    });
+                }
+
+                // 2) З тексту нотатки: [[id:NOTE_ID|...]] або [[Target Title]]
+                if (rawNote.content && typeof rawNote.content === 'string') {
+                    const idMatches = rawNote.content.matchAll(/\[\[id:([a-zA-Z0-9_\-]+)(?:\|[^\]]*)?\]\]/g);
+                    for (const m of idMatches) {
+                        if (m[1] && m[1] !== rawNote.id) targetIds.add(m[1]);
+                    }
+
+                    const titleMatches = rawNote.content.matchAll(/\[\[(?!id:)([^\]|]+)(?:\|[^\]]*)?\]\]/g);
+                    for (const m of titleMatches) {
+                        const candidate = m[1].trim();
+                        if (rawNotesById.has(candidate)) {
+                            if (candidate !== rawNote.id) targetIds.add(candidate);
+                        } else if (rawNotesByTitle.has(candidate.toLowerCase())) {
+                            const foundId = rawNotesByTitle.get(candidate.toLowerCase());
+                            if (foundId && foundId !== rawNote.id) targetIds.add(foundId);
+                        }
+                    }
+                }
+
+                targetIds.forEach(targetId => {
+                    const targetNode = notesMap.get(targetId);
+                    if (!targetNode || targetNode.id === sourceNode.id) return;
+
+                    const pairKey = `${sourceNode.id}->${targetNode.id}`;
+                    if (directedEdgePairs.has(pairKey)) return;
+                    directedEdgePairs.add(pairKey);
+
+                    sourceNode.outgoingLinks.push({
+                        id: targetNode.id,
+                        title: targetNode.title,
+                        icon: targetNode.icon
+                    });
+                    targetNode.incomingLinks.push({
+                        id: sourceNode.id,
+                        title: sourceNode.title,
+                        icon: sourceNode.icon
+                    });
+
+                    edges.push({
+                        source: sourceNode,
+                        target: targetNode,
+                        color: '#10b981',
+                        length: 120 + Math.random() * 20,
+                        type: 'directed'
+                    });
+                });
+            });
+
             // 3. Розрахунок ізольованих нотаток (сиріт)
             let orphansCount = 0;
             nodes.forEach(node => {
-                node.isOrphan = !node.parentId && (node.childCount === 0);
+                node.isOrphan = !node.parentId && (node.childCount === 0) && (node.outgoingLinks.length === 0) && (node.incomingLinks.length === 0);
                 if (node.isOrphan) {
                     orphansCount++;
                     if (node.element) {
@@ -825,7 +1036,10 @@ window.App = window.App || {};
             this.renderTagsBar(tagsCountMap);
 
             const tagEdgePairs = new Set();
-            const hasHierarchyEdge = (n1, n2) => (n1.parentId === n2.id || n2.parentId === n1.id);
+            const hasExistingEdge = (n1, n2) => (
+                n1.parentId === n2.id || n2.parentId === n1.id ||
+                directedEdgePairs.has(`${n1.id}->${n2.id}`) || directedEdgePairs.has(`${n2.id}->${n1.id}`)
+            );
 
             tagToNodes.forEach((taggedNodes, tagText) => {
                 if (taggedNodes.length < 2) return;
@@ -837,7 +1051,7 @@ window.App = window.App || {};
 
                     const n1 = taggedNodes[i];
                     const n2 = taggedNodes[nextIdx];
-                    if (n1 === n2 || hasHierarchyEdge(n1, n2)) continue;
+                    if (n1 === n2 || hasExistingEdge(n1, n2)) continue;
 
                     const pairKey = n1.id < n2.id ? (n1.id + '__' + n2.id) : (n2.id + '__' + n1.id);
                     if (tagEdgePairs.has(pairKey)) continue;
@@ -972,7 +1186,7 @@ window.App = window.App || {};
             if (!container) return;
             const trigger = container.querySelector('#graph-mobile-filters-trigger');
             const dot = container.querySelector('#graph-filter-indicator');
-            const hasActive = isOrphansOnly || !showTagLinks || (activeTagFilter !== null);
+            const hasActive = isOrphansOnly || !showTagLinks || !showDirectedLinks || (activeTagFilter !== null);
             if (trigger) trigger.classList.toggle('has-active-filters', hasActive);
             if (dot) dot.classList.toggle('is-visible', hasActive);
         },
@@ -981,7 +1195,12 @@ window.App = window.App || {};
             if (!container) return;
             const counter = container.querySelector('#graph-nodes-counter');
             if (counter) {
-                const activeEdgesCount = edges.filter(e => !isOrphansOnly && (e.type !== 'tag' || showTagLinks)).length;
+                const activeEdgesCount = edges.filter(e => {
+                    if (isOrphansOnly) return false;
+                    if (e.type === 'tag' && !showTagLinks) return false;
+                    if (e.type === 'directed' && !showDirectedLinks) return false;
+                    return true;
+                }).length;
                 counter.textContent = `${nodes.length} нотаток, ${activeEdgesCount} зв'язків`;
             }
         },
@@ -1068,6 +1287,65 @@ window.App = window.App || {};
                 const rawNote = window.App.noteManager ? window.App.noteManager.getNoteById(node.id) : null;
                 const timeStr = rawNote && rawNote.updatedAt ? `Змінено ${formatTimeAgo(rawNote.updatedAt)}` : '';
                 metaEl.textContent = timeStr;
+            }
+
+            // Секція спрямованих зв'язків нотатки (пайплайн)
+            const linksSection = previewCard.querySelector('#graph-preview-links-section');
+            const linksList = previewCard.querySelector('#graph-preview-links-list');
+            const addLinkBtn = previewCard.querySelector('#graph-preview-add-link-btn');
+
+            if (linksSection && linksList) {
+                const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
+                const outgoing = node.outgoingLinks || [];
+                const incoming = node.incomingLinks || [];
+
+                if (outgoing.length === 0 && incoming.length === 0) {
+                    linksList.innerHTML = `<div style="font-size: 11px; color: var(--text-muted, #777); font-style: italic; padding: 2px 0;">${t('graph.noLinks', 'Немає спрямованих зв\'язків')}</div>`;
+                } else {
+                    let html = '';
+                    outgoing.forEach(target => {
+                        html += `
+                            <div class="graph-preview-link-item" data-source-id="${node.id}" data-target-id="${target.id}">
+                                <span class="graph-preview-link-target" title="${t('graph.outgoingLinks', 'Спрямовані зв\'язки (куди):')} ${target.title}">
+                                    <span class="graph-preview-link-arrow">──></span>
+                                    <span>${target.icon || '📄'} ${target.title}</span>
+                                </span>
+                                <button type="button" class="graph-preview-link-del" title="${t('graph.deleteLink', 'Видалити зв\'язок')}">✕</button>
+                            </div>
+                        `;
+                    });
+                    incoming.forEach(src => {
+                        html += `
+                            <div class="graph-preview-link-item" data-source-id="${src.id}" data-target-id="${node.id}">
+                                <span class="graph-preview-link-target" title="${t('graph.incomingLinks', 'Вхідні залежності (звідки):')} ${src.title}">
+                                    <span class="graph-preview-link-arrow"><──</span>
+                                    <span>${src.icon || '📄'} ${src.title}</span>
+                                </span>
+                                <button type="button" class="graph-preview-link-del" title="${t('graph.deleteLink', 'Видалити зв\'язок')}">✕</button>
+                            </div>
+                        `;
+                    });
+                    linksList.innerHTML = html;
+
+                    linksList.querySelectorAll('.graph-preview-link-del').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            const item = btn.closest('.graph-preview-link-item');
+                            if (item) {
+                                const sId = item.dataset.sourceId;
+                                const tId = item.dataset.targetId;
+                                this.removeDirectedLink(sId, tId);
+                            }
+                        });
+                    });
+                }
+
+                if (addLinkBtn) {
+                    addLinkBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        this.openLinkSelectorModal(node);
+                    };
+                }
             }
 
             if (openBtn) {
@@ -1221,13 +1499,14 @@ window.App = window.App || {};
             // 2. Сила пружин по зв'язках (Hooke's Law: дія та протидія рівні й протилежні)
             edges.forEach(edge => {
                 if (edge.type === 'tag' && !showTagLinks) return;
+                if (edge.type === 'directed' && !showDirectedLinks) return;
                 const s = edge.source;
                 const t = edge.target;
                 let dx = t.x - s.x;
                 let dy = t.y - s.y;
                 let dist = Math.sqrt(dx * dx + dy * dy) || 1;
                 let displacement = dist - edge.length;
-                const k = (edge.type === 'tag') ? (springK * 0.35) : springK;
+                const k = (edge.type === 'tag') ? (springK * 0.35) : (edge.type === 'directed' ? (springK * 0.75) : springK);
                 let force = displacement * k;
 
                 let fx = (dx / dist) * force;
@@ -1356,8 +1635,11 @@ window.App = window.App || {};
 
                 // Якщо тип - тег, і тегові зв'язки вимкнено - пропускаємо
                 if (edge.type === 'tag' && !showTagLinks) return;
+                // Якщо тип - спрямований, і спрямовані вимкнено - пропускаємо
+                if (edge.type === 'directed' && !showDirectedLinks) return;
 
                 const isTagEdge = (edge.type === 'tag');
+                const isDirectedEdge = (edge.type === 'directed');
 
                 // Перевірка активного фільтра за тегами
                 const sourceMatchesTag = !activeTagFilter || (edge.source.tags && edge.source.tags.some(t => (typeof t === 'string' ? t : (t.text || '')) === activeTagFilter));
@@ -1368,7 +1650,7 @@ window.App = window.App || {};
                     activeSubtreeIds.has(edge.source.id) &&
                     activeSubtreeIds.has(edge.target.id));
 
-                const branchColor = edge.color || edge.source.branchColor || '#10b981';
+                const branchColor = isDirectedEdge ? '#10b981' : (edge.color || edge.source.branchColor || '#10b981');
 
                 ctx.beginPath();
                 ctx.moveTo(edge.source.x, edge.source.y);
@@ -1398,6 +1680,10 @@ window.App = window.App || {};
                     ctx.lineWidth = (activeTagFilter ? 2.0 : 1.3) / camera.zoom;
                     ctx.shadowBlur = activeTagFilter ? 8 : 0;
                     ctx.shadowColor = branchColor;
+                } else if (isDirectedEdge) {
+                    ctx.strokeStyle = branchColor + 'cc';
+                    ctx.lineWidth = 1.8 / camera.zoom;
+                    ctx.shadowBlur = 0;
                 } else {
                     ctx.strokeStyle = branchColor + '40';
                     ctx.lineWidth = 1.2 / camera.zoom;
@@ -1406,6 +1692,46 @@ window.App = window.App || {};
 
                 ctx.stroke();
                 ctx.shadowBlur = 0;
+
+                // Стрілка для спрямованих зв'язків (пайплайн)
+                if (isDirectedEdge) {
+                    const dx = edge.target.x - edge.source.x;
+                    const dy = edge.target.y - edge.source.y;
+                    const angle = Math.atan2(dy, dx);
+                    const targetRadius = edge.target.radius || 16;
+                    const tipX = edge.target.x - Math.cos(angle) * (targetRadius + 2);
+                    const tipY = edge.target.y - Math.sin(angle) * (targetRadius + 2);
+
+                    const headLen = Math.max(8, 11 / Math.sqrt(camera.zoom));
+                    const wingAngle = Math.PI / 6;
+
+                    ctx.beginPath();
+                    ctx.moveTo(tipX, tipY);
+                    ctx.lineTo(
+                        tipX - headLen * Math.cos(angle - wingAngle),
+                        tipY - headLen * Math.sin(angle - wingAngle)
+                    );
+                    ctx.lineTo(
+                        tipX - (headLen * 0.55) * Math.cos(angle),
+                        tipY - (headLen * 0.55) * Math.sin(angle)
+                    );
+                    ctx.lineTo(
+                        tipX - headLen * Math.cos(angle + wingAngle),
+                        tipY - headLen * Math.sin(angle + wingAngle)
+                    );
+                    ctx.closePath();
+
+                    if (activeTagFilter && !edgeMatchesTagFilter) {
+                        ctx.fillStyle = branchColor + '10';
+                    } else if (isHighlighted) {
+                        ctx.fillStyle = '#34d399';
+                    } else if (activeSubtreeIds) {
+                        ctx.fillStyle = branchColor + '20';
+                    } else {
+                        ctx.fillStyle = branchColor;
+                    }
+                    ctx.fill();
+                }
             });
 
             ctx.setLineDash([]);
@@ -1506,6 +1832,10 @@ window.App = window.App || {};
         cleanup() {
             this.stopSimulation();
             this.hidePreviewCard(true);
+            if (isConnectMode) {
+                this.toggleConnectMode(false);
+            }
+            this.closeExportModal();
             nodes = [];
             edges = [];
             hoveredNode = null;
@@ -1563,6 +1893,30 @@ window.App = window.App || {};
             const targetNode = this.getNodeAt(e.clientX, e.clientY);
             startMousePos = { x: e.clientX, y: e.clientY };
             lastMousePos = { x: e.clientX, y: e.clientY };
+
+            if (isConnectMode) {
+                if (targetNode) {
+                    const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
+                    if (!connectSourceNode) {
+                        connectSourceNode = targetNode;
+                        if (targetNode.element) targetNode.element.classList.add('is-connect-source');
+                        const msg = t('graph.connectSelectTarget', { title: targetNode.title });
+                        this.updateConnectBanner(msg);
+                    } else {
+                        if (targetNode.id === connectSourceNode.id) return;
+                        const sId = connectSourceNode.id;
+                        const tId = targetNode.id;
+                        const sTitle = connectSourceNode.title;
+                        const tTitle = targetNode.title;
+
+                        this.addDirectedLink(sId, tId);
+                        this.toggleConnectMode(false);
+                        const successMsg = t('graph.connectSuccess', { source: sTitle, target: tTitle });
+                        this.showToast(successMsg);
+                    }
+                }
+                return;
+            }
 
             if (targetNode) {
                 isDraggingNode = true;
@@ -1702,6 +2056,837 @@ window.App = window.App || {};
             setTimeout(() => {
                 window.App.workspaceView.scrollToNote(noteId);
             }, 100);
+        },
+
+        toggleConnectMode(forceState = null) {
+            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
+            isConnectMode = (forceState !== null) ? forceState : !isConnectMode;
+            connectSourceNode = null;
+
+            const connectBtn = container ? container.querySelector('#graph-connect-mode-btn') : null;
+            const mobileConnectBtn = container ? container.querySelector('#graph-mobile-connect-mode-btn') : null;
+
+            if (connectBtn) connectBtn.classList.toggle('is-active', isConnectMode);
+            if (mobileConnectBtn) mobileConnectBtn.classList.toggle('is-active', isConnectMode);
+
+            if (isConnectMode) {
+                this.updateConnectBanner(t('graph.connectSelectSource', 'Оберіть першу нотатку (звідки виходить стрілка)'));
+            } else {
+                if (connectBannerEl) {
+                    connectBannerEl.remove();
+                    connectBannerEl = null;
+                }
+                nodes.forEach(n => {
+                    if (n.element) n.element.classList.remove('is-connect-source');
+                });
+            }
+        },
+
+        updateConnectBanner(message) {
+            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
+            if (!container) return;
+            if (!connectBannerEl) {
+                connectBannerEl = document.createElement('div');
+                connectBannerEl.className = 'graph-connect-banner';
+                container.appendChild(connectBannerEl);
+            }
+
+            connectBannerEl.innerHTML = `
+                <span class="graph-connect-banner-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                    </svg>
+                </span>
+                <span class="graph-connect-banner-text">${message}</span>
+                <button type="button" class="graph-connect-banner-cancel">${t('graph.cancelConnect', 'Скасувати')}</button>
+            `;
+
+            const cancelBtn = connectBannerEl.querySelector('.graph-connect-banner-cancel');
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.toggleConnectMode(false);
+                });
+            }
+        },
+
+        addDirectedLink(sourceId, targetId) {
+            const rawSource = window.App.noteManager ? window.App.noteManager.getNoteById(sourceId) : null;
+            const rawTarget = window.App.noteManager ? window.App.noteManager.getNoteById(targetId) : null;
+            if (!rawSource || !rawTarget || sourceId === targetId) return;
+
+            // 1. Оновлюємо масив links
+            const currentLinks = Array.isArray(rawSource.links) ? [...rawSource.links] : [];
+            if (!currentLinks.includes(targetId)) {
+                currentLinks.push(targetId);
+            }
+
+            // 2. Додаємо wiki-посилання до content нотатки
+            const targetTitle = (rawTarget.title && rawTarget.title.trim()) ? rawTarget.title.trim() : 'Нотатка';
+            const linkTag = `[[id:${rawTarget.id}|${targetTitle}]]`;
+            let content = rawSource.content || '';
+            if (!content.includes(`id:${rawTarget.id}`) && !content.includes(`[[${targetTitle}]]`)) {
+                if (content.endsWith('</p>') || content.endsWith('</div>')) {
+                    content += `<p class="note-directed-link">${linkTag}</p>`;
+                } else {
+                    content = content ? `${content}\n\n${linkTag}` : linkTag;
+                }
+            }
+
+            if (window.App.noteManager) {
+                window.App.noteManager.updateNote(sourceId, { content: content, links: currentLinks }, false);
+            }
+
+            this.buildGraphData();
+            this.wakeUpSimulation();
+            this.draw();
+
+            if (previewNode && previewNode.id === sourceId) {
+                const updatedSourceNode = nodes.find(n => n.id === sourceId);
+                if (updatedSourceNode) this.renderPreviewCard(updatedSourceNode);
+            }
+        },
+
+        removeDirectedLink(sourceId, targetId) {
+            const rawSource = window.App.noteManager ? window.App.noteManager.getNoteById(sourceId) : null;
+            const rawTarget = window.App.noteManager ? window.App.noteManager.getNoteById(targetId) : null;
+            if (!rawSource) return;
+
+            // 1. Видаляємо з масиву links
+            let currentLinks = Array.isArray(rawSource.links) ? [...rawSource.links] : [];
+            currentLinks = currentLinks.filter(id => id !== targetId);
+
+            // 2. Видаляємо wiki-посилання з content
+            let content = rawSource.content || '';
+            const regex1 = new RegExp(`(<p[^>]*>)?\\[\\[id:${targetId}(?:\\|[^\\]]*)?\\]\\](<\\/p>)?`, 'gi');
+            content = content.replace(regex1, '');
+
+            if (rawTarget && rawTarget.title) {
+                const escapedTitle = rawTarget.title.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                if (escapedTitle) {
+                    const regex2 = new RegExp(`(<p[^>]*>)?\\[\\[${escapedTitle}(?:\\|[^\\]]*)?\\]\\](<\\/p>)?`, 'gi');
+                    content = content.replace(regex2, '');
+                }
+            }
+
+            if (window.App.noteManager) {
+                window.App.noteManager.updateNote(sourceId, { content: content, links: currentLinks }, false);
+            }
+
+            this.buildGraphData();
+            this.wakeUpSimulation();
+            this.draw();
+
+            if (previewNode && (previewNode.id === sourceId || previewNode.id === targetId)) {
+                const updatedNode = nodes.find(n => n.id === previewNode.id);
+                if (updatedNode) this.renderPreviewCard(updatedNode);
+            }
+        },
+
+        openLinkSelectorModal(sourceNode) {
+            const existing = document.querySelector('.graph-link-selector-modal');
+            if (existing) existing.remove();
+
+            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
+            const existingTargetIds = new Set((sourceNode.outgoingLinks || []).map(l => l.id));
+            const candidateNotes = nodes.filter(n => n.id !== sourceNode.id && !existingTargetIds.has(n.id));
+
+            if (candidateNotes.length === 0) {
+                this.showToast('Всі доступні нотатки вже з\'єднані або відсутні інші нотатки');
+                return;
+            }
+
+            const modal = document.createElement('div');
+            modal.className = 'graph-link-selector-modal';
+
+            let listHtml = candidateNotes.map(n => `
+                <button type="button" class="graph-link-selector-item" data-id="${n.id}">
+                    <span>${n.icon || '📄'}</span>
+                    <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${n.title}</span>
+                </button>
+            `).join('');
+
+            modal.innerHTML = `
+                <div class="graph-link-selector-header">
+                    <span>${t('graph.selectTargetNote', 'Оберіть нотатку для створення зв\'язку:')}</span>
+                    <button type="button" class="graph-export-modal-close" style="width:22px;height:22px;font-size:14px;">✕</button>
+                </div>
+                <div class="graph-link-selector-list">
+                    ${listHtml}
+                </div>
+            `;
+
+            if (container) container.appendChild(modal);
+
+            modal.querySelector('.graph-export-modal-close').addEventListener('click', (e) => {
+                e.stopPropagation();
+                modal.remove();
+            });
+
+            modal.querySelectorAll('.graph-link-selector-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const targetId = item.dataset.id;
+                    modal.remove();
+                    this.addDirectedLink(sourceNode.id, targetId);
+                });
+            });
+
+            const closeOnOutside = (e) => {
+                if (!modal.contains(e.target)) {
+                    modal.remove();
+                    document.removeEventListener('pointerdown', closeOnOutside);
+                }
+            };
+            setTimeout(() => {
+                document.addEventListener('pointerdown', closeOnOutside);
+            }, 60);
+        },
+
+        showToast(message) {
+            if (!container) return;
+            const existing = container.querySelector('.graph-toast-pill');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            toast.className = 'graph-toast-pill';
+            toast.style.cssText = `
+                position: absolute;
+                bottom: 74px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(16, 185, 129, 0.95);
+                color: #ffffff;
+                font-size: 12px;
+                font-weight: 600;
+                padding: 8px 18px;
+                border-radius: 20px;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+                z-index: 1000;
+                pointer-events: none;
+                animation: graphModalZoomIn 0.18s ease;
+                transition: opacity 0.25s ease;
+            `;
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 260);
+            }, 2600);
+        },
+
+        computeDagInfo() {
+            const directedEdges = edges.filter(e => e.type === 'directed');
+            const inDegree = new Map();
+            const outDegree = new Map();
+            const adj = new Map();
+
+            nodes.forEach(n => {
+                inDegree.set(n.id, 0);
+                outDegree.set(n.id, 0);
+                adj.set(n.id, []);
+            });
+
+            directedEdges.forEach(e => {
+                const u = e.source.id;
+                const v = e.target.id;
+                if (adj.has(u) && inDegree.has(v)) {
+                    adj.get(u).push(v);
+                    inDegree.set(v, inDegree.get(v) + 1);
+                    outDegree.set(u, outDegree.get(u) + 1);
+                }
+            });
+
+            // Kahn's algorithm for topological sorting
+            const tempInDegree = new Map(inDegree);
+            let currentQueue = [];
+            tempInDegree.forEach((deg, id) => {
+                if (deg === 0) currentQueue.push(id);
+            });
+
+            const stages = [];
+            let visitedCount = 0;
+            const stagesMap = new Map();
+
+            let stageIdx = 1;
+            while (currentQueue.length > 0) {
+                const nextQueue = [];
+                const stageNodeIds = [...currentQueue];
+                stages.push({
+                    stage: stageIdx,
+                    parallel_execution: stageNodeIds.length > 1,
+                    note_ids: stageNodeIds
+                });
+                stageNodeIds.forEach(id => stagesMap.set(id, stageIdx));
+                visitedCount += currentQueue.length;
+
+                currentQueue.forEach(u => {
+                    (adj.get(u) || []).forEach(v => {
+                        tempInDegree.set(v, tempInDegree.get(v) - 1);
+                        if (tempInDegree.get(v) === 0) {
+                            nextQueue.push(v);
+                        }
+                    });
+                });
+
+                currentQueue = nextQueue;
+                stageIdx++;
+            }
+
+            const hasCycles = directedEdges.length > 0 && visitedCount < nodes.length;
+            const entryPoints = nodes.filter(n => inDegree.get(n.id) === 0 && outDegree.get(n.id) > 0);
+            const terminalPoints = nodes.filter(n => outDegree.get(n.id) === 0 && inDegree.get(n.id) > 0);
+
+            return {
+                isDag: !hasCycles,
+                hasCycles: hasCycles,
+                stages: stages,
+                stagesMap: stagesMap,
+                inDegree: inDegree,
+                outDegree: outDegree,
+                entryPoints: entryPoints,
+                terminalPoints: terminalPoints,
+                directedCount: directedEdges.length
+            };
+        },
+
+        generateAiPipelineJson(dagInfo) {
+            const currentBoard = window.App.boardManager ? window.App.boardManager.getActiveBoard() : null;
+            const boardTitle = currentBoard ? currentBoard.name : 'Pipeline';
+
+            const inferRole = (node, inDeg, outDeg) => {
+                const text = (node.title + ' ' + node.content).toLowerCase();
+                if (text.includes('llm') || text.includes('prompt') || text.includes('gpt') || text.includes('claude') || text.includes('генерац') || text.includes('аналіз') || text.includes('підсум')) {
+                    return 'llm_task';
+                }
+                if (text.includes('tool') || text.includes('api') || text.includes('fetch') || text.includes('пошук') || text.includes('scrape') || text.includes('зберегти') || text.includes('webhook')) {
+                    return 'tool_action';
+                }
+                if (text.includes('якщо') || text.includes('if') || text.includes('коли') || text.includes('router') || text.includes('перевір')) {
+                    return 'condition_router';
+                }
+                if (inDeg === 0 && outDeg > 0) return 'input';
+                if (outDeg === 0 && inDeg > 0) return 'output';
+                if (node.isRoot) return 'root_phase';
+                return 'step';
+            };
+
+            const pipelineNodes = nodes.map(node => {
+                const inDeg = dagInfo.inDegree.get(node.id) || 0;
+                const outDeg = dagInfo.outDegree.get(node.id) || 0;
+                const stage = dagInfo.stagesMap.get(node.id) || 0;
+                const role = inferRole(node, inDeg, outDeg);
+
+                const cleanText = (node.content || '').replace(/\s+/g, ' ').trim();
+                const tagNames = (node.tags || []).map(t => (typeof t === 'string' ? t : (t.text || ''))).filter(Boolean);
+
+                return {
+                    id: node.id,
+                    title: node.title,
+                    role: role,
+                    stage: stage,
+                    level: node.level,
+                    is_root: node.isRoot,
+                    tags: tagNames,
+                    dependencies: (node.incomingLinks || []).map(l => l.id),
+                    next_steps: (node.outgoingLinks || []).map(l => l.id),
+                    description: cleanText
+                };
+            });
+
+            const directedEdges = edges.filter(e => e.type === 'directed').map(e => ({
+                from: e.source.id,
+                from_title: e.source.title,
+                to: e.target.id,
+                to_title: e.target.title,
+                type: 'directed'
+            }));
+
+            const pipelineObj = {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "pipeline_name": boardTitle,
+                "version": "1.0.0",
+                "generated_at": new Date().toISOString(),
+                "dag_validation": {
+                    "is_valid_dag": dagInfo.isDag,
+                    "has_cycles": dagInfo.hasCycles,
+                    "total_nodes": nodes.length,
+                    "total_directed_edges": dagInfo.directedCount,
+                    "entry_nodes_count": dagInfo.entryPoints.length,
+                    "terminal_nodes_count": dagInfo.terminalPoints.length
+                },
+                "execution_stages": dagInfo.stages.map(s => ({
+                    "stage": s.stage,
+                    "parallel_execution": s.parallel_execution,
+                    "notes": s.note_ids.map(id => {
+                        const n = nodes.find(node => node.id === id);
+                        return {
+                            id: id,
+                            title: n ? n.title : id,
+                            role: n ? inferRole(n, dagInfo.inDegree.get(id) || 0, dagInfo.outDegree.get(id) || 0) : 'step'
+                        };
+                    })
+                })),
+                "nodes": pipelineNodes,
+                "edges": directedEdges
+            };
+
+            return JSON.stringify(pipelineObj, null, 2);
+        },
+
+        generateMermaidFlowchart() {
+            const currentBoard = window.App.boardManager ? window.App.boardManager.getActiveBoard() : null;
+            const boardTitle = currentBoard ? currentBoard.name : 'Flowchart';
+
+            const cleanId = (id) => 'n_' + id.replace(/[^a-zA-Z0-9_]/g, '_');
+            const cleanTitle = (title) => (title || 'Нотатка').replace(/["\[\]\(\)\{\}]/g, "'").trim();
+
+            let lines = [];
+            lines.push(`%% --- Pipeline: ${boardTitle} ---`);
+            lines.push('flowchart TD');
+
+            // Styles
+            lines.push('  %% Styles');
+            lines.push('  classDef rootNode fill:#10b981,stroke:#059669,stroke-width:2px,color:#fff,font-weight:bold;');
+            lines.push('  classDef subNode fill:#1e1e24,stroke:#3b82f6,stroke-width:1.5px,color:#fff;');
+
+            // Nodes
+            lines.push('\n  %% Nodes definition');
+            nodes.forEach(node => {
+                const nid = cleanId(node.id);
+                const icon = node.icon ? `${node.icon} ` : '';
+                const title = cleanTitle(node.title);
+                lines.push(`  ${nid}["${icon}${title}"]`);
+            });
+
+            // Directed pipeline edges
+            const directedEdges = edges.filter(e => e.type === 'directed');
+            if (directedEdges.length > 0) {
+                lines.push('\n  %% Directed Pipeline Links (Execution Flow)');
+                directedEdges.forEach(e => {
+                    const u = cleanId(e.source.id);
+                    const v = cleanId(e.target.id);
+                    lines.push(`  ${u} --> ${v}`);
+                });
+            }
+
+            // Hierarchy links
+            const hierEdges = edges.filter(e => e.type === 'hierarchy');
+            if (hierEdges.length > 0) {
+                lines.push('\n  %% Hierarchy Parent-Child Links');
+                hierEdges.forEach(e => {
+                    const u = cleanId(e.source.id);
+                    const v = cleanId(e.target.id);
+                    lines.push(`  ${u} -.-> ${v}`);
+                });
+            }
+
+            // Class assignments
+            lines.push('\n  %% Class Assignments');
+            nodes.forEach(node => {
+                const nid = cleanId(node.id);
+                if (node.isRoot) {
+                    lines.push(`  class ${nid} rootNode;`);
+                } else {
+                    lines.push(`  class ${nid} subNode;`);
+                }
+            });
+
+            return lines.join('\n');
+        },
+
+        generateMarkdownVault(dagInfo) {
+            const currentBoard = window.App.boardManager ? window.App.boardManager.getActiveBoard() : null;
+            const boardTitle = currentBoard ? currentBoard.name : 'Блокнот';
+            const htmlToMd = (html) => (window.App.shareManager && window.App.shareManager.convertHtmlToMarkdown)
+                ? window.App.shareManager.convertHtmlToMarkdown(html)
+                : (html || '').replace(/<[^>]+>/g, '').trim();
+
+            let md = [];
+            md.push(`# 📚 ${boardTitle}`);
+            md.push(`*Згенеровано NothingNotes: ${new Date().toLocaleDateString('uk-UA')}*\n`);
+
+            md.push(`## 📊 Огляд пайплайну (AI Workflow)`);
+            md.push(`- **Всього нотаток:** ${nodes.length}`);
+            md.push(`- **Спрямованих зв'язків:** ${dagInfo.directedCount}`);
+            md.push(`- **DAG Валідність:** ${dagInfo.isDag ? '✅ Ациклічний граф (готовий до виконання)' : '⚠️ Виявлено цикли'}`);
+            md.push(`- **Точок входу (Input):** ${dagInfo.entryPoints.length}`);
+            md.push(`- **Точок завершення (Output):** ${dagInfo.terminalPoints.length}\n`);
+
+            if (dagInfo.stages && dagInfo.stages.length > 0) {
+                md.push(`### 🚀 Етапи виконання (Topological Stages):`);
+                dagInfo.stages.forEach(st => {
+                    const titles = st.note_ids.map(id => {
+                        const n = nodes.find(node => node.id === id);
+                        return n ? `\`${n.title}\`` : `\`${id}\``;
+                    }).join(', ');
+                    md.push(`- **Етап ${st.stage}** ${st.parallel_execution ? '(Паралельно ⚡)' : ''}: ${titles}`);
+                });
+                md.push('');
+            }
+
+            md.push(`---\n`);
+            md.push(`## 📝 Вміст нотаток\n`);
+
+            nodes.forEach((node, idx) => {
+                const rawNote = window.App.noteManager ? window.App.noteManager.getNoteById(node.id) : null;
+                const bodyText = rawNote ? htmlToMd(rawNote.content) : node.content;
+                const tagStr = (node.tags || []).map(t => `#${typeof t === 'string' ? t : (t.text || '')}`).join(' ');
+
+                md.push(`### ${idx + 1}. ${node.icon || '📄'} ${node.title}`);
+                if (tagStr) md.push(`**Теги:** ${tagStr}`);
+                if (node.isRoot) {
+                    md.push(`**Тип:** Коренева нотатка`);
+                } else {
+                    md.push(`**Рівень ієрархії:** ${node.level}`);
+                }
+
+                if (node.outgoingLinks && node.outgoingLinks.length > 0) {
+                    const outStr = node.outgoingLinks.map(l => `[[${l.title}]]`).join(', ');
+                    md.push(`**Спрямовані зв'язки (куди):** ${outStr}`);
+                }
+                if (node.incomingLinks && node.incomingLinks.length > 0) {
+                    const inStr = node.incomingLinks.map(l => `[[${l.title}]]`).join(', ');
+                    md.push(`**Вхідні залежності (звідки):** ${inStr}`);
+                }
+
+                md.push('');
+                md.push(bodyText ? bodyText : '_Порожній вміст_');
+                md.push('\n---\n');
+            });
+
+            return md.join('\n');
+        },
+
+        exportCanvasAsPng() {
+            if (!nodes || nodes.length === 0) return null;
+
+            let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+            nodes.forEach(n => {
+                if (n.x < minX) minX = n.x;
+                if (n.x > maxX) maxX = n.x;
+                if (n.y < minY) minY = n.y;
+                if (n.y > maxY) maxY = n.y;
+            });
+
+            const pad = 100;
+            const w = Math.max(640, (maxX - minX) + pad * 2);
+            const h = Math.max(480, (maxY - minY) + pad * 2);
+
+            const offCanvas = document.createElement('canvas');
+            const dpr = 2;
+            offCanvas.width = w * dpr;
+            offCanvas.height = h * dpr;
+            const oCtx = offCanvas.getContext('2d');
+            oCtx.scale(dpr, dpr);
+
+            const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+            oCtx.fillStyle = isLight ? '#f9fafb' : '#141418';
+            oCtx.fillRect(0, 0, w, h);
+
+            // Grid dots
+            oCtx.fillStyle = isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.06)';
+            for (let gx = 20; gx < w; gx += 28) {
+                for (let gy = 20; gy < h; gy += 28) {
+                    oCtx.beginPath();
+                    oCtx.arc(gx, gy, 1, 0, Math.PI * 2);
+                    oCtx.fill();
+                }
+            }
+
+            const transX = pad - minX;
+            const transY = pad - minY;
+
+            // Edges
+            edges.forEach(edge => {
+                if (edge.type === 'tag' && !showTagLinks) return;
+                if (edge.type === 'directed' && !showDirectedLinks) return;
+
+                const sx = edge.source.x + transX;
+                const sy = edge.source.y + transY;
+                const tx = edge.target.x + transX;
+                const ty = edge.target.y + transY;
+
+                oCtx.beginPath();
+                oCtx.moveTo(sx, sy);
+                oCtx.lineTo(tx, ty);
+
+                if (edge.type === 'tag') {
+                    oCtx.setLineDash([4, 4]);
+                    oCtx.strokeStyle = (edge.color || '#f59e0b') + '99';
+                    oCtx.lineWidth = 1.4;
+                } else if (edge.type === 'directed') {
+                    oCtx.setLineDash([]);
+                    oCtx.strokeStyle = '#10b981';
+                    oCtx.lineWidth = 2.2;
+                } else {
+                    oCtx.setLineDash([]);
+                    oCtx.strokeStyle = (edge.color || '#10b981') + '66';
+                    oCtx.lineWidth = 1.6;
+                }
+                oCtx.stroke();
+                oCtx.setLineDash([]);
+
+                if (edge.type === 'directed') {
+                    const dx = tx - sx;
+                    const dy = ty - sy;
+                    const angle = Math.atan2(dy, dx);
+                    const tipX = tx - Math.cos(angle) * (edge.target.radius + 3);
+                    const tipY = ty - Math.sin(angle) * (edge.target.radius + 3);
+                    const headLen = 10;
+                    const wingAngle = Math.PI / 6;
+
+                    oCtx.beginPath();
+                    oCtx.moveTo(tipX, tipY);
+                    oCtx.lineTo(tipX - headLen * Math.cos(angle - wingAngle), tipY - headLen * Math.sin(angle - wingAngle));
+                    oCtx.lineTo(tipX - (headLen * 0.55) * Math.cos(angle), tipY - (headLen * 0.55) * Math.sin(angle));
+                    oCtx.lineTo(tipX - headLen * Math.cos(angle + wingAngle), tipY - headLen * Math.sin(angle + wingAngle));
+                    oCtx.closePath();
+                    oCtx.fillStyle = '#10b981';
+                    oCtx.fill();
+                }
+            });
+
+            // Nodes
+            nodes.forEach(node => {
+                const nx = node.x + transX;
+                const ny = node.y + transY;
+                const rad = node.radius || 16;
+
+                oCtx.beginPath();
+                oCtx.arc(nx, ny, rad, 0, Math.PI * 2);
+                oCtx.fillStyle = node.branchColor || '#10b981';
+                oCtx.fill();
+                oCtx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+                oCtx.lineWidth = 1.5;
+                oCtx.stroke();
+
+                oCtx.font = `${Math.round(rad * 1.1)}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
+                oCtx.textAlign = 'center';
+                oCtx.textBaseline = 'middle';
+                oCtx.fillText(node.icon || '📄', nx, ny);
+
+                oCtx.font = '600 11px system-ui, -apple-system, sans-serif';
+                oCtx.fillStyle = isLight ? '#1f2937' : '#f3f4f6';
+                oCtx.textAlign = 'center';
+                oCtx.textBaseline = 'top';
+                const labelText = node.title.length > 22 ? node.title.slice(0, 20) + '...' : node.title;
+                oCtx.fillText(labelText, nx, ny + rad + 5);
+            });
+
+            return offCanvas.toDataURL('image/png');
+        },
+
+        downloadTextFile(content, filename, mimeType = 'text/plain;charset=utf-8') {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(url), 200);
+        },
+
+        openExportModal() {
+            this.closeExportModal();
+
+            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
+            const currentBoard = window.App.boardManager ? window.App.boardManager.getActiveBoard() : null;
+            const boardName = currentBoard ? currentBoard.name : 'Pipeline';
+            const safeFileName = boardName.toLowerCase().replace(/[^a-z0-9а-яіїєґ_]/gi, '_').replace(/_+/g, '_');
+
+            const dagInfo = this.computeDagInfo();
+            const jsonContent = this.generateAiPipelineJson(dagInfo);
+            const mermaidContent = this.generateMermaidFlowchart();
+            const mdContent = this.generateMarkdownVault(dagInfo);
+            const pngDataUrl = this.exportCanvasAsPng();
+
+            let activeTab = 'json';
+
+            const backdrop = document.createElement('div');
+            backdrop.className = 'graph-export-modal-backdrop';
+            exportModalEl = backdrop;
+
+            const dagStatusHtml = dagInfo.hasCycles
+                ? `<span style="color: #f87171;">⚠️ Виявлено цикли в графі</span>`
+                : `<span style="color: #34d399;">✅ Валідний DAG (Ациклічний граф)</span>`;
+
+            backdrop.innerHTML = `
+                <div class="graph-export-modal-card">
+                    <div class="graph-export-modal-header">
+                        <div class="graph-export-modal-title-wrap">
+                            <h3 class="graph-export-modal-title">${t('graph.exportTitle', 'Експорт графу для ШІ та візуалізації')}</h3>
+                            <p class="graph-export-modal-subtitle">${boardName} • ${nodes.length} нотаток • ${dagInfo.directedCount} спрямованих зв'язків</p>
+                        </div>
+                        <button type="button" class="graph-export-modal-close" aria-label="Закрити">✕</button>
+                    </div>
+
+                    <div class="graph-export-tabs">
+                        <button type="button" class="graph-export-tab-btn is-active" data-tab="json">${t('graph.exportJsonTab', '🤖 JSON для ШІ (DAG)')}</button>
+                        <button type="button" class="graph-export-tab-btn" data-tab="mermaid">${t('graph.exportMermaidTab', '📊 Mermaid.js')}</button>
+                        <button type="button" class="graph-export-tab-btn" data-tab="png">${t('graph.exportPngTab', '🖼️ Зображення PNG')}</button>
+                        <button type="button" class="graph-export-tab-btn" data-tab="markdown">${t('graph.exportMarkdownTab', '📝 Markdown Vault')}</button>
+                    </div>
+
+                    <div class="graph-export-modal-body">
+                        <div class="graph-export-stats-banner ${dagInfo.hasCycles ? 'has-cycles' : ''}">
+                            <span>${dagStatusHtml}</span>
+                            <span>•</span>
+                            <span>Етапів виконання: <strong>${dagInfo.stages.length}</strong></span>
+                            <span>•</span>
+                            <span>Точок входу: <strong>${dagInfo.entryPoints.length}</strong></span>
+                            <span>•</span>
+                            <span>Термінальних: <strong>${dagInfo.terminalPoints.length}</strong></span>
+                        </div>
+
+                        <div class="graph-export-preview-box" id="graph-export-preview-text"></div>
+                        <div class="graph-export-png-preview" id="graph-export-preview-png" style="display: none;">
+                            <img class="graph-export-png-img" src="${pngDataUrl || ''}" alt="Graph preview">
+                        </div>
+                    </div>
+
+                    <div class="graph-export-modal-footer">
+                        <div class="graph-export-footer-hint" id="graph-export-hint">Сумісно з LangChain, AutoGen, CrewAI, Claude Projects</div>
+                        <div class="graph-export-actions">
+                            <button type="button" class="graph-export-copy-btn" id="graph-export-copy-btn">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                                <span>${t('graph.copyBtn', 'Копіювати')}</span>
+                            </button>
+                            <button type="button" class="graph-export-download-btn" id="graph-export-download-btn">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                <span>${t('graph.downloadBtn', 'Завантажити')}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(backdrop);
+
+            const previewTextEl = backdrop.querySelector('#graph-export-preview-text');
+            const previewPngEl = backdrop.querySelector('#graph-export-preview-png');
+            const hintEl = backdrop.querySelector('#graph-export-hint');
+            const copyBtn = backdrop.querySelector('#graph-export-copy-btn');
+            const downloadBtn = backdrop.querySelector('#graph-export-download-btn');
+
+            const updateTabContent = () => {
+                if (activeTab === 'json') {
+                    previewTextEl.style.display = 'block';
+                    previewPngEl.style.display = 'none';
+                    previewTextEl.textContent = jsonContent;
+                    hintEl.textContent = 'Формат структурованого DAG для ШІ агентів, LangChain та генерації пайплайнів';
+                } else if (activeTab === 'mermaid') {
+                    previewTextEl.style.display = 'block';
+                    previewPngEl.style.display = 'none';
+                    previewTextEl.textContent = mermaidContent;
+                    hintEl.textContent = 'Діаграма Flowchart TD для вставки у GitHub, Notion, Obsidian або Claude';
+                } else if (activeTab === 'png') {
+                    previewTextEl.style.display = 'none';
+                    previewPngEl.style.display = 'flex';
+                    hintEl.textContent = 'Високоякісний растровий знімок полотна графу у роздільній здатності 2x Retina';
+                } else if (activeTab === 'markdown') {
+                    previewTextEl.style.display = 'block';
+                    previewPngEl.style.display = 'none';
+                    previewTextEl.textContent = mdContent;
+                    hintEl.textContent = 'Повний архів нотаток блокноту з перехресними посиланнями [[wiki-links]]';
+                }
+            };
+
+            updateTabContent();
+
+            // Перемикання вкладок
+            backdrop.querySelectorAll('.graph-export-tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    backdrop.querySelectorAll('.graph-export-tab-btn').forEach(b => b.classList.remove('is-active'));
+                    btn.classList.add('is-active');
+                    activeTab = btn.dataset.tab;
+                    updateTabContent();
+                });
+            });
+
+            // Копіювання
+            copyBtn.addEventListener('click', async () => {
+                let toCopy = '';
+                if (activeTab === 'json') toCopy = jsonContent;
+                else if (activeTab === 'mermaid') toCopy = mermaidContent;
+                else if (activeTab === 'markdown') toCopy = mdContent;
+                else if (activeTab === 'png') {
+                    if (pngDataUrl) {
+                        try {
+                            const res = await fetch(pngDataUrl);
+                            const blob = await res.blob();
+                            await navigator.clipboard.write([
+                                new ClipboardItem({ 'image/png': blob })
+                            ]);
+                            const origHtml = copyBtn.innerHTML;
+                            copyBtn.innerHTML = `<span>${t('graph.copied', 'Скопійовано!')}</span>`;
+                            setTimeout(() => { copyBtn.innerHTML = origHtml; }, 1600);
+                            return;
+                        } catch (err) {
+                            console.warn('Direct image clipboard copy failed, falling back:', err);
+                        }
+                    }
+                }
+
+                if (toCopy) {
+                    try {
+                        await navigator.clipboard.writeText(toCopy);
+                        const origHtml = copyBtn.innerHTML;
+                        copyBtn.innerHTML = `<span>${t('graph.copied', 'Скопійовано!')}</span>`;
+                        setTimeout(() => { copyBtn.innerHTML = origHtml; }, 1600);
+                    } catch (err) {
+                        console.error('Clipboard copy failed:', err);
+                    }
+                }
+            });
+
+            // Завантаження файлу
+            downloadBtn.addEventListener('click', () => {
+                if (activeTab === 'json') {
+                    this.downloadTextFile(jsonContent, `${safeFileName}_ai_pipeline.json`, 'application/json');
+                } else if (activeTab === 'mermaid') {
+                    this.downloadTextFile(mermaidContent, `${safeFileName}_flowchart.mmd`, 'text/vnd.mermaid');
+                } else if (activeTab === 'png') {
+                    if (pngDataUrl) {
+                        const a = document.createElement('a');
+                        a.href = pngDataUrl;
+                        a.download = `${safeFileName}_graph.png`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                    }
+                } else if (activeTab === 'markdown') {
+                    this.downloadTextFile(mdContent, `${safeFileName}_vault.md`, 'text/markdown;charset=utf-8');
+                }
+            });
+
+            // Закриття
+            backdrop.querySelector('.graph-export-modal-close').addEventListener('click', () => {
+                this.closeExportModal();
+            });
+
+            backdrop.addEventListener('click', (e) => {
+                if (e.target === backdrop) {
+                    this.closeExportModal();
+                }
+            });
+        },
+
+        closeExportModal() {
+            if (exportModalEl) {
+                exportModalEl.remove();
+                exportModalEl = null;
+            }
         }
     };
 })();

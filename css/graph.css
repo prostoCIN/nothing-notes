@@ -830,3 +830,519 @@
     max-width: 320px;
     line-height: 1.5;
 }
+
+/* ==========================================================================
+   Спрямовані зв'язки та Режим з'єднання (Directed Links & Connect Mode)
+   ========================================================================== */
+.graph-toolbar-filter-btn.is-connect-btn.is-active {
+    background: rgba(16, 185, 129, 0.28);
+    border-color: #10b981;
+    color: #10b981;
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.45);
+    animation: graphConnectPulse 2s infinite ease-in-out;
+}
+
+@keyframes graphConnectPulse {
+    0%, 100% { box-shadow: 0 0 12px rgba(16, 185, 129, 0.35); }
+    50% { box-shadow: 0 0 22px rgba(16, 185, 129, 0.65); }
+}
+
+.graph-connect-banner {
+    position: absolute;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(20, 20, 24, 0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    border-radius: 30px;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 25;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5), 0 0 16px rgba(16, 185, 129, 0.25);
+    animation: graphBannerSlideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes graphBannerSlideDown {
+    from { opacity: 0; transform: translate(-50%, -10px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.graph-connect-banner-icon {
+    color: #10b981;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.graph-connect-banner-text {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-main, #ffffff);
+}
+
+.graph-connect-banner-cancel {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    color: var(--text-muted, #aaa);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s ease;
+}
+
+.graph-connect-banner-cancel:hover {
+    background: rgba(244, 63, 94, 0.2);
+    border-color: #f43f5e;
+    color: #fda4af;
+}
+
+/* Кнопка експорту в тулбарі */
+.graph-export-btn {
+    background: var(--toolbar-bg, rgba(30, 30, 34, 0.85));
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--toolbar-border, rgba(255, 255, 255, 0.15));
+    border-radius: 10px;
+    height: 36px;
+    box-sizing: border-box;
+    padding: 0 12px;
+    color: var(--text-main, #ffffff);
+    font-size: 12px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    transition: all 0.15s ease;
+    user-select: none;
+}
+
+.graph-export-btn:hover {
+    background: rgba(16, 185, 129, 0.18);
+    border-color: #10b981;
+    color: #10b981;
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.35);
+}
+
+/* Блок зв'язків у прев'ю-картці */
+.graph-preview-links-section {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.graph-preview-links-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.graph-preview-links-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+}
+
+.graph-preview-add-link-btn {
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 6px;
+    color: #10b981;
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 2px 7px;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.15s ease;
+}
+
+.graph-preview-add-link-btn:hover {
+    background: #10b981;
+    color: #ffffff;
+}
+
+.graph-preview-links-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 110px;
+    overflow-y: auto;
+}
+
+.graph-preview-link-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 11px;
+}
+
+.graph-preview-link-target {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--text-main, #ffffff);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 500;
+}
+
+.graph-preview-link-arrow {
+    color: #10b981;
+    font-weight: 700;
+}
+
+.graph-preview-link-del {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+.graph-preview-link-del:hover {
+    color: #f43f5e;
+    background: rgba(244, 63, 94, 0.15);
+}
+
+/* ==========================================================================
+   Модальне вікно експорту графу (Graph Export Modal)
+   ========================================================================== */
+.graph-export-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: graphModalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes graphModalFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.graph-export-modal-card {
+    background: var(--bg-secondary, #1e1e24);
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.14));
+    border-radius: 16px;
+    width: 100%;
+    max-width: 680px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    animation: graphModalZoomIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+}
+
+@keyframes graphModalZoomIn {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.graph-export-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+}
+
+.graph-export-modal-title-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.graph-export-modal-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-main, #ffffff);
+    margin: 0;
+}
+
+.graph-export-modal-subtitle {
+    font-size: 11.5px;
+    color: var(--text-muted, #888);
+    margin: 0;
+}
+
+.graph-export-modal-close {
+    background: transparent;
+    border: none;
+    color: var(--text-muted, #888);
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.graph-export-modal-close:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.graph-export-tabs {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px 0 20px;
+    background: rgba(0, 0, 0, 0.15);
+    border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+    overflow-x: auto;
+}
+
+.graph-export-tab-btn {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-muted, #888);
+    font-size: 12px;
+    font-weight: 600;
+    font-family: inherit;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+    border-radius: 6px 6px 0 0;
+}
+
+.graph-export-tab-btn:hover {
+    color: var(--text-main, #ffffff);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.graph-export-tab-btn.is-active {
+    color: #10b981;
+    border-bottom-color: #10b981;
+    background: rgba(16, 185, 129, 0.08);
+}
+
+.graph-export-modal-body {
+    padding: 16px 20px;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.graph-export-stats-banner {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px 12px;
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 8px;
+    font-size: 11px;
+    color: #a7f3d0;
+}
+
+.graph-export-stats-banner.has-cycles {
+    background: rgba(245, 158, 11, 0.1);
+    border-color: rgba(245, 158, 11, 0.3);
+    color: #fde68a;
+}
+
+.graph-export-preview-box {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 12px;
+    font-family: 'SF Mono', Consolas, Monaco, monospace;
+    font-size: 11px;
+    color: #d1d5db;
+    max-height: 280px;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    user-select: text;
+    line-height: 1.5;
+}
+
+.graph-export-png-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 16px;
+    max-height: 280px;
+    overflow: hidden;
+}
+
+.graph-export-png-img {
+    max-width: 100%;
+    max-height: 240px;
+    object-fit: contain;
+    border-radius: 6px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+.graph-export-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 14px 20px;
+    border-top: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.graph-export-footer-hint {
+    font-size: 11px;
+    color: var(--text-muted, #777);
+}
+
+.graph-export-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.graph-export-copy-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    color: var(--text-main, #ffffff);
+    padding: 7px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+}
+
+.graph-export-copy-btn:hover {
+    background: rgba(255, 255, 255, 0.16);
+}
+
+.graph-export-download-btn {
+    background: #10b981;
+    border: 1px solid #10b981;
+    border-radius: 8px;
+    color: #ffffff;
+    padding: 7px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+}
+
+.graph-export-download-btn:hover {
+    background: #059669;
+    border-color: #059669;
+}
+
+/* Випадаюче вікно швидкого вибору цільової нотатки */
+.graph-link-selector-modal {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--bg-secondary, #222228);
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.18));
+    border-radius: 12px;
+    width: 290px;
+    max-height: 360px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    gap: 8px;
+    animation: graphModalZoomIn 0.15s ease;
+}
+
+.graph-link-selector-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-main, #ffffff);
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.graph-link-selector-list {
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 240px;
+}
+
+.graph-link-selector-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    color: var(--text-main, #eee);
+    font-family: inherit;
+    font-size: 12px;
+    text-align: left;
+    width: 100%;
+    transition: background 0.12s ease;
+}
+
+.graph-link-selector-item:hover {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+}
+
