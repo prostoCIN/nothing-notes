@@ -230,9 +230,9 @@ window.App = window.App || {};
                         e.stopPropagation();
                         if (window.App.confirmModal) {
                             window.App.confirmModal.show({
-                                title: 'Скопіювати блокнот?',
-                                message: `Створити незалежну копію блокнота <span class="confirm-modal-highlight">"${board.name}"</span> у ваших особистих блокнотах?`,
-                                confirmText: 'Затисніть для копіювання',
+                                title: t('confirm.cloneBoardTitle') || 'Скопіювати блокнот?',
+                                message: t('confirm.cloneBoardMsg', { name: board.name }) || `Створити незалежну копію блокнота <span class="confirm-modal-highlight">"${board.name}"</span> у ваших особистих блокнотах?`,
+                                confirmText: t('confirm.holdToClone') || 'Затисніть для копіювання',
                                 type: 'info',
                                 onConfirm: async () => {
                                     if (window.App.shareManager) {
@@ -258,9 +258,9 @@ window.App = window.App || {};
                     e.stopPropagation();
                     if (window.App.confirmModal) {
                         window.App.confirmModal.show({
-                            title: 'Прибрати спільний блокнот?',
-                            message: `Прибрати <span class="confirm-modal-highlight">"${board.name}"</span> зі списку спільних для читання? (Оригінал автора не постраждає).`,
-                            confirmText: 'Затисніть для видалення',
+                            title: t('confirm.unlinkBoardTitle') || 'Прибрати спільний блокнот?',
+                            message: t('confirm.unlinkBoardMsg', { name: board.name }) || `Прибрати <span class="confirm-modal-highlight">"${board.name}"</span> зі списку спільних для читання? (Оригінал автора не постраждає).`,
+                            confirmText: t('common.holdToConfirm') || 'Затисніть для видалення',
                             type: 'danger',
                             onConfirm: () => {
                                 if (window.App.shareManager) {

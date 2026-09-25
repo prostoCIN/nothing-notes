@@ -722,6 +722,67 @@ window.App = window.App || {};
                 if (countDesktop) countDesktop.textContent = t('selectionBar.selectedCount', { count });
                 if (countMobile) countMobile.textContent = count;
 
+                // Визначаємо чи активний блокнот або всі вибрані нотатки є read-only
+                const currentBoard = window.App.boardManager ? window.App.boardManager.getActiveBoard() : null;
+                const isCurrentBoardReadOnly = !!(currentBoard && currentBoard.isReadOnly) || (state.activeBoardId && state.activeBoardId.startsWith('shared_'));
+                
+                // Перевіряємо також вибрані нотатки
+                const noteManager = window.App.noteManager;
+                const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
+                const hasOnlyReadOnlyNotes = selectedIds.length > 0 && selectedIds.every(id => {
+                    const n = noteManager ? noteManager.getNoteById(id) : null;
+                    return n && (n.isReadOnly || (n.boardId && n.boardId.startsWith('shared_')));
+                });
+
+                const isReadOnlyContext = isCurrentBoardReadOnly || hasOnlyReadOnlyNotes;
+
+                // Елементи для редагування стилів (колір, тег, шрифт)
+                const colorWrap = barElement.querySelector('#ws-action-color-wrap');
+                const tagWrap = barElement.querySelector('#ws-action-tag-wrap');
+                const fontWrap = barElement.querySelector('#ws-action-font-wrap');
+                const moreBtn = barElement.querySelector('#ws-action-more-btn');
+                const duplicateBtn = barElement.querySelector('#ws-action-duplicate-btn');
+                const deleteBtn = barElement.querySelector('#ws-action-delete-btn');
+
+                if (isReadOnlyContext) {
+                    if (colorWrap) colorWrap.style.display = 'none';
+                    if (tagWrap) tagWrap.style.display = 'none';
+                    if (fontWrap) fontWrap.style.display = 'none';
+                    if (moreBtn) moreBtn.style.display = 'none';
+                } else {
+                    if (colorWrap) colorWrap.style.display = '';
+                    if (tagWrap) tagWrap.style.display = '';
+                    if (fontWrap) fontWrap.style.display = '';
+                    if (moreBtn) moreBtn.style.display = '';
+                }
+
+                // Адаптація кнопки дублювання (клонування)
+                if (duplicateBtn) {
+                    const dupLabel = duplicateBtn.querySelector('.selection-btn-label');
+                    if (isReadOnlyContext) {
+                        const canClone = !currentBoard || currentBoard.allowClone !== false;
+                        duplicateBtn.title = canClone ? t('selectionBar.cloneSelected') : t('selectionBar.cloneNotAllowed');
+                        if (dupLabel) dupLabel.textContent = t('selectionBar.cloneSelected');
+                        duplicateBtn.style.display = canClone ? '' : 'none';
+                    } else {
+                        duplicateBtn.title = t('selectionBar.duplicateSelected');
+                        if (dupLabel) dupLabel.textContent = t('sticker.duplicate');
+                        duplicateBtn.style.display = '';
+                    }
+                }
+
+                // Адаптація кнопки видалення / приховування
+                if (deleteBtn) {
+                    const delLabel = deleteBtn.querySelector('.selection-btn-label');
+                    if (isReadOnlyContext) {
+                        deleteBtn.title = t('selectionBar.hideSelected');
+                        if (delLabel) delLabel.textContent = t('selectionBar.hideSelected');
+                    } else {
+                        deleteBtn.title = t('selectionBar.deleteSelected');
+                        if (delLabel) delLabel.textContent = t('selectionBar.deleteSelected');
+                    }
+                }
+
                 // Робимо кнопки дій активними або приглушеними, якщо нічого не вибрано
                 const actionBtns = barElement.querySelectorAll('.selection-action-btn');
                 actionBtns.forEach(btn => {

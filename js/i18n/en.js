@@ -209,6 +209,10 @@ export const en = {
     selectionBar: {
         selectedCount: 'Selected: {count}',
         deleteSelected: 'Delete',
+        deleteOrHideSelected: 'Remove / Delete',
+        hideSelected: 'Remove from list',
+        cloneSelected: 'Copy to my notes',
+        cloneNotAllowed: 'The author has disabled copying for this notebook',
         colorSelected: 'Color',
         tagSelected: 'Tag',
         fontSelected: 'Font',
@@ -355,6 +359,11 @@ export const en = {
         subnotesWarning: ' All nested subnotes ({count}) will also be deleted.',
         deleteBoardTitle: 'Delete notebook "{name}"?',
         deleteBoardMsg: 'Are you sure you want to delete notebook <span class="confirm-modal-highlight">"{name}"</span>? All its notes ({count}) will be permanently deleted.',
+        cloneBoardTitle: 'Copy notebook?',
+        cloneBoardMsg: 'Create an independent copy of notebook <span class="confirm-modal-highlight">"{name}"</span> in your private notebooks?',
+        holdToClone: 'Hold to copy',
+        unlinkBoardTitle: 'Remove shared notebook?',
+        unlinkBoardMsg: 'Remove <span class="confirm-modal-highlight">"{name}"</span> from your read-only list? (The author\'s original notebook will not be affected).',
         noteWord: 'note',
         subnoteWord: 'subnote'
     },

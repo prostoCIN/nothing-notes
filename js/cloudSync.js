@@ -486,12 +486,15 @@ window.App = window.App || {};
                         }
                     }
 
-                    if (loadedSharedBoards.length > 0) {
-                        state.readOnlyBoards = loadedSharedBoards;
-                        state.readOnlyNotes = loadedSharedNotes;
-                        window.App.storage.saveReadOnlyBoards(state.readOnlyBoards);
-                        window.App.storage.saveReadOnlyNotes(state.readOnlyNotes);
-                    }
+                    state.readOnlyBoards = loadedSharedBoards;
+                    state.readOnlyNotes = loadedSharedNotes;
+                    window.App.storage.saveReadOnlyBoards(state.readOnlyBoards);
+                    window.App.storage.saveReadOnlyNotes(state.readOnlyNotes);
+                } else if (sharedTokens.length === 0) {
+                    state.readOnlyBoards = [];
+                    state.readOnlyNotes = [];
+                    window.App.storage.saveReadOnlyBoards([]);
+                    window.App.storage.saveReadOnlyNotes([]);
                 }
 
                 const { data: cloudNotes, error } = await supabase
@@ -718,7 +721,7 @@ window.App = window.App || {};
             if (!currentUser || !window.App.supabase) return;
             const state = window.App.state;
             try {
-                const tokens = tokensToSync || (state.readOnlyBoards || [])
+                const tokens = tokensToSync !== null ? tokensToSync : (state.readOnlyBoards || [])
                     .map(b => b.shareToken)
                     .filter(Boolean);
 
@@ -738,6 +741,18 @@ window.App = window.App || {};
                     await window.App.supabase
                         .from('user_shared_tokens')
                         .upsert(payloads, { onConflict: 'user_id,share_token' });
+                }
+
+                // Також синхронізуємо з user_metadata для очищення застарілих legacy токенів
+                try {
+                    await window.App.supabase.auth.updateUser({
+                        data: { shared_board_tokens: tokens }
+                    });
+                    if (currentUser.user_metadata) {
+                        currentUser.user_metadata.shared_board_tokens = tokens;
+                    }
+                } catch (metaErr) {
+                    // Ігноруємо якщо оновлення метаданих не вдалось
                 }
             } catch (e) {
                 console.warn('[CloudSync] syncSharedTokens error:', e);

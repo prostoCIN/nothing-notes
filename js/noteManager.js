@@ -214,34 +214,68 @@ window.DOMPurify = window.DOMPurify || DOMPurify;
                 this.getDescendantIds(targetId).forEach(descId => toDeleteIds.add(descId));
             });
 
+            // Розділяємо ID на власні нотатки та спільні (read-only) нотатки
+            const readOnlyNotesList = state.readOnlyNotes || storage.getReadOnlyNotes() || [];
+            const readOnlyIdSet = new Set(readOnlyNotesList.map(n => n.id));
+            const ownToDeleteIds = new Set();
+            const readOnlyToDeleteIds = new Set();
+
+            toDeleteIds.forEach(id => {
+                if (readOnlyIdSet.has(id)) {
+                    readOnlyToDeleteIds.add(id);
+                } else {
+                    ownToDeleteIds.add(id);
+                }
+            });
+
+            const isAllReadOnly = ownToDeleteIds.size === 0 && readOnlyToDeleteIds.size > 0;
+
             const performDelete = () => {
-                if (window.App.historyManager) {
+                if (window.App.historyManager && ownToDeleteIds.size > 0) {
                     window.App.historyManager.recordState('delete_notes');
                 }
 
-                // Видаляємо зв'язані фотографії цих нотаток
-                const deletedNotes = state.notes.filter(n => toDeleteIds.has(n.id));
-                deletedNotes.forEach(dn => {
-                    if (Array.isArray(dn.images)) {
-                        dn.images.forEach(im => {
-                            if (im && im.id) {
-                                if (window.App.imageDb) window.App.imageDb.deleteImage(im.id);
-                                if (window.App.cloudSync && window.App.cloudSync.deleteImageFile) {
-                                    window.App.cloudSync.deleteImageFile(im.id);
+                // 1. Обробка власних нотаток
+                if (ownToDeleteIds.size > 0) {
+                    // Видаляємо зв'язані фотографії цих нотаток
+                    const deletedNotes = state.notes.filter(n => ownToDeleteIds.has(n.id));
+                    deletedNotes.forEach(dn => {
+                        if (Array.isArray(dn.images)) {
+                            dn.images.forEach(im => {
+                                if (im && im.id) {
+                                    if (window.App.imageDb) window.App.imageDb.deleteImage(im.id);
+                                    if (window.App.cloudSync && window.App.cloudSync.deleteImageFile) {
+                                        window.App.cloudSync.deleteImageFile(im.id);
+                                    }
                                 }
-                            }
-                        });
+                            });
+                        }
+                    });
+
+                    state.notes = state.notes.filter(note => !ownToDeleteIds.has(note.id));
+
+                    if (window.App.cloudSync) {
+                        const idsArr = Array.from(ownToDeleteIds);
+                        if (window.App.cloudSync.deleteNotesFromCloud) {
+                            window.App.cloudSync.deleteNotesFromCloud(idsArr);
+                        } else {
+                            idsArr.forEach(delId => window.App.cloudSync.deleteNoteFromCloud(delId));
+                        }
                     }
-                });
 
-                state.notes = state.notes.filter(note => !toDeleteIds.has(note.id));
+                    storage.saveNotes(state.notes, true);
+                }
 
-                if (window.App.cloudSync) {
-                    const idsArr = Array.from(toDeleteIds);
-                    if (window.App.cloudSync.deleteNotesFromCloud) {
-                        window.App.cloudSync.deleteNotesFromCloud(idsArr);
-                    } else {
-                        idsArr.forEach(delId => window.App.cloudSync.deleteNoteFromCloud(delId));
+                // 2. Обробка спільних (read-only) нотаток
+                if (readOnlyToDeleteIds.size > 0) {
+                    state.readOnlyNotes = (state.readOnlyNotes || []).filter(note => !readOnlyToDeleteIds.has(note.id));
+                    storage.saveReadOnlyNotes(state.readOnlyNotes);
+
+                    // Зберігаємо в список прихованих спільних нотаток, щоб вони ніколи не воскресали при повторному запиті з хмари
+                    const hiddenIds = new Set(storage.getHiddenSharedNoteIds ? storage.getHiddenSharedNoteIds() : []);
+                    readOnlyToDeleteIds.forEach(id => hiddenIds.add(id));
+                    if (storage.saveHiddenSharedNoteIds) {
+                        storage.saveHiddenSharedNoteIds(Array.from(hiddenIds));
                     }
                 }
 
@@ -249,8 +283,6 @@ window.DOMPurify = window.DOMPurify || DOMPurify;
                 state.activeChain = state.activeChain.filter(pid => pid === null || !toDeleteIds.has(pid));
                 state.selectedSidebarNoteIds.clear();
                 state.selectedWorkspaceNoteIds.clear();
-
-                storage.saveNotes(state.notes, true);
 
                 const deletedIds = Array.from(toDeleteIds);
                 this.notifyNotesChanged({ type: 'delete', deletedIds });
@@ -260,26 +292,40 @@ window.DOMPurify = window.DOMPurify || DOMPurify;
                 }
             };
 
+            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
+
             if (window.App.confirmModal) {
                 if (targetIds.length > 1) {
                     const extraSubnotesCount = toDeleteIds.size - targetIds.length;
+                    const subInfo = extraSubnotesCount > 0 ? (isAllReadOnly ? ` Усі їхні прив'язані піднотатки (${extraSubnotesCount} шт.) також будуть приховані.` : ` Усі їхні прив'язані піднотатки (${extraSubnotesCount} шт.) також будуть видалені.`) : '';
+                    
                     window.App.confirmModal.show({
-                        title: `Видалити ${targetIds.length} виділені нотатки?`,
-                        message: `Ви дійсно хочете видалити <span class="confirm-modal-highlight">${targetIds.length} виділені нотатки</span>?${extraSubnotesCount > 0 ? ` Усі їхні прив'язані піднотатки (${extraSubnotesCount} шт.) також будуть видалені.` : ''}`,
-                        confirmText: 'Затисніть для видалення',
+                        title: isAllReadOnly 
+                            ? `Прибрати ${targetIds.length} спільні нотатки?` 
+                            : `Видалити ${targetIds.length} виділені нотатки?`,
+                        message: isAllReadOnly
+                            ? `Прибрати <span class="confirm-modal-highlight">${targetIds.length} спільні нотатки</span> зі списку читання? (Оригінал автора не постраждає).${subInfo}`
+                            : `Ви дійсно хочете видалити <span class="confirm-modal-highlight">${targetIds.length} виділені нотатки</span>?${subInfo}`,
+                        confirmText: isAllReadOnly ? 'Затисніть для видалення' : 'Затисніть для видалення',
                         type: 'danger',
                         onConfirm: performDelete
                     });
                 } else {
                     const id = targetIds[0];
                     const targetNote = this.getNoteById(id);
-                    const noteTitle = (targetNote && targetNote.title.trim()) ? targetNote.title.trim() : 'Без назви';
+                    const noteTitle = (targetNote && targetNote.title.trim()) ? targetNote.title.trim() : (t('common.untitled') || 'Без назви');
                     const isSubnote = targetNote && targetNote.parentId;
                     const descendantCount = this.getDescendantIds(id).length;
+                    const isReadOnlyNote = readOnlyIdSet.has(id);
+                    const subInfo = descendantCount > 0 ? (isReadOnlyNote ? ` Усі зв'язані піднотатки (${descendantCount} шт.) також будуть приховані.` : ` Усі зв'язані піднотатки (${descendantCount} шт.) також будуть видалені.`) : '';
 
                     window.App.confirmModal.show({
-                        title: isSubnote ? 'Видалити піднотатку?' : 'Видалити нотатку?',
-                        message: `Ви дійсно хочете видалити ${isSubnote ? 'піднотатку' : 'нотатку'} <span class="confirm-modal-highlight">"${noteTitle}"</span>?${descendantCount > 0 ? ` Усі зв'язані піднотатки (${descendantCount} шт.) також будуть видалені.` : ''}`,
+                        title: isReadOnlyNote
+                            ? (isSubnote ? 'Прибрати спільну піднотатку?' : 'Прибрати спільну нотатку?')
+                            : (isSubnote ? 'Видалити піднотатку?' : 'Видалити нотатку?'),
+                        message: isReadOnlyNote
+                            ? `Прибрати ${isSubnote ? 'піднотатку' : 'нотатку'} <span class="confirm-modal-highlight">"${noteTitle}"</span> зі списку читання? (Оригінал автора не постраждає).${subInfo}`
+                            : `Ви дійсно хочете видалити ${isSubnote ? 'піднотатку' : 'нотатку'} <span class="confirm-modal-highlight">"${noteTitle}"</span>?${subInfo}`,
                         confirmText: 'Затисніть для видалення',
                         type: 'danger',
                         onConfirm: performDelete
@@ -481,13 +527,36 @@ window.DOMPurify = window.DOMPurify || DOMPurify;
             const sourceNote = this.getNoteById(sourceNoteId);
             if (!sourceNote) return null;
 
+            // Перевіряємо чи нотатка належить до спільного (read-only) блокнота
+            const isReadOnlyNote = !!sourceNote.isReadOnly || (sourceNote.boardId && sourceNote.boardId.startsWith('shared_'));
+            let targetBoardId = sourceNote.boardId;
+
+            if (isReadOnlyNote) {
+                // Перевіряємо чи дозволив автор копіювання (allowClone)
+                const currentBoard = window.App.boardManager ? window.App.boardManager.getBoardById(sourceNote.boardId) : null;
+                if (currentBoard && currentBoard.allowClone === false) {
+                    const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
+                    if (window.App.showNotification) {
+                        window.App.showNotification(t('selectionBar.cloneNotAllowed'), 'error');
+                    } else {
+                        alert(t('selectionBar.cloneNotAllowed'));
+                    }
+                    return null;
+                }
+
+                // Для read-only нотатки цільовим блокнотом стає перший власний приватний блокнот користувача
+                const ownBoard = state.boards.find(b => !b.id.startsWith('shared_'));
+                if (!ownBoard) return null;
+                targetBoardId = ownBoard.id;
+            }
+
             const clonedNotesList = [];
 
             // Рекурсивна функція копіювання нотатки та всіх її дочірніх нотаток
             const cloneNoteTree = (noteToClone, newParentId) => {
                 const newNote = {
                     id: 'note_' + Date.now().toString() + '_' + Math.random().toString(36).substr(2, 5),
-                    boardId: noteToClone.boardId,
+                    boardId: targetBoardId,
                     parentId: newParentId,
                     title: (noteToClone.id === sourceNoteId)
                         ? (noteToClone.title ? `${noteToClone.title} (Копія)` : 'Копія')
@@ -507,7 +576,8 @@ window.DOMPurify = window.DOMPurify || DOMPurify;
                 clonedNotesList.push(newNote);
 
                 // Знаходимо всіх прямих дітей та клонуємо їх
-                const directChildren = state.notes.filter(n => n.boardId === noteToClone.boardId && n.parentId === noteToClone.id);
+                const allNotes = this.getAllNotes();
+                const directChildren = allNotes.filter(n => n.boardId === noteToClone.boardId && n.parentId === noteToClone.id);
                 directChildren.forEach(child => {
                     cloneNoteTree(child, newNote.id);
                 });
@@ -515,7 +585,7 @@ window.DOMPurify = window.DOMPurify || DOMPurify;
                 return newNote;
             };
 
-            const rootClonedNote = cloneNoteTree(sourceNote, sourceNote.parentId || null);
+            const rootClonedNote = cloneNoteTree(sourceNote, isReadOnlyNote ? null : (sourceNote.parentId || null));
             storage.saveNotes(state.notes);
 
             // Синхронізуємо всі клоновані нотатки з базою даних Supabase

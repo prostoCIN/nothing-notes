@@ -116,6 +116,13 @@ window.App = window.App || {};
                     finalNotes = finalNotes.filter(n => allowedSet.has(n.id));
                 }
 
+                // Фільтруємо нотатки, які користувач-читач видалив/приховав для себе
+                const hiddenSharedIds = window.App.storage && window.App.storage.getHiddenSharedNoteIds ? window.App.storage.getHiddenSharedNoteIds() : [];
+                if (Array.isArray(hiddenSharedIds) && hiddenSharedIds.length > 0) {
+                    const hiddenSet = new Set(hiddenSharedIds);
+                    finalNotes = finalNotes.filter(n => !hiddenSet.has(n.id));
+                }
+
                 // Форматуємо нотатки під структуру нашого додатку
                 const formattedNotes = finalNotes.map(n => ({
                     id: n.id,

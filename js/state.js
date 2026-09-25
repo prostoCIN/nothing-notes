@@ -131,6 +131,12 @@ window.App.storage = {
     saveReadOnlyNotes(notes) {
         localStorage.setItem('minimal_readonly_notes', JSON.stringify(notes));
     },
+    getHiddenSharedNoteIds() {
+        return JSON.parse(localStorage.getItem('minimal_hidden_shared_note_ids')) || [];
+    },
+    saveHiddenSharedNoteIds(ids) {
+        localStorage.setItem('minimal_hidden_shared_note_ids', JSON.stringify(ids));
+    },
     clearAll() {
         clearTimeout(this._notesSaveTimer);
         this._notesSaveTimer = null;
@@ -139,6 +145,7 @@ window.App.storage = {
         localStorage.removeItem('minimal_notes');
         localStorage.removeItem('minimal_readonly_boards');
         localStorage.removeItem('minimal_readonly_notes');
+        localStorage.removeItem('minimal_hidden_shared_note_ids');
         localStorage.removeItem('minimal_active_board_id');
         localStorage.removeItem('minimal_board_tag_options');
         localStorage.removeItem('minimal_column_layouts');

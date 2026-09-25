@@ -209,6 +209,10 @@ export const ua = {
     selectionBar: {
         selectedCount: 'Вибрано: {count}',
         deleteSelected: 'Видалити',
+        deleteOrHideSelected: 'Прибрати / Видалити',
+        hideSelected: 'Прибрати зі списку',
+        cloneSelected: 'Скопіювати собі',
+        cloneNotAllowed: 'Автор заборонив копіювання цього блокнота',
         colorSelected: 'Колір',
         tagSelected: 'Тег',
         fontSelected: 'Шрифт',
@@ -355,6 +359,11 @@ export const ua = {
         subnotesWarning: ' Усі зв\'язані піднотатки ({count} шт.) також будуть видалені.',
         deleteBoardTitle: 'Видалити блокнот "{name}"?',
         deleteBoardMsg: 'Ви дійсно бажаєте видалити блокнот <span class="confirm-modal-highlight">"{name}"</span>? Усі його нотатки ({count} шт.) будуть назавжди видалені.',
+        cloneBoardTitle: 'Скопіювати блокнот?',
+        cloneBoardMsg: 'Створити незалежну копію блокнота <span class="confirm-modal-highlight">"{name}"</span> у ваших особистих блокнотах?',
+        holdToClone: 'Затисніть для копіювання',
+        unlinkBoardTitle: 'Прибрати спільний блокнот?',
+        unlinkBoardMsg: 'Прибрати <span class="confirm-modal-highlight">"{name}"</span> зі списку спільних для читання? (Оригінал автора не постраждає).',
         noteWord: 'нотатку',
         subnoteWord: 'піднотатку'
     },
