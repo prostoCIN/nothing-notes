@@ -20,6 +20,12 @@
     vertical-align: baseline;
 }
 
+/* Захист від сторонніх стилів (курсив, сторонні шрифти) всередині контенту нотатки */
+.sticker-content *:not(mark):not(b):not(strong) {
+    font-style: normal;
+    font-family: inherit;
+}
+
 /* Розміри шрифтів для стікера (S / M / L) */
 .note-sticker.font-size-small .sticker-title {
     font-size: 22px !important;

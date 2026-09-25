@@ -389,8 +389,8 @@ window.App = window.App || {};
             parent.removeChild(innerBold);
         });
 
-        // Видаляємо сторонні форматувальні теги (i, em, u, s, strike, font, span без класу note-marker), залишаючи їх чистий текст
-        const foreignElements = container.querySelectorAll('i, em, u, s, strike, font, span:not(.note-marker)');
+        // Видаляємо сторонні форматувальні теги (code, pre, kbd, samp, var, tt, i, em, u, s, strike, font, small, sub, sup, span без класу note-marker), залишаючи їх чистий текст
+        const foreignElements = container.querySelectorAll('code, pre, kbd, samp, var, tt, i, em, u, s, strike, font, small, sub, sup, span:not(.note-marker)');
         foreignElements.forEach(el => {
             const parent = el.parentNode;
             if (parent) {
@@ -399,6 +399,25 @@ window.App = window.App || {};
                 }
                 parent.removeChild(el);
             }
+        });
+
+        // Видаляємо будь-які залишки інлайн-стилів на будь-яких елементах, крім коректних маркерів
+        const elementsWithStyle = container.querySelectorAll('[style]');
+        elementsWithStyle.forEach(el => {
+            if (el.tagName.toLowerCase() === 'mark' && el.classList.contains('note-marker')) {
+                // Маркери зберігають тільки свій колір фону
+                return;
+            }
+            if (el.style.fontSize) el.style.fontSize = '';
+            if (el.style.fontStyle) el.style.fontStyle = '';
+            if (el.style.fontFamily) el.style.fontFamily = '';
+            if (el.style.color) el.style.color = '';
+            if (el.style.letterSpacing) el.style.letterSpacing = '';
+            if (el.style.lineHeight) el.style.lineHeight = '';
+            if (el.style.fontWeight && el.style.fontWeight !== 'bold' && parseInt(el.style.fontWeight, 10) < 600) {
+                el.style.fontWeight = '';
+            }
+            if (el.getAttribute('style') === '') el.removeAttribute('style');
         });
 
         // Видаляємо порожні форматувальні теги без тексту
@@ -607,8 +626,8 @@ window.App = window.App || {};
             }
         });
 
-        // Очищаємо залишки чужих сторонніх тегів (i, em, u, s, strike, font, span без класу note-marker)
-        const foreignElements = contentDiv.querySelectorAll('span:not(.note-marker), font, i, em, u, s, strike');
+        // Очищаємо залишки чужих сторонніх тегів (code, pre, kbd, samp, var, tt, i, em, u, s, strike, font, small, sub, sup, span без класу note-marker)
+        const foreignElements = contentDiv.querySelectorAll('code, pre, kbd, samp, var, tt, span:not(.note-marker), font, i, em, u, s, strike, small, sub, sup');
         foreignElements.forEach(el => {
             const parent = el.parentNode;
             if (parent) {
@@ -620,12 +639,19 @@ window.App = window.App || {};
             }
         });
 
-        // Очищаємо залишки чужих інлайн-стилів (розмір шрифту, курсив, товщина шрифту тощо)
-        const styledElements = contentDiv.querySelectorAll('[style*="font-size"], [style*="font-style"], [style*="font-family"]');
+        // Очищаємо залишки чужих інлайн-стилів (розмір шрифту, курсив, шрифт, кольори тощо)
+        const styledElements = contentDiv.querySelectorAll('[style]');
         styledElements.forEach(el => {
+            if (el.tagName.toLowerCase() === 'mark' && el.classList.contains('note-marker')) {
+                // Маркери залишають тільки свій фірмовий стиль
+                return;
+            }
             if (el.style.fontSize) { el.style.fontSize = ''; changed = true; }
             if (el.style.fontStyle) { el.style.fontStyle = ''; changed = true; }
             if (el.style.fontFamily) { el.style.fontFamily = ''; changed = true; }
+            if (el.style.color) { el.style.color = ''; changed = true; }
+            if (el.style.letterSpacing) { el.style.letterSpacing = ''; changed = true; }
+            if (el.style.lineHeight) { el.style.lineHeight = ''; changed = true; }
             if (el.style.fontWeight && el.style.fontWeight !== 'bold' && parseInt(el.style.fontWeight, 10) < 600) {
                 el.style.fontWeight = '';
                 changed = true;
