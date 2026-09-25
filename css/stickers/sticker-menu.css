@@ -62,9 +62,9 @@
     border: 1px solid var(--glass-border);
     border-radius: 12px;
     padding: 8px;
-    width: max-content;
-    min-width: 220px;
-    max-width: 320px;
+    width: 250px;
+    min-width: 240px;
+    max-width: 280px;
     box-sizing: border-box;
     box-shadow: var(--glass-card-shadow);
     z-index: 100000;
@@ -72,6 +72,106 @@
     flex-direction: column;
     gap: 4px;
     color: var(--text-main);
+    overflow: hidden;
+}
+
+/* Дворівневий контейнер-слайдер для підменю дій */
+.sticker-menu-viewport {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    margin-top: 2px;
+}
+
+.sticker-menu-slider {
+    display: flex;
+    width: 200%;
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sticker-menu-viewport.is-sub-active .sticker-menu-slider {
+    transform: translateX(-50%);
+}
+
+.sticker-menu-panel {
+    width: 50%;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    box-sizing: border-box;
+}
+
+.sticker-menu-panel-sub {
+    padding-left: 2px;
+}
+
+/* Шапка підпанелі з кнопкою «Назад» */
+.sticker-menu-sub-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 6px 6px 6px;
+    margin-bottom: 3px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sticker-menu-back-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 3px 6px;
+    border-radius: 6px;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.sticker-menu-back-btn:hover {
+    background-color: var(--hover-bg);
+    color: var(--text-main);
+}
+
+.sticker-menu-sub-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding-right: 4px;
+}
+
+.sticker-menu-sub-items {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* Пункт-група зі стрілкою розкриття */
+.sticker-menu-group-item {
+    justify-content: space-between !important;
+}
+
+.sticker-menu-item-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sticker-menu-arrow {
+    opacity: 0.55;
+    flex-shrink: 0;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.sticker-menu-group-item:hover .sticker-menu-arrow {
+    opacity: 0.95;
+    transform: translateX(2px);
 }
 
 /* Шапка меню стікера: заголовок та дата додавання */

@@ -166,6 +166,8 @@ export const en = {
         changeColor: 'Change color',
         toggleCollapse: 'Collapse / Expand',
         deleteNote: 'Delete note',
+        groupAdd: 'Add',
+        exportMarkdown: 'Export note (.md)',
         addTag: 'Add tag',
         tagsTitle: 'Note tags',
         emptyTags: 'No tags created yet',

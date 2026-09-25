@@ -190,156 +190,252 @@ window.App = window.App || {};
     }
 
     /**
-     * Створює інтерактивні пункти меню дій (піднотатки, фото, теги, поширення, дублювання, видалення)
+     * Створює інтерактивні пункти меню дій з дворівневими групами (Додати, Поділитись)
      */
     function appendMenuItems(menuDropdown, note, card, colIndex, isChainOpen, onClose) {
         const noteManager = window.App.noteManager;
         const workspaceView = window.App.workspaceView;
         const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
 
-        // 1. Пункт "Додати піднотатку"
-        const addSubnoteItem = document.createElement('div');
-        addSubnoteItem.className = 'sticker-menu-item';
-        addSubnoteItem.innerHTML = `
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="12" y1="6" x2="12" y2="18"></line>
-                <line x1="6" y1="12" x2="18" y2="12"></line>
+        // Контейнер-слайдер для дворівневої навігації
+        const navViewport = document.createElement('div');
+        navViewport.className = 'sticker-menu-viewport';
+
+        const navSlider = document.createElement('div');
+        navSlider.className = 'sticker-menu-slider';
+
+        // Панель 1: Головний список пунктів
+        const mainPanel = document.createElement('div');
+        mainPanel.className = 'sticker-menu-panel sticker-menu-panel-main';
+
+        // Панель 2: Підпанель групи (динамічно наповнюється при переході)
+        const subPanel = document.createElement('div');
+        subPanel.className = 'sticker-menu-panel sticker-menu-panel-sub';
+
+        navSlider.appendChild(mainPanel);
+        navSlider.appendChild(subPanel);
+        navViewport.appendChild(navSlider);
+        menuDropdown.appendChild(navViewport);
+
+        // Функція переходу до підменю
+        const showSubmenu = (title, itemsBuilder) => {
+            subPanel.innerHTML = '';
+
+            // Шапка підменю з кнопкою «Назад»
+            const backHeader = document.createElement('div');
+            backHeader.className = 'sticker-menu-sub-header';
+            backHeader.innerHTML = `
+                <button type="button" class="sticker-menu-back-btn" aria-label="${t('common.back')}">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                    <span>${t('common.back')}</span>
+                </button>
+                <span class="sticker-menu-sub-title">${title}</span>
+            `;
+
+            backHeader.querySelector('.sticker-menu-back-btn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                navViewport.classList.remove('is-sub-active');
+            });
+
+            subPanel.appendChild(backHeader);
+
+            const itemsWrap = document.createElement('div');
+            itemsWrap.className = 'sticker-menu-sub-items';
+            itemsBuilder(itemsWrap);
+            subPanel.appendChild(itemsWrap);
+
+            navViewport.classList.add('is-sub-active');
+        };
+
+        // --- ГРУПА 1: "ДОДАТИ" (Піднотатка, Фото, Тег) ---
+        const addGroupItem = document.createElement('div');
+        addGroupItem.className = 'sticker-menu-item sticker-menu-group-item';
+        addGroupItem.innerHTML = `
+            <div class="sticker-menu-item-left">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span>${t('sticker.groupAdd')}</span>
+            </div>
+            <svg class="sticker-menu-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
-            <span>${t('sticker.addSubnote') || t('column.addSubnote') || 'Додати піднотатку'}</span>
         `;
-        addSubnoteItem.addEventListener('click', (e) => {
+        addGroupItem.addEventListener('click', (e) => {
             e.stopPropagation();
-            menuDropdown.classList.remove('active');
-            if (onClose) onClose();
-            if (!isChainOpen && workspaceView) {
-                workspaceView.toggleChain(note.id, colIndex);
-            }
-            if (noteManager) {
-                setTimeout(() => noteManager.createNewNote(note.id, true), 80);
-            }
-        });
-        menuDropdown.appendChild(addSubnoteItem);
-
-        // 2. Пункт "Додати фото"
-        const addImageMenuItem = document.createElement('div');
-        addImageMenuItem.className = 'sticker-menu-item';
-        addImageMenuItem.innerHTML = `
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
-                <circle cx="9" cy="9" r="2"></circle>
-                <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path>
-            </svg>
-            <span>${t('sticker.attachImage')}</span>
-        `;
-
-        const fileInput = document.createElement('input');
-        fileInput.type = 'file';
-        fileInput.accept = 'image/*';
-        fileInput.multiple = true;
-        fileInput.style.display = 'none';
-
-        fileInput.addEventListener('change', async (e) => {
-            const files = Array.from(e.target.files || []);
-            if (files.length === 0) return;
-            if (window.App.stickerGallery) {
-                await window.App.stickerGallery.attachImagesToNote(note.id, files, card);
-            }
-            fileInput.value = '';
-        });
-
-        addImageMenuItem.appendChild(fileInput);
-
-        addImageMenuItem.addEventListener('click', (e) => {
-            e.stopPropagation();
-            menuDropdown.classList.remove('active');
-            if (onClose) onClose();
-            fileInput.click();
-        });
-
-        menuDropdown.appendChild(addImageMenuItem);
-
-        // 3. Пункт "Додати тег"
-        const addTagMenuItem = document.createElement('div');
-        addTagMenuItem.className = 'sticker-menu-item';
-        addTagMenuItem.innerHTML = `
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
-                <line x1="7" y1="7" x2="7.01" y2="7"></line>
-            </svg>
-            <span>${t('sticker.addTag')}</span>
-        `;
-        addTagMenuItem.addEventListener('click', (e) => {
-            e.stopPropagation();
-            menuDropdown.classList.remove('active');
-            if (onClose) onClose();
-
-            if (card) {
-                const tagsBox = card.querySelector('.sticker-tags-container');
-                if (tagsBox) tagsBox.style.display = 'flex';
-
-                setTimeout(() => {
-                    const addBtn = card.querySelector('.sticker-add-tag-btn');
-                    const tagDropdown = card.querySelector('.sticker-tag-dropdown');
-                    if (addBtn && tagDropdown) {
-                        if (typeof tagDropdown.refreshContent === 'function') tagDropdown.refreshContent();
-                        if (window.App.smartPositionDropdown) {
-                            window.App.smartPositionDropdown(addBtn, tagDropdown, 160);
-                        }
-                        tagDropdown.classList.add('active');
-                        addBtn.classList.add('active');
-                        const addInput = tagDropdown.querySelector('.tag-add-input');
-                        if (addInput) addInput.focus();
+            showSubmenu(t('sticker.groupAdd'), (container) => {
+                // 1. Додати піднотатку
+                const subnoteItem = document.createElement('div');
+                subnoteItem.className = 'sticker-menu-item';
+                subnoteItem.innerHTML = `
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="6" x2="12" y2="18"></line>
+                        <line x1="6" y1="12" x2="18" y2="12"></line>
+                    </svg>
+                    <span>${t('sticker.addSubnote') || t('column.addSubnote') || 'Додати піднотатку'}</span>
+                `;
+                subnoteItem.addEventListener('click', (ev) => {
+                    ev.stopPropagation();
+                    menuDropdown.classList.remove('active');
+                    navViewport.classList.remove('is-sub-active');
+                    if (onClose) onClose();
+                    if (!isChainOpen && workspaceView) {
+                        workspaceView.toggleChain(note.id, colIndex);
                     }
-                }, 60);
-            }
-        });
-        menuDropdown.appendChild(addTagMenuItem);
+                    if (noteManager) {
+                        setTimeout(() => noteManager.createNewNote(note.id, true), 80);
+                    }
+                });
+                container.appendChild(subnoteItem);
 
-        // 4. Пункт "Поділитись нотаткою"
-        const shareItem = document.createElement('div');
-        shareItem.className = 'sticker-menu-item';
-        shareItem.innerHTML = `
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="18" cy="5" r="3"></circle>
-                <circle cx="6" cy="12" r="3"></circle>
-                <circle cx="18" cy="19" r="3"></circle>
-                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                // 2. Додати фото
+                const photoItem = document.createElement('div');
+                photoItem.className = 'sticker-menu-item';
+                photoItem.innerHTML = `
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
+                        <circle cx="9" cy="9" r="2"></circle>
+                        <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path>
+                    </svg>
+                    <span>${t('sticker.attachImage')}</span>
+                `;
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = 'image/*';
+                fileInput.multiple = true;
+                fileInput.style.display = 'none';
+                fileInput.addEventListener('change', async (fe) => {
+                    const files = Array.from(fe.target.files || []);
+                    if (files.length === 0) return;
+                    if (window.App.stickerGallery) {
+                        await window.App.stickerGallery.attachImagesToNote(note.id, files, card);
+                    }
+                    fileInput.value = '';
+                });
+                photoItem.appendChild(fileInput);
+                photoItem.addEventListener('click', (ev) => {
+                    ev.stopPropagation();
+                    menuDropdown.classList.remove('active');
+                    navViewport.classList.remove('is-sub-active');
+                    if (onClose) onClose();
+                    fileInput.click();
+                });
+                container.appendChild(photoItem);
+
+                // 3. Додати тег
+                const tagItem = document.createElement('div');
+                tagItem.className = 'sticker-menu-item';
+                tagItem.innerHTML = `
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                        <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                    </svg>
+                    <span>${t('sticker.addTag')}</span>
+                `;
+                tagItem.addEventListener('click', (ev) => {
+                    ev.stopPropagation();
+                    menuDropdown.classList.remove('active');
+                    navViewport.classList.remove('is-sub-active');
+                    if (onClose) onClose();
+                    if (card) {
+                        const tagsBox = card.querySelector('.sticker-tags-container');
+                        if (tagsBox) tagsBox.style.display = 'flex';
+                        setTimeout(() => {
+                            const addBtn = card.querySelector('.sticker-add-tag-btn');
+                            const tagDropdown = card.querySelector('.sticker-tag-dropdown');
+                            if (addBtn && tagDropdown) {
+                                if (typeof tagDropdown.refreshContent === 'function') tagDropdown.refreshContent();
+                                if (window.App.smartPositionDropdown) {
+                                    window.App.smartPositionDropdown(addBtn, tagDropdown, 160);
+                                }
+                                tagDropdown.classList.add('active');
+                                addBtn.classList.add('active');
+                                const addInput = tagDropdown.querySelector('.tag-add-input');
+                                if (addInput) addInput.focus();
+                            }
+                        }, 60);
+                    }
+                });
+                container.appendChild(tagItem);
+            });
+        });
+        mainPanel.appendChild(addGroupItem);
+
+        // --- ГРУПА 2: "ПОДІЛИТИСЬ" (Поділитись доступом, Експорт .md) ---
+        const shareGroupItem = document.createElement('div');
+        shareGroupItem.className = 'sticker-menu-item sticker-menu-group-item';
+        shareGroupItem.innerHTML = `
+            <div class="sticker-menu-item-left">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="18" cy="5" r="3"></circle>
+                    <circle cx="6" cy="12" r="3"></circle>
+                    <circle cx="18" cy="19" r="3"></circle>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                </svg>
+                <span>${t('common.share')}</span>
+            </div>
+            <svg class="sticker-menu-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
-            <span>${t('common.share')}</span>
         `;
-        shareItem.addEventListener('click', (e) => {
+        shareGroupItem.addEventListener('click', (e) => {
             e.stopPropagation();
-            menuDropdown.classList.remove('active');
-            if (onClose) onClose();
-            if (window.App.shareManager) {
-                window.App.shareManager.showShareModal(note.boardId, [note.id]);
-            }
-        });
-        menuDropdown.appendChild(shareItem);
+            showSubmenu(t('common.share'), (container) => {
+                // 1. Поділитись нотаткою
+                const shareLinkItem = document.createElement('div');
+                shareLinkItem.className = 'sticker-menu-item';
+                shareLinkItem.innerHTML = `
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="18" cy="5" r="3"></circle>
+                        <circle cx="6" cy="12" r="3"></circle>
+                        <circle cx="18" cy="19" r="3"></circle>
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                    </svg>
+                    <span>${t('common.share')}</span>
+                `;
+                shareLinkItem.addEventListener('click', (ev) => {
+                    ev.stopPropagation();
+                    menuDropdown.classList.remove('active');
+                    navViewport.classList.remove('is-sub-active');
+                    if (onClose) onClose();
+                    if (window.App.shareManager) {
+                        window.App.shareManager.showShareModal(note.boardId, [note.id]);
+                    }
+                });
+                container.appendChild(shareLinkItem);
 
-        // 4b. Пункт "Експорт нотатки (.md)"
-        const exportItem = document.createElement('div');
-        exportItem.className = 'sticker-menu-item';
-        exportItem.innerHTML = `
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="7 10 12 15 17 10"></polyline>
-                <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            <span>${t('common.share')} (.md)</span>
-        `;
-        exportItem.addEventListener('click', (e) => {
-            e.stopPropagation();
-            menuDropdown.classList.remove('active');
-            if (onClose) onClose();
-            if (window.App.shareManager) {
-                window.App.shareManager.showShareModal(note.boardId, [note.id], 'export');
-            }
+                // 2. Експорт нотатки (.md)
+                const exportItem = document.createElement('div');
+                exportItem.className = 'sticker-menu-item';
+                exportItem.innerHTML = `
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    <span>${t('sticker.exportMarkdown')}</span>
+                `;
+                exportItem.addEventListener('click', (ev) => {
+                    ev.stopPropagation();
+                    menuDropdown.classList.remove('active');
+                    navViewport.classList.remove('is-sub-active');
+                    if (onClose) onClose();
+                    if (window.App.shareManager) {
+                        window.App.shareManager.showShareModal(note.boardId, [note.id], 'export');
+                    }
+                });
+                container.appendChild(exportItem);
+            });
         });
-        menuDropdown.appendChild(exportItem);
+        mainPanel.appendChild(shareGroupItem);
 
-        // 5. Пункт "Дублювати нотатку"
+        // --- ДІЇ ГОЛОВНОГО РІВНЯ: Дублювати, Видалити, Піднотатки ---
+        // Пункт "Дублювати нотатку"
         const duplicateItem = document.createElement('div');
         duplicateItem.className = 'sticker-menu-item';
         duplicateItem.innerHTML = `
@@ -352,14 +448,15 @@ window.App = window.App || {};
         duplicateItem.addEventListener('click', (e) => {
             e.stopPropagation();
             menuDropdown.classList.remove('active');
+            navViewport.classList.remove('is-sub-active');
             if (onClose) onClose();
             if (noteManager) {
                 noteManager.duplicateNote(note.id);
             }
         });
-        menuDropdown.appendChild(duplicateItem);
+        mainPanel.appendChild(duplicateItem);
 
-        // 6. Пункт "Видалити нотатку"
+        // Пункт "Видалити нотатку"
         const deleteItem = document.createElement('div');
         deleteItem.className = 'sticker-menu-item sticker-menu-item-delete';
         deleteItem.innerHTML = `
@@ -372,14 +469,15 @@ window.App = window.App || {};
         deleteItem.addEventListener('click', (e) => {
             e.stopPropagation();
             menuDropdown.classList.remove('active');
+            navViewport.classList.remove('is-sub-active');
             if (onClose) onClose();
             if (noteManager) {
                 noteManager.deleteNote(note.id, e);
             }
         });
-        menuDropdown.appendChild(deleteItem);
+        mainPanel.appendChild(deleteItem);
 
-        // 7. Пункт "Піднотатки (к-сть)" якщо є піднотатки
+        // Пункт "Піднотатки (к-сть)" якщо є піднотатки
         const childNotes = noteManager ? noteManager.getNotesForColumn(note.id) : [];
         const childCount = childNotes.length;
 
@@ -397,12 +495,13 @@ window.App = window.App || {};
             viewSubnotesItem.addEventListener('click', (e) => {
                 e.stopPropagation();
                 menuDropdown.classList.remove('active');
+                navViewport.classList.remove('is-sub-active');
                 if (onClose) onClose();
                 if (workspaceView) {
                     workspaceView.toggleChain(note.id, colIndex);
                 }
             });
-            menuDropdown.appendChild(viewSubnotesItem);
+            mainPanel.appendChild(viewSubnotesItem);
         }
     }
 
@@ -472,12 +571,16 @@ window.App = window.App || {};
 
                 const willOpen = !menuDropdown.classList.contains('active');
                 if (willOpen) {
+                    const viewport = menuDropdown.querySelector('.sticker-menu-viewport');
+                    if (viewport) viewport.classList.remove('is-sub-active');
                     if (window.App.smartPositionDropdown) {
                         window.App.smartPositionDropdown(moreBtn, menuDropdown, 160);
                     }
                     menuDropdown.classList.add('active');
                 } else {
                     menuDropdown.classList.remove('active', 'open-upward');
+                    const viewport = menuDropdown.querySelector('.sticker-menu-viewport');
+                    if (viewport) viewport.classList.remove('is-sub-active');
                 }
             });
 
