@@ -155,6 +155,28 @@ window.App = window.App || {};
                         if (d.classList.contains('sidebar-context-menu')) d.remove();
                     });
                     document.querySelectorAll('.column-more-btn.active').forEach(b => b.classList.remove('active'));
+                    return;
+                }
+
+                // Гаряча клавіша Shift + "+" для швидкого створення піднотатки для поточної активної/сфокусованої нотатки
+                const isPlusKey = e.key === '+' || e.key === '=' || e.code === 'Equal' || e.code === 'NumpadAdd';
+                if (e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey && isPlusKey) {
+                    const activeEl = document.activeElement;
+                    const focusedCard = activeEl ? activeEl.closest('.note-sticker[data-note-id]') : null;
+
+                    // Працює коли користувач сфокусований на картці або писав у ній
+                    let targetNoteId = focusedCard ? focusedCard.dataset.noteId : null;
+                    if (!targetNoteId && state && state.activeNoteId) {
+                        const activeCard = document.querySelector(`.note-sticker[data-note-id="${state.activeNoteId}"]`);
+                        if (activeCard && activeCard.contains(activeEl)) {
+                            targetNoteId = state.activeNoteId;
+                        }
+                    }
+
+                    if (targetNoteId) {
+                        e.preventDefault();
+                        this.createSubnoteForNote(targetNoteId);
+                    }
                 }
             });
 
@@ -600,6 +622,42 @@ window.App = window.App || {};
                     if (titleInput) titleInput.focus();
                 }
             }, 60);
+        },
+
+        createSubnoteForNote(targetNoteId) {
+            const noteManager = window.App.noteManager;
+            const state = window.App.state;
+            if (!noteManager || !targetNoteId) return;
+
+            const targetNote = noteManager.getNoteById(targetNoteId);
+            if (!targetNote) return;
+
+            // Перевіряємо чи блокнот або нотатка не в режимі тільки для читання
+            const currentBoard = window.App.boardManager ? window.App.boardManager.getActiveBoard() : null;
+            const isReadOnly = !!targetNote.isReadOnly || !!(currentBoard && currentBoard.isReadOnly) || (targetNote.boardId && targetNote.boardId.startsWith('shared_'));
+            if (isReadOnly) return;
+
+            // Знаходимо колонку, в якій зараз знаходиться цільова нотатка
+            const cardEl = document.querySelector(`.note-sticker[data-note-id="${targetNoteId}"]`);
+            const colEl = cardEl ? cardEl.closest('.board-column[data-col-index]') : null;
+            let colIndex = colEl ? parseInt(colEl.dataset.colIndex, 10) : -1;
+
+            if (colIndex === -1 && state && Array.isArray(state.activeChain)) {
+                // Визначаємо індекс через ланцюжок activeChain
+                const targetParentId = targetNote.parentId || null;
+                colIndex = state.activeChain.indexOf(targetParentId);
+            }
+
+            if (colIndex !== -1) {
+                const isNextOpen = state && Array.isArray(state.activeChain) && state.activeChain[colIndex + 1] === targetNoteId;
+                if (!isNextOpen) {
+                    this.toggleChain(targetNoteId, colIndex);
+                }
+            }
+
+            setTimeout(() => {
+                noteManager.createNewNote(targetNoteId, true);
+            }, 80);
         },
 
         highlightNote(noteId) {

@@ -205,7 +205,7 @@ window.App = window.App || {};
                 <line x1="12" y1="6" x2="12" y2="18"></line>
                 <line x1="6" y1="12" x2="18" y2="12"></line>
             </svg>
-            <span>${t('sidebar.notes')}</span>
+            <span>${t('sticker.addSubnote') || t('column.addSubnote') || 'Додати піднотатку'}</span>
         `;
         addSubnoteItem.addEventListener('click', (e) => {
             e.stopPropagation();

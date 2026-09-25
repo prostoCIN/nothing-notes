@@ -385,6 +385,14 @@ window.App = window.App || {};
                             </div>
                         </div>
                         <div class="settings-shortcut-row">
+                            <span class="settings-shortcut-label" data-i18n="settings.shortcuts.createSubnote">${t('settings.shortcuts.createSubnote')}</span>
+                            <div class="settings-shortcut-keys">
+                                <kbd class="settings-kbd">Shift</kbd>
+                                <span>+</span>
+                                <kbd class="settings-kbd">+</kbd>
+                            </div>
+                        </div>
+                        <div class="settings-shortcut-row">
                             <span class="settings-shortcut-label" data-i18n="settings.shortcuts.close">${t('settings.shortcuts.close')}</span>
                             <div class="settings-shortcut-keys">
                                 <kbd class="settings-kbd">Esc</kbd>

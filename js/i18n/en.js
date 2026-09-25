@@ -302,6 +302,7 @@ export const en = {
             redo: 'Redo action',
             search: 'Search words on board',
             bold: 'Bold text',
+            createSubnote: 'Create subnote',
             close: 'Close modal / exit highlighter',
             searchNav: 'Navigate search matches'
         }
