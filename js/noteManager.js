@@ -494,7 +494,7 @@ window.DOMPurify = window.DOMPurify || DOMPurify;
             this.notifyNotesChanged({ type: 'reorder', parentId, newOrderIds });
         },
 
-        moveNoteToParent(noteId, newParentId) {
+        moveNoteToParent(noteId, newParentId, triggerNotify = true) {
             const state = window.App.state;
             const storage = window.App.storage;
 
@@ -516,7 +516,13 @@ window.DOMPurify = window.DOMPurify || DOMPurify;
 
             storage.saveNotes(state.notes);
 
-            this.notifyNotesChanged({ type: 'move', noteId, newParentId });
+            if (window.App.cloudSync && window.App.cloudSync.syncNote) {
+                window.App.cloudSync.syncNote(targetNote);
+            }
+
+            if (triggerNotify) {
+                this.notifyNotesChanged({ type: 'move', noteId, newParentId });
+            }
 
             return true;
         },

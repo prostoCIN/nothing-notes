@@ -644,6 +644,9 @@ window.App = window.App || {};
                                         if (note) {
                                             note.parentId = finalParentId;
                                             note.updatedAt = Date.now();
+                                            if (window.App.cloudSync && window.App.cloudSync.syncNote) {
+                                                window.App.cloudSync.syncNote(note);
+                                            }
                                         }
                                     });
                                     // 2. Впорядковуємо нотатки на новому рівні строго за позицією плейсхолдера
