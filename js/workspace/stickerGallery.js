@@ -57,6 +57,7 @@ window.App = window.App || {};
 
             const noteImages = Array.isArray(note.images) ? note.images : [];
             if (noteImages.length > 0) {
+                const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
                 noteImages.forEach((imgData) => {
                     const imgWrap = document.createElement('div');
                     imgWrap.className = `sticker-image-wrapper size-${imgData.size || 'm'}`;
@@ -65,11 +66,11 @@ window.App = window.App || {};
                         ${!isReadOnly ? `
                         <div class="sticker-image-toolbar">
                             <div class="sticker-img-size-group">
-                                <button class="img-size-btn ${imgData.size === 's' ? 'active' : ''}" data-size="s" title="Малий розмір (S)">S</button>
-                                <button class="img-size-btn ${imgData.size === 'm' || !imgData.size ? 'active' : ''}" data-size="m" title="Середній розмір (M)">M</button>
-                                <button class="img-size-btn ${imgData.size === 'l' ? 'active' : ''}" data-size="l" title="Повний розмір (L)">L</button>
+                                <button class="img-size-btn ${imgData.size === 's' ? 'active' : ''}" data-size="s" title="${t('sticker.imgSizeS')}">S</button>
+                                <button class="img-size-btn ${imgData.size === 'm' || !imgData.size ? 'active' : ''}" data-size="m" title="${t('sticker.imgSizeM')}">M</button>
+                                <button class="img-size-btn ${imgData.size === 'l' ? 'active' : ''}" data-size="l" title="${t('sticker.imgSizeL')}">L</button>
                             </div>
-                            <button class="sticker-image-remove-btn" title="Видалити фото">×</button>
+                            <button class="sticker-image-remove-btn" title="${t('sticker.delPhoto')}">×</button>
                         </div>` : ''}
                         <img src="${imgData.url || ''}" class="sticker-embedded-img" alt="Attached image" loading="lazy">
                     `;
@@ -308,17 +309,18 @@ window.App = window.App || {};
 
                 images.push(imgObj);
 
+                const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
                 const imgWrap = document.createElement('div');
                 imgWrap.className = 'sticker-image-wrapper size-m';
                 imgWrap.dataset.imgId = newImgId;
                 imgWrap.innerHTML = `
                     <div class="sticker-image-toolbar">
                         <div class="sticker-img-size-group">
-                            <button class="img-size-btn" data-size="s" title="Малий розмір (S)">S</button>
-                            <button class="img-size-btn active" data-size="m" title="Середній розмір (M)">M</button>
-                            <button class="img-size-btn" data-size="l" title="Повний розмір (L)">L</button>
+                            <button class="img-size-btn" data-size="s" title="${t('sticker.imgSizeS')}">S</button>
+                            <button class="img-size-btn active" data-size="m" title="${t('sticker.imgSizeM')}">M</button>
+                            <button class="img-size-btn" data-size="l" title="${t('sticker.imgSizeL')}">L</button>
                         </div>
-                        <button class="sticker-image-remove-btn" title="Видалити фото">×</button>
+                        <button class="sticker-image-remove-btn" title="${t('sticker.delPhoto')}">×</button>
                     </div>
                     <img src="${base64Url}" class="sticker-embedded-img" alt="Attached image" loading="lazy">
                 `;
@@ -344,6 +346,7 @@ window.App = window.App || {};
          * Відкриває повноекранний Lightbox для перегляду фото
          */
         openImageLightbox(src) {
+            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
             const existing = document.getElementById('polaroid-lightbox-modal');
             if (existing) existing.remove();
 
@@ -354,7 +357,7 @@ window.App = window.App || {};
                 <div class="polaroid-lightbox-backdrop"></div>
                 <div class="polaroid-lightbox-card">
                     <img src="${src}" class="polaroid-lightbox-img" alt="Enlarged photo">
-                    <button class="polaroid-lightbox-close" title="Закрити (Esc)">×</button>
+                    <button class="polaroid-lightbox-close" title="${t('sticker.closeLightbox')}">×</button>
                 </div>
             `;
 

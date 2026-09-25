@@ -13,18 +13,19 @@ window.App = window.App || {};
         createFilter(parentNoteId, currentColumnFilter, onFilterChange) {
             const state = window.App.state;
             const parentKey = parentNoteId || 'root';
+            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
 
             const filterWrap = document.createElement('div');
             filterWrap.className = 'column-filter-wrap';
 
             const filterBtn = document.createElement('button');
             filterBtn.className = `column-filter-btn ${currentColumnFilter.size > 0 ? 'has-filter' : ''}`;
-            filterBtn.title = 'Фільтрувати нотатки за тегами';
+            filterBtn.title = t('column.filterTooltip');
             filterBtn.innerHTML = `
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
                 </svg>
-                <span>${currentColumnFilter.size > 0 ? `Теги (${currentColumnFilter.size})` : 'Фільтр'}</span>
+                <span>${currentColumnFilter.size > 0 ? t('column.tagsFilterCount', { count: currentColumnFilter.size }) : t('column.filterBtnLabel')}</span>
             `;
 
             const filterDropdown = document.createElement('div');
@@ -35,12 +36,12 @@ window.App = window.App || {};
 
                 const fHeader = document.createElement('div');
                 fHeader.className = 'column-filter-header';
-                fHeader.innerHTML = `<span>Фільтр за тегами</span>`;
+                fHeader.innerHTML = `<span>${t('column.filterByTags')}</span>`;
 
                 if (currentColumnFilter.size > 0) {
                     const clearBtn = document.createElement('button');
                     clearBtn.className = 'column-filter-clear-all';
-                    clearBtn.textContent = 'Скинути';
+                    clearBtn.textContent = t('column.resetFilter');
                     clearBtn.addEventListener('click', (e) => {
                         e.stopPropagation();
                         state.activeTagFilters.delete(parentKey);
@@ -60,7 +61,7 @@ window.App = window.App || {};
                 if (availableTags.length === 0) {
                     const emptyItem = document.createElement('div');
                     emptyItem.className = 'column-filter-item-empty';
-                    emptyItem.textContent = 'Немає створених тегів';
+                    emptyItem.textContent = t('sticker.emptyTags');
                     fList.appendChild(emptyItem);
                 } else {
                     availableTags.forEach(tagName => {

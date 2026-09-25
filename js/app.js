@@ -107,6 +107,9 @@ function bootstrapApp() {
             if (workspaceView && workspaceView.render) {
                 workspaceView.render();
             }
+            if (window.App.workspaceSelectionBar && window.App.workspaceSelectionBar.updateLanguage) {
+                window.App.workspaceSelectionBar.updateLanguage();
+            }
             if (window.App.settingsModal && window.App.settingsModal.isOpen) {
                 window.App.settingsModal.render();
             }

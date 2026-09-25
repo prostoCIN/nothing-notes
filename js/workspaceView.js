@@ -16,6 +16,7 @@ window.App = window.App || {};
      * Відображає гарний порожній стан для чистого акаунту з формою створення блокнота
      */
     function renderEmptyWorkspace(container) {
+        const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
         const emptyWorkspace = document.createElement('div');
         emptyWorkspace.className = 'workspace-empty-state';
         emptyWorkspace.innerHTML = `
@@ -26,13 +27,13 @@ window.App = window.App || {};
                         <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
                     </svg>
                 </div>
-                <h2 class="workspace-empty-title">Створіть свій перший блокнот</h2>
-                <p class="workspace-empty-desc">Блокнот допомагає організувати ваші нотатки, ідеї та вкладені піднотатки в зручні мультиколонки.</p>
+                <h2 class="workspace-empty-title" data-i18n="workspace.emptyTitle">${t('workspace.emptyTitle')}</h2>
+                <p class="workspace-empty-desc" data-i18n="workspace.emptyDesc">${t('workspace.emptyDesc')}</p>
                 <div class="workspace-create-board-form">
-                    <input type="text" class="workspace-create-board-input" placeholder="Назва блокнота (наприклад: Робота, Особисте)..." autocomplete="off">
+                    <input type="text" class="workspace-create-board-input" placeholder="${t('workspace.emptyInputPlaceholder')}" data-i18n-placeholder="workspace.emptyInputPlaceholder" autocomplete="off">
                     <button class="workspace-create-board-btn">
                         <span class="btn-plus-icon">+</span>
-                        <span>Створити блокнот</span>
+                        <span data-i18n="workspace.createBoardBtn">${t('workspace.createBoardBtn')}</span>
                     </button>
                 </div>
             </div>
@@ -386,12 +387,15 @@ window.App = window.App || {};
             }
 
             if (selectToggleBtn && selectText) {
+                const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
                 if (state && state.isWorkspaceSelectMode) {
                     selectToggleBtn.classList.add('active');
-                    selectText.textContent = 'Готово';
+                    selectText.textContent = t('workspace.doneBtn');
+                    selectToggleBtn.title = t('workspace.exitSelectTitle');
                 } else {
                     selectToggleBtn.classList.remove('active');
-                    selectText.textContent = 'Вибрати';
+                    selectText.textContent = t('workspace.selectBtn');
+                    selectToggleBtn.title = t('workspace.selectTitle');
                 }
             }
 

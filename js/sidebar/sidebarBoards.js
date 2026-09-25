@@ -66,7 +66,7 @@ window.App = window.App || {};
                 const textSpan = document.createElement('span');
                 textSpan.className = 'board-item-text';
                 textSpan.textContent = board.name;
-                textSpan.title = 'Подвійний клік для редагування назви';
+                textSpan.title = (window.App && window.App.i18n) ? window.App.i18n.t('sidebar.dblClickRename') : 'Подвійний клік для редагування назви';
 
                 let editor = null;
                 if (window.App.sidebarActions) {
@@ -178,9 +178,10 @@ window.App = window.App || {};
                 const nameSpan = document.createElement('span');
                 nameSpan.className = 'board-item-name';
 
+                const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
                 const lockIcon = document.createElement('span');
                 lockIcon.className = 'shared-board-lock-icon';
-                lockIcon.title = 'Тільки для читання';
+                lockIcon.title = t('sidebar.actions.readOnlyBadge');
                 lockIcon.innerHTML = `
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
@@ -218,7 +219,7 @@ window.App = window.App || {};
                 if (board.allowClone) {
                     const cloneBtn = document.createElement('button');
                     cloneBtn.className = 'board-clone-btn';
-                    cloneBtn.title = 'Скопіювати до моїх блокнотів';
+                    cloneBtn.title = t('sidebar.actions.cloneBoard');
                     cloneBtn.innerHTML = `
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -246,7 +247,7 @@ window.App = window.App || {};
 
                 const unlinkBtn = document.createElement('button');
                 unlinkBtn.className = 'board-delete-btn';
-                unlinkBtn.title = 'Прибрати зі списку';
+                unlinkBtn.title = t('sidebar.actions.unlinkSharedBoard');
                 unlinkBtn.innerHTML = `
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="18" y1="6" x2="6" y2="18"></line>

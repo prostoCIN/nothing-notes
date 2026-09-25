@@ -33,9 +33,23 @@ window.App = window.App || {};
             toolbarEl = document.createElement('div');
             toolbarEl.className = 'text-selection-toolbar';
 
+            const getMarkerName = (c) => {
+                if (c.className === 'clear') return 'textToolbar.clearMarker';
+                const keyMap = {
+                    'hl-yellow': 'workspace.brushColors.yellow',
+                    'hl-green': 'workspace.brushColors.green',
+                    'hl-blue': 'workspace.brushColors.blue',
+                    'hl-pink': 'workspace.brushColors.pink',
+                    'hl-orange': 'workspace.brushColors.orange',
+                    'hl-purple': 'workspace.brushColors.purple'
+                };
+                return keyMap[c.className] || '';
+            };
+
             let colorsHtml = MARKER_COLORS.map(c => {
+                const i18nKey = getMarkerName(c);
                 if (c.className === 'clear') {
-                    return `<button class="text-sel-color-btn clear-marker-btn" data-marker="" title="${c.name}">
+                    return `<button class="text-sel-color-btn clear-marker-btn" data-marker="" title="${c.name}" data-i18n-title="${i18nKey}">
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
                             <path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"></path>
                             <path d="M22 21H7"></path>
@@ -43,14 +57,14 @@ window.App = window.App || {};
                         </svg>
                     </button>`;
                 }
-                return `<button class="text-sel-color-btn" data-marker="${c.className}" style="background-color: ${c.bg};" title="${c.name}"></button>`;
+                return `<button class="text-sel-color-btn" data-marker="${c.className}" style="background-color: ${c.bg};" title="${c.name}" data-i18n-title="${i18nKey}"></button>`;
             }).join('');
 
             toolbarEl.innerHTML = `
                 <!-- 1. Кегель Regular / Bold -->
                 <div class="text-sel-weight-wrap">
-                    <button class="text-sel-weight-btn active" id="text-sel-weight-regular" title="Звичайний шрифт (Regular)">R</button>
-                    <button class="text-sel-weight-btn" id="text-sel-weight-bold" title="Жирний шрифт (Bold)"><b>B</b></button>
+                    <button class="text-sel-weight-btn active" id="text-sel-weight-regular" title="Звичайний шрифт (Regular)" data-i18n-title="textToolbar.regular">R</button>
+                    <button class="text-sel-weight-btn" id="text-sel-weight-bold" title="Жирний шрифт (Bold)" data-i18n-title="textToolbar.boldTitle"><b>B</b></button>
                 </div>
 
                 <div class="text-sel-divider"></div>
@@ -73,7 +87,7 @@ window.App = window.App || {};
                         </svg>
                         <span data-i18n="common.all">Всі</span>
                     </button>
-                    <div class="text-sel-tooltip">
+                    <div class="text-sel-tooltip" data-i18n="textToolbar.allWordsTooltip">
                         Застосувати обраний колір маркера до <b>всіх однакових слів</b> у цій нотатці
                     </div>
                 </div>
@@ -81,7 +95,7 @@ window.App = window.App || {};
                 <div class="text-sel-divider"></div>
 
                 <!-- 4. Кнопка повного ресету (скидання всіх стилів до чистого тексту) -->
-                <button class="text-sel-btn text-sel-reset-all-btn" id="text-sel-reset-btn" title="Скинути ВСЕ форматування виділеного тексту" data-i18n-title="textToolbar.clearFormat">
+                <button class="text-sel-btn text-sel-reset-all-btn" id="text-sel-reset-btn" title="Скинути ВСЕ форматування виділеного тексту" data-i18n-title="textToolbar.resetAll">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="1 4 1 10 7 10"></polyline>
                         <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>

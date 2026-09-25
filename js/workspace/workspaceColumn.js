@@ -136,7 +136,7 @@ window.App = window.App || {};
                 if (!isBoardReadOnly) {
                     titleH2.contentEditable = 'true';
                     titleH2.classList.add('editable-board-title');
-                    titleH2.title = 'Натисніть для редагування назви блокнота';
+                    titleH2.title = t('column.editBoardTitle');
                     titleH2.spellcheck = false;
                     titleH2.autocapitalize = 'off';
                     titleH2.autocomplete = 'off';
@@ -202,12 +202,12 @@ window.App = window.App || {};
                 }
                 noteIconPicker.classList.add('column-header-emoji-picker');
 
-                titleH2.textContent = parentTitle || 'Без назви';
+                titleH2.textContent = parentTitle || t('sticker.untitled');
 
                 if (!isBoardReadOnly && parentNote) {
                     titleH2.contentEditable = 'true';
                     titleH2.classList.add('editable-board-title');
-                    titleH2.title = 'Натисніть для редагування назви нотатки';
+                    titleH2.title = t('column.editNoteTitle');
                     titleH2.spellcheck = false;
                     titleH2.autocapitalize = 'off';
                     titleH2.autocomplete = 'off';
@@ -265,14 +265,14 @@ window.App = window.App || {};
                 if (colIndex > 0 && state && Array.isArray(state.activeChain)) {
                     const breadcrumbs = document.createElement('div');
                     breadcrumbs.className = 'column-title-breadcrumbs';
-                    breadcrumbs.setAttribute('aria-label', 'Шлях до нотатки');
+                    breadcrumbs.setAttribute('aria-label', t('column.breadcrumbsLabel'));
 
                     // Будуємо ланцюжок відкритих рівнів: від кореня (блокнота) до попередньої нотатки (colIndex - 1)
                     const ancestors = [];
 
                     // 1. Рівень 0 - Головний блокнот
                     ancestors.push({
-                        title: (currentBoard && currentBoard.name) ? currentBoard.name : 'Головна',
+                        title: (currentBoard && currentBoard.name) ? currentBoard.name : t('common.defaultBoard'),
                         icon: (currentBoard && currentBoard.icon) ? currentBoard.icon : '📋',
                         colIndex: 0,
                         noteId: null
@@ -284,7 +284,7 @@ window.App = window.App || {};
                         if (ancestorNoteId && noteManager) {
                             const ancNote = noteManager.getNoteById(ancestorNoteId);
                             ancestors.push({
-                                title: (ancNote && ancNote.title && ancNote.title.trim()) ? ancNote.title.trim() : 'Без назви',
+                                title: (ancNote && ancNote.title && ancNote.title.trim()) ? ancNote.title.trim() : t('sticker.untitled'),
                                 icon: (ancNote && ancNote.icon) ? ancNote.icon : '📄',
                                 colIndex: lvl,
                                 noteId: ancestorNoteId
@@ -609,10 +609,12 @@ window.App = window.App || {};
             if (colNotes.length === 0) {
                 const emptyState = document.createElement('div');
                 emptyState.className = 'column-empty-state';
+                const emptyTextContent = colIndex === 0 ? t('column.emptyBoard') : t('column.emptySubnotes');
+                const createFirstBtnText = colIndex === 0 ? t('column.createFirstNote') : t('column.createFirstSubnote');
                 emptyState.innerHTML = `
                     <div class="column-empty-icon">${colIndex === 0 ? '📝' : '🔗'}</div>
                     <div class="column-empty-text">
-                        ${colIndex === 0 ? 'У цьому блокноті ще немає нотаток' : 'До цієї нотатки ще не прив\'язано жодної піднотатки'}
+                        ${emptyTextContent}
                     </div>
                 `;
 
@@ -624,7 +626,7 @@ window.App = window.App || {};
                             <line x1="12" y1="6" x2="12" y2="18"></line>
                             <line x1="6" y1="12" x2="18" y2="12"></line>
                         </svg>
-                        <span>${colIndex === 0 ? 'Створити першу нотатку' : 'Додати першу піднотатку'}</span>
+                        <span>${createFirstBtnText}</span>
                     `;
                     createFirstBtn.addEventListener('click', () => noteManager.createNewNote(parentNoteId, true));
                     emptyState.appendChild(createFirstBtn);
@@ -674,12 +676,13 @@ window.App = window.App || {};
 
                     const addBtn = document.createElement('button');
                     addBtn.className = 'bottom-add-note-btn';
+                    const addBtnText = colIndex === 0 ? t('column.addNote') : t('column.addSubnote');
                     addBtn.innerHTML = `
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="btn-plus-icon">
                             <line x1="12" y1="6" x2="12" y2="18"></line>
                             <line x1="6" y1="12" x2="18" y2="12"></line>
                         </svg>
-                        <span>Додати ${colIndex === 0 ? 'нотатку' : 'піднотатку'}</span>
+                        <span>${addBtnText}</span>
                     `;
                     addBtn.addEventListener('click', () => noteManager.createNewNote(parentNoteId, true));
 

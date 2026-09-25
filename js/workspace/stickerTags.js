@@ -37,10 +37,12 @@ window.App = window.App || {};
                 textSpan.textContent = tagText;
                 badge.appendChild(textSpan);
 
+                const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
+
                 if (!isReadOnly) {
                     const removeBadgeBtn = document.createElement('button');
                     removeBadgeBtn.className = 'sticker-tag-badge-remove';
-                    removeBadgeBtn.title = 'Відкріпити тег від цієї нотатки';
+                    removeBadgeBtn.title = t('sticker.unpinTag');
                     removeBadgeBtn.innerHTML = '×';
                     removeBadgeBtn.addEventListener('click', (e) => {
                         e.stopPropagation();
@@ -59,16 +61,18 @@ window.App = window.App || {};
                 return tagsContainer;
             }
 
+            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
+
             // 2. Кнопка "+ Тег" та випадаючий список тегів
             const addTagBtn = document.createElement('button');
             addTagBtn.className = 'sticker-add-tag-btn';
-            addTagBtn.title = 'Додати тег';
+            addTagBtn.title = t('sticker.addTag');
             addTagBtn.innerHTML = `
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="12" y1="6" x2="12" y2="18"></line>
                     <line x1="6" y1="12" x2="18" y2="12"></line>
                 </svg>
-                <span>Тег</span>
+                <span>${t('selectionBar.tagSelected')}</span>
             `;
 
             const tagDropdown = document.createElement('div');
@@ -82,7 +86,7 @@ window.App = window.App || {};
 
                 const dHeader = document.createElement('div');
                 dHeader.className = 'tag-dropdown-header';
-                dHeader.innerHTML = `<span>Теги нотатки</span>`;
+                dHeader.innerHTML = `<span>${t('sticker.tagsTitle')}</span>`;
                 tagDropdown.appendChild(dHeader);
 
                 const availableOptions = storage.getTagOptions ? storage.getTagOptions() : [];
@@ -93,7 +97,7 @@ window.App = window.App || {};
                 if (availableOptions.length === 0) {
                     const emptyText = document.createElement('div');
                     emptyText.className = 'selection-submenu-empty';
-                    emptyText.textContent = 'Немає створених тегів';
+                    emptyText.textContent = t('sticker.emptyTags');
                     emptyText.style.padding = '6px 8px';
                     emptyText.style.fontSize = '12px';
                     emptyText.style.color = 'var(--text-muted)';
@@ -112,7 +116,7 @@ window.App = window.App || {};
                                 <span class="tag-option-text">${opt}</span>
                                 <span class="tag-option-status-icon">${isAlreadyAttached ? '✓' : ''}</span>
                             </div>
-                            <button class="tag-option-del-btn" title="Видалити цей тег з усіх нотаток та зі списку">×</button>
+                            <button class="tag-option-del-btn" title="${t('sticker.delTagTooltip')}">×</button>
                         `;
 
                         // Клік по основній області — додати / зняти тег
@@ -216,7 +220,7 @@ window.App = window.App || {};
                 const addInput = document.createElement('input');
                 addInput.type = 'text';
                 addInput.className = 'tag-add-input';
-                addInput.placeholder = 'Новий тег...';
+                addInput.placeholder = t('sticker.newTagPlaceholder');
 
                 const submitNewOption = () => {
                     const newOpt = addInput.value.trim();
@@ -254,7 +258,7 @@ window.App = window.App || {};
 
                 const addBtnSubmit = document.createElement('button');
                 addBtnSubmit.className = 'tag-add-btn';
-                addBtnSubmit.textContent = '+ Створити';
+                addBtnSubmit.textContent = t('sticker.createTag');
                 addBtnSubmit.addEventListener('click', (e) => {
                     e.stopPropagation();
                     submitNewOption();

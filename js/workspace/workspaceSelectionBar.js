@@ -30,16 +30,16 @@ window.App = window.App || {};
                         <span class="selection-bar-count-desktop desktop-only" id="ws-sel-count-desktop">Вибрано 0</span>
                         <span class="selection-bar-count-badge mobile-only" id="ws-sel-count-mobile">0</span>
                         <span class="selection-bar-divider desktop-only">|</span>
-                        <button class="selection-bar-text-btn desktop-only" id="ws-sel-all-btn-desktop" data-i18n="common.all">Вибрати всі</button>
-                        <button class="selection-bar-text-btn desktop-only" id="ws-sel-clear-btn-desktop" data-i18n="column.clearFilter">Зняти всі</button>
+                        <button class="selection-bar-text-btn desktop-only" id="ws-sel-all-btn-desktop" data-i18n="selectionBar.selectAll">Вибрати всі</button>
+                        <button class="selection-bar-text-btn desktop-only" id="ws-sel-clear-btn-desktop" data-i18n="selectionBar.clearAll">Зняти всі</button>
                         <div class="selection-bar-quick-btns mobile-only">
-                            <button class="selection-bar-icon-btn" id="ws-sel-all-btn-mobile" title="Вибрати всі нотатки">
+                            <button class="selection-bar-icon-btn" id="ws-sel-all-btn-mobile" title="Вибрати всі нотатки" data-i18n-title="selectionBar.selectAll">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M9 11l3 3L22 4"></path>
                                     <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
                                 </svg>
                             </button>
-                            <button class="selection-bar-icon-btn" id="ws-sel-clear-btn-mobile" title="Зняти всі виділення">
+                            <button class="selection-bar-icon-btn" id="ws-sel-clear-btn-mobile" title="Зняти всі виділення" data-i18n-title="selectionBar.clearAll">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                                     <line x1="9" y1="9" x2="15" y2="15"></line>
@@ -53,7 +53,7 @@ window.App = window.App || {};
                 <div class="selection-bar-actions">
                     <!-- ДЕСКТОП: Окремі кнопки Колір, Теги, Шрифт -->
                     <div class="selection-action-item desktop-only" id="ws-action-color-wrap">
-                        <button class="selection-action-btn" id="ws-action-color-btn" title="Змінити колір">
+                        <button class="selection-action-btn" id="ws-action-color-btn" title="Змінити колір" data-i18n-title="selectionBar.colorTitle">
                             <span class="selection-btn-icon">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle>
@@ -63,32 +63,32 @@ window.App = window.App || {};
                                     <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
                                 </svg>
                             </span>
-                            <span class="selection-btn-label">Колір</span>
+                            <span class="selection-btn-label" data-i18n="selectionBar.colorSelected">Колір</span>
                         </button>
                         <div class="selection-submenu-dropdown selection-color-dropdown" id="ws-submenu-color">
-                            <div class="selection-submenu-title">Обрати колір для виділених:</div>
+                            <div class="selection-submenu-title" data-i18n="selectionBar.selectColorTitle">Обрати колір для виділених:</div>
                             <div class="selection-color-swatches" id="ws-desktop-colors"></div>
                         </div>
                     </div>
 
                     <div class="selection-action-item desktop-only" id="ws-action-tag-wrap">
-                        <button class="selection-action-btn" id="ws-action-tag-btn" title="Прикріпити теги">
+                        <button class="selection-action-btn" id="ws-action-tag-btn" title="Прикріпити теги" data-i18n-title="selectionBar.tagTitle">
                             <span class="selection-btn-icon">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
                                     <line x1="7" y1="7" x2="7.01" y2="7"></line>
                                 </svg>
                             </span>
-                            <span class="selection-btn-label">Теги</span>
+                            <span class="selection-btn-label" data-i18n="selectionBar.tagSelected">Теги</span>
                         </button>
                         <div class="selection-submenu-dropdown selection-tag-dropdown" id="ws-submenu-tag">
-                            <div class="selection-submenu-title">Прикріпити тег:</div>
+                            <div class="selection-submenu-title" data-i18n="selectionBar.attachTagTitle">Прикріпити тег:</div>
                             <div id="ws-desktop-tags"></div>
                         </div>
                     </div>
 
                     <div class="selection-action-item desktop-only" id="ws-action-font-wrap">
-                        <button class="selection-action-btn" id="ws-action-font-btn" title="Розмір шрифту">
+                        <button class="selection-action-btn" id="ws-action-font-btn" title="Розмір шрифту" data-i18n-title="selectionBar.fontTitle">
                             <span class="selection-btn-icon">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <polyline points="4 7 4 4 20 4 20 7"></polyline>
@@ -96,11 +96,11 @@ window.App = window.App || {};
                                     <line x1="12" y1="4" x2="12" y2="20"></line>
                                 </svg>
                             </span>
-                            <span class="selection-btn-label">Шрифт</span>
+                            <span class="selection-btn-label" data-i18n="selectionBar.fontSelected">Шрифт</span>
                         </button>
                         <div class="selection-submenu-dropdown selection-font-dropdown" id="ws-submenu-font">
                             <div class="selection-submenu-title">
-                                <span>Розмір тексту:</span>
+                                <span data-i18n="selectionBar.fontSizeTitle">Розмір тексту:</span>
                                 <span class="font-size-value-badge" id="ws-sel-font-badge-desktop">M (16px)</span>
                             </div>
                             <div class="sticker-font-slider-container">
@@ -121,7 +121,7 @@ window.App = window.App || {};
 
                     <!-- МОБІЛЬНИЙ: Єдине меню '...' (Колір, Розмір, Теги) -->
                     <div class="selection-action-item mobile-only" id="ws-action-more-wrap">
-                        <button class="selection-action-btn" id="ws-action-more-btn" title="Оформлення та теги">
+                        <button class="selection-action-btn" id="ws-action-more-btn" title="Оформлення та теги" data-i18n-title="selectionBar.moreTitle">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                 <circle cx="12" cy="12" r="2.2"></circle>
                                 <circle cx="19" cy="12" r="2.2"></circle>
@@ -139,7 +139,7 @@ window.App = window.App || {};
                                             <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle>
                                             <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
                                         </svg>
-                                        <span>Колір</span>
+                                        <span data-i18n="selectionBar.colorSelected">Колір</span>
                                     </span>
                                 </div>
                                 <div class="selection-color-swatches" id="ws-more-colors"></div>
@@ -152,7 +152,7 @@ window.App = window.App || {};
                                             <line x1="9" y1="20" x2="15" y2="20"></line>
                                             <line x1="12" y1="4" x2="12" y2="20"></line>
                                         </svg>
-                                        <span>Розмір тексту</span>
+                                        <span data-i18n="selectionBar.fontSizeTitle">Розмір тексту</span>
                                     </span>
                                     <span class="font-size-value-badge" id="ws-sel-font-badge">M (16px)</span>
                                 </div>
@@ -177,7 +177,7 @@ window.App = window.App || {};
                                             <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
                                             <line x1="7" y1="7" x2="7.01" y2="7"></line>
                                         </svg>
-                                        <span>Теги</span>
+                                        <span data-i18n="selectionBar.tagSelected">Теги</span>
                                     </span>
                                 </div>
                                 <div id="ws-more-tags"></div>
@@ -186,7 +186,7 @@ window.App = window.App || {};
                     </div>
 
                     <!-- 1.5. Поділитись виділеними -->
-                    <button class="selection-action-btn" id="ws-action-share-btn" title="Поділитись виділеними нотатками">
+                    <button class="selection-action-btn" id="ws-action-share-btn" title="Поділитись виділеними нотатками" data-i18n-title="selectionBar.shareSelected">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="18" cy="5" r="3"></circle>
                             <circle cx="6" cy="12" r="3"></circle>
@@ -194,11 +194,11 @@ window.App = window.App || {};
                             <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
                             <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
                         </svg>
-                        <span class="selection-btn-label desktop-only">Поділитись</span>
+                        <span class="selection-btn-label desktop-only" data-i18n="common.share">Поділитись</span>
                     </button>
 
                     <!-- 2. Дублювати -->
-                    <button class="selection-action-btn" id="ws-action-duplicate-btn" title="Дублювати виділені">
+                    <button class="selection-action-btn" id="ws-action-duplicate-btn" title="Дублювати виділені" data-i18n-title="selectionBar.duplicateSelected">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
@@ -342,6 +342,8 @@ window.App = window.App || {};
             const storage = window.App.storage;
             const noteManager = window.App.noteManager;
 
+            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
+
             const populateTagContainer = (containerEl) => {
                 if (!containerEl) return;
                 containerEl.innerHTML = '';
@@ -351,7 +353,7 @@ window.App = window.App || {};
                 if (options.length === 0) {
                     const emptyText = document.createElement('div');
                     emptyText.className = 'selection-submenu-empty';
-                    emptyText.textContent = 'Немає створених тегів';
+                    emptyText.textContent = t('sticker.emptyTags');
                     containerEl.appendChild(emptyText);
                 } else {
                     const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
@@ -386,7 +388,7 @@ window.App = window.App || {};
                                 <span class="selection-tag-text">${tagText}</span>
                                 <span class="selection-tag-status-icon">${allHaveTag ? '✓' : (someHaveTag ? '–' : '')}</span>
                             </div>
-                            <button class="selection-tag-del-btn" title="Видалити цей тег з усіх нотаток та зі списку">×</button>
+                            <button class="selection-tag-del-btn" title="${t('sticker.delTagTooltip')}">×</button>
                         `;
 
                         // Клік по самому тегу — додати до виділених або зняти з них
@@ -426,7 +428,7 @@ window.App = window.App || {};
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>
                     </svg>
-                    <span>Очистити всі теги</span>
+                    <span>${t('selectionBar.clearAllTags')}</span>
                 `;
                 clearTagsBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -446,7 +448,7 @@ window.App = window.App || {};
                 const addInput = document.createElement('input');
                 addInput.type = 'text';
                 addInput.className = 'tag-add-input';
-                addInput.placeholder = 'Новий тег...';
+                addInput.placeholder = t('sticker.newTagPlaceholder');
 
                 const submitNewTag = () => {
                     const newOpt = addInput.value.trim();
@@ -468,7 +470,7 @@ window.App = window.App || {};
 
                 const addBtnSubmit = document.createElement('button');
                 addBtnSubmit.className = 'tag-add-btn';
-                addBtnSubmit.textContent = '+ Створити';
+                addBtnSubmit.textContent = t('sticker.createTag');
                 addBtnSubmit.addEventListener('click', (e) => {
                     e.stopPropagation();
                     submitNewTag();
@@ -749,16 +751,25 @@ window.App = window.App || {};
             // 3. Оновлюємо вигляд кнопки "Вибрати" на верхньому острівці
             const islandSelectBtn = document.getElementById('island-select-toggle-btn');
             const islandSelectText = document.getElementById('island-select-text');
+            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
             if (islandSelectBtn && islandSelectText) {
                 if (state.isWorkspaceSelectMode) {
                     islandSelectBtn.classList.add('active');
-                    islandSelectText.textContent = 'Готово';
-                    islandSelectBtn.title = 'Вийти з режиму вибору';
+                    islandSelectText.textContent = t('workspace.doneBtn');
+                    islandSelectBtn.title = t('workspace.exitSelectTitle');
                 } else {
                     islandSelectBtn.classList.remove('active');
-                    islandSelectText.textContent = 'Вибрати';
-                    islandSelectBtn.title = 'Режим мульти-вибору нотаток (як в iOS Галереї)';
+                    islandSelectText.textContent = t('workspace.selectBtn');
+                    islandSelectBtn.title = t('workspace.selectTitle');
                 }
+            }
+        },
+
+        updateLanguage() {
+            if (barElement && window.App && window.App.i18n && window.App.i18n.updateDOM) {
+                window.App.i18n.updateDOM(barElement);
+                this.buildSubmenus();
+                this.updateUI();
             }
         }
     };

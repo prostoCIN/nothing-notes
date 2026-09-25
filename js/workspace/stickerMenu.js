@@ -9,7 +9,8 @@ window.App = window.App || {};
         const headerInfo = document.createElement('div');
         headerInfo.className = 'sticker-menu-header-info';
 
-        const rawTitle = (note.title && note.title.trim()) ? note.title.trim() : 'Без назви';
+        const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
+        const rawTitle = (note.title && note.title.trim()) ? note.title.trim() : t('sticker.untitled');
         const noteIcon = note.icon || '';
         const timestamp = note.createdAt || (note.id.startsWith('note_') ? parseInt(note.id.split('_')[1], 10) : note.updatedAt) || Date.now();
         
@@ -23,7 +24,7 @@ window.App = window.App || {};
             const minutes = String(d.getMinutes()).padStart(2, '0');
             dateStr = `${day}.${month}.${year}, ${hours}:${minutes}`;
         } catch (e) {
-            dateStr = 'Нещодавно';
+            dateStr = t('sticker.recently');
         }
 
         headerInfo.innerHTML = `
@@ -31,7 +32,7 @@ window.App = window.App || {};
                 ${noteIcon ? `<span class="sticker-menu-header-icon">${noteIcon}</span>` : ''}
                 <span class="sticker-menu-header-text" title="${rawTitle}">${rawTitle}</span>
             </div>
-            <div class="sticker-menu-header-date">Створено: ${dateStr}</div>
+            <div class="sticker-menu-header-date">${t('sticker.createdPrefix')} ${dateStr}</div>
         `;
 
         return headerInfo;
@@ -114,11 +115,13 @@ window.App = window.App || {};
             }
         });
 
+        const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
+
         const fontSizeHeader = document.createElement('div');
         fontSizeHeader.className = 'sticker-menu-section-title sticker-font-size-header';
 
         const fontSizeTitle = document.createElement('span');
-        fontSizeTitle.textContent = 'Розмір тексту';
+        fontSizeTitle.textContent = t('sticker.fontSizeTitle');
 
         const fontSizeValueBadge = document.createElement('span');
         fontSizeValueBadge.className = 'font-size-value-badge';
@@ -446,9 +449,10 @@ window.App = window.App || {};
             const menuDropdownWrap = document.createElement('div');
             menuDropdownWrap.className = 'sticker-menu-wrap';
 
+            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
             const moreBtn = document.createElement('button');
             moreBtn.className = `sticker-more-btn ${isChainOpen ? 'has-active-chain' : ''}`;
-            moreBtn.title = 'Опції нотатки';
+            moreBtn.title = t('sticker.optionsTitle');
             moreBtn.innerHTML = `
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
                     <circle cx="12" cy="12" r="2.2"></circle>

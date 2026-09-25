@@ -201,7 +201,7 @@ window.App = window.App || {};
                 if (availableTags.length === 0) {
                     const emptyTag = document.createElement('div');
                     emptyTag.className = 'column-menu-tag-empty';
-                    emptyTag.textContent = 'Тегів ще немає';
+                    emptyTag.textContent = t('sticker.emptyTags');
                     tagsList.appendChild(emptyTag);
                 } else {
                     availableTags.forEach(tagName => {
