@@ -161,6 +161,7 @@ export const en = {
         dragHandle: 'Drag to reorder or move between columns',
         deleteBtn: 'Delete note',
         duplicate: 'Duplicate',
+        addSubnote: 'Add subnote',
         copyText: 'Copy text',
         changeColor: 'Change color',
         toggleCollapse: 'Collapse / Expand',

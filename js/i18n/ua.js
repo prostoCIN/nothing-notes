@@ -161,6 +161,7 @@ export const ua = {
         dragHandle: 'Перетягніть для зміни порядку або між колонками',
         deleteBtn: 'Видалити нотатку',
         duplicate: 'Дублювати',
+        addSubnote: 'Додати піднотатку',
         copyText: 'Копіювати текст',
         changeColor: 'Змінити колір',
         toggleCollapse: 'Згорнути / Розгорнути',
