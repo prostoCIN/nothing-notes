@@ -167,7 +167,7 @@ export const en = {
         toggleCollapse: 'Collapse / Expand',
         deleteNote: 'Delete note',
         groupAdd: 'Add',
-        exportMarkdown: 'Export note (.md)',
+        exportMarkdown: 'Export(.md)',
         addTag: 'Add tag',
         tagsTitle: 'Note tags',
         emptyTags: 'No tags created yet',

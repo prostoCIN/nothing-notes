@@ -167,7 +167,7 @@ export const ua = {
         toggleCollapse: 'Згорнути / Розгорнути',
         deleteNote: 'Видалити нотатку',
         groupAdd: 'Додати',
-        exportMarkdown: 'Експорт нотатки (.md)',
+        exportMarkdown: 'Експорт(.md)',
         addTag: 'Додати тег',
         tagsTitle: 'Теги нотатки',
         emptyTags: 'Немає створених тегів',
