@@ -9,7 +9,7 @@ window.App = window.App || {};
     const THEMES = [
         { key: 'asphalt', nameKey: 'settings.theme.asphalt.name', descKey: 'settings.theme.asphalt.desc', metaColor: '#141416' },
         { key: 'light', nameKey: 'settings.theme.light.name', descKey: 'settings.theme.light.desc', metaColor: '#f7f7fa' },
-        { key: 'ivory', nameKey: 'settings.theme.ivory.name', descKey: 'settings.theme.ivory.desc', metaColor: '#f7f4ed' },
+        { key: 'ivory', nameKey: 'settings.theme.ivory.name', descKey: 'settings.theme.ivory.desc', metaColor: '#f9f5ea' },
         { key: 'night-sky', nameKey: 'settings.theme.nightSky.name', descKey: 'settings.theme.nightSky.desc', metaColor: '#0b0f19' },
         { key: 'forest', nameKey: 'settings.theme.forest.name', descKey: 'settings.theme.forest.desc', metaColor: '#1d1e19' }
     ];

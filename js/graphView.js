@@ -2586,7 +2586,7 @@ window.App = window.App || {};
             const isLight = currentTheme === 'light' || currentTheme === 'ivory';
             const themeBgMap = {
                 'light': '#f7f7fa',
-                'ivory': '#f7f4ed',
+                'ivory': '#f9f5ea',
                 'night-sky': '#0b0f19',
                 'forest': '#1d1e19',
                 'asphalt': '#141416'
