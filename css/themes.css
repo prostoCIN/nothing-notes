@@ -1,4 +1,4 @@
-/* css/themes.css - Кольорові теми сайту: Асфальт, Біла, Нічне небо, Темний ліс */
+/* css/themes.css - Кольорові теми сайту: Асфальт, Біла, Слонова кістка, Нічне небо, Темний ліс */
 /* Смарагдовий акцентний колір NothingNotes (#16b981) та нейтральні кольори тексту залишаються незмінними */
 
 /* 1. Асфальт (Поточна темна тема за замовчуванням) */
@@ -119,7 +119,65 @@ html[data-theme="light"] {
         radial-gradient(at 90% 10%, rgba(187, 247, 208, 0.1) 0px, transparent 50%);
 }
 
-/* 3. Нічне небо (Темно-синя тема) */
+/* 3. Слонова кістка (Тепла молочна світла тема) */
+html[data-theme="ivory"] {
+    --theme-name: 'ivory';
+    --bg-color: #f7f4ed;
+    --sidebar-bg: rgba(255, 253, 249, 0.85);
+    --modal-bg: rgba(255, 254, 251, 0.96);
+    --header-bg: rgba(247, 244, 237, 0.90);
+    --column-bg: rgba(255, 254, 250, 0.82);
+    --column-border: rgba(60, 45, 20, 0.08);
+    --graph-bg: radial-gradient(circle at center, #fbf9f4 0%, #ece6dc 100%);
+    --toolbar-bg: rgba(255, 254, 251, 0.95);
+    --toolbar-border: rgba(60, 45, 20, 0.09);
+
+    /* Теплий вугільний текст та м'які відтінки */
+    --text-main: #242220;
+    --text-muted: rgba(36, 34, 32, 0.58);
+    --border-color: rgba(60, 45, 20, 0.09);
+    --hover-bg: rgba(60, 45, 20, 0.05);
+    --active-bg: rgba(60, 45, 20, 0.08);
+    --danger-color: #e11d48;
+    --scrollbar-thumb: rgba(60, 45, 20, 0.14);
+    --scrollbar-thumb-hover: rgba(60, 45, 20, 0.25);
+    --sticker-shadow: 0 1px 3px rgba(60, 45, 20, 0.05), 0 1px 2px rgba(60, 45, 20, 0.03);
+
+    /* Фірмовий смарагдовий градієнт та акцент NothingNotes */
+    --accent-color: #16b981;
+    --emerald-gradient: linear-gradient(135deg, #B3CD9D 0%, #16B981 30%, #ACF9DF 65%, #16B981 85%, #B3CD9D 100%);
+    --emerald-gradient-text: linear-gradient(120deg, #B3CD9D 0%, #16B981 35%, #ACF9DF 70%, #16B981 100%);
+    --emerald-glow: 0 8px 32px rgba(22, 185, 129, 0.22), 0 0 0 1px rgba(172, 249, 223, 0.15);
+
+    --glass-bg: rgba(255, 254, 250, 0.9);
+    --glass-bg-subtle: rgba(60, 45, 20, 0.03);
+    --glass-border: rgba(60, 45, 20, 0.09);
+    --glass-specular: inset 0 1px 0 rgba(255, 255, 255, 0.95), 0 4px 14px rgba(60, 45, 20, 0.03);
+    --glass-card-shadow: 0 4px 16px rgba(60, 45, 20, 0.04), 0 0 0 1px rgba(60, 45, 20, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+
+    /* Семантичні токени поверхонь для модальних вікон, вкладок, коду та оверлеїв */
+    --bg-secondary: #fffefc;
+    --code-bg: #efece5;
+    --code-text: #242220;
+    --code-border: rgba(60, 45, 20, 0.09);
+    --tab-bg: rgba(60, 45, 20, 0.04);
+    --tab-border: rgba(60, 45, 20, 0.08);
+    --modal-footer-bg: rgba(60, 45, 20, 0.03);
+    --modal-shadow: 0 20px 48px rgba(60, 45, 20, 0.1), 0 1px 4px rgba(60, 45, 20, 0.05);
+    --stats-banner-bg: rgba(16, 185, 129, 0.1);
+    --stats-banner-border: rgba(16, 185, 129, 0.25);
+    --stats-banner-text: #065f46;
+    --btn-secondary-bg: rgba(60, 45, 20, 0.05);
+    --btn-secondary-border: rgba(60, 45, 20, 0.1);
+    --btn-secondary-hover: rgba(60, 45, 20, 0.08);
+
+    --body-bg-gradient: 
+        radial-gradient(at 10% 15%, rgba(16, 185, 129, 0.06) 0px, transparent 55%),
+        radial-gradient(at 85% 85%, rgba(217, 180, 130, 0.12) 0px, transparent 65%),
+        radial-gradient(at 90% 10%, rgba(245, 235, 215, 0.4) 0px, transparent 50%);
+}
+
+/* 4. Нічне небо (Темно-синя тема) */
 html[data-theme="night-sky"] {
     --theme-name: 'night-sky';
     --bg-color: #0b0f19;
@@ -253,1142 +311,1142 @@ html[data-theme="forest"] {
    ========================================================================== */
 
 /* 1. Полегшені тіні нотаток-стікерів у колонках (усунення важкої чорної плями) */
-html[data-theme="light"] .note-sticker:not(.is-ws-selected) {
+html[data-theme="light"], html[data-theme="ivory"] .note-sticker:not(.is-ws-selected) {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03) !important;
 }
 
-html[data-theme="light"] .note-sticker:not(.is-ws-selected):hover {
+html[data-theme="light"], html[data-theme="ivory"] .note-sticker:not(.is-ws-selected):hover {
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(0, 0, 0, 0.04) !important;
 }
 
 /* Смарагдове виділення для вибраних нотаток у світлій темі */
-html[data-theme="light"] .note-sticker.is-ws-selected {
+html[data-theme="light"], html[data-theme="ivory"] .note-sticker.is-ws-selected {
     box-shadow: 0 0 0 3.5px #10b981, 0 8px 24px rgba(16, 185, 129, 0.35) !important;
 }
 
 /* 2. Полегшені тіні колонок */
-html[data-theme="light"] .board-column {
+html[data-theme="light"], html[data-theme="ivory"] .board-column {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 4px 14px rgba(0, 0, 0, 0.02) !important;
 }
 
 /* 3. Полегшені тіні тулбарів і панелей */
-html[data-theme="light"] .workspace-top-header {
+html[data-theme="light"], html[data-theme="ivory"] .workspace-top-header {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
 }
 
-html[data-theme="light"] .workspace-selection-bar,
-html[data-theme="light"] .text-selection-toolbar {
+html[data-theme="light"], html[data-theme="ivory"] .workspace-selection-bar,
+html[data-theme="light"], html[data-theme="ivory"] .text-selection-toolbar {
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(0, 0, 0, 0.03) !important;
 }
 
-html[data-theme="light"] .graph-title-pill,
-html[data-theme="light"] .graph-controls-panel,
-html[data-theme="light"] .graph-legend-pill,
-html[data-theme="light"] .graph-switch-back-btn {
+html[data-theme="light"], html[data-theme="ivory"] .graph-title-pill,
+html[data-theme="light"], html[data-theme="ivory"] .graph-controls-panel,
+html[data-theme="light"], html[data-theme="ivory"] .graph-legend-pill,
+html[data-theme="light"], html[data-theme="ivory"] .graph-switch-back-btn {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
 }
 
-html[data-theme="light"] .header-search-bar,
-html[data-theme="light"] .header-brush-dropdown,
-html[data-theme="light"] .header-tooltip {
+html[data-theme="light"], html[data-theme="ivory"] .header-search-bar,
+html[data-theme="light"], html[data-theme="ivory"] .header-brush-dropdown,
+html[data-theme="light"], html[data-theme="ivory"] .header-tooltip {
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.03) !important;
 }
 
-html[data-theme="light"] .sticker-menu-dropdown,
-html[data-theme="light"] .sticker-tag-dropdown,
-html[data-theme="light"] .sticker-emoji-picker-dropdown {
+html[data-theme="light"], html[data-theme="ivory"] .sticker-menu-dropdown,
+html[data-theme="light"], html[data-theme="ivory"] .sticker-tag-dropdown,
+html[data-theme="light"], html[data-theme="ivory"] .sticker-emoji-picker-dropdown {
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(0, 0, 0, 0.03) !important;
 }
 
 /* 4. Полегшені тіні модальних вікон */
-html[data-theme="light"] .settings-modal-card,
-html[data-theme="light"] .auth-modal-card,
-html[data-theme="light"] .confirm-modal-box,
-html[data-theme="light"] .share-modal-card,
-html[data-theme="light"] .account-switcher-overlay {
+html[data-theme="light"], html[data-theme="ivory"] .settings-modal-card,
+html[data-theme="light"], html[data-theme="ivory"] .auth-modal-card,
+html[data-theme="light"], html[data-theme="ivory"] .confirm-modal-box,
+html[data-theme="light"], html[data-theme="ivory"] .share-modal-card,
+html[data-theme="light"], html[data-theme="ivory"] .account-switcher-overlay {
     background: rgba(255, 255, 255, 0.96);
     border-color: rgba(0, 0, 0, 0.1);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04) !important;
 }
 
 /* 5. Кнопки та контроли у світлій темі */
-html[data-theme="light"] .header-action-icon-btn {
+html[data-theme="light"], html[data-theme="ivory"] .header-action-icon-btn {
     background: rgba(0, 0, 0, 0.04);
     border: 1px solid rgba(0, 0, 0, 0.08);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
-html[data-theme="light"] .header-action-icon-btn:hover {
+html[data-theme="light"], html[data-theme="ivory"] .header-action-icon-btn:hover {
     background: rgba(0, 0, 0, 0.08);
     border-color: rgba(0, 0, 0, 0.14);
 }
 
-html[data-theme="light"] .header-history-control,
-html[data-theme="light"] .header-brush-group,
-html[data-theme="light"] .header-segment-control {
+html[data-theme="light"], html[data-theme="ivory"] .header-history-control,
+html[data-theme="light"], html[data-theme="ivory"] .header-brush-group,
+html[data-theme="light"], html[data-theme="ivory"] .header-segment-control {
     background: rgba(0, 0, 0, 0.04);
     border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-html[data-theme="light"] .header-segment-btn.active {
+html[data-theme="light"], html[data-theme="ivory"] .header-segment-btn.active {
     background: #ffffff;
     color: #18181b;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
-html[data-theme="light"] .header-divider {
+html[data-theme="light"], html[data-theme="ivory"] .header-divider {
     background-color: rgba(0, 0, 0, 0.08);
 }
 
-html[data-theme="light"] .header-select-btn {
+html[data-theme="light"], html[data-theme="ivory"] .header-select-btn {
     background: rgba(0, 0, 0, 0.04);
     border: 1px solid rgba(0, 0, 0, 0.08);
     color: #18181b;
 }
 
-html[data-theme="light"] .header-select-btn:hover {
+html[data-theme="light"], html[data-theme="ivory"] .header-select-btn:hover {
     background: rgba(0, 0, 0, 0.08);
 }
 
-html[data-theme="light"] .header-search-bar {
+html[data-theme="light"], html[data-theme="ivory"] .header-search-bar {
     background: #ffffff;
     border: 1px solid rgba(0, 0, 0, 0.12);
 }
 
-html[data-theme="light"] .header-search-bar input {
+html[data-theme="light"], html[data-theme="ivory"] .header-search-bar input {
     color: #18181b;
 }
 
-html[data-theme="light"] .column-header {
+html[data-theme="light"], html[data-theme="ivory"] .column-header {
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-html[data-theme="light"] .column-header-title {
+html[data-theme="light"], html[data-theme="ivory"] .column-header-title {
     color: #18181b;
 }
 
-html[data-theme="light"] .column-title-pipe {
+html[data-theme="light"], html[data-theme="ivory"] .column-title-pipe {
     color: rgba(0, 0, 0, 0.28);
 }
 
-html[data-theme="light"] .column-breadcrumb-link {
+html[data-theme="light"], html[data-theme="ivory"] .column-breadcrumb-link {
     color: rgba(0, 0, 0, 0.55);
 }
 
-html[data-theme="light"] .column-breadcrumb-link:hover {
+html[data-theme="light"], html[data-theme="ivory"] .column-breadcrumb-link:hover {
     background: rgba(22, 185, 129, 0.1);
     color: #059669;
 }
 
-html[data-theme="light"] .column-item {
+html[data-theme="light"], html[data-theme="ivory"] .column-item {
     border-right-color: rgba(0, 0, 0, 0.08);
 }
 
-html[data-theme="light"] .column-footer-add-btn {
+html[data-theme="light"], html[data-theme="ivory"] .column-footer-add-btn {
     background: rgba(0, 0, 0, 0.03);
     border-color: rgba(0, 0, 0, 0.08);
     color: var(--text-muted);
 }
 
-html[data-theme="light"] .column-footer-add-btn:hover {
+html[data-theme="light"], html[data-theme="ivory"] .column-footer-add-btn:hover {
     background: rgba(0, 0, 0, 0.06);
     color: var(--text-main);
 }
 
-html[data-theme="light"] .note-item-sidebar:hover {
+html[data-theme="light"], html[data-theme="ivory"] .note-item-sidebar:hover {
     background-color: rgba(0, 0, 0, 0.05);
 }
 
-html[data-theme="light"] .note-item-sidebar.active,
-html[data-theme="light"] .note-item.active {
+html[data-theme="light"], html[data-theme="ivory"] .note-item-sidebar.active,
+html[data-theme="light"], html[data-theme="ivory"] .note-item.active {
     background-color: rgba(0, 0, 0, 0.08);
     color: #18181b;
 }
 
-html[data-theme="light"] .note-item.is-active-note {
+html[data-theme="light"], html[data-theme="ivory"] .note-item.is-active-note {
     background-color: rgba(16, 185, 129, 0.12) !important;
     box-shadow: inset 3.5px 0 0 #10b981, 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
-html[data-theme="light"] .note-item.is-active-note .note-item-title {
+html[data-theme="light"], html[data-theme="ivory"] .note-item.is-active-note .note-item-title {
     color: #047857 !important;
     font-weight: 700;
 }
 
-html[data-theme="light"] .board-item-sidebar:hover {
+html[data-theme="light"], html[data-theme="ivory"] .board-item-sidebar:hover {
     background-color: rgba(0, 0, 0, 0.05);
 }
 
-html[data-theme="light"] .board-item-sidebar.active {
+html[data-theme="light"], html[data-theme="ivory"] .board-item-sidebar.active {
     background-color: rgba(16, 185, 129, 0.12);
     color: #047857;
 }
 
-html[data-theme="light"] .auth-modal-backdrop,
-html[data-theme="light"] .settings-modal-backdrop,
-html[data-theme="light"] .share-modal-backdrop,
-html[data-theme="light"] .modal-overlay,
-html[data-theme="light"] .account-overlay-backdrop,
-html[data-theme="light"] .sidebar-overlay,
-html[data-theme="light"] .graph-mobile-sheet-backdrop {
+html[data-theme="light"], html[data-theme="ivory"] .auth-modal-backdrop,
+html[data-theme="light"], html[data-theme="ivory"] .settings-modal-backdrop,
+html[data-theme="light"], html[data-theme="ivory"] .share-modal-backdrop,
+html[data-theme="light"], html[data-theme="ivory"] .modal-overlay,
+html[data-theme="light"], html[data-theme="ivory"] .account-overlay-backdrop,
+html[data-theme="light"], html[data-theme="ivory"] .sidebar-overlay,
+html[data-theme="light"], html[data-theme="ivory"] .graph-mobile-sheet-backdrop {
     background: rgba(15, 23, 42, 0.25) !important;
 }
 
-html[data-theme="light"] .settings-tabs {
+html[data-theme="light"], html[data-theme="ivory"] .settings-tabs {
     background: rgba(0, 0, 0, 0.05);
     border-color: rgba(0, 0, 0, 0.08);
 }
 
-html[data-theme="light"] .settings-tab-btn.active {
+html[data-theme="light"], html[data-theme="ivory"] .settings-tab-btn.active {
     background: #ffffff;
     color: #18181b;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
-html[data-theme="light"] .settings-item {
+html[data-theme="light"], html[data-theme="ivory"] .settings-item {
     background: rgba(0, 0, 0, 0.025);
     border-color: rgba(0, 0, 0, 0.06);
 }
 
-html[data-theme="light"] .settings-item:hover {
+html[data-theme="light"], html[data-theme="ivory"] .settings-item:hover {
     background: rgba(0, 0, 0, 0.045);
 }
 
-html[data-theme="light"] .settings-shortcut-row {
+html[data-theme="light"], html[data-theme="ivory"] .settings-shortcut-row {
     background: rgba(0, 0, 0, 0.025);
     border-color: rgba(0, 0, 0, 0.06);
 }
 
-html[data-theme="light"] .settings-kbd {
+html[data-theme="light"], html[data-theme="ivory"] .settings-kbd {
     background: #ffffff;
     border-color: rgba(0, 0, 0, 0.14);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     color: #18181b;
 }
 
-html[data-theme="light"] .settings-stat-box {
+html[data-theme="light"], html[data-theme="ivory"] .settings-stat-box {
     background: rgba(0, 0, 0, 0.03);
     border-color: rgba(0, 0, 0, 0.06);
 }
 
-html[data-theme="light"] .settings-account-card {
+html[data-theme="light"], html[data-theme="ivory"] .settings-account-card {
     background: rgba(0, 0, 0, 0.03);
     border-color: rgba(0, 0, 0, 0.08);
 }
 
-html[data-theme="light"] .settings-theme-card {
+html[data-theme="light"], html[data-theme="ivory"] .settings-theme-card {
     background: rgba(0, 0, 0, 0.025);
     border-color: rgba(0, 0, 0, 0.08);
 }
 
-html[data-theme="light"] .settings-theme-card:hover {
+html[data-theme="light"], html[data-theme="ivory"] .settings-theme-card:hover {
     background: rgba(0, 0, 0, 0.05);
     border-color: rgba(0, 0, 0, 0.14);
 }
 
-html[data-theme="light"] .settings-toggle-slider,
-html[data-theme="light"] .share-toggle-slider {
+html[data-theme="light"], html[data-theme="ivory"] .settings-toggle-slider,
+html[data-theme="light"], html[data-theme="ivory"] .share-toggle-slider {
     background-color: rgba(0, 0, 0, 0.12) !important;
     border: 1px solid rgba(0, 0, 0, 0.15) !important;
 }
 
-html[data-theme="light"] .sidebar {
+html[data-theme="light"], html[data-theme="ivory"] .sidebar {
     background-color: var(--column-bg, rgba(255, 255, 255, 0.78)) !important;
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border-right-color: rgba(0, 0, 0, 0.08) !important;
 }
 
-html[data-theme="light"] .sidebar-user-profile {
+html[data-theme="light"], html[data-theme="ivory"] .sidebar-user-profile {
     background: transparent;
     border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-html[data-theme="light"] .sidebar-inline-form input {
+html[data-theme="light"], html[data-theme="ivory"] .sidebar-inline-form input {
     background-color: #ffffff !important;
     border: 1px solid rgba(0, 0, 0, 0.14) !important;
     color: #18181b !important;
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04) !important;
 }
 
-html[data-theme="light"] .sidebar-login-btn,
-html[data-theme="light"] .user-profile-clickable {
+html[data-theme="light"], html[data-theme="ivory"] .sidebar-login-btn,
+html[data-theme="light"], html[data-theme="ivory"] .user-profile-clickable {
     background: rgba(0, 0, 0, 0.05);
     border-color: rgba(0, 0, 0, 0.1);
 }
 
-html[data-theme="light"] .sidebar-login-btn:hover,
-html[data-theme="light"] .user-profile-clickable:hover {
+html[data-theme="light"], html[data-theme="ivory"] .sidebar-login-btn:hover,
+html[data-theme="light"], html[data-theme="ivory"] .user-profile-clickable:hover {
     background: rgba(0, 0, 0, 0.08);
     border-color: rgba(0, 0, 0, 0.16);
 }
 
-html[data-theme="light"] .sidebar-settings-btn,
-html[data-theme="light"] .sidebar-settings-guest-btn {
+html[data-theme="light"], html[data-theme="ivory"] .sidebar-settings-btn,
+html[data-theme="light"], html[data-theme="ivory"] .sidebar-settings-guest-btn {
     background: rgba(0, 0, 0, 0.04);
     border-color: rgba(0, 0, 0, 0.08);
 }
 
-html[data-theme="light"] .sidebar-close-btn:hover {
+html[data-theme="light"], html[data-theme="ivory"] .sidebar-close-btn:hover {
     background: rgba(0, 0, 0, 0.06) !important;
     color: #18181b !important;
 }
 
 /* 6. Граф зв'язків у світлій темі (Obsidian Graph View & Preview Card) */
-html[data-theme="light"] .graph-html-node-label {
+html[data-theme="light"], html[data-theme="ivory"] .graph-html-node-label {
     color: #0f172a !important;
     font-weight: 700 !important;
     text-shadow: 0 0 5px #ffffff, 0 0 8px #ffffff, 0 1px 2px #ffffff !important;
 }
 
-html[data-theme="light"] .graph-html-node.is-root .graph-html-node-label {
+html[data-theme="light"], html[data-theme="ivory"] .graph-html-node.is-root .graph-html-node-label {
     color: #0f172a !important;
     font-weight: 800 !important;
     text-shadow: 0 0 6px #ffffff, 0 0 10px #ffffff, 0 1px 2px #ffffff !important;
 }
 
-html[data-theme="light"] .graph-html-node-circle {
+html[data-theme="light"], html[data-theme="ivory"] .graph-html-node-circle {
     border-color: rgba(0, 0, 0, 0.35);
 }
 
-html[data-theme="light"] .graph-html-node.is-root .graph-html-node-circle {
+html[data-theme="light"], html[data-theme="ivory"] .graph-html-node.is-root .graph-html-node-circle {
     border-color: rgba(0, 0, 0, 0.85);
     box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.9), 0 0 0 6.5px var(--node-branch-color, rgba(0, 0, 0, 0.6)), 0 0 16px var(--node-branch-color, rgba(0, 0, 0, 0.25));
 }
 
-html[data-theme="light"] .graph-html-node.is-hovered .graph-html-node-label,
-html[data-theme="light"] .graph-html-node.is-dragging .graph-html-node-label {
+html[data-theme="light"], html[data-theme="ivory"] .graph-html-node.is-hovered .graph-html-node-label,
+html[data-theme="light"], html[data-theme="ivory"] .graph-html-node.is-dragging .graph-html-node-label {
     color: #0f172a !important;
     text-shadow: 0 0 6px #ffffff, 0 0 12px #ffffff !important;
     font-weight: 800 !important;
 }
 
-html[data-theme="light"] .graph-html-node.is-match .graph-html-node-label {
+html[data-theme="light"], html[data-theme="ivory"] .graph-html-node.is-match .graph-html-node-label {
     color: #b45309 !important;
     text-shadow: 0 0 6px #ffffff, 0 0 10px #ffffff !important;
     font-weight: 800 !important;
 }
 
-html[data-theme="light"] .graph-html-node.is-orphan.is-match .graph-html-node-label {
+html[data-theme="light"], html[data-theme="ivory"] .graph-html-node.is-orphan.is-match .graph-html-node-label {
     color: #b45309 !important;
     text-shadow: 0 0 6px #ffffff, 0 0 10px #ffffff !important;
     font-weight: 800 !important;
 }
 
-html[data-theme="light"] .graph-html-node.is-faded {
+html[data-theme="light"], html[data-theme="ivory"] .graph-html-node.is-faded {
     opacity: 0.35 !important;
 }
 
-html[data-theme="light"] .graph-html-node.is-hovered .graph-html-node-circle,
-html[data-theme="light"] .graph-html-node.is-connected .graph-html-node-circle {
+html[data-theme="light"], html[data-theme="ivory"] .graph-html-node.is-hovered .graph-html-node-circle,
+html[data-theme="light"], html[data-theme="ivory"] .graph-html-node.is-connected .graph-html-node-circle {
     border-color: #18181b !important;
     box-shadow: 0 0 0 5px rgba(24, 24, 27, 0.12), 0 0 16px rgba(16, 185, 129, 0.3) !important;
 }
 
-html[data-theme="light"] .graph-html-node.is-dragging .graph-html-node-circle {
+html[data-theme="light"], html[data-theme="ivory"] .graph-html-node.is-dragging .graph-html-node-circle {
     border-color: #18181b !important;
     box-shadow: 0 0 0 6px rgba(24, 24, 27, 0.16), 0 0 20px rgba(16, 185, 129, 0.4) !important;
 }
 
-html[data-theme="light"] .graph-empty-title {
+html[data-theme="light"], html[data-theme="ivory"] .graph-empty-title {
     color: #18181b !important;
 }
 
-html[data-theme="light"] .graph-empty-desc {
+html[data-theme="light"], html[data-theme="ivory"] .graph-empty-desc {
     color: #52525b !important;
 }
 
-html[data-theme="light"] .graph-legend-dot.subnote {
+html[data-theme="light"], html[data-theme="ivory"] .graph-legend-dot.subnote {
     background-color: rgba(0, 0, 0, 0.4) !important;
     box-shadow: 0 0 4px rgba(0, 0, 0, 0.15) !important;
 }
 
-html[data-theme="light"] .graph-legend-hint {
+html[data-theme="light"], html[data-theme="ivory"] .graph-legend-hint {
     border-left: 1px solid rgba(0, 0, 0, 0.1) !important;
     color: #52525b !important;
 }
 
-html[data-theme="light"] .graph-preview-card {
+html[data-theme="light"], html[data-theme="ivory"] .graph-preview-card {
     background: rgba(255, 255, 255, 0.96) !important;
     border: 1px solid rgba(0, 0, 0, 0.1) !important;
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04) !important;
     color: #18181b !important;
 }
 
-html[data-theme="light"] .graph-preview-title {
+html[data-theme="light"], html[data-theme="ivory"] .graph-preview-title {
     color: #18181b !important;
 }
 
-html[data-theme="light"] .graph-preview-body {
+html[data-theme="light"], html[data-theme="ivory"] .graph-preview-body {
     color: rgba(24, 24, 27, 0.8) !important;
 }
 
-html[data-theme="light"] .graph-preview-close {
+html[data-theme="light"], html[data-theme="ivory"] .graph-preview-close {
     color: var(--text-muted) !important;
 }
 
-html[data-theme="light"] .graph-preview-close:hover {
+html[data-theme="light"], html[data-theme="ivory"] .graph-preview-close:hover {
     background: rgba(0, 0, 0, 0.06) !important;
     color: #18181b !important;
 }
 
-html[data-theme="light"] .preview-badge-level {
+html[data-theme="light"], html[data-theme="ivory"] .preview-badge-level {
     background: rgba(0, 0, 0, 0.05) !important;
     color: #52525b !important;
     border: 1px solid rgba(0, 0, 0, 0.08) !important;
 }
 
-html[data-theme="light"] .graph-preview-footer {
+html[data-theme="light"], html[data-theme="ivory"] .graph-preview-footer {
     border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
     color: var(--text-muted) !important;
 }
 
-html[data-theme="light"] .graph-search-input {
+html[data-theme="light"], html[data-theme="ivory"] .graph-search-input {
     background: #ffffff !important;
     border: 1px solid rgba(0, 0, 0, 0.12) !important;
     color: #18181b !important;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
 }
 
-html[data-theme="light"] .graph-search-clear-btn:hover {
+html[data-theme="light"], html[data-theme="ivory"] .graph-search-clear-btn:hover {
     color: #18181b !important;
     background: rgba(0, 0, 0, 0.08) !important;
 }
 
-html[data-theme="light"] .graph-ctrl-btn:hover {
+html[data-theme="light"], html[data-theme="ivory"] .graph-ctrl-btn:hover {
     background: rgba(0, 0, 0, 0.06) !important;
     color: #18181b !important;
 }
 
-html[data-theme="light"] .graph-tag-chip {
+html[data-theme="light"], html[data-theme="ivory"] .graph-tag-chip {
     background: rgba(255, 255, 255, 0.92) !important;
     border: 1px solid rgba(0, 0, 0, 0.1) !important;
     color: #52525b !important;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) !important;
 }
 
-html[data-theme="light"] .graph-tag-chip:hover {
+html[data-theme="light"], html[data-theme="ivory"] .graph-tag-chip:hover {
     background: rgba(0, 0, 0, 0.05) !important;
     color: #18181b !important;
 }
 
-html[data-theme="light"] .graph-tag-chip.is-active {
+html[data-theme="light"], html[data-theme="ivory"] .graph-tag-chip.is-active {
     background: rgba(16, 185, 129, 0.15) !important;
     border-color: #10b981 !important;
     color: #047857 !important;
 }
 
-html[data-theme="light"] .graph-toolbar-filter-btn {
+html[data-theme="light"], html[data-theme="ivory"] .graph-toolbar-filter-btn {
     background: rgba(255, 255, 255, 0.94) !important;
     border: 1px solid rgba(0, 0, 0, 0.1) !important;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
     color: #52525b !important;
 }
 
-html[data-theme="light"] .graph-toolbar-filter-btn:hover {
+html[data-theme="light"], html[data-theme="ivory"] .graph-toolbar-filter-btn:hover {
     background: rgba(0, 0, 0, 0.05) !important;
     color: #18181b !important;
     border-color: rgba(0, 0, 0, 0.18) !important;
 }
 
-html[data-theme="light"] .filter-btn-badge {
+html[data-theme="light"], html[data-theme="ivory"] .filter-btn-badge {
     background: rgba(0, 0, 0, 0.06) !important;
     color: #18181b !important;
 }
 
-html[data-theme="light"] .graph-nodes-count {
+html[data-theme="light"], html[data-theme="ivory"] .graph-nodes-count {
     background: rgba(16, 185, 129, 0.12) !important;
     border: 1px solid rgba(16, 185, 129, 0.35) !important;
     color: #047857 !important;
     font-weight: 700 !important;
 }
 
-html[data-theme="light"] .graph-toolbar-filter-btn.is-active {
+html[data-theme="light"], html[data-theme="ivory"] .graph-toolbar-filter-btn.is-active {
     background: rgba(16, 185, 129, 0.14) !important;
     border-color: #10b981 !important;
     color: #047857 !important;
     box-shadow: 0 2px 10px rgba(16, 185, 129, 0.2) !important;
 }
 
-html[data-theme="light"] .graph-toolbar-filter-btn.is-active.is-orphans-btn {
+html[data-theme="light"], html[data-theme="ivory"] .graph-toolbar-filter-btn.is-active.is-orphans-btn {
     background: rgba(245, 158, 11, 0.14) !important;
     border-color: #d97706 !important;
     color: #b45309 !important;
     box-shadow: 0 2px 10px rgba(245, 158, 11, 0.2) !important;
 }
 
-html[data-theme="light"] .graph-preview-open-btn {
+html[data-theme="light"], html[data-theme="ivory"] .graph-preview-open-btn {
     background: rgba(16, 185, 129, 0.14) !important;
     border: 1px solid rgba(16, 185, 129, 0.35) !important;
     color: #047857 !important;
     font-weight: 600 !important;
 }
 
-html[data-theme="light"] .graph-preview-open-btn:hover {
+html[data-theme="light"], html[data-theme="ivory"] .graph-preview-open-btn:hover {
     background: #10b981 !important;
     color: #ffffff !important;
 }
 
 /* Мобільні контроли графу */
-html[data-theme="light"] .graph-mobile-filters-trigger {
+html[data-theme="light"], html[data-theme="ivory"] .graph-mobile-filters-trigger {
     background: #ffffff !important;
     border: 1px solid rgba(0, 0, 0, 0.1) !important;
     color: #18181b !important;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
 }
 
-html[data-theme="light"] .graph-mobile-sheet {
+html[data-theme="light"], html[data-theme="ivory"] .graph-mobile-sheet {
     background: #ffffff !important;
     border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
     box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.08) !important;
 }
 
-html[data-theme="light"] .graph-mobile-sheet-handle {
+html[data-theme="light"], html[data-theme="ivory"] .graph-mobile-sheet-handle {
     background: rgba(0, 0, 0, 0.18) !important;
 }
 
-html[data-theme="light"] .graph-mobile-sheet-title {
+html[data-theme="light"], html[data-theme="ivory"] .graph-mobile-sheet-title {
     color: #18181b !important;
 }
 
-html[data-theme="light"] .graph-mobile-sheet-close {
+html[data-theme="light"], html[data-theme="ivory"] .graph-mobile-sheet-close {
     background: rgba(0, 0, 0, 0.04) !important;
     border: 1px solid rgba(0, 0, 0, 0.08) !important;
     color: #18181b !important;
 }
 
-html[data-theme="light"] .graph-mobile-toggle-btn {
+html[data-theme="light"], html[data-theme="ivory"] .graph-mobile-toggle-btn {
     background: rgba(0, 0, 0, 0.03) !important;
     border: 1px solid rgba(0, 0, 0, 0.08) !important;
     color: #18181b !important;
 }
 
-html[data-theme="light"] .graph-mobile-toggle-btn.is-active {
+html[data-theme="light"], html[data-theme="ivory"] .graph-mobile-toggle-btn.is-active {
     background: rgba(16, 185, 129, 0.12) !important;
     border-color: rgba(16, 185, 129, 0.45) !important;
 }
 
-html[data-theme="light"] .graph-mobile-toggle-btn.is-orphans-btn.is-active {
+html[data-theme="light"], html[data-theme="ivory"] .graph-mobile-toggle-btn.is-orphans-btn.is-active {
     background: rgba(245, 158, 11, 0.12) !important;
     border-color: rgba(245, 158, 11, 0.45) !important;
 }
 
-html[data-theme="light"] .graph-mobile-checkbox {
+html[data-theme="light"], html[data-theme="ivory"] .graph-mobile-checkbox {
     border-color: rgba(0, 0, 0, 0.22) !important;
     background: rgba(0, 0, 0, 0.04) !important;
 }
 
-html[data-theme="light"] .graph-mobile-badge {
+html[data-theme="light"], html[data-theme="ivory"] .graph-mobile-badge {
     background: rgba(0, 0, 0, 0.06) !important;
     color: #52525b !important;
 }
 
 /* 7. Колонки та випадаючі меню */
-html[data-theme="light"] .column-more-btn {
+html[data-theme="light"], html[data-theme="ivory"] .column-more-btn {
     border-color: rgba(0, 0, 0, 0.1) !important;
     color: var(--text-muted);
 }
 
-html[data-theme="light"] .column-more-btn:hover {
+html[data-theme="light"], html[data-theme="ivory"] .column-more-btn:hover {
     background-color: rgba(0, 0, 0, 0.06) !important;
     color: #18181b !important;
     border-color: rgba(0, 0, 0, 0.18) !important;
 }
 
-html[data-theme="light"] .column-more-btn.active {
+html[data-theme="light"], html[data-theme="ivory"] .column-more-btn.active {
     background-color: rgba(0, 0, 0, 0.08) !important;
     color: #18181b !important;
     border-color: rgba(0, 0, 0, 0.2) !important;
 }
 
-html[data-theme="light"] .column-filter-active-dot {
+html[data-theme="light"], html[data-theme="ivory"] .column-filter-active-dot {
     box-shadow: 0 0 0 1.5px #ffffff !important;
 }
 
-html[data-theme="light"] .column-badge,
-html[data-theme="light"] .column-count-badge,
-html[data-theme="light"] .column-filter-btn,
-html[data-theme="light"] .column-layout-toggle-btn,
-html[data-theme="light"] .column-expand-toggle-btn,
-html[data-theme="light"] .column-graph-toggle-btn,
-html[data-theme="light"] .column-select-toggle-btn {
+html[data-theme="light"], html[data-theme="ivory"] .column-badge,
+html[data-theme="light"], html[data-theme="ivory"] .column-count-badge,
+html[data-theme="light"], html[data-theme="ivory"] .column-filter-btn,
+html[data-theme="light"], html[data-theme="ivory"] .column-layout-toggle-btn,
+html[data-theme="light"], html[data-theme="ivory"] .column-expand-toggle-btn,
+html[data-theme="light"], html[data-theme="ivory"] .column-graph-toggle-btn,
+html[data-theme="light"], html[data-theme="ivory"] .column-select-toggle-btn {
     border-color: rgba(0, 0, 0, 0.1) !important;
 }
 
-html[data-theme="light"] .column-badge:hover,
-html[data-theme="light"] .column-count-badge:hover,
-html[data-theme="light"] .column-filter-btn:hover,
-html[data-theme="light"] .column-layout-toggle-btn:hover,
-html[data-theme="light"] .column-expand-toggle-btn:hover,
-html[data-theme="light"] .column-graph-toggle-btn:hover,
-html[data-theme="light"] .column-select-toggle-btn:hover {
+html[data-theme="light"], html[data-theme="ivory"] .column-badge:hover,
+html[data-theme="light"], html[data-theme="ivory"] .column-count-badge:hover,
+html[data-theme="light"], html[data-theme="ivory"] .column-filter-btn:hover,
+html[data-theme="light"], html[data-theme="ivory"] .column-layout-toggle-btn:hover,
+html[data-theme="light"], html[data-theme="ivory"] .column-expand-toggle-btn:hover,
+html[data-theme="light"], html[data-theme="ivory"] .column-graph-toggle-btn:hover,
+html[data-theme="light"], html[data-theme="ivory"] .column-select-toggle-btn:hover {
     background-color: rgba(0, 0, 0, 0.05) !important;
     border-color: rgba(0, 0, 0, 0.18) !important;
     color: #18181b !important;
 }
 
-html[data-theme="light"] .column-filter-dropdown {
+html[data-theme="light"], html[data-theme="ivory"] .column-filter-dropdown {
     background-color: #ffffff !important;
     border: 1px solid rgba(0, 0, 0, 0.1) !important;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04) !important;
     color: #18181b !important;
 }
 
-html[data-theme="light"] .column-filter-header {
+html[data-theme="light"], html[data-theme="ivory"] .column-filter-header {
     border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
 }
 
-html[data-theme="light"] .column-filter-item,
-html[data-theme="light"] .column-filter-item * {
+html[data-theme="light"], html[data-theme="ivory"] .column-filter-item,
+html[data-theme="light"], html[data-theme="ivory"] .column-filter-item * {
     color: #18181b;
 }
 
-html[data-theme="light"] .column-filter-item:hover,
-html[data-theme="light"] .column-filter-item:hover * {
+html[data-theme="light"], html[data-theme="ivory"] .column-filter-item:hover,
+html[data-theme="light"], html[data-theme="ivory"] .column-filter-item:hover * {
     background-color: rgba(0, 0, 0, 0.05) !important;
     color: #18181b !important;
 }
 
-html[data-theme="light"] .column-filter-item.active,
-html[data-theme="light"] .column-filter-item.active * {
+html[data-theme="light"], html[data-theme="ivory"] .column-filter-item.active,
+html[data-theme="light"], html[data-theme="ivory"] .column-filter-item.active * {
     background-color: rgba(16, 185, 129, 0.14) !important;
     color: #047857 !important;
     font-weight: 700;
 }
 
-html[data-theme="light"] .column-filter-item.active:hover,
-html[data-theme="light"] .column-filter-item.active:hover * {
+html[data-theme="light"], html[data-theme="ivory"] .column-filter-item.active:hover,
+html[data-theme="light"], html[data-theme="ivory"] .column-filter-item.active:hover * {
     background-color: rgba(16, 185, 129, 0.22) !important;
     color: #047857 !important;
 }
 
-html[data-theme="light"] .column-menu-dropdown {
+html[data-theme="light"], html[data-theme="ivory"] .column-menu-dropdown {
     background-color: rgba(255, 255, 255, 0.96) !important;
     border: 1px solid rgba(0, 0, 0, 0.1) !important;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04) !important;
     color: #18181b !important;
 }
 
-html[data-theme="light"] .column-menu-header-title,
-html[data-theme="light"] .column-menu-header-text,
-html[data-theme="light"] .column-menu-item {
+html[data-theme="light"], html[data-theme="ivory"] .column-menu-header-title,
+html[data-theme="light"], html[data-theme="ivory"] .column-menu-header-text,
+html[data-theme="light"], html[data-theme="ivory"] .column-menu-item {
     color: #18181b !important;
 }
 
-html[data-theme="light"] .column-menu-item:hover {
+html[data-theme="light"], html[data-theme="ivory"] .column-menu-item:hover {
     background-color: rgba(0, 0, 0, 0.05) !important;
     color: #18181b !important;
 }
 
-html[data-theme="light"] .column-menu-item-create {
+html[data-theme="light"], html[data-theme="ivory"] .column-menu-item-create {
     color: #059669 !important;
 }
 
-html[data-theme="light"] .column-menu-item-create svg {
+html[data-theme="light"], html[data-theme="ivory"] .column-menu-item-create svg {
     stroke: #059669 !important;
 }
 
-html[data-theme="light"] .column-menu-item-create:hover {
+html[data-theme="light"], html[data-theme="ivory"] .column-menu-item-create:hover {
     background-color: rgba(16, 185, 129, 0.1) !important;
     color: #047857 !important;
 }
 
-html[data-theme="light"] .column-menu-section-header,
-html[data-theme="light"] .column-menu-tag-empty {
+html[data-theme="light"], html[data-theme="ivory"] .column-menu-section-header,
+html[data-theme="light"], html[data-theme="ivory"] .column-menu-tag-empty {
     color: #71717a !important;
 }
 
-html[data-theme="light"] .column-menu-tag-item,
-html[data-theme="light"] .column-menu-tag-item * {
+html[data-theme="light"], html[data-theme="ivory"] .column-menu-tag-item,
+html[data-theme="light"], html[data-theme="ivory"] .column-menu-tag-item * {
     color: #18181b;
 }
 
-html[data-theme="light"] .column-menu-tag-item:hover,
-html[data-theme="light"] .column-menu-tag-item:hover * {
+html[data-theme="light"], html[data-theme="ivory"] .column-menu-tag-item:hover,
+html[data-theme="light"], html[data-theme="ivory"] .column-menu-tag-item:hover * {
     background-color: rgba(0, 0, 0, 0.05) !important;
     color: #18181b !important;
 }
 
-html[data-theme="light"] .column-menu-tag-item.active,
-html[data-theme="light"] .column-menu-tag-item.active * {
+html[data-theme="light"], html[data-theme="ivory"] .column-menu-tag-item.active,
+html[data-theme="light"], html[data-theme="ivory"] .column-menu-tag-item.active * {
     background-color: rgba(16, 185, 129, 0.14) !important;
     color: #047857 !important;
     font-weight: 700;
 }
 
-html[data-theme="light"] .column-menu-tag-item.active:hover,
-html[data-theme="light"] .column-menu-tag-item.active:hover * {
+html[data-theme="light"], html[data-theme="ivory"] .column-menu-tag-item.active:hover,
+html[data-theme="light"], html[data-theme="ivory"] .column-menu-tag-item.active:hover * {
     background-color: rgba(16, 185, 129, 0.22) !important;
     color: #047857 !important;
 }
 
-html[data-theme="light"] .column-menu-divider {
+html[data-theme="light"], html[data-theme="ivory"] .column-menu-divider {
     background-color: rgba(0, 0, 0, 0.06) !important;
 }
 
-html[data-theme="light"] .bottom-add-note-btn {
+html[data-theme="light"], html[data-theme="ivory"] .bottom-add-note-btn {
     background-color: rgba(0, 0, 0, 0.02) !important;
     border: 2px dashed rgba(0, 0, 0, 0.12) !important;
 }
 
-html[data-theme="light"] .bottom-add-note-btn:hover {
+html[data-theme="light"], html[data-theme="ivory"] .bottom-add-note-btn:hover {
     background-color: rgba(0, 0, 0, 0.05) !important;
     border-color: rgba(0, 0, 0, 0.22) !important;
     color: #18181b !important;
 }
 
 /* 8. Стікери, Emoji Picker, Washi Tags & Polaroid */
-html[data-theme="light"] .sticker-emoji-picker-dropdown {
+html[data-theme="light"], html[data-theme="ivory"] .sticker-emoji-picker-dropdown {
     background-color: #ffffff !important;
     border: 1px solid rgba(0, 0, 0, 0.1) !important;
     box-shadow: 0 12px 36px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04) !important;
 }
 
-html[data-theme="light"] .emoji-search-input {
+html[data-theme="light"], html[data-theme="ivory"] .emoji-search-input {
     background: #ffffff !important;
     border: 1px solid rgba(0, 0, 0, 0.16) !important;
     color: #18181b !important;
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04) !important;
 }
 
-html[data-theme="light"] .emoji-search-input:focus {
+html[data-theme="light"], html[data-theme="ivory"] .emoji-search-input:focus {
     border-color: #10b981 !important;
     background: #ffffff !important;
     box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2) !important;
 }
 
-html[data-theme="light"] .emoji-search-input::placeholder {
+html[data-theme="light"], html[data-theme="ivory"] .emoji-search-input::placeholder {
     color: rgba(0, 0, 0, 0.42) !important;
 }
 
-html[data-theme="light"] .emoji-categories-bar {
+html[data-theme="light"], html[data-theme="ivory"] .emoji-categories-bar {
     border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
 }
 
-html[data-theme="light"] .emoji-grid-item:hover {
+html[data-theme="light"], html[data-theme="ivory"] .emoji-grid-item:hover {
     background-color: rgba(0, 0, 0, 0.06) !important;
 }
 
-html[data-theme="light"] .emoji-cat-tab-btn:hover {
+html[data-theme="light"], html[data-theme="ivory"] .emoji-cat-tab-btn:hover {
     background-color: rgba(0, 0, 0, 0.06) !important;
 }
 
-html[data-theme="light"] .sticker-tag-dropdown {
+html[data-theme="light"], html[data-theme="ivory"] .sticker-tag-dropdown {
     background-color: #ffffff !important;
     border: 1px solid rgba(0, 0, 0, 0.1) !important;
     box-shadow: 0 12px 36px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04) !important;
 }
 
-html[data-theme="light"] .tag-option-item {
+html[data-theme="light"], html[data-theme="ivory"] .tag-option-item {
     background: rgba(0, 0, 0, 0.03) !important;
     border: 1px solid rgba(0, 0, 0, 0.06) !important;
     color: #18181b !important;
 }
 
-html[data-theme="light"] .tag-option-item:hover {
+html[data-theme="light"], html[data-theme="ivory"] .tag-option-item:hover {
     background: rgba(0, 0, 0, 0.06) !important;
     border-color: rgba(0, 0, 0, 0.12) !important;
 }
 
-html[data-theme="light"] .tag-option-item.active {
+html[data-theme="light"], html[data-theme="ivory"] .tag-option-item.active {
     background: rgba(16, 185, 129, 0.12) !important;
     border-color: #10b981 !important;
     color: #047857 !important;
 }
 
-html[data-theme="light"] .tag-add-option-row {
+html[data-theme="light"], html[data-theme="ivory"] .tag-add-option-row {
     border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
 }
 
-html[data-theme="light"] .tag-add-input {
+html[data-theme="light"], html[data-theme="ivory"] .tag-add-input {
     background: #ffffff !important;
     border: 1px solid rgba(0, 0, 0, 0.16) !important;
     color: #18181b !important;
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04) !important;
 }
 
-html[data-theme="light"] .tag-add-input:focus {
+html[data-theme="light"], html[data-theme="ivory"] .tag-add-input:focus {
     border-color: #10b981 !important;
     background: #ffffff !important;
     box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2) !important;
 }
 
-html[data-theme="light"] .tag-add-input::placeholder {
+html[data-theme="light"], html[data-theme="ivory"] .tag-add-input::placeholder {
     color: rgba(0, 0, 0, 0.42) !important;
 }
 
-html[data-theme="light"] .tag-add-btn {
+html[data-theme="light"], html[data-theme="ivory"] .tag-add-btn {
     background: rgba(16, 185, 129, 0.12) !important;
     border: 1px solid rgba(16, 185, 129, 0.3) !important;
     color: #047857 !important;
     font-weight: 600 !important;
 }
 
-html[data-theme="light"] .tag-add-btn:hover {
+html[data-theme="light"], html[data-theme="ivory"] .tag-add-btn:hover {
     background: #10b981 !important;
     color: #ffffff !important;
 }
 
-html[data-theme="light"] .sticker-menu-divider {
+html[data-theme="light"], html[data-theme="ivory"] .sticker-menu-divider {
     background-color: rgba(0, 0, 0, 0.06) !important;
 }
 
-html[data-theme="light"] .sticker-font-slider {
+html[data-theme="light"], html[data-theme="ivory"] .sticker-font-slider {
     background: rgba(0, 0, 0, 0.12) !important;
 }
 
-html[data-theme="light"] .note-font-tick-line {
+html[data-theme="light"], html[data-theme="ivory"] .note-font-tick-line {
     background: rgba(0, 0, 0, 0.2) !important;
 }
 
-html[data-theme="light"] .sticker-perforation-handle::before {
+html[data-theme="light"], html[data-theme="ivory"] .sticker-perforation-handle::before {
     background-image: radial-gradient(circle at center, rgba(0, 0, 0, 0.16) 4px, transparent 5.5px) !important;
     filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.8)) !important;
 }
 
-html[data-theme="light"] .note-sticker:not(.is-ws-selected) .sticker-select-checkbox {
+html[data-theme="light"], html[data-theme="ivory"] .note-sticker:not(.is-ws-selected) .sticker-select-checkbox {
     background-color: rgba(0, 0, 0, 0.08) !important;
     border: 2px solid rgba(0, 0, 0, 0.2) !important;
 }
 
-html[data-theme="light"] .sticker-img-size-group,
-html[data-theme="light"] .sticker-image-remove-btn {
+html[data-theme="light"], html[data-theme="ivory"] .sticker-img-size-group,
+html[data-theme="light"], html[data-theme="ivory"] .sticker-image-remove-btn {
     background: rgba(255, 255, 255, 0.95) !important;
     border: 1px solid rgba(0, 0, 0, 0.12) !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
     color: #18181b !important;
 }
 
-html[data-theme="light"] .img-size-btn:hover {
+html[data-theme="light"], html[data-theme="ivory"] .img-size-btn:hover {
     color: #18181b !important;
     background: rgba(0, 0, 0, 0.06) !important;
 }
 
-html[data-theme="light"] .sticker-image-remove-btn {
+html[data-theme="light"], html[data-theme="ivory"] .sticker-image-remove-btn {
     color: #ef4444 !important;
 }
 
-html[data-theme="light"] .sticker-image-remove-btn:hover {
+html[data-theme="light"], html[data-theme="ivory"] .sticker-image-remove-btn:hover {
     background: #ef4444 !important;
     color: #ffffff !important;
 }
 
 /* 9. Панель форматування тексту (Text Selection Toolbar) */
-html[data-theme="light"] .text-selection-toolbar {
+html[data-theme="light"], html[data-theme="ivory"] .text-selection-toolbar {
     background: rgba(255, 255, 255, 0.96) !important;
     border: 1px solid rgba(0, 0, 0, 0.1) !important;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04) !important;
 }
 
-html[data-theme="light"] .text-sel-weight-wrap {
+html[data-theme="light"], html[data-theme="ivory"] .text-sel-weight-wrap {
     background: rgba(0, 0, 0, 0.05) !important;
 }
 
-html[data-theme="light"] .text-sel-weight-btn {
+html[data-theme="light"], html[data-theme="ivory"] .text-sel-weight-btn {
     color: var(--text-muted) !important;
 }
 
-html[data-theme="light"] .text-sel-weight-btn:hover {
+html[data-theme="light"], html[data-theme="ivory"] .text-sel-weight-btn:hover {
     background: rgba(0, 0, 0, 0.06) !important;
     color: #18181b !important;
 }
 
-html[data-theme="light"] .text-sel-scope-btn {
+html[data-theme="light"], html[data-theme="ivory"] .text-sel-scope-btn {
     background: rgba(0, 0, 0, 0.04) !important;
     border: 1px solid rgba(0, 0, 0, 0.08) !important;
     color: #18181b !important;
 }
 
-html[data-theme="light"] .text-sel-scope-btn:hover {
+html[data-theme="light"], html[data-theme="ivory"] .text-sel-scope-btn:hover {
     background: rgba(0, 0, 0, 0.08) !important;
 }
 
-html[data-theme="light"] .text-sel-tooltip {
+html[data-theme="light"], html[data-theme="ivory"] .text-sel-tooltip {
     background: #ffffff !important;
     color: #18181b !important;
     border: 1px solid rgba(0, 0, 0, 0.1) !important;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08) !important;
 }
 
-html[data-theme="light"] .text-sel-tooltip::before {
+html[data-theme="light"], html[data-theme="ivory"] .text-sel-tooltip::before {
     border-color: transparent transparent rgba(0, 0, 0, 0.1) transparent !important;
 }
 
-html[data-theme="light"] .text-sel-divider {
+html[data-theme="light"], html[data-theme="ivory"] .text-sel-divider {
     background: rgba(0, 0, 0, 0.08) !important;
 }
 
-html[data-theme="light"] .text-sel-btn:hover {
+html[data-theme="light"], html[data-theme="ivory"] .text-sel-btn:hover {
     background: rgba(0, 0, 0, 0.06) !important;
     color: #18181b !important;
 }
 
 /* 10. Нижня плаваюча панель групового вибору (Selection Bar) */
-html[data-theme="light"] .workspace-selection-bar {
+html[data-theme="light"], html[data-theme="ivory"] .workspace-selection-bar {
     background: rgba(255, 255, 255, 0.95) !important;
     border: 1px solid rgba(0, 0, 0, 0.1) !important;
     box-shadow: 0 12px 36px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04) !important;
 }
 
-html[data-theme="light"] .selection-bar-count-desktop {
+html[data-theme="light"], html[data-theme="ivory"] .selection-bar-count-desktop {
     color: #18181b !important;
 }
 
-html[data-theme="light"] .selection-bar-close-btn {
+html[data-theme="light"], html[data-theme="ivory"] .selection-bar-close-btn {
     background: rgba(0, 0, 0, 0.05) !important;
     color: var(--text-muted) !important;
 }
 
-html[data-theme="light"] .selection-bar-close-btn:hover {
+html[data-theme="light"], html[data-theme="ivory"] .selection-bar-close-btn:hover {
     background: rgba(0, 0, 0, 0.08) !important;
     color: #18181b !important;
 }
 
-html[data-theme="light"] .selection-bar-divider {
+html[data-theme="light"], html[data-theme="ivory"] .selection-bar-divider {
     color: rgba(0, 0, 0, 0.15) !important;
 }
 
-html[data-theme="light"] .selection-action-btn:not(.selection-action-delete-btn) {
+html[data-theme="light"], html[data-theme="ivory"] .selection-action-btn:not(.selection-action-delete-btn) {
     background: rgba(0, 0, 0, 0.04) !important;
     border: 1px solid rgba(0, 0, 0, 0.08) !important;
     color: #18181b !important;
 }
 
-html[data-theme="light"] .selection-action-btn:not(.selection-action-delete-btn):hover:not(:disabled) {
+html[data-theme="light"], html[data-theme="ivory"] .selection-action-btn:not(.selection-action-delete-btn):hover:not(:disabled) {
     background: rgba(0, 0, 0, 0.08) !important;
     border-color: rgba(0, 0, 0, 0.15) !important;
 }
 
-html[data-theme="light"] .selection-action-delete-btn {
+html[data-theme="light"], html[data-theme="ivory"] .selection-action-delete-btn {
     background: rgba(239, 68, 68, 0.12) !important;
     border: 1px solid rgba(239, 68, 68, 0.25) !important;
     color: #ef4444 !important;
 }
 
-html[data-theme="light"] .selection-action-delete-btn svg {
+html[data-theme="light"], html[data-theme="ivory"] .selection-action-delete-btn svg {
     stroke: #ef4444 !important;
 }
 
-html[data-theme="light"] .selection-action-delete-btn:hover:not(:disabled) {
+html[data-theme="light"], html[data-theme="ivory"] .selection-action-delete-btn:hover:not(:disabled) {
     background: #ef4444 !important;
     border-color: #ef4444 !important;
     color: #ffffff !important;
     box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4) !important;
 }
 
-html[data-theme="light"] .selection-action-delete-btn:hover:not(:disabled) svg {
+html[data-theme="light"], html[data-theme="ivory"] .selection-action-delete-btn:hover:not(:disabled) svg {
     stroke: #ffffff !important;
 }
 
-html[data-theme="light"] .selection-bar-icon-btn {
+html[data-theme="light"], html[data-theme="ivory"] .selection-bar-icon-btn {
     background: rgba(0, 0, 0, 0.04) !important;
     border: 1px solid rgba(0, 0, 0, 0.08) !important;
     color: #18181b !important;
 }
 
-html[data-theme="light"] .selection-submenu-dropdown {
+html[data-theme="light"], html[data-theme="ivory"] .selection-submenu-dropdown {
     background-color: #ffffff !important;
     border: 1px solid rgba(0, 0, 0, 0.1) !important;
     box-shadow: 0 12px 36px rgba(0, 0, 0, 0.08) !important;
     color: #18181b !important;
 }
 
-html[data-theme="light"] .selection-tag-item {
+html[data-theme="light"], html[data-theme="ivory"] .selection-tag-item {
     background: rgba(0, 0, 0, 0.03) !important;
     border-color: rgba(0, 0, 0, 0.06) !important;
     color: #18181b !important;
 }
 
-html[data-theme="light"] .selection-tag-item:hover {
+html[data-theme="light"], html[data-theme="ivory"] .selection-tag-item:hover {
     background: rgba(0, 0, 0, 0.06) !important;
 }
 
-html[data-theme="light"] .selection-tag-item.active {
+html[data-theme="light"], html[data-theme="ivory"] .selection-tag-item.active {
     background: rgba(16, 185, 129, 0.12) !important;
     border-color: #10b981 !important;
     color: #047857 !important;
 }
 
 /* 11. Хедер, тултіпи, поле пошуку та мобільні кнопки */
-html[data-theme="light"] .header-tooltip {
+html[data-theme="light"], html[data-theme="ivory"] .header-tooltip {
     background: #ffffff !important;
     color: #18181b !important;
     border: 1px solid rgba(0, 0, 0, 0.1) !important;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08) !important;
 }
 
-html[data-theme="light"] .header-tooltip::before {
+html[data-theme="light"], html[data-theme="ivory"] .header-tooltip::before {
     border-color: transparent transparent rgba(0, 0, 0, 0.1) transparent !important;
 }
 
-html[data-theme="light"] .header-brush-dropdown {
+html[data-theme="light"], html[data-theme="ivory"] .header-brush-dropdown {
     background: #ffffff !important;
     border: 1px solid rgba(0, 0, 0, 0.1) !important;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
 }
 
-html[data-theme="light"] .header-search-bar {
+html[data-theme="light"], html[data-theme="ivory"] .header-search-bar {
     background: #ffffff !important;
     border: 1px solid rgba(0, 0, 0, 0.12) !important;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
     color: #18181b !important;
 }
 
-html[data-theme="light"] .header-search-bar::before {
+html[data-theme="light"], html[data-theme="ivory"] .header-search-bar::before {
     border-color: transparent transparent rgba(0, 0, 0, 0.12) transparent !important;
 }
 
-html[data-theme="light"] .header-search-nav-btns {
+html[data-theme="light"], html[data-theme="ivory"] .header-search-nav-btns {
     background: rgba(0, 0, 0, 0.04) !important;
     border: 1px solid rgba(0, 0, 0, 0.08) !important;
 }
 
-html[data-theme="light"] .header-search-nav-btn:hover {
+html[data-theme="light"], html[data-theme="ivory"] .header-search-nav-btn:hover {
     color: #18181b !important;
     background: rgba(0, 0, 0, 0.08) !important;
 }
 
-html[data-theme="light"] .header-search-close:hover {
+html[data-theme="light"], html[data-theme="ivory"] .header-search-close:hover {
     color: #18181b !important;
     background: rgba(0, 0, 0, 0.08) !important;
 }
 
-html[data-theme="light"] .mobile-menu-btn,
-html[data-theme="light"] .header-tools-pill,
-html[data-theme="light"] .header-tools-control {
+html[data-theme="light"], html[data-theme="ivory"] .mobile-menu-btn,
+html[data-theme="light"], html[data-theme="ivory"] .header-tools-pill,
+html[data-theme="light"], html[data-theme="ivory"] .header-tools-control {
     background: rgba(0, 0, 0, 0.04) !important;
     border: 1px solid rgba(0, 0, 0, 0.08) !important;
     color: #18181b !important;
 }
 
 /* 12. Сайдбар: перетягування, виділення, напрямні дерева */
-html[data-theme="light"] .sidebar-note-tree-node.is-dragging > .note-item {
+html[data-theme="light"], html[data-theme="ivory"] .sidebar-note-tree-node.is-dragging > .note-item {
     background-color: #ffffff !important;
     color: #18181b !important;
     border: 1.5px solid #10b981 !important;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 0 0 2px rgba(16, 185, 129, 0.25) !important;
 }
 
-html[data-theme="light"] .note-item.is-selected {
+html[data-theme="light"], html[data-theme="ivory"] .note-item.is-selected {
     background-color: rgba(16, 185, 129, 0.15) !important;
     border-color: #10b981 !important;
     color: #047857 !important;
 }
 
-html[data-theme="light"] .note-item.is-selected .note-item-title {
+html[data-theme="light"], html[data-theme="ivory"] .note-item.is-selected .note-item-title {
     color: #047857 !important;
     font-weight: 600;
 }
 
-html[data-theme="light"] .sidebar-drag-count-badge {
+html[data-theme="light"], html[data-theme="ivory"] .sidebar-drag-count-badge {
     border: 1.5px solid #ffffff !important;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
 }
 
-html[data-theme="light"] .sidebar-subnotes-list {
+html[data-theme="light"], html[data-theme="ivory"] .sidebar-subnotes-list {
     border-left-color: rgba(0, 0, 0, 0.1);
 }
 
-html[data-theme="light"] .sidebar-child-count {
+html[data-theme="light"], html[data-theme="ivory"] .sidebar-child-count {
     background: rgba(0, 0, 0, 0.05) !important;
     border: 1px solid rgba(0, 0, 0, 0.06) !important;
     color: var(--text-muted) !important;
 }
 
-html[data-theme="light"] .note-toggle-arrow:hover {
+html[data-theme="light"], html[data-theme="ivory"] .note-toggle-arrow:hover {
     background-color: rgba(0, 0, 0, 0.06) !important;
     color: #18181b !important;
 }
 
-html[data-theme="light"] .note-item.touch-drag-active {
+html[data-theme="light"], html[data-theme="ivory"] .note-item.touch-drag-active {
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08) !important;
 }
 
 /* 13. Порожній стан робочого простору та Екран вітання */
-html[data-theme="light"] .workspace-empty-card {
+html[data-theme="light"], html[data-theme="ivory"] .workspace-empty-card {
     background: rgba(255, 255, 255, 0.95) !important;
     border: 1px solid rgba(0, 0, 0, 0.08) !important;
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.06) !important;
 }
 
-html[data-theme="light"] .workspace-empty-title {
+html[data-theme="light"], html[data-theme="ivory"] .workspace-empty-title {
     color: #18181b !important;
 }
 
-html[data-theme="light"] .workspace-create-board-input {
+html[data-theme="light"], html[data-theme="ivory"] .workspace-create-board-input {
     background: #ffffff !important;
     border: 1px solid rgba(0, 0, 0, 0.14) !important;
     color: #18181b !important;
 }
 
-html[data-theme="light"] .workspace-create-board-input::placeholder {
+html[data-theme="light"], html[data-theme="ivory"] .workspace-create-board-input::placeholder {
     color: rgba(0, 0, 0, 0.4) !important;
 }
 
-html[data-theme="light"] .welcome-screen {
+html[data-theme="light"], html[data-theme="ivory"] .welcome-screen {
     background: radial-gradient(circle at 50% 30%, rgba(16, 185, 129, 0.08) 0%, rgba(247, 247, 250, 0.95) 70%, #eceef3 100%) !important;
 }
 
-html[data-theme="light"] .welcome-content {
+html[data-theme="light"], html[data-theme="ivory"] .welcome-content {
     background: rgba(255, 255, 255, 0.95) !important;
     border: 1px solid rgba(0, 0, 0, 0.08) !important;
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08) !important;
 }
 
-html[data-theme="light"] .welcome-auth-divider span {
+html[data-theme="light"], html[data-theme="ivory"] .welcome-auth-divider span {
     background: rgba(255, 255, 255, 0.95) !important;
 }
 
-html[data-theme="light"] .welcome-guest-btn {
+html[data-theme="light"], html[data-theme="ivory"] .welcome-guest-btn {
     background: rgba(0, 0, 0, 0.04) !important;
     border: 1px solid rgba(0, 0, 0, 0.1) !important;
     color: #18181b !important;
 }
 
 /* 14. Шеринг та Markdown перегляд */
-html[data-theme="light"] .share-modal-card {
+html[data-theme="light"], html[data-theme="ivory"] .share-modal-card {
     background: rgba(255, 255, 255, 0.96);
     border-color: rgba(0, 0, 0, 0.1);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
     color: #18181b;
 }
 
-html[data-theme="light"] .share-modal-title {
+html[data-theme="light"], html[data-theme="ivory"] .share-modal-title {
     color: #18181b;
 }
 
-html[data-theme="light"] .share-modal-tabs {
+html[data-theme="light"], html[data-theme="ivory"] .share-modal-tabs {
     background: rgba(0, 0, 0, 0.04);
     border-color: rgba(0, 0, 0, 0.08);
 }
 
-html[data-theme="light"] .share-modal-tab-btn.active {
+html[data-theme="light"], html[data-theme="ivory"] .share-modal-tab-btn.active {
     background: #ffffff;
     color: #18181b;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
-html[data-theme="light"] .share-markdown-preview-box {
+html[data-theme="light"], html[data-theme="ivory"] .share-markdown-preview-box {
     background: rgba(0, 0, 0, 0.03);
     border-color: rgba(0, 0, 0, 0.08);
 }
 
-html[data-theme="light"] .share-markdown-preview-box pre {
+html[data-theme="light"], html[data-theme="ivory"] .share-markdown-preview-box pre {
     color: #18181b;
 }
 
-html[data-theme="light"] .share-link-box {
+html[data-theme="light"], html[data-theme="ivory"] .share-link-box {
     background: rgba(0, 0, 0, 0.03);
     border-color: rgba(0, 0, 0, 0.1);
 }
 
-html[data-theme="light"] .share-secondary-btn {
+html[data-theme="light"], html[data-theme="ivory"] .share-secondary-btn {
     background: rgba(0, 0, 0, 0.05);
     border-color: rgba(0, 0, 0, 0.1);
     color: #18181b;
 }
 
-html[data-theme="light"] .raw-markdown-content-box {
+html[data-theme="light"], html[data-theme="ivory"] .raw-markdown-content-box {
     background: rgba(0, 0, 0, 0.02);
     border-color: rgba(0, 0, 0, 0.08);
     color: #18181b;

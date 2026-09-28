@@ -9,6 +9,7 @@ window.App = window.App || {};
     const THEMES = [
         { key: 'asphalt', nameKey: 'settings.theme.asphalt.name', descKey: 'settings.theme.asphalt.desc', metaColor: '#141416' },
         { key: 'light', nameKey: 'settings.theme.light.name', descKey: 'settings.theme.light.desc', metaColor: '#f7f7fa' },
+        { key: 'ivory', nameKey: 'settings.theme.ivory.name', descKey: 'settings.theme.ivory.desc', metaColor: '#f7f4ed' },
         { key: 'night-sky', nameKey: 'settings.theme.nightSky.name', descKey: 'settings.theme.nightSky.desc', metaColor: '#0b0f19' },
         { key: 'forest', nameKey: 'settings.theme.forest.name', descKey: 'settings.theme.forest.desc', metaColor: '#1d1e19' }
     ];
@@ -273,6 +274,17 @@ window.App = window.App || {};
                                 <div class="settings-theme-label">
                                     <span class="settings-theme-name" data-i18n="settings.theme.light.name">${t('settings.theme.light.name')}</span>
                                     <span class="settings-theme-sub" data-i18n="settings.theme.light.desc">${t('settings.theme.light.desc')}</span>
+                                </div>
+                                <div class="settings-theme-check">✓</div>
+                            </button>
+
+                            <button type="button" class="settings-theme-card ${currentTheme === 'ivory' ? 'active' : ''}" data-theme="ivory">
+                                <div class="settings-theme-preview ivory-preview">
+                                    <div class="theme-preview-dot"></div>
+                                </div>
+                                <div class="settings-theme-label">
+                                    <span class="settings-theme-name" data-i18n="settings.theme.ivory.name">${t('settings.theme.ivory.name')}</span>
+                                    <span class="settings-theme-sub" data-i18n="settings.theme.ivory.desc">${t('settings.theme.ivory.desc')}</span>
                                 </div>
                                 <div class="settings-theme-check">✓</div>
                             </button>

@@ -276,6 +276,7 @@ export const ua = {
             title: 'Тема оформлення',
             asphalt: { name: 'Асфальт', desc: 'Темна (поточна)' },
             light: { name: 'Біла', desc: 'Світла' },
+            ivory: { name: 'Слонова кістка', desc: 'Тепла молочна' },
             nightSky: { name: 'Нічне небо', desc: 'Темно-синя' },
             forest: { name: 'Темний ліс', desc: 'Приглушена жовто-зелена' }
         },

@@ -276,6 +276,7 @@ export const en = {
             title: 'Appearance Theme',
             asphalt: { name: 'Asphalt', desc: 'Dark (current)' },
             light: { name: 'White', desc: 'Light' },
+            ivory: { name: 'Ivory', desc: 'Warm milky light' },
             nightSky: { name: 'Night Sky', desc: 'Deep dark blue' },
             forest: { name: 'Dark Forest', desc: 'Muted olive green' }
         },

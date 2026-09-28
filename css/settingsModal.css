@@ -769,6 +769,14 @@ body.compact-notes-mode .masonry-column {
     background: #059669;
 }
 
+.settings-theme-preview.ivory-preview {
+    background: #fbf9f4;
+    border-color: #e5ded3;
+}
+.settings-theme-preview.ivory-preview .theme-preview-dot {
+    background: #10b981;
+}
+
 .settings-theme-preview.night-sky-preview {
     background: #0f172a;
     border-color: #38bdf8;

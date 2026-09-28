@@ -1566,7 +1566,8 @@ window.App = window.App || {};
             const countY = (endY - startY) / gridSize;
             if (countX * countY > 2500) return;
 
-            const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+            const currentThemeName = document.documentElement.getAttribute('data-theme') || 'asphalt';
+            const isLight = currentThemeName === 'light' || currentThemeName === 'ivory';
             ctx.fillStyle = isLight ? 'rgba(0, 0, 0, 0.12)' : 'rgba(255, 255, 255, 0.08)';
             ctx.beginPath();
 
@@ -2582,9 +2583,10 @@ window.App = window.App || {};
             oCtx.scale(dpr, dpr);
 
             const currentTheme = document.documentElement.getAttribute('data-theme') || 'asphalt';
-            const isLight = currentTheme === 'light';
+            const isLight = currentTheme === 'light' || currentTheme === 'ivory';
             const themeBgMap = {
                 'light': '#f7f7fa',
+                'ivory': '#f7f4ed',
                 'night-sky': '#0b0f19',
                 'forest': '#1d1e19',
                 'asphalt': '#141416'
