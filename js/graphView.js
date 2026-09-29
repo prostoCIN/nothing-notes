@@ -613,11 +613,22 @@ window.App = window.App || {};
 
             // Пошук
             if (searchInput) {
+                let searchDebounce = null;
                 searchInput.addEventListener('input', (e) => {
                     searchQuery = e.target.value.toLowerCase().trim();
                     if (clearBtn) clearBtn.style.display = searchQuery ? 'flex' : 'none';
                     if (searchIconRight) searchIconRight.style.display = searchQuery ? 'none' : 'flex';
                     this.draw();
+
+                    if (searchQuery && nodes.length > 0) {
+                        clearTimeout(searchDebounce);
+                        searchDebounce = setTimeout(() => {
+                            const matchedNode = nodes.find(n => n.title.toLowerCase().includes(searchQuery) || n.content.toLowerCase().includes(searchQuery));
+                            if (matchedNode) {
+                                this.focusCameraOnNode(matchedNode);
+                            }
+                        }, 280);
+                    }
                 });
             }
 
@@ -1442,12 +1453,56 @@ window.App = window.App || {};
         },
 
         resetCamera() {
-            if (!canvas || !container) return;
-            const rect = container.getBoundingClientRect();
-            camera.x = rect.width / 2;
-            camera.y = rect.height / 2;
-            camera.zoom = 1;
-            this.draw();
+            if (nodes.length > 0) {
+                this.centerCameraOnAllNodes();
+            } else {
+                if (!canvas || !container) return;
+                const rect = container.getBoundingClientRect();
+                camera.x = rect.width / 2;
+                camera.y = rect.height / 2;
+                camera.zoom = 1;
+                this.draw();
+            }
+        },
+
+        focusCameraOnNode(node) {
+            if (!node || !canvas || !container) return;
+            const dpr = window.devicePixelRatio || 1;
+            const w = canvas.width / dpr;
+            const h = canvas.height / dpr;
+
+            const nw = node.element ? (node.element.offsetWidth || 320) : 320;
+            const nh = node.element ? (node.element.offsetHeight || 140) : 140;
+
+            const targetZoom = Math.max(0.75, Math.min(1.0, camera.zoom));
+            const nodeCenterX = node.x + nw / 2;
+            const nodeCenterY = node.y + nh / 2;
+
+            const targetCamX = (w / 2) - (nodeCenterX - (w / 2)) * targetZoom;
+            const targetCamY = (h / 2) - (nodeCenterY - (h / 2)) * targetZoom;
+
+            const startCamX = camera.x;
+            const startCamY = camera.y;
+            const startZoom = camera.zoom;
+            const startTime = performance.now();
+            const duration = 280;
+
+            const animateCam = (now) => {
+                const elapsed = now - startTime;
+                const progress = Math.min(1, elapsed / duration);
+                const ease = 1 - Math.pow(1 - progress, 3);
+
+                camera.x = startCamX + (targetCamX - startCamX) * ease;
+                camera.y = startCamY + (targetCamY - startCamY) * ease;
+                camera.zoom = startZoom + (targetZoom - startZoom) * ease;
+                this.draw();
+
+                if (progress < 1) {
+                    requestAnimationFrame(animateCam);
+                }
+            };
+
+            requestAnimationFrame(animateCam);
         },
 
         smoothZoom(factor) {
@@ -1616,9 +1671,9 @@ window.App = window.App || {};
         },
 
         getCardBezierPorts(source, target) {
-            const sw = source.element ? (source.element.offsetWidth || 240) : 240;
+            const sw = source.element ? (source.element.offsetWidth || 320) : 320;
             const sh = source.element ? (source.element.offsetHeight || 140) : 140;
-            const tw = target.element ? (target.element.offsetWidth || 240) : 240;
+            const tw = target.element ? (target.element.offsetWidth || 320) : 320;
             const th = target.element ? (target.element.offsetHeight || 140) : 140;
 
             const scx = source.x + sw / 2;
@@ -1915,7 +1970,7 @@ window.App = window.App || {};
             const world = this.screenToWorld(screenX, screenY);
             for (let i = nodes.length - 1; i >= 0; i--) {
                 const node = nodes[i];
-                const w = node.element ? (node.element.offsetWidth || 240) : 240;
+                const w = node.element ? (node.element.offsetWidth || 320) : 320;
                 const h = node.element ? (node.element.offsetHeight || 140) : 140;
                 if (world.x >= node.x && world.x <= node.x + w && world.y >= node.y && world.y <= node.y + h) {
                     return node;
@@ -1989,7 +2044,7 @@ window.App = window.App || {};
 
             let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
             nodes.forEach(n => {
-                const nw = n.element ? (n.element.offsetWidth || 240) : 240;
+                const nw = n.element ? (n.element.offsetWidth || 320) : 320;
                 const nh = n.element ? (n.element.offsetHeight || 140) : 140;
                 minX = Math.min(minX, n.x);
                 minY = Math.min(minY, n.y);
@@ -2002,15 +2057,34 @@ window.App = window.App || {};
             const padding = 100;
 
             const targetZoom = Math.max(camera.minZoom, Math.min(1.0, Math.min((w - padding * 2) / bboxW, (h - padding * 2) / bboxH)));
-            camera.zoom = targetZoom;
-
             const bboxCenterX = minX + bboxW / 2;
             const bboxCenterY = minY + bboxH / 2;
 
-            camera.x = (w / 2) - (bboxCenterX - (w / 2)) * camera.zoom;
-            camera.y = (h / 2) - (bboxCenterY - (h / 2)) * camera.zoom;
+            const targetCamX = (w / 2) - (bboxCenterX - (w / 2)) * targetZoom;
+            const targetCamY = (h / 2) - (bboxCenterY - (h / 2)) * targetZoom;
 
-            this.draw();
+            const startCamX = camera.x;
+            const startCamY = camera.y;
+            const startZoom = camera.zoom;
+            const startTime = performance.now();
+            const duration = 280;
+
+            const animateStep = (now) => {
+                const elapsed = now - startTime;
+                const progress = Math.min(1, elapsed / duration);
+                const ease = 1 - Math.pow(1 - progress, 3);
+
+                camera.x = startCamX + (targetCamX - startCamX) * ease;
+                camera.y = startCamY + (targetCamY - startCamY) * ease;
+                camera.zoom = startZoom + (targetZoom - startZoom) * ease;
+                this.draw();
+
+                if (progress < 1) {
+                    requestAnimationFrame(animateStep);
+                }
+            };
+
+            requestAnimationFrame(animateStep);
         },
 
         // Впорядкування стікерів деревовидною структурою (Auto-arrange / Tidy Up)
@@ -2019,7 +2093,7 @@ window.App = window.App || {};
 
             const HORIZONTAL_GAP = 70;
             const VERTICAL_GAP = 28;
-            const CARD_WIDTH = 240;
+            const CARD_WIDTH = 320;
 
             const childrenMap = new Map();
             const rootNodes = [];
@@ -2149,7 +2223,7 @@ window.App = window.App || {};
             if (!newNote) return;
 
             const existingChildren = nodes.filter(n => n.parentId === parentId);
-            const pw = parentNode.element ? (parentNode.element.offsetWidth || 240) : 240;
+            const pw = parentNode.element ? (parentNode.element.offsetWidth || 320) : 320;
             const newX = parentNode.x + pw + 70;
             const newY = parentNode.y + (existingChildren.length * 180);
 

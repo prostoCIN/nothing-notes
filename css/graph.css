@@ -43,9 +43,9 @@
 /* Стікери нотаток на інтерактивній дошці */
 .graph-nodes-layer .note-sticker {
     position: absolute;
-    width: 240px;
-    min-width: 240px;
-    max-width: 240px;
+    width: 320px;
+    min-width: 320px;
+    max-width: 320px;
     margin: 0;
     pointer-events: auto; /* Дозволяє взаємодію, виділення тексту, редагування */
     user-select: text;
