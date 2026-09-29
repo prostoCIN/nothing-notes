@@ -159,18 +159,27 @@ window.App = window.App || {};
                         <div class="graph-title-pill">
                             <span class="graph-title-icon">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <circle cx="18" cy="5" r="3"></circle>
-                                    <circle cx="6" cy="12" r="3"></circle>
-                                    <circle cx="18" cy="19" r="3"></circle>
-                                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                                    <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                                    <path d="M3 9h18"></path>
+                                    <path d="M9 21V9"></path>
                                 </svg>
                             </span>
                             <span class="graph-title-text">${currentBoard.name}</span>
-                            <span class="graph-nodes-count" id="graph-nodes-counter">0 зв'язків</span>
+                            <span class="graph-nodes-count" id="graph-nodes-counter">0 стікерів</span>
                         </div>
 
                         <div class="graph-toolbar-filters">
+                            <button class="graph-toolbar-filter-btn is-layout-btn" id="graph-auto-layout-btn" title="Впорядкувати стікери на дошці">
+                                <span class="filter-btn-icon">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="3" y="3" width="7" height="7"></rect>
+                                        <rect x="14" y="3" width="7" height="7"></rect>
+                                        <rect x="14" y="14" width="7" height="7"></rect>
+                                        <rect x="3" y="14" width="7" height="7"></rect>
+                                    </svg>
+                                </span>
+                                <span class="filter-btn-label">Впорядкувати</span>
+                            </button>
                             <button class="graph-toolbar-filter-btn is-orphans-btn" id="graph-filter-orphans" title="Показати лише ізольовані нотатки без піднотаток та батьків">
                                 <span class="filter-btn-icon">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -437,22 +446,14 @@ window.App = window.App || {};
 
                 <div class="graph-legend-pill">
                     <div class="graph-legend-item">
-                        <span class="graph-legend-dot root"></span>
-                        <span>Корінь</span>
-                    </div>
-                    <div class="graph-legend-item">
-                        <span class="graph-legend-dot subnote"></span>
-                        <span>Піднотатки</span>
-                    </div>
-                    <div class="graph-legend-item">
                         <span class="graph-legend-dot" style="background: #10b981;"></span>
-                        <span>Спрямовані (пайплайн)</span>
+                        <span>Зв'язки / Піднотатки</span>
                     </div>
                     <div class="graph-legend-item">
                         <span class="graph-legend-dot" style="background: #f59e0b; border: 1px dashed #f59e0b;"></span>
                         <span>Спільні теги</span>
                     </div>
-                    <span class="graph-legend-hint">Наведення відкриває прев'ю, клік відкриває в робочій області</span>
+                    <span class="graph-legend-hint">Перетягуйте за хедер • Shift + + для створення піднотатки</span>
                 </div>
             `;
 
@@ -494,6 +495,14 @@ window.App = window.App || {};
             if (mobileSheetBackdrop) {
                 mobileSheetBackdrop.addEventListener('click', (e) => {
                     if (e.target === mobileSheetBackdrop) closeMobileSheet();
+                });
+            }
+
+            // Кнопка впорядкування нотаток на дошці
+            const autoLayoutBtn = container.querySelector('#graph-auto-layout-btn');
+            if (autoLayoutBtn) {
+                autoLayoutBtn.addEventListener('click', () => {
+                    this.autoLayout(true);
                 });
             }
 
@@ -797,6 +806,11 @@ window.App = window.App || {};
             const boardNotes = (state.notes || []).filter(n => n.boardId === currentBoard.id);
             const notesMap = new Map();
 
+            const prevPosMap = new Map();
+            nodes.forEach(n => {
+                prevPosMap.set(n.id, { x: n.x, y: n.y });
+            });
+
             nodes = [];
             edges = [];
             lastFocusNodeId = null;
@@ -805,14 +819,6 @@ window.App = window.App || {};
                 nodesLayer.innerHTML = '';
             }
 
-            const dpr = window.devicePixelRatio || 1;
-            const width = (canvas && canvas.width > 0) ? (canvas.width / dpr) : (container ? container.clientWidth : 800);
-            const height = (canvas && canvas.height > 0) ? (canvas.height / dpr) : (container ? container.clientHeight : 600);
-
-            const centerX = width / 2;
-            const centerY = height / 2;
-
-            // Створюємо мапу нотаток для швидкого пошуку предків
             const rawNotesById = new Map();
             boardNotes.forEach(n => rawNotesById.set(n.id, n));
 
@@ -826,7 +832,6 @@ window.App = window.App || {};
                 return curr || null;
             }
 
-            // Збираємо список усіх унікальних коренів для призначення послідовних кольорів
             const rootIds = [];
             boardNotes.forEach(note => {
                 const root = getRootAncestor(note.id);
@@ -836,29 +841,40 @@ window.App = window.App || {};
                 }
             });
 
-            // 1. Формуємо вершини (Nodes) навколо реального центру полотна
+            let anyMissingPosition = false;
+
+            // 1. Формуємо стікери нотаток на дошці
             boardNotes.forEach((note) => {
                 const isRoot = !note.parentId;
                 const noteLevel = window.App.noteManager ? window.App.noteManager.getNoteLevel(note.id) : (isRoot ? 0 : 1);
-                const radius = isRoot ? 20 : Math.max(12, 16 - noteLevel);
 
                 const rootAncestor = getRootAncestor(note.id);
                 const rootId = rootAncestor ? rootAncestor.id : note.id;
                 const rootIndex = rootIds.indexOf(rootId);
                 const branchColor = getBranchColor(rootId, rootIndex >= 0 ? rootIndex : undefined);
 
-                // Очищення тексту для тултіпа/пошуку в один прохід
                 const cleanContent = (note.content || '')
                     .replace(/<[^>]+>/g, ' ')
                     .replace(/&nbsp;/gi, ' ')
                     .replace(/\s+/g, ' ')
                     .trim();
 
-                const angle = Math.random() * Math.PI * 2;
-                const dist = 30 + Math.random() * (isRoot ? 80 : 150);
+                let posX = 0;
+                let posY = 0;
+                if (typeof note.canvasX === 'number' && typeof note.canvasY === 'number') {
+                    posX = note.canvasX;
+                    posY = note.canvasY;
+                } else if (prevPosMap.has(note.id)) {
+                    const prev = prevPosMap.get(note.id);
+                    posX = prev.x;
+                    posY = prev.y;
+                } else {
+                    anyMissingPosition = true;
+                }
 
                 const node = {
                     id: note.id,
+                    note: note,
                     title: (note.title && note.title.trim()) ? note.title.trim() : 'Без назви',
                     content: cleanContent,
                     icon: note.icon || (isRoot ? '🗒️' : '📄'),
@@ -867,43 +883,35 @@ window.App = window.App || {};
                     level: noteLevel,
                     parentId: note.parentId || null,
                     tags: window.App.noteManager ? window.App.noteManager.getNoteTags(note) : (Array.isArray(note.tags) ? note.tags : (note.tag ? [note.tag.text || note.tag] : [])),
-                    radius: radius,
-                    x: centerX + Math.cos(angle) * dist,
-                    y: centerY + Math.sin(angle) * dist,
-                    vx: 0,
-                    vy: 0,
+                    x: posX,
+                    y: posY,
                     childCount: 0,
                     isOrphan: false,
                     outgoingLinks: [],
                     incomingLinks: []
                 };
 
-                if (nodesLayer) {
-                    const el = document.createElement('div');
-                    el.className = 'graph-html-node' + (isRoot ? ' is-root' : '') + ` is-level-${noteLevel}`;
-                    el.dataset.level = noteLevel;
-                    const levelLabel = noteLevel === 0 ? 'Коренева нотатка (Рівень 0)' : `Піднотатка (Рівень ${noteLevel})`;
-                    el.title = `${node.title} — ${levelLabel}\n\n${node.content.substring(0, 100)}...`;
+                if (nodesLayer && window.App.stickerCard) {
+                    const card = window.App.stickerCard.createCard(note, 0);
+                    card.classList.add('canvas-board-sticker');
+                    card.style.left = posX + 'px';
+                    card.style.top = posY + 'px';
 
-                    const circle = document.createElement('div');
-                    circle.className = 'graph-html-node-circle';
-                    circle.style.setProperty('--node-branch-color', branchColor);
-                    circle.style.backgroundColor = branchColor;
-                    if (!isRoot) {
-                        circle.style.borderColor = 'rgba(255, 255, 255, 0.45)';
-                        circle.style.boxShadow = `0 0 10px ${branchColor}55`;
-                    }
-                    circle.innerHTML = node.icon;
+                    card.addEventListener('pointerdown', (e) => {
+                        if (e.target.closest('.sticker-title, .sticker-content, button, input, .sticker-menu-dropdown, .sticker-tag-dropdown, .sticker-emoji-picker-dropdown, .color-swatch-btn, a, .subnote-preview-item')) {
+                            return;
+                        }
+                        if (e.button !== 0) return;
+                        if (isConnectMode) {
+                            this.handleConnectNodeClick(node);
+                            return;
+                        }
+                        e.preventDefault();
+                        this.startDragNode(node, e);
+                    });
 
-                    const label = document.createElement('div');
-                    label.className = 'graph-html-node-label';
-                    label.textContent = node.title;
-
-                    el.appendChild(circle);
-                    el.appendChild(label);
-                    nodesLayer.appendChild(el);
-
-                    node.element = el;
+                    nodesLayer.appendChild(card);
+                    node.element = card;
                 }
 
                 nodes.push(node);
@@ -1071,12 +1079,11 @@ window.App = window.App || {};
             // Оновлюємо лічильник активних зв'язків
             this.updateEdgesCounter();
 
-            // Центруємо камеру на старті
-            this.resetCamera();
-
-            // Warm-up Physics: розгортаємо граф за кілька швидких ітерацій
-            for (let i = 0; i < 40; i++) {
-                this.updatePhysics();
+            if (anyMissingPosition) {
+                this.autoLayout(false);
+            } else {
+                this.centerCameraOnAllNodes();
+                this.draw();
             }
         },
 
@@ -1608,6 +1615,80 @@ window.App = window.App || {};
             return cachedSubtreeIds;
         },
 
+        getCardBezierPorts(source, target) {
+            const sw = source.element ? (source.element.offsetWidth || 240) : 240;
+            const sh = source.element ? (source.element.offsetHeight || 140) : 140;
+            const tw = target.element ? (target.element.offsetWidth || 240) : 240;
+            const th = target.element ? (target.element.offsetHeight || 140) : 140;
+
+            const scx = source.x + sw / 2;
+            const scy = source.y + sh / 2;
+            const tcx = target.x + tw / 2;
+            const tcy = target.y + th / 2;
+
+            const dx = tcx - scx;
+            const dy = tcy - scy;
+
+            let x1, y1, x2, y2;
+            let cp1x, cp1y, cp2x, cp2y;
+
+            if (Math.abs(dx) >= Math.abs(dy)) {
+                if (dx >= 0) {
+                    // Вихід з правого боку -> вхід у лівий бік
+                    x1 = source.x + sw;
+                    y1 = source.y + Math.min(sh / 2, 42);
+                    x2 = target.x;
+                    y2 = target.y + Math.min(th / 2, 42);
+
+                    const offset = Math.max(50, Math.abs(x2 - x1) * 0.5);
+                    cp1x = x1 + offset;
+                    cp1y = y1;
+                    cp2x = x2 - offset;
+                    cp2y = y2;
+                } else {
+                    // Вихід з лівого боку -> вхід у правий бік
+                    x1 = source.x;
+                    y1 = source.y + Math.min(sh / 2, 42);
+                    x2 = target.x + tw;
+                    y2 = target.y + Math.min(th / 2, 42);
+
+                    const offset = Math.max(50, Math.abs(x1 - x2) * 0.5);
+                    cp1x = x1 - offset;
+                    cp1y = y1;
+                    cp2x = x2 + offset;
+                    cp2y = y2;
+                }
+            } else {
+                if (dy >= 0) {
+                    // Вихід знизу -> вхід зверху
+                    x1 = source.x + sw / 2;
+                    y1 = source.y + sh;
+                    x2 = target.x + tw / 2;
+                    y2 = target.y;
+
+                    const offset = Math.max(40, Math.abs(y2 - y1) * 0.5);
+                    cp1x = x1;
+                    cp1y = y1 + offset;
+                    cp2x = x2;
+                    cp2y = y2 - offset;
+                } else {
+                    // Вихід зверху -> вхід знизу
+                    x1 = source.x + sw / 2;
+                    y1 = source.y;
+                    x2 = target.x + tw / 2;
+                    y2 = target.y + th;
+
+                    const offset = Math.max(40, Math.abs(y1 - y2) * 0.5);
+                    cp1x = x1;
+                    cp1y = y1 - offset;
+                    cp2x = x2;
+                    cp2y = y2 + offset;
+                }
+            }
+
+            return { x1, y1, cp1x, cp1y, cp2x, cp2y, x2, y2 };
+        },
+
         // Рендеринг кадру на Canvas
         draw() {
             if (!ctx || !canvas) return;
@@ -1629,20 +1710,15 @@ window.App = window.App || {};
             const activeFocusNode = draggedNode || hoveredNode;
             const activeSubtreeIds = activeFocusNode ? this.getFocusSubtreeIds(activeFocusNode.id) : null;
 
-            // 1. Малювання зв'язків (Edges)
+            // 1. Малювання кабелів-зв'язків кривими Безьє (Edges)
             edges.forEach(edge => {
-                // Якщо увімкнено фільтр "Лише сироти", зв'язки графу не відображаються
                 if (isOrphansOnly) return;
-
-                // Якщо тип - тег, і тегові зв'язки вимкнено - пропускаємо
                 if (edge.type === 'tag' && !showTagLinks) return;
-                // Якщо тип - спрямований, і спрямовані вимкнено - пропускаємо
                 if (edge.type === 'directed' && !showDirectedLinks) return;
 
                 const isTagEdge = (edge.type === 'tag');
                 const isDirectedEdge = (edge.type === 'directed');
 
-                // Перевірка активного фільтра за тегами
                 const sourceMatchesTag = !activeTagFilter || (edge.source.tags && edge.source.tags.some(t => (typeof t === 'string' ? t : (t.text || '')) === activeTagFilter));
                 const targetMatchesTag = !activeTagFilter || (edge.target.tags && edge.target.tags.some(t => (typeof t === 'string' ? t : (t.text || '')) === activeTagFilter));
                 const edgeMatchesTagFilter = sourceMatchesTag && targetMatchesTag;
@@ -1653,91 +1729,87 @@ window.App = window.App || {};
 
                 const branchColor = isDirectedEdge ? '#10b981' : (edge.color || edge.source.branchColor || '#10b981');
 
+                const p = this.getCardBezierPorts(edge.source, edge.target);
+
                 ctx.beginPath();
-                ctx.moveTo(edge.source.x, edge.source.y);
-                ctx.lineTo(edge.target.x, edge.target.y);
+                ctx.moveTo(p.x1, p.y1);
+                ctx.bezierCurveTo(p.cp1x, p.cp1y, p.cp2x, p.cp2y, p.x2, p.y2);
 
                 if (isTagEdge) {
-                    ctx.setLineDash([5, 4]);
+                    ctx.setLineDash([6, 5]);
                 } else {
                     ctx.setLineDash([]);
                 }
 
+                ctx.lineCap = 'round';
+
                 if (activeTagFilter && !edgeMatchesTagFilter) {
-                    ctx.strokeStyle = branchColor + '10';
-                    ctx.lineWidth = 0.7 / camera.zoom;
+                    ctx.strokeStyle = branchColor + '14';
+                    ctx.lineWidth = 1.0 / camera.zoom;
                     ctx.shadowBlur = 0;
                 } else if (isHighlighted) {
                     ctx.strokeStyle = branchColor;
-                    ctx.lineWidth = (draggedNode ? 3.0 : 2.5) / camera.zoom;
+                    ctx.lineWidth = (draggedNode ? 3.2 : 2.6) / camera.zoom;
                     ctx.shadowColor = branchColor;
-                    ctx.shadowBlur = 14;
+                    ctx.shadowBlur = 12;
                 } else if (activeSubtreeIds) {
-                    ctx.strokeStyle = branchColor + '15';
-                    ctx.lineWidth = 0.8 / camera.zoom;
+                    ctx.strokeStyle = branchColor + '20';
+                    ctx.lineWidth = 1.0 / camera.zoom;
                     ctx.shadowBlur = 0;
                 } else if (isTagEdge) {
-                    ctx.strokeStyle = branchColor + (activeTagFilter ? 'dd' : '90');
-                    ctx.lineWidth = (activeTagFilter ? 2.0 : 1.3) / camera.zoom;
-                    ctx.shadowBlur = activeTagFilter ? 8 : 0;
-                    ctx.shadowColor = branchColor;
-                } else if (isDirectedEdge) {
-                    ctx.strokeStyle = branchColor + 'cc';
-                    ctx.lineWidth = 1.8 / camera.zoom;
+                    ctx.strokeStyle = branchColor + (activeTagFilter ? 'ee' : '99');
+                    ctx.lineWidth = 1.6 / camera.zoom;
                     ctx.shadowBlur = 0;
+                } else if (isDirectedEdge) {
+                    ctx.strokeStyle = branchColor;
+                    ctx.lineWidth = 2.4 / camera.zoom;
+                    ctx.shadowBlur = 6;
+                    ctx.shadowColor = branchColor;
                 } else {
-                    ctx.strokeStyle = branchColor + '40';
-                    ctx.lineWidth = 1.2 / camera.zoom;
+                    ctx.strokeStyle = branchColor + 'bb';
+                    ctx.lineWidth = 2.0 / camera.zoom;
                     ctx.shadowBlur = 0;
                 }
 
                 ctx.stroke();
                 ctx.shadowBlur = 0;
 
-                // Стрілка для спрямованих зв'язків (пайплайн)
-                if (isDirectedEdge) {
-                    const dx = edge.target.x - edge.source.x;
-                    const dy = edge.target.y - edge.source.y;
-                    const angle = Math.atan2(dy, dx);
-                    const targetRadius = edge.target.radius || 16;
-                    const tipX = edge.target.x - Math.cos(angle) * (targetRadius + 2);
-                    const tipY = edge.target.y - Math.sin(angle) * (targetRadius + 2);
+                // Контактні піни та наконечники стрілок
+                const pinRadius = Math.max(2.5, 3.5 / Math.sqrt(camera.zoom));
 
-                    const headLen = Math.max(8, 11 / Math.sqrt(camera.zoom));
-                    const wingAngle = Math.PI / 6;
+                // Вихідний пін-конектор
+                ctx.beginPath();
+                ctx.arc(p.x1, p.y1, pinRadius, 0, Math.PI * 2);
+                ctx.fillStyle = ctx.strokeStyle;
+                ctx.fill();
 
-                    ctx.beginPath();
-                    ctx.moveTo(tipX, tipY);
-                    ctx.lineTo(
-                        tipX - headLen * Math.cos(angle - wingAngle),
-                        tipY - headLen * Math.sin(angle - wingAngle)
-                    );
-                    ctx.lineTo(
-                        tipX - (headLen * 0.55) * Math.cos(angle),
-                        tipY - (headLen * 0.55) * Math.sin(angle)
-                    );
-                    ctx.lineTo(
-                        tipX - headLen * Math.cos(angle + wingAngle),
-                        tipY - headLen * Math.sin(angle + wingAngle)
-                    );
-                    ctx.closePath();
+                // Вхідна стрілка / наконечник кабелю
+                const angle = Math.atan2(p.y2 - p.cp2y, p.x2 - p.cp2x);
+                const headLen = Math.max(7, 10 / Math.sqrt(camera.zoom));
+                const wingAngle = Math.PI / 6;
 
-                    if (activeTagFilter && !edgeMatchesTagFilter) {
-                        ctx.fillStyle = branchColor + '10';
-                    } else if (isHighlighted) {
-                        ctx.fillStyle = '#34d399';
-                    } else if (activeSubtreeIds) {
-                        ctx.fillStyle = branchColor + '20';
-                    } else {
-                        ctx.fillStyle = branchColor;
-                    }
-                    ctx.fill();
-                }
+                ctx.beginPath();
+                ctx.moveTo(p.x2, p.y2);
+                ctx.lineTo(
+                    p.x2 - headLen * Math.cos(angle - wingAngle),
+                    p.y2 - headLen * Math.sin(angle - wingAngle)
+                );
+                ctx.lineTo(
+                    p.x2 - (headLen * 0.5) * Math.cos(angle),
+                    p.y2 - (headLen * 0.5) * Math.sin(angle)
+                );
+                ctx.lineTo(
+                    p.x2 - headLen * Math.cos(angle + wingAngle),
+                    p.y2 - headLen * Math.sin(angle + wingAngle)
+                );
+                ctx.closePath();
+                ctx.fillStyle = ctx.strokeStyle;
+                ctx.fill();
             });
 
             ctx.setLineDash([]);
 
-            // 2. Оновлення стану та позицій HTML-вершин
+            // 2. Оновлення стану та позицій карток-стікерів
             nodes.forEach(node => {
                 if (!node.element) return;
 
@@ -1746,24 +1818,17 @@ window.App = window.App || {};
                 const isTagMatch = !activeTagFilter || (node.tags && node.tags.some(t => (typeof t === 'string' ? t : (t.text || '')) === activeTagFilter));
 
                 const isOverallMatch = isSearchMatch && isOrphanMatch && isTagMatch;
-
                 const isDragging = (draggedNode === node);
-                const isHovered = (hoveredNode === node && !draggedNode);
-                const isInSubtree = activeSubtreeIds && activeSubtreeIds.has(node.id);
-                const isConnected = isInSubtree && !isHovered && !isDragging;
 
                 const hasActiveFilter = (searchQuery !== '' || isOrphansOnly || activeTagFilter !== null);
                 let isFaded = false;
                 if (hasActiveFilter) {
                     isFaded = !isOverallMatch;
                 } else if (activeSubtreeIds) {
-                    isFaded = !isInSubtree;
+                    isFaded = !activeSubtreeIds.has(node.id);
                 }
 
                 node.element.classList.toggle('is-dragging', isDragging);
-                node.element.classList.toggle('is-hovered', isHovered);
-                node.element.classList.toggle('is-connected', isConnected);
-                node.element.classList.toggle('is-orphan', !!node.isOrphan && isOrphansOnly);
                 node.element.classList.toggle('is-match', isOverallMatch && hasActiveFilter);
                 node.element.classList.toggle('is-faded', isFaded);
 
@@ -1782,43 +1847,16 @@ window.App = window.App || {};
             ctx.restore();
         },
 
-        // Головний цикл анімації з адаптивним засинанням
         startSimulation() {
-            if (isRunning) return;
-            isRunning = true;
-            this.requestLoop();
+            this.draw();
         },
 
         wakeUpSimulation() {
-            if (!isRunning) return;
-            if (!animationFrameId) {
-                this.requestLoop();
-            }
+            this.draw();
         },
 
         requestLoop() {
-            if (animationFrameId) return;
-
-            const loop = () => {
-                if (!isRunning) {
-                    animationFrameId = null;
-                    return;
-                }
-
-                const totalMovement = this.updatePhysics();
-                this.draw();
-
-                // Якщо вузли стабілізувалися і користувач не взаємодіє — зупиняємо RAF loop для збереження енергії
-                const isInteracting = isDraggingNode || isDraggingCanvas;
-                if (totalMovement < 0.15 && !isInteracting) {
-                    animationFrameId = null;
-                    return;
-                }
-
-                animationFrameId = requestAnimationFrame(loop);
-            };
-
-            animationFrameId = requestAnimationFrame(loop);
+            this.draw();
         },
 
         stopSimulation() {
@@ -1877,61 +1915,296 @@ window.App = window.App || {};
             const world = this.screenToWorld(screenX, screenY);
             for (let i = nodes.length - 1; i >= 0; i--) {
                 const node = nodes[i];
-                const dx = world.x - node.x;
-                const dy = world.y - node.y;
-                if (Math.sqrt(dx * dx + dy * dy) <= node.radius + 6) {
+                const w = node.element ? (node.element.offsetWidth || 240) : 240;
+                const h = node.element ? (node.element.offsetHeight || 140) : 140;
+                if (world.x >= node.x && world.x <= node.x + w && world.y >= node.y && world.y <= node.y + h) {
                     return node;
                 }
             }
             return null;
         },
 
-        // Події миші та тач-пристроїв
+        // Перетягування стікера в 2D площині полотна
+        startDragNode(node, e) {
+            isDraggingNode = true;
+            draggedNode = node;
+            const startX = e.clientX;
+            const startY = e.clientY;
+            const startNodeX = node.x;
+            const startNodeY = node.y;
+
+            if (node.element) {
+                node.element.classList.add('is-dragging');
+            }
+
+            const onMove = (ev) => {
+                const dx = (ev.clientX - startX) / camera.zoom;
+                const dy = (ev.clientY - startY) / camera.zoom;
+                node.x = startNodeX + dx;
+                node.y = startNodeY + dy;
+                if (node.element) {
+                    node.element.style.left = node.x + 'px';
+                    node.element.style.top = node.y + 'px';
+                }
+                this.draw();
+            };
+
+            const onUp = () => {
+                window.removeEventListener('pointermove', onMove);
+                window.removeEventListener('pointerup', onUp);
+                window.removeEventListener('pointercancel', onUp);
+
+                if (node.element) {
+                    node.element.classList.remove('is-dragging');
+                }
+                isDraggingNode = false;
+                draggedNode = null;
+                this.saveNodePosition(node);
+                this.draw();
+            };
+
+            window.addEventListener('pointermove', onMove);
+            window.addEventListener('pointerup', onUp);
+            window.addEventListener('pointercancel', onUp);
+        },
+
+        saveNodePosition(node) {
+            if (!node) return;
+            const state = window.App.state;
+            const targetNote = (state && state.notes) ? state.notes.find(n => n.id === node.id) : null;
+            if (targetNote) {
+                targetNote.canvasX = Math.round(node.x);
+                targetNote.canvasY = Math.round(node.y);
+                if (window.App.storage) {
+                    window.App.storage.saveNotes(state.notes);
+                }
+            }
+        },
+
+        centerCameraOnAllNodes() {
+            if (nodes.length === 0 || !canvas) return;
+            const dpr = window.devicePixelRatio || 1;
+            const w = canvas.width / dpr;
+            const h = canvas.height / dpr;
+
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            nodes.forEach(n => {
+                const nw = n.element ? (n.element.offsetWidth || 240) : 240;
+                const nh = n.element ? (n.element.offsetHeight || 140) : 140;
+                minX = Math.min(minX, n.x);
+                minY = Math.min(minY, n.y);
+                maxX = Math.max(maxX, n.x + nw);
+                maxY = Math.max(maxY, n.y + nh);
+            });
+
+            const bboxW = Math.max(100, maxX - minX);
+            const bboxH = Math.max(100, maxY - minY);
+            const padding = 100;
+
+            const targetZoom = Math.max(camera.minZoom, Math.min(1.0, Math.min((w - padding * 2) / bboxW, (h - padding * 2) / bboxH)));
+            camera.zoom = targetZoom;
+
+            const bboxCenterX = minX + bboxW / 2;
+            const bboxCenterY = minY + bboxH / 2;
+
+            camera.x = (w / 2) - (bboxCenterX - (w / 2)) * camera.zoom;
+            camera.y = (h / 2) - (bboxCenterY - (h / 2)) * camera.zoom;
+
+            this.draw();
+        },
+
+        // Впорядкування стікерів деревовидною структурою (Auto-arrange / Tidy Up)
+        autoLayout(animate = true) {
+            if (nodes.length === 0) return;
+
+            const HORIZONTAL_GAP = 70;
+            const VERTICAL_GAP = 28;
+            const CARD_WIDTH = 240;
+
+            const childrenMap = new Map();
+            const rootNodes = [];
+
+            nodes.forEach(n => childrenMap.set(n.id, []));
+
+            nodes.forEach(n => {
+                if (n.parentId && childrenMap.has(n.parentId)) {
+                    childrenMap.get(n.parentId).push(n);
+                } else {
+                    rootNodes.push(n);
+                }
+            });
+
+            const getNodeHeight = (node) => {
+                if (node.element && node.element.offsetHeight > 40) {
+                    return node.element.offsetHeight;
+                }
+                return 150;
+            };
+
+            const subtreeHeightMap = new Map();
+            const calcSubtreeHeight = (nodeId) => {
+                const node = nodes.find(n => n.id === nodeId);
+                if (!node) return 0;
+                const myH = getNodeHeight(node);
+                const children = childrenMap.get(nodeId) || [];
+                if (children.length === 0) {
+                    subtreeHeightMap.set(nodeId, myH);
+                    return myH;
+                }
+                let totalChildH = 0;
+                children.forEach((child, i) => {
+                    if (i > 0) totalChildH += VERTICAL_GAP;
+                    totalChildH += calcSubtreeHeight(child.id);
+                });
+                const finalH = Math.max(myH, totalChildH);
+                subtreeHeightMap.set(nodeId, finalH);
+                return finalH;
+            };
+
+            rootNodes.forEach(r => calcSubtreeHeight(r.id));
+
+            let currentRootY = 60;
+            const startX = 60;
+
+            const layoutNode = (node, x, startY) => {
+                const subH = subtreeHeightMap.get(node.id) || getNodeHeight(node);
+                const myH = getNodeHeight(node);
+
+                node.targetX = x;
+                node.targetY = startY + Math.max(0, (subH - myH) / 6);
+
+                const children = childrenMap.get(node.id) || [];
+                let childY = startY;
+                const nextX = x + CARD_WIDTH + HORIZONTAL_GAP;
+
+                children.forEach(child => {
+                    const childSubH = subtreeHeightMap.get(child.id) || getNodeHeight(child);
+                    layoutNode(child, nextX, childY);
+                    childY += childSubH + VERTICAL_GAP;
+                });
+            };
+
+            rootNodes.forEach(root => {
+                const rootH = subtreeHeightMap.get(root.id) || 160;
+                layoutNode(root, startX, currentRootY);
+                currentRootY += rootH + 50;
+            });
+
+            if (!animate) {
+                nodes.forEach(n => {
+                    n.x = n.targetX;
+                    n.y = n.targetY;
+                    if (n.element) {
+                        n.element.style.left = n.x + 'px';
+                        n.element.style.top = n.y + 'px';
+                    }
+                    this.saveNodePosition(n);
+                });
+                this.centerCameraOnAllNodes();
+                this.draw();
+                return;
+            }
+
+            const startTime = performance.now();
+            const duration = 320;
+            const startPositions = nodes.map(n => ({ x: n.x, y: n.y }));
+
+            const animateStep = (now) => {
+                const elapsed = now - startTime;
+                const progress = Math.min(1, elapsed / duration);
+                const ease = 1 - Math.pow(1 - progress, 3);
+
+                nodes.forEach((n, idx) => {
+                    n.x = startPositions[idx].x + (n.targetX - startPositions[idx].x) * ease;
+                    n.y = startPositions[idx].y + (n.targetY - startPositions[idx].y) * ease;
+                    if (n.element) {
+                        n.element.style.left = n.x + 'px';
+                        n.element.style.top = n.y + 'px';
+                    }
+                });
+
+                this.draw();
+
+                if (progress < 1) {
+                    requestAnimationFrame(animateStep);
+                } else {
+                    nodes.forEach(n => this.saveNodePosition(n));
+                    this.centerCameraOnAllNodes();
+                }
+            };
+
+            requestAnimationFrame(animateStep);
+        },
+
+        // Створення нової піднотатки безпосередньо на дошці
+        createSubnoteForNode(parentId) {
+            const parentNode = nodes.find(n => n.id === parentId);
+            if (!parentNode) return;
+
+            const state = window.App.state;
+            const noteManager = window.App.noteManager;
+            if (!noteManager) return;
+
+            const newNote = noteManager.createNewNote(parentId, false);
+            if (!newNote) return;
+
+            const existingChildren = nodes.filter(n => n.parentId === parentId);
+            const pw = parentNode.element ? (parentNode.element.offsetWidth || 240) : 240;
+            const newX = parentNode.x + pw + 70;
+            const newY = parentNode.y + (existingChildren.length * 180);
+
+            newNote.canvasX = newX;
+            newNote.canvasY = newY;
+            if (window.App.storage) {
+                window.App.storage.saveNotes(state.notes);
+            }
+
+            this.buildGraphData();
+            this.draw();
+
+            setTimeout(() => {
+                if (nodesLayer) {
+                    const newCard = nodesLayer.querySelector(`.note-sticker[data-note-id="${newNote.id}"]`);
+                    if (newCard) {
+                        const titleEl = newCard.querySelector('.sticker-title');
+                        if (titleEl) {
+                            titleEl.focus();
+                        }
+                    }
+                }
+            }, 80);
+        },
+
+        handleConnectNodeClick(targetNode) {
+            if (!isConnectMode) return;
+            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
+            if (!connectSourceNode) {
+                connectSourceNode = targetNode;
+                if (targetNode.element) targetNode.element.classList.add('is-connect-source');
+                const msg = t('graph.connectSelectTarget', { title: targetNode.title });
+                this.updateConnectBanner(msg);
+            } else {
+                if (targetNode.id === connectSourceNode.id) return;
+                const sId = connectSourceNode.id;
+                const tId = targetNode.id;
+                const sTitle = connectSourceNode.title;
+                const tTitle = targetNode.title;
+
+                this.addDirectedLink(sId, tId);
+                this.toggleConnectMode(false);
+                const successMsg = t('graph.connectSuccess', { source: sTitle, target: tTitle });
+                this.showToast(successMsg);
+            }
+        },
+
+        // Події миші та тач-пристроїв (Переміщення полотна)
         onPointerDown(e) {
             if (isPinching) return;
             if (e.button !== 0 && e.button !== 1) return;
 
-            const targetNode = this.getNodeAt(e.clientX, e.clientY);
+            isDraggingCanvas = true;
             startMousePos = { x: e.clientX, y: e.clientY };
             lastMousePos = { x: e.clientX, y: e.clientY };
-
-            if (isConnectMode) {
-                if (targetNode) {
-                    const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
-                    if (!connectSourceNode) {
-                        connectSourceNode = targetNode;
-                        if (targetNode.element) targetNode.element.classList.add('is-connect-source');
-                        const msg = t('graph.connectSelectTarget', { title: targetNode.title });
-                        this.updateConnectBanner(msg);
-                    } else {
-                        if (targetNode.id === connectSourceNode.id) return;
-                        const sId = connectSourceNode.id;
-                        const tId = targetNode.id;
-                        const sTitle = connectSourceNode.title;
-                        const tTitle = targetNode.title;
-
-                        this.addDirectedLink(sId, tId);
-                        this.toggleConnectMode(false);
-                        const successMsg = t('graph.connectSuccess', { source: sTitle, target: tTitle });
-                        this.showToast(successMsg);
-                    }
-                }
-                return;
-            }
-
-            if (targetNode) {
-                isDraggingNode = true;
-                draggedNode = targetNode;
-                hoveredNode = targetNode;
-                this.showPreviewCard(targetNode, true);
-                this.wakeUpSimulation();
-            } else {
-                isDraggingCanvas = true;
-                hoveredNode = null;
-                draggedNode = null;
-                this.hidePreviewCard(true);
-                this.draw();
-            }
         },
 
         onPointerMove(e) {
@@ -1942,61 +2215,16 @@ window.App = window.App || {};
             const dy = e.clientY - lastMousePos.y;
             lastMousePos = { x: e.clientX, y: e.clientY };
 
-            if (isDraggingNode && draggedNode) {
-                const world = this.screenToWorld(e.clientX, e.clientY);
-                draggedNode.x = world.x;
-                draggedNode.y = world.y;
-                draggedNode.vx = 0;
-                draggedNode.vy = 0;
-                this.hidePreviewCard(true);
-                this.wakeUpSimulation();
-            } else if (isDraggingCanvas) {
+            if (isDraggingCanvas) {
                 camera.x += dx;
                 camera.y += dy;
-                this.hidePreviewCard(true);
                 this.draw();
-            } else {
-                const isTouchDevice = e.pointerType === 'touch' || window.matchMedia('(hover: none)').matches || window.innerWidth <= 768;
-                if (!isTouchDevice) {
-                    const hovered = this.getNodeAt(e.clientX, e.clientY);
-                    if (hovered !== hoveredNode) {
-                        hoveredNode = hovered;
-                        if (hoveredNode) {
-                            this.showPreviewCard(hoveredNode);
-                        } else {
-                            this.hidePreviewCard();
-                        }
-                        this.draw();
-                    }
-                } else {
-                    if (hoveredNode && !draggedNode) {
-                        hoveredNode = null;
-                        this.draw();
-                    }
-                }
             }
         },
 
         onPointerUp(e) {
             if (isPinching) return;
-            const distMoved = Math.sqrt(Math.pow(e.clientX - startMousePos.x, 2) + Math.pow(e.clientY - startMousePos.y, 2));
-            const isTouchDevice = e.pointerType === 'touch' || window.matchMedia('(hover: none)').matches || window.innerWidth <= 768;
-
-            if (distMoved < 6 && draggedNode) {
-                const clickedNode = draggedNode;
-                this.showPreviewCard(clickedNode, true);
-            }
-
             isDraggingCanvas = false;
-            isDraggingNode = false;
-            draggedNode = null;
-
-            if (isTouchDevice) {
-                hoveredNode = null;
-            } else {
-                hoveredNode = this.getNodeAt(e.clientX, e.clientY);
-            }
-
             this.draw();
         },
 

@@ -83,8 +83,8 @@ export const ua = {
         collapseTooltip: 'Згорнути піднотатки (до кореня)',
         viewColumns: 'Колонки',
         viewColumnsTitle: 'Колонковий режим стікерів',
-        viewGraph: 'Граф',
-        viewGraphTitle: "Карта нотаток (граф зв'язків Obsidian)",
+        viewGraph: 'Дошка',
+        viewGraphTitle: 'Дошка нотаток (Canvas)',
         selectBtn: 'Вибрати',
         doneBtn: 'Готово',
         cancelSelectBtn: 'Скасувати',
@@ -92,7 +92,9 @@ export const ua = {
         exitSelectTitle: 'Вийти з режиму вибору'
     },
     graph: {
-        title: "Граф зв'язків",
+        title: "Дошка нотаток",
+        autoLayout: "Впорядкувати",
+        autoLayoutTitle: "Впорядкувати стікери на дошці",
         connectionsCount: "{count} зв'язків",
         orphans: 'Острови',
         orphansTitle: 'Показати лише ізольовані нотатки без піднотаток та батьків',

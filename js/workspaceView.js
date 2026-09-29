@@ -637,6 +637,13 @@ window.App = window.App || {};
             const isReadOnly = !!targetNote.isReadOnly || !!(currentBoard && currentBoard.isReadOnly) || (targetNote.boardId && targetNote.boardId.startsWith('shared_'));
             if (isReadOnly) return;
 
+            if (state && state.isGraphView) {
+                if (window.App.graphView && window.App.graphView.createSubnoteForNode) {
+                    window.App.graphView.createSubnoteForNode(targetNoteId);
+                    return;
+                }
+            }
+
             // Знаходимо колонку, в якій зараз знаходиться цільова нотатка
             const cardEl = document.querySelector(`.note-sticker[data-note-id="${targetNoteId}"]`);
             const colEl = cardEl ? cardEl.closest('.board-column[data-col-index]') : null;

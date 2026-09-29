@@ -83,8 +83,8 @@ export const en = {
         collapseTooltip: 'Collapse subnotes (to root)',
         viewColumns: 'Columns',
         viewColumnsTitle: 'Column sticker view',
-        viewGraph: 'Graph',
-        viewGraphTitle: 'Notes connection graph',
+        viewGraph: 'Board',
+        viewGraphTitle: 'Sticky Notes Board (Canvas)',
         selectBtn: 'Select',
         doneBtn: 'Done',
         cancelSelectBtn: 'Cancel',
@@ -92,7 +92,9 @@ export const en = {
         exitSelectTitle: 'Exit select mode'
     },
     graph: {
-        title: "Graph View",
+        title: "Canvas Board",
+        autoLayout: "Auto-arrange",
+        autoLayoutTitle: "Auto-arrange sticky notes on the board",
         connectionsCount: "{count} links",
         orphans: 'Orphans',
         orphansTitle: 'Show only isolated notes without parents or subnotes',

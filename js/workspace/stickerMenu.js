@@ -282,11 +282,19 @@ window.App = window.App || {};
                     menuDropdown.classList.remove('active');
                     navViewport.classList.remove('is-sub-active');
                     if (onClose) onClose();
-                    if (!isChainOpen && workspaceView) {
-                        workspaceView.toggleChain(note.id, colIndex);
-                    }
-                    if (noteManager) {
-                        setTimeout(() => noteManager.createNewNote(note.id, true), 80);
+                    if (window.App.state && window.App.state.isGraphView) {
+                        if (window.App.graphView && window.App.graphView.createSubnoteForNode) {
+                            window.App.graphView.createSubnoteForNode(note.id);
+                        } else if (noteManager) {
+                            noteManager.createNewNote(note.id, true);
+                        }
+                    } else {
+                        if (!isChainOpen && workspaceView) {
+                            workspaceView.toggleChain(note.id, colIndex);
+                        }
+                        if (noteManager) {
+                            setTimeout(() => noteManager.createNewNote(note.id, true), 80);
+                        }
                     }
                 });
                 container.appendChild(subnoteItem);

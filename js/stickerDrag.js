@@ -27,6 +27,7 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
 
         dragHandle.addEventListener('pointerdown', (e) => {
             if (e.button !== 0) return;
+            if (card.closest('.graph-view-wrapper')) return;
             e.preventDefault();
 
             const pointerId = e.pointerId;
