@@ -35,10 +35,6 @@ window.App = window.App || {};
     // Стан нових інтелектуальних фільтрів та попереднього перегляду
     let isOrphansOnly = false;
     let showTagLinks = true;
-    let showDirectedLinks = true;
-    let isConnectMode = false;
-    let connectSourceNode = null;
-    let connectBannerEl = null;
     let exportModalEl = null;
     let activeTagFilter = null;
     let previewCard = null;
@@ -58,6 +54,8 @@ window.App = window.App || {};
     let boundTouchStart = null;
     let boundTouchMove = null;
     let boundTouchEnd = null;
+    let canvasContextMenuEl = null;
+    let boundCanvasContextMenu = null;
 
     // Стан сенсорного масштабування двома пальцями (Pinch-to-zoom)
     let isPinching = false;
@@ -199,24 +197,6 @@ window.App = window.App || {};
                                 </span>
                                 <span class="filter-btn-label">Зв'язки тегів</span>
                             </button>
-                            <button class="graph-toolbar-filter-btn is-active" id="graph-toggle-directed-links" title="Увімкнути/вимкнути спрямовані зв'язки (пайплайни)">
-                                <span class="filter-btn-icon">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                                        <polyline points="12 5 19 12 12 19"></polyline>
-                                    </svg>
-                                </span>
-                                <span class="filter-btn-label">Спрямовані</span>
-                            </button>
-                            <button class="graph-toolbar-filter-btn is-connect-btn" id="graph-connect-mode-btn" title="Режим створення зв'язків: клікніть дві нотатки, щоб створити спрямовану стрілку">
-                                <span class="filter-btn-icon">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-                                    </svg>
-                                </span>
-                                <span class="filter-btn-label">З'єднати</span>
-                            </button>
                         </div>
                     </div>
 
@@ -323,38 +303,6 @@ window.App = window.App || {};
                                         <span class="graph-mobile-checkbox"></span>
                                     </div>
                                 </button>
-
-                                <button class="graph-mobile-toggle-btn is-active" id="graph-mobile-toggle-directed-links">
-                                    <div class="graph-mobile-toggle-left">
-                                        <svg class="graph-mobile-toggle-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                                            <polyline points="12 5 19 12 12 19"></polyline>
-                                        </svg>
-                                        <div class="graph-mobile-toggle-info">
-                                            <span class="graph-mobile-toggle-title">Спрямовані зв'язки</span>
-                                            <span class="graph-mobile-toggle-sub">Стрілки пайплайну</span>
-                                        </div>
-                                    </div>
-                                    <div class="graph-mobile-toggle-right">
-                                        <span class="graph-mobile-checkbox"></span>
-                                    </div>
-                                </button>
-
-                                <button class="graph-mobile-toggle-btn is-connect-btn" id="graph-mobile-connect-mode-btn">
-                                    <div class="graph-mobile-toggle-left">
-                                        <svg class="graph-mobile-toggle-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                                            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-                                        </svg>
-                                        <div class="graph-mobile-toggle-info">
-                                            <span class="graph-mobile-toggle-title">З'єднати нотатки</span>
-                                            <span class="graph-mobile-toggle-sub">Режим створення стрілки</span>
-                                        </div>
-                                    </div>
-                                    <div class="graph-mobile-toggle-right">
-                                        <span class="graph-mobile-badge" style="display:none;">ON</span>
-                                    </div>
-                                </button>
                             </div>
 
                             <div class="graph-mobile-section-label">Експорт графу</div>
@@ -401,17 +349,6 @@ window.App = window.App || {};
                     </div>
                     <div class="graph-preview-tags" id="graph-preview-tags"></div>
                     <div class="graph-preview-body" id="graph-preview-body"></div>
-
-                    <!-- Спрямовані зв'язки нотатки (пайплайн) -->
-                    <div class="graph-preview-links-section" id="graph-preview-links-section">
-                        <div class="graph-preview-links-header">
-                            <span class="graph-preview-links-title">Спрямовані зв'язки</span>
-                            <button type="button" class="graph-preview-add-link-btn" id="graph-preview-add-link-btn" title="Додати зв'язок з іншою нотаткою">
-                                <span>+ З'єднати</span>
-                            </button>
-                        </div>
-                        <div class="graph-preview-links-list" id="graph-preview-links-list"></div>
-                    </div>
 
                     <div class="graph-preview-footer">
                         <span class="graph-preview-meta" id="graph-preview-meta"></span>
@@ -547,38 +484,6 @@ window.App = window.App || {};
                 mobileTagLinksBtn.addEventListener('click', toggleTagLinks);
             }
 
-            // 2b. Перемикач спрямованих зв'язків (Directed links)
-            const directedLinksBtn = container.querySelector('#graph-toggle-directed-links');
-            const mobileDirectedLinksBtn = container.querySelector('#graph-mobile-toggle-directed-links');
-            const toggleDirectedLinks = () => {
-                showDirectedLinks = !showDirectedLinks;
-                if (directedLinksBtn) directedLinksBtn.classList.toggle('is-active', showDirectedLinks);
-                if (mobileDirectedLinksBtn) mobileDirectedLinksBtn.classList.toggle('is-active', showDirectedLinks);
-                this.updateMobileFilterIndicator();
-                this.hidePreviewCard(true);
-                this.updateEdgesCounter();
-                this.wakeUpSimulation();
-                this.draw();
-            };
-            if (directedLinksBtn) {
-                directedLinksBtn.classList.toggle('is-active', showDirectedLinks);
-                directedLinksBtn.addEventListener('click', toggleDirectedLinks);
-            }
-            if (mobileDirectedLinksBtn) {
-                mobileDirectedLinksBtn.classList.toggle('is-active', showDirectedLinks);
-                mobileDirectedLinksBtn.addEventListener('click', toggleDirectedLinks);
-            }
-
-            // 2c. Режим з'єднання нотаток (Connect Mode)
-            const connectBtn = container.querySelector('#graph-connect-mode-btn');
-            const mobileConnectBtn = container.querySelector('#graph-mobile-connect-mode-btn');
-            const handleConnectToggle = () => {
-                this.toggleConnectMode();
-                closeMobileSheet();
-            };
-            if (connectBtn) connectBtn.addEventListener('click', handleConnectToggle);
-            if (mobileConnectBtn) mobileConnectBtn.addEventListener('click', handleConnectToggle);
-
             // 2d. Кнопка експорту графу
             const exportBtn = container.querySelector('#graph-export-btn');
             const mobileExportBtn = container.querySelector('#graph-mobile-export-btn');
@@ -659,8 +564,8 @@ window.App = window.App || {};
                     searchInput.blur();
                 } else if (e.key === 'Escape' && mobileSheetBackdrop && mobileSheetBackdrop.classList.contains('is-open')) {
                     closeMobileSheet();
-                } else if (e.key === 'Escape' && isConnectMode) {
-                    this.toggleConnectMode(false);
+                } else if (e.key === 'Escape' && canvasContextMenuEl) {
+                    this.closeCanvasContextMenu();
                 } else if (e.key === 'Escape' && exportModalEl) {
                     this.closeExportModal();
                 } else if (e.key === 'Escape' && previewCard && previewCard.classList.contains('active')) {
@@ -685,6 +590,9 @@ window.App = window.App || {};
                 const targetNode = this.getNodeAt(e.clientX, e.clientY);
                 if (targetNode) {
                     this.openNoteInWorkspace(targetNode.id);
+                } else {
+                    const world = this.screenToWorld(e.clientX, e.clientY);
+                    this.createNoteAtWorldPosition(world.x, world.y);
                 }
             });
             canvas.addEventListener('wheel', this.onWheel.bind(this), { passive: false });
@@ -777,6 +685,21 @@ window.App = window.App || {};
             window.addEventListener('keydown', boundKeyDown);
             window.addEventListener('resize', boundResize);
 
+            // Контекстне меню порожньої робочої області (ПКМ)
+            boundCanvasContextMenu = (e) => {
+                if (e.target.closest && e.target.closest('.note-sticker, .sticker-menu-dropdown, .sticker-tag-dropdown, .sticker-emoji-picker-dropdown, .color-picker-dropdown, .graph-controls, .graph-mobile-sheet, .graph-export-modal-backdrop, .graph-preview-card, .graph-canvas-context-menu')) {
+                    return;
+                }
+                const targetNode = this.getNodeAt(e.clientX, e.clientY);
+                if (targetNode) return;
+
+                e.preventDefault();
+                e.stopPropagation();
+                const world = this.screenToWorld(e.clientX, e.clientY);
+                this.showCanvasContextMenu(e.clientX, e.clientY, world.x, world.y);
+            };
+            container.addEventListener('contextmenu', boundCanvasContextMenu);
+
             this.updateMobileFilterIndicator();
         },
 
@@ -806,6 +729,10 @@ window.App = window.App || {};
                 boundTouchStart = null;
                 boundTouchMove = null;
                 boundTouchEnd = null;
+            }
+            if (container && boundCanvasContextMenu) {
+                container.removeEventListener('contextmenu', boundCanvasContextMenu);
+                boundCanvasContextMenu = null;
             }
         },
 
@@ -913,10 +840,6 @@ window.App = window.App || {};
                             return;
                         }
                         if (e.button !== 0) return;
-                        if (isConnectMode) {
-                            this.handleConnectNodeClick(node);
-                            return;
-                        }
                         e.preventDefault();
                         this.startDragNode(node, e);
                     });
@@ -927,14 +850,6 @@ window.App = window.App || {};
 
                 nodes.push(node);
                 notesMap.set(note.id, node);
-            });
-
-            // Мапа заголовків для швидкого пошуку цілей wiki-посилань [[Заголовок]]
-            const rawNotesByTitle = new Map();
-            boardNotes.forEach(n => {
-                if (n.title && n.title.trim()) {
-                    rawNotesByTitle.set(n.title.trim().toLowerCase(), n.id);
-                }
             });
 
             // 2. Формуємо ребра (Edges) між батьківськими та дочірніми нотатками
@@ -954,74 +869,10 @@ window.App = window.App || {};
                 }
             });
 
-            // 2b. Формуємо спрямовані зв'язки (пайплайни) через note.links або [[wiki-links]]
-            const directedEdgePairs = new Set();
-            boardNotes.forEach(rawNote => {
-                const sourceNode = notesMap.get(rawNote.id);
-                if (!sourceNode) return;
-
-                const targetIds = new Set();
-
-                // 1) Зі структурованого масиву rawNote.links
-                if (Array.isArray(rawNote.links)) {
-                    rawNote.links.forEach(t => {
-                        const tid = typeof t === 'string' ? t : (t && t.id ? t.id : null);
-                        if (tid && tid !== rawNote.id) targetIds.add(tid);
-                    });
-                }
-
-                // 2) З тексту нотатки: [[id:NOTE_ID|...]] або [[Target Title]]
-                if (rawNote.content && typeof rawNote.content === 'string') {
-                    const idMatches = rawNote.content.matchAll(/\[\[id:([a-zA-Z0-9_\-]+)(?:\|[^\]]*)?\]\]/g);
-                    for (const m of idMatches) {
-                        if (m[1] && m[1] !== rawNote.id) targetIds.add(m[1]);
-                    }
-
-                    const titleMatches = rawNote.content.matchAll(/\[\[(?!id:)([^\]|]+)(?:\|[^\]]*)?\]\]/g);
-                    for (const m of titleMatches) {
-                        const candidate = m[1].trim();
-                        if (rawNotesById.has(candidate)) {
-                            if (candidate !== rawNote.id) targetIds.add(candidate);
-                        } else if (rawNotesByTitle.has(candidate.toLowerCase())) {
-                            const foundId = rawNotesByTitle.get(candidate.toLowerCase());
-                            if (foundId && foundId !== rawNote.id) targetIds.add(foundId);
-                        }
-                    }
-                }
-
-                targetIds.forEach(targetId => {
-                    const targetNode = notesMap.get(targetId);
-                    if (!targetNode || targetNode.id === sourceNode.id) return;
-
-                    const pairKey = `${sourceNode.id}->${targetNode.id}`;
-                    if (directedEdgePairs.has(pairKey)) return;
-                    directedEdgePairs.add(pairKey);
-
-                    sourceNode.outgoingLinks.push({
-                        id: targetNode.id,
-                        title: targetNode.title,
-                        icon: targetNode.icon
-                    });
-                    targetNode.incomingLinks.push({
-                        id: sourceNode.id,
-                        title: sourceNode.title,
-                        icon: sourceNode.icon
-                    });
-
-                    edges.push({
-                        source: sourceNode,
-                        target: targetNode,
-                        color: '#10b981',
-                        length: 120 + Math.random() * 20,
-                        type: 'directed'
-                    });
-                });
-            });
-
             // 3. Розрахунок ізольованих нотаток (сиріт)
             let orphansCount = 0;
             nodes.forEach(node => {
-                node.isOrphan = !node.parentId && (node.childCount === 0) && (node.outgoingLinks.length === 0) && (node.incomingLinks.length === 0);
+                node.isOrphan = !node.parentId && (node.childCount === 0);
                 if (node.isOrphan) {
                     orphansCount++;
                     if (node.element) {
@@ -1056,8 +907,7 @@ window.App = window.App || {};
 
             const tagEdgePairs = new Set();
             const hasExistingEdge = (n1, n2) => (
-                n1.parentId === n2.id || n2.parentId === n1.id ||
-                directedEdgePairs.has(`${n1.id}->${n2.id}`) || directedEdgePairs.has(`${n2.id}->${n1.id}`)
+                n1.parentId === n2.id || n2.parentId === n1.id
             );
 
             tagToNodes.forEach((taggedNodes, tagText) => {
@@ -1204,7 +1054,7 @@ window.App = window.App || {};
             if (!container) return;
             const trigger = container.querySelector('#graph-mobile-filters-trigger');
             const dot = container.querySelector('#graph-filter-indicator');
-            const hasActive = isOrphansOnly || !showTagLinks || !showDirectedLinks || (activeTagFilter !== null);
+            const hasActive = isOrphansOnly || !showTagLinks || (activeTagFilter !== null);
             if (trigger) trigger.classList.toggle('has-active-filters', hasActive);
             if (dot) dot.classList.toggle('is-visible', hasActive);
         },
@@ -1216,7 +1066,6 @@ window.App = window.App || {};
                 const activeEdgesCount = edges.filter(e => {
                     if (isOrphansOnly) return false;
                     if (e.type === 'tag' && !showTagLinks) return false;
-                    if (e.type === 'directed' && !showDirectedLinks) return false;
                     return true;
                 }).length;
                 counter.textContent = `${nodes.length} нотаток, ${activeEdgesCount} зв'язків`;
@@ -1305,65 +1154,6 @@ window.App = window.App || {};
                 const rawNote = window.App.noteManager ? window.App.noteManager.getNoteById(node.id) : null;
                 const timeStr = rawNote && rawNote.updatedAt ? `Змінено ${formatTimeAgo(rawNote.updatedAt)}` : '';
                 metaEl.textContent = timeStr;
-            }
-
-            // Секція спрямованих зв'язків нотатки (пайплайн)
-            const linksSection = previewCard.querySelector('#graph-preview-links-section');
-            const linksList = previewCard.querySelector('#graph-preview-links-list');
-            const addLinkBtn = previewCard.querySelector('#graph-preview-add-link-btn');
-
-            if (linksSection && linksList) {
-                const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
-                const outgoing = node.outgoingLinks || [];
-                const incoming = node.incomingLinks || [];
-
-                if (outgoing.length === 0 && incoming.length === 0) {
-                    linksList.innerHTML = `<div style="font-size: 11px; color: var(--text-muted, #777); font-style: italic; padding: 2px 0;">${t('graph.noLinks', 'Немає спрямованих зв\'язків')}</div>`;
-                } else {
-                    let html = '';
-                    outgoing.forEach(target => {
-                        html += `
-                            <div class="graph-preview-link-item" data-source-id="${node.id}" data-target-id="${target.id}">
-                                <span class="graph-preview-link-target" title="${t('graph.outgoingLinks', 'Спрямовані зв\'язки (куди):')} ${target.title}">
-                                    <span class="graph-preview-link-arrow">──></span>
-                                    <span>${target.icon || '📄'} ${target.title}</span>
-                                </span>
-                                <button type="button" class="graph-preview-link-del" title="${t('graph.deleteLink', 'Видалити зв\'язок')}">✕</button>
-                            </div>
-                        `;
-                    });
-                    incoming.forEach(src => {
-                        html += `
-                            <div class="graph-preview-link-item" data-source-id="${src.id}" data-target-id="${node.id}">
-                                <span class="graph-preview-link-target" title="${t('graph.incomingLinks', 'Вхідні залежності (звідки):')} ${src.title}">
-                                    <span class="graph-preview-link-arrow"><──</span>
-                                    <span>${src.icon || '📄'} ${src.title}</span>
-                                </span>
-                                <button type="button" class="graph-preview-link-del" title="${t('graph.deleteLink', 'Видалити зв\'язок')}">✕</button>
-                            </div>
-                        `;
-                    });
-                    linksList.innerHTML = html;
-
-                    linksList.querySelectorAll('.graph-preview-link-del').forEach(btn => {
-                        btn.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            const item = btn.closest('.graph-preview-link-item');
-                            if (item) {
-                                const sId = item.dataset.sourceId;
-                                const tId = item.dataset.targetId;
-                                this.removeDirectedLink(sId, tId);
-                            }
-                        });
-                    });
-                }
-
-                if (addLinkBtn) {
-                    addLinkBtn.onclick = (e) => {
-                        e.stopPropagation();
-                        this.openLinkSelectorModal(node);
-                    };
-                }
             }
 
             if (openBtn) {
@@ -1561,14 +1351,13 @@ window.App = window.App || {};
             // 2. Сила пружин по зв'язках (Hooke's Law: дія та протидія рівні й протилежні)
             edges.forEach(edge => {
                 if (edge.type === 'tag' && !showTagLinks) return;
-                if (edge.type === 'directed' && !showDirectedLinks) return;
                 const s = edge.source;
                 const t = edge.target;
                 let dx = t.x - s.x;
                 let dy = t.y - s.y;
                 let dist = Math.sqrt(dx * dx + dy * dy) || 1;
                 let displacement = dist - edge.length;
-                const k = (edge.type === 'tag') ? (springK * 0.35) : (edge.type === 'directed' ? (springK * 0.75) : springK);
+                const k = (edge.type === 'tag') ? (springK * 0.35) : springK;
                 let force = displacement * k;
 
                 let fx = (dx / dist) * force;
@@ -1769,10 +1558,8 @@ window.App = window.App || {};
             edges.forEach(edge => {
                 if (isOrphansOnly) return;
                 if (edge.type === 'tag' && !showTagLinks) return;
-                if (edge.type === 'directed' && !showDirectedLinks) return;
 
                 const isTagEdge = (edge.type === 'tag');
-                const isDirectedEdge = (edge.type === 'directed');
 
                 const sourceMatchesTag = !activeTagFilter || (edge.source.tags && edge.source.tags.some(t => (typeof t === 'string' ? t : (t.text || '')) === activeTagFilter));
                 const targetMatchesTag = !activeTagFilter || (edge.target.tags && edge.target.tags.some(t => (typeof t === 'string' ? t : (t.text || '')) === activeTagFilter));
@@ -1782,7 +1569,7 @@ window.App = window.App || {};
                     activeSubtreeIds.has(edge.source.id) &&
                     activeSubtreeIds.has(edge.target.id));
 
-                const branchColor = isDirectedEdge ? '#10b981' : (edge.color || edge.source.branchColor || '#10b981');
+                const branchColor = edge.color || edge.source.branchColor || '#10b981';
 
                 const p = this.getCardBezierPorts(edge.source, edge.target);
 
@@ -1815,11 +1602,6 @@ window.App = window.App || {};
                     ctx.strokeStyle = branchColor + (activeTagFilter ? 'ee' : '99');
                     ctx.lineWidth = 1.6 / camera.zoom;
                     ctx.shadowBlur = 0;
-                } else if (isDirectedEdge) {
-                    ctx.strokeStyle = branchColor;
-                    ctx.lineWidth = 2.4 / camera.zoom;
-                    ctx.shadowBlur = 6;
-                    ctx.shadowColor = branchColor;
                 } else {
                     ctx.strokeStyle = branchColor + 'bb';
                     ctx.lineWidth = 2.0 / camera.zoom;
@@ -1926,9 +1708,7 @@ window.App = window.App || {};
         cleanup() {
             this.stopSimulation();
             this.hidePreviewCard(true);
-            if (isConnectMode) {
-                this.toggleConnectMode(false);
-            }
+            this.closeCanvasContextMenu();
             this.closeExportModal();
             nodes = [];
             edges = [];
@@ -2249,30 +2029,147 @@ window.App = window.App || {};
             }, 80);
         },
 
-        handleConnectNodeClick(targetNode) {
-            if (!isConnectMode) return;
-            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
-            if (!connectSourceNode) {
-                connectSourceNode = targetNode;
-                if (targetNode.element) targetNode.element.classList.add('is-connect-source');
-                const msg = t('graph.connectSelectTarget', { title: targetNode.title });
-                this.updateConnectBanner(msg);
-            } else {
-                if (targetNode.id === connectSourceNode.id) return;
-                const sId = connectSourceNode.id;
-                const tId = targetNode.id;
-                const sTitle = connectSourceNode.title;
-                const tTitle = targetNode.title;
+        // Створення нової нотатки в точці кліку на порожньому полотні
+        createNoteAtWorldPosition(worldX, worldY) {
+            const state = window.App.state;
+            const noteManager = window.App.noteManager;
+            if (!noteManager) return;
 
-                this.addDirectedLink(sId, tId);
-                this.toggleConnectMode(false);
-                const successMsg = t('graph.connectSuccess', { source: sTitle, target: tTitle });
-                this.showToast(successMsg);
+            const newNote = noteManager.createNewNote(null, false);
+            if (!newNote) return;
+
+            // Центруємо стікер (ширина 380px) щодо курсору
+            newNote.canvasX = Math.round(worldX - 190);
+            newNote.canvasY = Math.round(worldY - 24);
+
+            if (window.App.storage) {
+                window.App.storage.saveNotes(state.notes);
+            }
+
+            this.buildGraphData();
+            this.draw();
+
+            setTimeout(() => {
+                if (nodesLayer) {
+                    const newCard = nodesLayer.querySelector(`.note-sticker[data-note-id="${newNote.id}"]`);
+                    if (newCard) {
+                        const titleEl = newCard.querySelector('.sticker-title');
+                        if (titleEl) {
+                            titleEl.focus();
+                        }
+                    }
+                }
+            }, 80);
+        },
+
+        showCanvasContextMenu(screenX, screenY, worldX, worldY) {
+            this.closeCanvasContextMenu();
+
+            const menu = document.createElement('div');
+            menu.className = 'graph-canvas-context-menu';
+            canvasContextMenuEl = menu;
+
+            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
+
+            menu.innerHTML = `
+                <button type="button" class="graph-canvas-context-item is-primary" data-action="create-note">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <span>${t('graph.createNoteHere', 'Створити нотатку')}</span>
+                </button>
+                <div class="graph-canvas-context-divider"></div>
+                <button type="button" class="graph-canvas-context-item" data-action="center-view">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="2" x2="12" y2="6"></line>
+                        <line x1="12" y1="18" x2="12" y2="22"></line>
+                        <line x1="2" y1="12" x2="6" y2="12"></line>
+                        <line x1="18" y1="12" x2="22" y2="12"></line>
+                    </svg>
+                    <span>${t('graph.centerView', 'Центрувати всі нотатки')}</span>
+                </button>
+                <button type="button" class="graph-canvas-context-item" data-action="reset-zoom">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        <line x1="11" y1="8" x2="11" y2="14"></line>
+                        <line x1="8" y1="11" x2="14" y2="11"></line>
+                    </svg>
+                    <span>${t('graph.resetZoom', 'Скинути масштаб (100%)')}</span>
+                </button>
+            `;
+
+            document.body.appendChild(menu);
+
+            const menuRect = menu.getBoundingClientRect();
+            const menuWidth = menuRect.width || 210;
+            const menuHeight = menuRect.height || 120;
+            let left = screenX;
+            let top = screenY;
+
+            if (left + menuWidth > window.innerWidth - 10) {
+                left = window.innerWidth - menuWidth - 10;
+            }
+            if (top + menuHeight > window.innerHeight - 10) {
+                top = window.innerHeight - menuHeight - 10;
+            }
+
+            menu.style.left = `${Math.max(10, left)}px`;
+            menu.style.top = `${Math.max(10, top)}px`;
+
+            const createBtn = menu.querySelector('[data-action="create-note"]');
+            if (createBtn) {
+                createBtn.focus();
+                createBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.closeCanvasContextMenu();
+                    this.createNoteAtWorldPosition(worldX, worldY);
+                });
+            }
+
+            const centerBtn = menu.querySelector('[data-action="center-view"]');
+            if (centerBtn) {
+                centerBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.closeCanvasContextMenu();
+                    this.centerCameraOnAllNodes();
+                });
+            }
+
+            const resetZoomBtn = menu.querySelector('[data-action="reset-zoom"]');
+            if (resetZoomBtn) {
+                resetZoomBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.closeCanvasContextMenu();
+                    this.resetCamera();
+                });
+            }
+
+            const onOutside = (ev) => {
+                if (!menu.contains(ev.target)) {
+                    this.closeCanvasContextMenu();
+                    document.removeEventListener('pointerdown', onOutside, true);
+                    document.removeEventListener('contextmenu', onOutside, true);
+                }
+            };
+            setTimeout(() => {
+                document.addEventListener('pointerdown', onOutside, true);
+                document.addEventListener('contextmenu', onOutside, true);
+            }, 50);
+        },
+
+        closeCanvasContextMenu() {
+            if (canvasContextMenuEl) {
+                canvasContextMenuEl.remove();
+                canvasContextMenuEl = null;
             }
         },
 
         // Події миші та тач-пристроїв (Переміщення полотна)
         onPointerDown(e) {
+            this.closeCanvasContextMenu();
             if (isPinching) return;
             if (e.button !== 0 && e.button !== 1) return;
 
@@ -2359,192 +2256,6 @@ window.App = window.App || {};
             setTimeout(() => {
                 window.App.workspaceView.scrollToNote(noteId);
             }, 100);
-        },
-
-        toggleConnectMode(forceState = null) {
-            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
-            isConnectMode = (forceState !== null) ? forceState : !isConnectMode;
-            connectSourceNode = null;
-
-            const connectBtn = container ? container.querySelector('#graph-connect-mode-btn') : null;
-            const mobileConnectBtn = container ? container.querySelector('#graph-mobile-connect-mode-btn') : null;
-
-            if (connectBtn) connectBtn.classList.toggle('is-active', isConnectMode);
-            if (mobileConnectBtn) mobileConnectBtn.classList.toggle('is-active', isConnectMode);
-
-            if (isConnectMode) {
-                this.updateConnectBanner(t('graph.connectSelectSource', 'Оберіть першу нотатку (звідки виходить стрілка)'));
-            } else {
-                if (connectBannerEl) {
-                    connectBannerEl.remove();
-                    connectBannerEl = null;
-                }
-                nodes.forEach(n => {
-                    if (n.element) n.element.classList.remove('is-connect-source');
-                });
-            }
-        },
-
-        updateConnectBanner(message) {
-            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
-            if (!container) return;
-            if (!connectBannerEl) {
-                connectBannerEl = document.createElement('div');
-                connectBannerEl.className = 'graph-connect-banner';
-                container.appendChild(connectBannerEl);
-            }
-
-            connectBannerEl.innerHTML = `
-                <span class="graph-connect-banner-icon">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-                    </svg>
-                </span>
-                <span class="graph-connect-banner-text">${message}</span>
-                <button type="button" class="graph-connect-banner-cancel">${t('graph.cancelConnect', 'Скасувати')}</button>
-            `;
-
-            const cancelBtn = connectBannerEl.querySelector('.graph-connect-banner-cancel');
-            if (cancelBtn) {
-                cancelBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    this.toggleConnectMode(false);
-                });
-            }
-        },
-
-        addDirectedLink(sourceId, targetId) {
-            const rawSource = window.App.noteManager ? window.App.noteManager.getNoteById(sourceId) : null;
-            const rawTarget = window.App.noteManager ? window.App.noteManager.getNoteById(targetId) : null;
-            if (!rawSource || !rawTarget || sourceId === targetId) return;
-
-            // 1. Оновлюємо масив links
-            const currentLinks = Array.isArray(rawSource.links) ? [...rawSource.links] : [];
-            if (!currentLinks.includes(targetId)) {
-                currentLinks.push(targetId);
-            }
-
-            // 2. Додаємо wiki-посилання до content нотатки
-            const targetTitle = (rawTarget.title && rawTarget.title.trim()) ? rawTarget.title.trim() : 'Нотатка';
-            const linkTag = `[[id:${rawTarget.id}|${targetTitle}]]`;
-            let content = rawSource.content || '';
-            if (!content.includes(`id:${rawTarget.id}`) && !content.includes(`[[${targetTitle}]]`)) {
-                if (content.endsWith('</p>') || content.endsWith('</div>')) {
-                    content += `<p class="note-directed-link">${linkTag}</p>`;
-                } else {
-                    content = content ? `${content}\n\n${linkTag}` : linkTag;
-                }
-            }
-
-            if (window.App.noteManager) {
-                window.App.noteManager.updateNote(sourceId, { content: content, links: currentLinks }, false);
-            }
-
-            this.buildGraphData();
-            this.wakeUpSimulation();
-            this.draw();
-
-            if (previewNode && previewNode.id === sourceId) {
-                const updatedSourceNode = nodes.find(n => n.id === sourceId);
-                if (updatedSourceNode) this.renderPreviewCard(updatedSourceNode);
-            }
-        },
-
-        removeDirectedLink(sourceId, targetId) {
-            const rawSource = window.App.noteManager ? window.App.noteManager.getNoteById(sourceId) : null;
-            const rawTarget = window.App.noteManager ? window.App.noteManager.getNoteById(targetId) : null;
-            if (!rawSource) return;
-
-            // 1. Видаляємо з масиву links
-            let currentLinks = Array.isArray(rawSource.links) ? [...rawSource.links] : [];
-            currentLinks = currentLinks.filter(id => id !== targetId);
-
-            // 2. Видаляємо wiki-посилання з content
-            let content = rawSource.content || '';
-            const regex1 = new RegExp(`(<p[^>]*>)?\\[\\[id:${targetId}(?:\\|[^\\]]*)?\\]\\](<\\/p>)?`, 'gi');
-            content = content.replace(regex1, '');
-
-            if (rawTarget && rawTarget.title) {
-                const escapedTitle = rawTarget.title.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                if (escapedTitle) {
-                    const regex2 = new RegExp(`(<p[^>]*>)?\\[\\[${escapedTitle}(?:\\|[^\\]]*)?\\]\\](<\\/p>)?`, 'gi');
-                    content = content.replace(regex2, '');
-                }
-            }
-
-            if (window.App.noteManager) {
-                window.App.noteManager.updateNote(sourceId, { content: content, links: currentLinks }, false);
-            }
-
-            this.buildGraphData();
-            this.wakeUpSimulation();
-            this.draw();
-
-            if (previewNode && (previewNode.id === sourceId || previewNode.id === targetId)) {
-                const updatedNode = nodes.find(n => n.id === previewNode.id);
-                if (updatedNode) this.renderPreviewCard(updatedNode);
-            }
-        },
-
-        openLinkSelectorModal(sourceNode) {
-            const existing = document.querySelector('.graph-link-selector-modal');
-            if (existing) existing.remove();
-
-            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
-            const existingTargetIds = new Set((sourceNode.outgoingLinks || []).map(l => l.id));
-            const candidateNotes = nodes.filter(n => n.id !== sourceNode.id && !existingTargetIds.has(n.id));
-
-            if (candidateNotes.length === 0) {
-                this.showToast('Всі доступні нотатки вже з\'єднані або відсутні інші нотатки');
-                return;
-            }
-
-            const modal = document.createElement('div');
-            modal.className = 'graph-link-selector-modal';
-
-            let listHtml = candidateNotes.map(n => `
-                <button type="button" class="graph-link-selector-item" data-id="${n.id}">
-                    <span>${n.icon || '📄'}</span>
-                    <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${n.title}</span>
-                </button>
-            `).join('');
-
-            modal.innerHTML = `
-                <div class="graph-link-selector-header">
-                    <span>${t('graph.selectTargetNote', 'Оберіть нотатку для створення зв\'язку:')}</span>
-                    <button type="button" class="graph-export-modal-close" style="width:22px;height:22px;font-size:14px;">✕</button>
-                </div>
-                <div class="graph-link-selector-list">
-                    ${listHtml}
-                </div>
-            `;
-
-            if (container) container.appendChild(modal);
-
-            modal.querySelector('.graph-export-modal-close').addEventListener('click', (e) => {
-                e.stopPropagation();
-                modal.remove();
-            });
-
-            modal.querySelectorAll('.graph-link-selector-item').forEach(item => {
-                item.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const targetId = item.dataset.id;
-                    modal.remove();
-                    this.addDirectedLink(sourceNode.id, targetId);
-                });
-            });
-
-            const closeOnOutside = (e) => {
-                if (!modal.contains(e.target)) {
-                    modal.remove();
-                    document.removeEventListener('pointerdown', closeOnOutside);
-                }
-            };
-            setTimeout(() => {
-                document.addEventListener('pointerdown', closeOnOutside);
-            }, 60);
         },
 
         showToast(message) {
@@ -2810,15 +2521,14 @@ window.App = window.App || {};
             md.push(`# 📚 ${boardTitle}`);
             md.push(`*Згенеровано NothingNotes: ${new Date().toLocaleDateString('uk-UA')}*\n`);
 
-            md.push(`## 📊 Огляд пайплайну (AI Workflow)`);
+            md.push(`## 📊 Огляд дошки графу`);
             md.push(`- **Всього нотаток:** ${nodes.length}`);
-            md.push(`- **Спрямованих зв'язків:** ${dagInfo.directedCount}`);
-            md.push(`- **DAG Валідність:** ${dagInfo.isDag ? '✅ Ациклічний граф (готовий до виконання)' : '⚠️ Виявлено цикли'}`);
-            md.push(`- **Точок входу (Input):** ${dagInfo.entryPoints.length}`);
-            md.push(`- **Точок завершення (Output):** ${dagInfo.terminalPoints.length}\n`);
+            md.push(`- **Всього зв'язків:** ${edges.length}`);
+            md.push(`- **Точок входу (кореневі):** ${dagInfo.entryPoints.length}`);
+            md.push(`- **Точок завершення:** ${dagInfo.terminalPoints.length}\n`);
 
             if (dagInfo.stages && dagInfo.stages.length > 0) {
-                md.push(`### 🚀 Етапи виконання (Topological Stages):`);
+                md.push(`### 🚀 Етапи структури (Topological Stages):`);
                 dagInfo.stages.forEach(st => {
                     const titles = st.note_ids.map(id => {
                         const n = nodes.find(node => node.id === id);
@@ -2843,15 +2553,6 @@ window.App = window.App || {};
                     md.push(`**Тип:** Коренева нотатка`);
                 } else {
                     md.push(`**Рівень ієрархії:** ${node.level}`);
-                }
-
-                if (node.outgoingLinks && node.outgoingLinks.length > 0) {
-                    const outStr = node.outgoingLinks.map(l => `[[${l.title}]]`).join(', ');
-                    md.push(`**Спрямовані зв'язки (куди):** ${outStr}`);
-                }
-                if (node.incomingLinks && node.incomingLinks.length > 0) {
-                    const inStr = node.incomingLinks.map(l => `[[${l.title}]]`).join(', ');
-                    md.push(`**Вхідні залежності (звідки):** ${inStr}`);
                 }
 
                 md.push('');
@@ -2912,7 +2613,6 @@ window.App = window.App || {};
             // Edges
             edges.forEach(edge => {
                 if (edge.type === 'tag' && !showTagLinks) return;
-                if (edge.type === 'directed' && !showDirectedLinks) return;
 
                 const sx = edge.source.x + transX;
                 const sy = edge.source.y + transY;
@@ -2927,10 +2627,6 @@ window.App = window.App || {};
                     oCtx.setLineDash([4, 4]);
                     oCtx.strokeStyle = (edge.color || '#f59e0b') + '99';
                     oCtx.lineWidth = 1.4;
-                } else if (edge.type === 'directed') {
-                    oCtx.setLineDash([]);
-                    oCtx.strokeStyle = '#10b981';
-                    oCtx.lineWidth = 2.2;
                 } else {
                     oCtx.setLineDash([]);
                     oCtx.strokeStyle = (edge.color || '#10b981') + '66';
@@ -2938,25 +2634,6 @@ window.App = window.App || {};
                 }
                 oCtx.stroke();
                 oCtx.setLineDash([]);
-
-                if (edge.type === 'directed') {
-                    const dx = tx - sx;
-                    const dy = ty - sy;
-                    const angle = Math.atan2(dy, dx);
-                    const tipX = tx - Math.cos(angle) * (edge.target.radius + 3);
-                    const tipY = ty - Math.sin(angle) * (edge.target.radius + 3);
-                    const headLen = 10;
-                    const wingAngle = Math.PI / 6;
-
-                    oCtx.beginPath();
-                    oCtx.moveTo(tipX, tipY);
-                    oCtx.lineTo(tipX - headLen * Math.cos(angle - wingAngle), tipY - headLen * Math.sin(angle - wingAngle));
-                    oCtx.lineTo(tipX - (headLen * 0.55) * Math.cos(angle), tipY - (headLen * 0.55) * Math.sin(angle));
-                    oCtx.lineTo(tipX - headLen * Math.cos(angle + wingAngle), tipY - headLen * Math.sin(angle + wingAngle));
-                    oCtx.closePath();
-                    oCtx.fillStyle = '#10b981';
-                    oCtx.fill();
-                }
             });
 
             // Nodes
@@ -3030,7 +2707,7 @@ window.App = window.App || {};
                     <div class="graph-export-modal-header">
                         <div class="graph-export-modal-title-wrap">
                             <h3 class="graph-export-modal-title">${t('graph.exportTitle', 'Експорт графу для ШІ та візуалізації')}</h3>
-                            <p class="graph-export-modal-subtitle">${boardName} • ${nodes.length} нотаток • ${dagInfo.directedCount} спрямованих зв'язків</p>
+                            <p class="graph-export-modal-subtitle">${boardName} • ${nodes.length} нотаток • ${edges.length} зв'язків</p>
                         </div>
                         <button type="button" class="graph-export-modal-close" aria-label="Закрити">✕</button>
                     </div>
