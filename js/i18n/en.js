@@ -174,7 +174,7 @@ export const en = {
         tagsTitle: 'Note tags',
         emptyTags: 'No tags created yet',
         delTagTooltip: 'Delete this tag from all notes and list',
-        createTag: '+ Create',
+        createTag: 'Create',
         unpinTag: 'Unpin tag from this note',
         fontSizeTitle: 'Text size',
         optionsTitle: 'Note options',

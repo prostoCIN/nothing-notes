@@ -174,7 +174,7 @@ export const ua = {
         tagsTitle: 'Теги нотатки',
         emptyTags: 'Немає створених тегів',
         delTagTooltip: 'Видалити цей тег з усіх нотаток та зі списку',
-        createTag: '+ Створити',
+        createTag: 'Створити',
         unpinTag: 'Відкріпити тег від цієї нотатки',
         fontSizeTitle: 'Розмір тексту',
         optionsTitle: 'Опції нотатки',

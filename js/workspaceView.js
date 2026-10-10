@@ -32,7 +32,10 @@ window.App = window.App || {};
                 <div class="workspace-create-board-form">
                     <input type="text" class="workspace-create-board-input" placeholder="${t('workspace.emptyInputPlaceholder')}" data-i18n-placeholder="workspace.emptyInputPlaceholder" autocomplete="off">
                     <button class="workspace-create-board-btn">
-                        <span class="btn-plus-icon">+</span>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="btn-plus-icon">
+                            <line x1="12" y1="6" x2="12" y2="18"></line>
+                            <line x1="6" y1="12" x2="18" y2="12"></line>
+                        </svg>
                         <span data-i18n="workspace.createBoardBtn">${t('workspace.createBoardBtn')}</span>
                     </button>
                 </div>
@@ -159,12 +162,26 @@ window.App = window.App || {};
                 }
 
                 // Гаряча клавіша Shift + "+" для швидкого створення піднотатки для поточної активної/сфокусованої нотатки
+                // На мобільних телефонах/планшетах повністю вимикаємо, щоб віртуальна клавіатура могла вільно друкувати "+"
+                const isMobileDevice = window.innerWidth <= 768 ||
+                    (window.matchMedia && (window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(max-width: 768px)').matches)) ||
+                    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                if (isMobileDevice) {
+                    return;
+                }
+
+                // Також не перехоплюємо "+" під час активного введення тексту користувачем у полях чи нотатках
+                const activeEl = document.activeElement;
+                const isEditingText = activeEl && (activeEl.isContentEditable || activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA');
+                if (isEditingText) {
+                    return;
+                }
+
                 const isPlusKey = e.key === '+' || e.key === '=' || e.code === 'Equal' || e.code === 'NumpadAdd';
                 if (e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey && isPlusKey) {
-                    const activeEl = document.activeElement;
                     const focusedCard = activeEl ? activeEl.closest('.note-sticker[data-note-id]') : null;
 
-                    // Працює коли користувач сфокусований на картці або писав у ній
+                    // Працює коли картка вибрана/сфокусована на десктопі
                     let targetNoteId = focusedCard ? focusedCard.dataset.noteId : null;
                     if (!targetNoteId && state && state.activeNoteId) {
                         const activeCard = document.querySelector(`.note-sticker[data-note-id="${state.activeNoteId}"]`);

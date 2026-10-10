@@ -539,15 +539,6 @@ window.App = window.App || {};
                 }).length;
 
                 isBold = (boldNodesCount === textNodes.length && textNodes.length > 0);
-
-                const firstParent = textNodes[0].parentElement;
-                if (firstParent) {
-                    const customSpan = firstParent.closest('span[style*="font-size"]');
-                    if (customSpan && activeContentDiv && activeContentDiv.contains(customSpan)) {
-                        const parsed = parseInt(customSpan.style.fontSize, 10);
-                        if (!isNaN(parsed) && parsed > 0) currentFontSize = parsed;
-                    }
-                }
             }
 
             const regularBtn = toolbarEl.querySelector('#text-sel-weight-regular');
