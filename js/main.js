@@ -70,6 +70,11 @@ import './graph/graphView.js';
 
 // 4. Модулі хмари, аутентифікації та налаштувань
 import './supabaseClient.js';
+import './sync/offlineQueue.js';
+import './sync/syncStorage.js';
+import './sync/syncRealtime.js';
+import './sync/syncNotes.js';
+import './sync/syncUI.js';
 import './cloudSync.js';
 import './shareManager.js';
 import './authModal.js';
