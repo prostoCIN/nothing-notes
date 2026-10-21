@@ -5,10 +5,12 @@ window.App = window.App || {};
     function getFormattedSelectionHtml(range, contentDiv) {
         return window.App.stickerPasteSanitizer ? window.App.stickerPasteSanitizer.getFormattedSelectionHtml(range, contentDiv) : "";
     }
-    function cleanAndFormatPastedHtml(html) {
-        return window.App.stickerPasteSanitizer ? window.App.stickerPasteSanitizer.cleanAndFormatPastedHtml(html) : html;
+    function sanitizePastedNode(node) {
+        return window.App.stickerPasteSanitizer ? window.App.stickerPasteSanitizer.sanitizePastedNode(node) : null;
     }
-
+    function normalizeSanitizedHtml(container) {
+        if (window.App.stickerPasteSanitizer) window.App.stickerPasteSanitizer.normalizeSanitizedHtml(container);
+    }
 
     /**
      * Перевіряє, чи було скопійовано вміст буфера обміну із заголовка нотатки/стовпчика
@@ -450,6 +452,84 @@ window.App = window.App || {};
     bindGlobalCopyCutListeners();
 
 
+    async function handlePaste(e, note, contentDiv, card, titleDiv = null) {
+        if (titleDiv && (e.currentTarget === titleDiv || titleDiv.contains(e.target))) {
+            const clipboardData = e.clipboardData || window.clipboardData;
+            if (!clipboardData) return;
+            const items = Array.from(clipboardData.items || []);
+            const imageFiles = [];
+            for (const item of items) {
+                if (item.type && item.type.indexOf("image") !== -1) {
+                    const file = item.getAsFile();
+                    if (file) imageFiles.push(file);
+                }
+            }
+            if (imageFiles.length === 0 && clipboardData.files && clipboardData.files.length > 0) {
+                for (const file of clipboardData.files) {
+                    if (file.type && file.type.startsWith("image/")) imageFiles.push(file);
+                }
+            }
+            if (imageFiles.length > 0) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (window.App.stickerMenu && window.App.stickerMenu.attachImagesToNote) {
+                    await window.App.stickerMenu.attachImagesToNote(note.id, imageFiles, card);
+                }
+            }
+            return;
+        }
+
+        const clipboardData = e.clipboardData || window.clipboardData;
+        if (!clipboardData) return;
+        const items = Array.from(clipboardData.items || []);
+        const imageFiles = [];
+        for (const item of items) {
+            if (item.type && item.type.indexOf("image") !== -1) {
+                const file = item.getAsFile();
+                if (file) imageFiles.push(file);
+            }
+        }
+        if (imageFiles.length === 0 && clipboardData.files && clipboardData.files.length > 0) {
+            for (const file of clipboardData.files) {
+                if (file.type && file.type.startsWith("image/")) imageFiles.push(file);
+            }
+        }
+        if (imageFiles.length > 0) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (window.App.stickerMenu && window.App.stickerMenu.attachImagesToNote) {
+                await window.App.stickerMenu.attachImagesToNote(note.id, imageFiles, card);
+            }
+            return;
+        }
+
+        const html = clipboardData.getData("text/html");
+        const plainText = clipboardData.getData("text/plain");
+        if (!html && !plainText) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+        if (window.App.historyManager) {
+            window.App.historyManager.recordState("paste_content");
+        }
+        const fromTitle = isClipboardFromTitle(clipboardData, html, plainText);
+        if (fromTitle) {
+            if (plainText) insertTextAtCaret(plainText, contentDiv, note);
+            return;
+        }
+        if (html) {
+            const cleanHtml = cleanPastedHtml(html);
+            if (cleanHtml) {
+                insertHtmlAtCaret(cleanHtml, contentDiv, note);
+                ensureNoteMarkers(contentDiv);
+                return;
+            }
+        }
+        if (plainText) {
+            insertTextAtCaret(plainText, contentDiv, note);
+        }
+    }
+
     if (typeof document !== 'undefined') {
         const trackClipboardSource = (e) => {
             const sel = window.getSelection();
@@ -497,7 +577,10 @@ window.App = window.App || {};
     window.App.stickerPasteHandler = {
         isClipboardFromTitle,
         cleanPastedHtml,
-        handleContentPaste,
+        ensureNoteMarkers,
+        insertHtmlAtCaret,
+        insertTextAtCaret,
+        handlePaste,
         bindGlobalCopyCutListeners
     };
 })();

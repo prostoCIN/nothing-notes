@@ -2,15 +2,6 @@
 window.App = window.App || {};
 
 (function() {
-    function isClipboardFromTitle(clipboardData, rawHtml, plainText) {
-        return window.App.stickerPasteHandler ? window.App.stickerPasteHandler.isClipboardFromTitle(clipboardData, rawHtml, plainText) : false;
-    }
-    function handleContentPaste(e, note, contentDiv, card) {
-        if (window.App.stickerPasteHandler) {
-            return window.App.stickerPasteHandler.handleContentPaste(e, note, contentDiv, card);
-        }
-    }
-
     window.App.stickerContent = {
         /**
          * Створює блок контенту для стікера та прив'язує необхідні обробники подій
@@ -186,102 +177,10 @@ window.App = window.App || {};
 
                 // Перехоплення вставки (Paste Ctrl+V): обробка зображень та вставки тексту зі збереженням маркерів і жирного накреслення
                 const handlePaste = async (e) => {
-                    if (titleDiv && (e.currentTarget === titleDiv || titleDiv.contains(e.target))) {
-                        // Для заголовка перевіряємо тільки зображення, форматування обробляється у stickerHeader.js
-                        const clipboardData = e.clipboardData || window.clipboardData;
-                        if (!clipboardData) return;
-                        const items = Array.from(clipboardData.items || []);
-                        const imageFiles = [];
-                        for (const item of items) {
-                            if (item.type && item.type.indexOf('image') !== -1) {
-                                const file = item.getAsFile();
-                                if (file) imageFiles.push(file);
-                            }
-                        }
-                        if (imageFiles.length === 0 && clipboardData.files && clipboardData.files.length > 0) {
-                            for (const file of clipboardData.files) {
-                                if (file.type && file.type.startsWith('image/')) {
-                                    imageFiles.push(file);
-                                }
-                            }
-                        }
-                        if (imageFiles.length > 0) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            if (window.App.stickerMenu && window.App.stickerMenu.attachImagesToNote) {
-                                await window.App.stickerMenu.attachImagesToNote(note.id, imageFiles, card);
-                            }
-                        }
-                        return;
-                    }
-
-                    const clipboardData = e.clipboardData || window.clipboardData;
-                    if (!clipboardData) return;
-
-                    const items = Array.from(clipboardData.items || []);
-                    const imageFiles = [];
-
-                    for (const item of items) {
-                        if (item.type && item.type.indexOf('image') !== -1) {
-                            const file = item.getAsFile();
-                            if (file) imageFiles.push(file);
-                        }
-                    }
-
-                    // Якщо файлів напряму в items не було, перевіримо clipboardData.files
-                    if (imageFiles.length === 0 && clipboardData.files && clipboardData.files.length > 0) {
-                        for (const file of clipboardData.files) {
-                            if (file.type && file.type.startsWith('image/')) {
-                                imageFiles.push(file);
-                            }
-                        }
-                    }
-
-                    if (imageFiles.length > 0) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        if (window.App.stickerMenu && window.App.stickerMenu.attachImagesToNote) {
-                            await window.App.stickerMenu.attachImagesToNote(note.id, imageFiles, card);
-                        }
-                        return;
-                    }
-
-                    // Обробка вставки тексту та збереження стилів маркерів і жирності
-                    const html = clipboardData.getData('text/html');
-                    const plainText = clipboardData.getData('text/plain');
-
-                    if (!html && !plainText) return;
-
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    if (window.App.historyManager) {
-                        window.App.historyManager.recordState('paste_content');
-                    }
-
-                    // Чек джерела: якщо текст скопійовано із заголовка, він не повинен переносити стилі заголовка на звичайний блок тексту
-                    const fromTitle = isClipboardFromTitle(clipboardData, html, plainText);
-                    if (fromTitle) {
-                        if (plainText) {
-                            insertTextAtCaret(plainText, contentDiv, note);
-                        }
-                        return;
-                    }
-
-                    if (html) {
-                        const cleanHtml = cleanPastedHtml(html);
-                        if (cleanHtml) {
-                            insertHtmlAtCaret(cleanHtml, contentDiv, note);
-                            ensureNoteMarkers(contentDiv);
-                            return;
-                        }
-                    }
-
-                    if (plainText) {
-                        insertTextAtCaret(plainText, contentDiv, note);
+                    if (window.App.stickerPasteHandler) {
+                        await window.App.stickerPasteHandler.handlePaste(e, note, contentDiv, card, titleDiv);
                     }
                 };
-
                 contentDiv.addEventListener('paste', handlePaste);
                 if (titleDiv) {
                     titleDiv.addEventListener('paste', handlePaste);

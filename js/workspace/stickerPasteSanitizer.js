@@ -461,10 +461,12 @@ window.App = window.App || {};
         }
     }
 
+
     window.App.stickerPasteSanitizer = {
-        normalizeColor,
-        getClosestMarkerColor,
+        resolveColorToRgb,
+        matchColorToMarkerClass,
         getFormattedSelectionHtml,
-        cleanAndFormatPastedHtml
+        sanitizePastedNode,
+        normalizeSanitizedHtml
     };
 })();
