@@ -1,0 +1,41 @@
+/* ==========================================================================
+   Кнопка додавання нової нотатки внизу колонки
+   ========================================================================== */
+
+/* Bottom Add Note Button */
+.add-note-bottom-container {
+    margin-top: 24px;
+    width: 100%;
+}
+
+.bottom-add-note-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    background-color: rgba(255, 255, 255, 0.02);
+    border: 2px dashed var(--border-color);
+    border-radius: 12px;
+    color: var(--text-muted);
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.bottom-add-note-btn:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.25);
+    color: var(--text-main);
+    transform: scale(0.99);
+}
+
+.btn-plus-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}

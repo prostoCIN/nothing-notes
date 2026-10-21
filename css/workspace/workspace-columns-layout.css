@@ -1,0 +1,363 @@
+/* ==========================================================================
+   Мульти-колонки, розміри, скрол та шапка колонки
+   ========================================================================== */
+
+.columns-container {
+    display: flex;
+    flex-direction: row;
+    position: relative;
+    gap: 14px;
+    padding: 16px 24px 20px 24px;
+    height: calc(100vh - 48px);
+    width: 100%;
+    min-width: 100%;
+    box-sizing: border-box;
+    align-items: stretch;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.columns-container:has(.board-view-wrapper),
+.columns-container:has(.graph-view-wrapper),
+.columns-container.has-canvas-mode {
+    padding: 0 !important;
+    gap: 0 !important;
+    overflow: hidden !important;
+}
+
+/* Multi-Columns Responsive Widths:
+   1 колонка = 100%
+   2 колонки = 50% / 50%
+   3+ колонок = фіксовано 50% з комфортним горизонтальним скролом */
+.board-column {
+    flex: 1 1 0px;
+    width: 100%;
+    min-width: 280px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--column-bg, rgba(26, 26, 30, 0.45));
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--column-border, rgba(255, 255, 255, 0.08));
+    border-radius: 18px;
+    padding: 22px 24px 20px 24px;
+    box-shadow: var(--glass-specular);
+    box-sizing: border-box;
+    transition: flex 0.25s cubic-bezier(0.16, 1, 0.3, 1), min-width 0.25s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.25s cubic-bezier(0.16, 1, 0.3, 1), width 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Коли колонок 3 і більше — кожна колонка займає 50% доступної ширини екрана */
+.columns-container.has-many-columns .board-column {
+    flex: 0 0 calc((100% - 14px) / 2) !important;
+    min-width: max(280px, calc((100% - 14px) / 2)) !important;
+    max-width: calc((100% - 14px) / 2) !important;
+}
+
+/* Розтягування певної колонки на всю ширину робочої області (ніби вона одна відкрита) */
+.board-column.column-stretched-full,
+.columns-container.has-many-columns .board-column.column-stretched-full {
+    flex: 0 0 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+/* Якщо якась колонка розтягнута на весь екран — сусідні колонки тримають комфортні 50% ширини для скролу */
+.columns-container.has-stretched-column .board-column:not(.column-stretched-full) {
+    flex: 0 0 calc((100% - 14px) / 2) !important;
+    min-width: calc((100% - 14px) / 2) !important;
+    max-width: calc((100% - 14px) / 2) !important;
+}
+
+.board-column.drag-column-target {
+    border-color: #10b981 !important;
+    background-color: rgba(16, 185, 129, 0.04) !important;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3), 0 8px 30px rgba(0, 0, 0, 0.35) !important;
+}
+
+.board-column.linked-column {
+    border-color: var(--border-color);
+}
+
+.column-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 14px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+    gap: 12px;
+    position: relative;
+    z-index: 20;
+}
+
+.column-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-grow: 1;
+    min-width: 0;
+    position: relative;
+}
+
+.column-header-emoji-picker {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.column-header-emoji-picker .sticker-emoji-btn {
+    font-size: 20px;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    transition: background-color 0.15s ease, transform 0.15s ease, opacity 0.15s ease;
+}
+
+.column-header-emoji-picker .sticker-emoji-btn:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.column-header-emoji-picker .sticker-emoji-btn.empty-icon {
+    opacity: 0.35;
+}
+
+.column-header-emoji-picker .sticker-emoji-btn.empty-icon:hover {
+    opacity: 0.85;
+}
+
+.column-title {
+    font-size: var(--font-md);
+    font-weight: 700;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: -0.2px;
+    flex-shrink: 1;
+    min-width: 50px;
+}
+
+.column-title.editable-board-title {
+    cursor: text;
+    border-radius: 4px;
+    padding: 2px 6px;
+    margin-left: -6px;
+    transition: background-color 0.2s, box-shadow 0.2s;
+    outline: none;
+}
+
+.column-title.editable-board-title:hover {
+    background-color: var(--hover-bg);
+}
+
+.column-title.editable-board-title:focus {
+    background-color: var(--sidebar-bg);
+    box-shadow: 0 0 0 1.5px var(--accent-color);
+    text-overflow: clip;
+}
+
+/* Навігаційний ланцюжок відкритих рівнів вище: "Поточна | Рівень 1 | Рівень 2" */
+.column-title-breadcrumbs {
+    display: inline-flex;
+    align-items: center;
+    gap: 0px;
+    flex-shrink: 1;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    white-space: nowrap;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: pan-x;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    padding-right: 4px;
+}
+
+.column-title-breadcrumbs::-webkit-scrollbar {
+    display: none;
+}
+
+.column-title-breadcrumbs.is-dragging-breadcrumbs {
+    cursor: grabbing !important;
+}
+
+.column-title-breadcrumbs.is-dragging-breadcrumbs .column-breadcrumb-link {
+    cursor: grabbing !important;
+}
+
+.column-title-pipe {
+    color: var(--text-muted, rgba(255, 255, 255, 0.3));
+    font-size: 13px;
+    font-weight: 300;
+    margin: 0 4px;
+    user-select: none;
+    flex-shrink: 0;
+    opacity: 0.55;
+    pointer-events: none;
+}
+
+.column-breadcrumb-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    border: none;
+    padding: 2px 5px;
+    border-radius: 6px;
+    color: var(--text-muted, rgba(255, 255, 255, 0.6));
+    cursor: pointer;
+    font-size: 12.5px;
+    font-weight: 500;
+    line-height: 1.2;
+    transition: color 0.15s ease, background-color 0.15s ease, transform 0.12s ease;
+    flex-shrink: 0;
+    max-width: 125px;
+    outline: none;
+}
+
+.column-breadcrumb-link:hover {
+    color: var(--accent-color, #16b981);
+    background: rgba(22, 185, 129, 0.12);
+    transform: translateY(-0.5px);
+}
+
+.column-breadcrumb-link:active {
+    transform: translateY(0.5px);
+}
+
+.column-breadcrumb-icon {
+    font-size: 12px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    opacity: 0.85;
+}
+
+.column-breadcrumb-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 95px;
+}
+
+/* Анімація підсвітки колонки та картки при переході по лінку */
+@keyframes columnNavHighlight {
+    0% {
+        box-shadow: 0 0 0 2px #16b981, 0 0 24px rgba(22, 185, 129, 0.5);
+        border-color: #16b981;
+    }
+    50% {
+        box-shadow: 0 0 0 3px #16b981, 0 0 32px rgba(22, 185, 129, 0.65);
+        border-color: #16b981;
+    }
+    100% {
+        box-shadow: var(--glass-specular);
+        border-color: var(--column-border);
+    }
+}
+
+.board-column.column-nav-highlight {
+    animation: columnNavHighlight 1.4s ease-out;
+}
+
+@keyframes noteNavHighlight {
+    0% {
+        box-shadow: 0 0 0 2.5px #16b981, 0 0 20px rgba(22, 185, 129, 0.6);
+        transform: translateY(-2px);
+    }
+    50% {
+        box-shadow: 0 0 0 3.5px #16b981, 0 0 28px rgba(22, 185, 129, 0.75);
+        transform: translateY(-3px);
+    }
+    100% {
+        box-shadow: var(--sticker-shadow);
+        transform: translateY(0);
+    }
+}
+
+.note-sticker.note-nav-highlight {
+    animation: noteNavHighlight 1.4s ease-out;
+}
+
+.column-badge, .column-count-badge {
+    font-size: var(--font-xs);
+    font-weight: 600;
+    line-height: 1;
+    color: var(--text-muted);
+    background: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    min-width: 26px;
+    height: 26px;
+    padding: 0 4px;
+    border-radius: 6px;
+    margin: 0;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: inherit;
+    letter-spacing: -0.2px;
+    box-sizing: border-box;
+    user-select: none;
+    transition: all var(--transition-fast);
+}
+
+.column-count-badge:hover {
+    color: var(--text-main);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Кнопка фільтру тегів у правій частині title-wrap колонки */
+.column-filter-wrap {
+    position: relative;
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+}
+
+.column-filter-btn,
+.column-layout-toggle-btn,
+.column-expand-toggle-btn,
+.column-add-note-btn {
+    background: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: var(--font-xs);
+    height: 26px;
+    padding: 0 8px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+    user-select: none;
+    font-family: inherit;
+}
+
+.column-layout-toggle-btn,
+.column-expand-toggle-btn,
+.column-add-note-btn {
+    width: 26px;
+    padding: 0;
+}
+
+.column-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+

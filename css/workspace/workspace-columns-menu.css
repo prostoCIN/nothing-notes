@@ -1,0 +1,344 @@
+/* ==========================================================================
+   Тулбар-меню трьох крапок у шапці колонки (Column Header 3-Dots Menu)
+   ========================================================================== */
+.column-menu-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.column-more-btn {
+    position: relative;
+    background: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+    cursor: pointer;
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+    user-select: none;
+    padding: 0;
+}
+
+.column-more-btn:hover {
+    background-color: var(--hover-bg);
+    color: var(--text-main);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: scale(0.96);
+}
+
+.column-more-btn.active {
+    background-color: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.column-more-btn.has-active-filter {
+    border-color: #10b981;
+    color: #34d399;
+}
+
+.column-filter-active-dot {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 6px;
+    height: 6px;
+    background-color: #10b981;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1.5px #1e1e24;
+}
+
+.column-menu-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background-color: var(--modal-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 8px;
+    width: max-content;
+    min-width: 220px;
+    max-width: 290px;
+    box-sizing: border-box;
+    box-shadow: var(--glass-card-shadow);
+    z-index: 100000;
+    display: none;
+    flex-direction: column;
+    gap: 3px;
+    color: var(--text-main);
+}
+
+.column-menu-dropdown.active {
+    display: flex;
+    animation: menuFadeInUp 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.column-menu-header-info {
+    padding: 4px 8px 6px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.column-menu-header-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.column-menu-header-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+.column-menu-divider {
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 3px 0;
+}
+
+.column-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    font-size: var(--font-xs);
+    font-weight: 500;
+    color: var(--text-main);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.column-menu-item:hover {
+    background-color: var(--hover-bg);
+    color: var(--text-main);
+}
+
+.column-menu-item-count {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    cursor: default;
+    user-select: none;
+    color: var(--text-muted);
+}
+
+.column-menu-item-count:hover {
+    background-color: transparent !important;
+    color: var(--text-muted) !important;
+}
+
+.column-menu-count-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.column-menu-count-icon {
+    flex-shrink: 0;
+    opacity: 0.8;
+}
+
+.column-menu-count-badge {
+    min-width: 22px;
+    height: 20px;
+    padding: 0 5px;
+    font-size: 11px;
+    border-radius: 5px;
+    margin-left: auto;
+}
+
+.column-menu-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 8px 3px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.column-menu-clear-filter-btn {
+    background: none;
+    border: none;
+    color: #f87171;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    text-transform: none;
+    transition: opacity 0.15s ease;
+}
+
+.column-menu-clear-filter-btn:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+}
+
+.column-menu-tags-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-height: 155px;
+    overflow-y: auto;
+    padding-right: 2px;
+}
+
+.column-menu-tag-empty {
+    padding: 6px 8px;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.column-menu-tag-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12.5px;
+    color: var(--text-main);
+    transition: background-color 0.15s ease, color 0.15s ease;
+    user-select: none;
+}
+
+.column-menu-tag-item:hover {
+    background-color: var(--hover-bg);
+    color: var(--text-main);
+}
+
+.column-menu-tag-item.active {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: var(--accent-color, #10b981);
+    font-weight: 600;
+}
+
+.column-menu-tag-name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.column-tag-svg {
+    color: #10b981;
+    flex-shrink: 0;
+}
+
+.column-menu-tag-check {
+    color: #10b981;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.column-graph-toggle-btn {
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    margin-left: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+}
+
+/* Кнопка "Вибрати" у стилі iOS Галереї */
+.column-select-toggle-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+    font-size: var(--font-xs);
+    font-weight: 600;
+    height: 26px;
+    padding: 0 10px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+    user-select: none;
+    font-family: inherit;
+    margin-left: 6px;
+}
+
+.column-filter-btn:hover,
+.column-layout-toggle-btn:hover,
+.column-expand-toggle-btn:hover,
+.column-graph-toggle-btn:hover,
+.column-select-toggle-btn:hover,
+.column-add-note-btn:hover {
+    background-color: var(--hover-bg);
+    color: var(--text-main);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: scale(0.96);
+}
+
+.column-add-note-btn:hover {
+    color: #34d399;
+    border-color: rgba(52, 211, 153, 0.35);
+    background-color: rgba(16, 185, 129, 0.08);
+}
+
+.column-add-note-btn:active {
+    transform: scale(0.92);
+}
+
+.column-layout-toggle-btn.active,
+.column-expand-toggle-btn.active {
+    background-color: rgba(16, 185, 129, 0.15);
+    border-color: #10b981;
+    color: #34d399;
+}
+
+.column-select-toggle-btn.active {
+    background-color: #10b981;
+    border-color: #10b981;
+    color: #ffffff;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+}
+
+.column-filter-btn.has-filter {
+    background-color: rgba(16, 185, 129, 0.15);
+    border-color: #10b981;
+    color: #34d399;
+    font-weight: 600;
+}
+
+.column-filter-btn.active {
+    box-shadow: 0 0 0 1.5px #10b981;
+}
+
+
