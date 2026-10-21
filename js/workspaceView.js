@@ -444,6 +444,7 @@ window.App = window.App || {};
                 if (window.App.workspaceSearch) window.App.workspaceSearch.close();
                 if (window.App.graphView) window.App.graphView.stopSimulation();
 
+                els.columnsContainer.classList.add('has-canvas-mode');
                 els.columnsContainer.classList.remove('has-many-columns');
                 window.App.boardView.render();
                 return;
@@ -458,12 +459,14 @@ window.App = window.App || {};
                 if (window.App.workspaceSearch) window.App.workspaceSearch.close();
                 if (window.App.boardView) window.App.boardView.cleanup();
 
+                els.columnsContainer.classList.add('has-canvas-mode');
                 els.columnsContainer.classList.remove('has-many-columns');
                 window.App.graphView.render();
                 return;
             }
 
             // 3. Класичний режим колонок (Columns View)
+            els.columnsContainer.classList.remove('has-canvas-mode');
             if (topHeader && !isBoardReadOnly) topHeader.classList.remove('graph-mode-active');
             if (window.App.graphView) window.App.graphView.stopSimulation();
             if (window.App.boardView) window.App.boardView.cleanup();

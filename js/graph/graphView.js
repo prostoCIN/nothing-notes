@@ -1,4 +1,4 @@
-// js/graph/graphView.js - Головний контролер інтерактивного графа зв'язків нотаток (Obsidian Graph View)
+// js/graph/graphView.js - Головний контролер інтерактивного графа зв'язків (Obsidian Graph View)
 window.App = window.App || {};
 
 (function() {
@@ -35,7 +35,7 @@ window.App = window.App || {};
         '#06b6d4', '#84cc16', '#f97316', '#6366f1', '#14b8a6'
     ];
 
-    function getBranchColor(rootId) {
+    function getBranchColor(rootId, index) {
         if (!rootId) return BRANCH_COLORS[0];
         let hash = 0;
         for (let i = 0; i < rootId.length; i++) {
@@ -93,7 +93,7 @@ window.App = window.App || {};
                         </div>
 
                         <div class="graph-toolbar-filters">
-                            <button class="graph-toolbar-filter-btn is-orphans-btn" id="graph-filter-orphans" title="Показати лише ізольовані нотатки без піднотаток">
+                            <button class="graph-toolbar-filter-btn is-orphans-btn" id="graph-filter-orphans" title="Показати лише ізольовані нотатки">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                     <circle cx="12" cy="12" r="3.5" fill="currentColor"></circle>
                                     <circle cx="12" cy="12" r="8" stroke-dasharray="2 3"></circle>
@@ -133,8 +133,6 @@ window.App = window.App || {};
                     </div>
                 </div>
 
-                <div class="graph-tags-bar" id="graph-tags-bar" style="display: none;"></div>
-
                 <canvas class="graph-canvas"></canvas>
                 <div class="graph-nodes-layer"></div>
 
@@ -152,10 +150,8 @@ window.App = window.App || {};
                     </button>
                     <button class="graph-ctrl-btn" id="graph-zoom-reset" title="Скинути положення">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M15 3h6v6"></path>
-                            <path d="M9 21H3v-6"></path>
-                            <path d="M21 3l-7 7"></path>
-                            <path d="M3 21l7-7"></path>
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <circle cx="12" cy="12" r="3"></circle>
                         </svg>
                     </button>
                 </div>
@@ -199,12 +195,13 @@ window.App = window.App || {};
 
         buildGraphData() {
             const state = window.App.state;
-            if (!state || !state.notes) return;
+            const noteManager = window.App.noteManager;
+            const allNotes = noteManager ? noteManager.getAllNotes() : (state ? state.notes || [] : []);
 
             const currentBoard = window.App.boardManager ? window.App.boardManager.getActiveBoard() : null;
             if (!currentBoard) return;
 
-            const boardNotes = state.notes.filter(n => n.boardId === currentBoard.id);
+            const boardNotes = allNotes.filter(n => String(n.boardId) === String(currentBoard.id));
             const notesMap = new Map();
             boardNotes.forEach(n => notesMap.set(n.id, n));
 
@@ -212,31 +209,38 @@ window.App = window.App || {};
             nodes = [];
             edges = [];
 
+            const rect = container ? container.getBoundingClientRect() : { width: 800, height: 600 };
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
             const total = boardNotes.length;
-            const radius = Math.min(260, Math.max(80, total * 15));
+
+            const interaction = window.App.graphInteraction;
+            interaction.initCamera(rect.width, rect.height);
 
             boardNotes.forEach((note, idx) => {
                 const angle = (idx / (total || 1)) * Math.PI * 2;
+                const dist = 50 + (idx % 4) * 45;
                 const isRoot = !note.parentId || !notesMap.has(note.parentId);
                 const hasChildren = boardNotes.some(child => child.parentId === note.id);
                 const isOrphan = isRoot && !hasChildren;
 
-                const posX = Math.cos(angle) * radius + (Math.random() - 0.5) * 40;
-                const posY = Math.sin(angle) * radius + (Math.random() - 0.5) * 40;
-                const branchColor = getBranchColor(note.parentId || note.id);
+                const posX = centerX + Math.cos(angle) * dist;
+                const posY = centerY + Math.sin(angle) * dist;
+                const branchColor = getBranchColor(note.parentId || note.id, idx);
 
                 const nodeObj = {
                     id: note.id,
                     note: note,
                     title: note.title || 'Нотатка',
                     content: note.content || '',
-                    tags: note.tags || [],
+                    tags: noteManager ? noteManager.getNoteTags(note) : (note.tags || []),
                     isRoot: isRoot,
                     isOrphan: isOrphan,
+                    parentId: note.parentId || null,
                     x: posX,
                     y: posY,
-                    vx: 0,
-                    vy: 0,
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: (Math.random() - 0.5) * 2,
                     color: branchColor,
                     element: null
                 };
@@ -246,9 +250,9 @@ window.App = window.App || {};
                     nodeEl.className = 'graph-html-node' + (isRoot ? ' is-root' : '') + (isOrphan ? ' is-orphan' : '');
                     nodeEl.style.setProperty('--node-branch-color', branchColor);
 
-                    const icon = note.icon || '📄';
+                    const icon = note.icon || (isRoot ? '🗒️' : '📄');
                     nodeEl.innerHTML = `
-                        <div class="graph-html-node-circle" style="border-color: ${branchColor};">
+                        <div class="graph-html-node-circle" style="border-color: ${branchColor}; background: ${branchColor}22;">
                             ${icon}
                         </div>
                         <div class="graph-html-node-label">${nodeObj.title}</div>
@@ -264,8 +268,8 @@ window.App = window.App || {};
 
             // Ієрархічні зв'язки
             nodes.forEach(node => {
-                if (node.note.parentId && notesMap.has(node.note.parentId)) {
-                    const parentNode = nodes.find(n => n.id === node.note.parentId);
+                if (node.parentId && notesMap.has(node.parentId)) {
+                    const parentNode = nodes.find(n => n.id === node.parentId);
                     if (parentNode) {
                         edges.push({
                             id: `hier-${parentNode.id}-${node.id}`,
@@ -332,10 +336,29 @@ window.App = window.App || {};
                 isDraggingNode = true;
                 draggedNode = node;
 
+                const startX = e.clientX;
+                const startY = e.clientY;
+                const startNodeX = node.x;
+                const startNodeY = node.y;
+
                 const interaction = window.App.graphInteraction;
-                const world = interaction.screenToWorld(e.clientX, e.clientY, canvas);
-                node.dragOffsetX = world.x - node.x;
-                node.dragOffsetY = world.y - node.y;
+
+                const onMove = (ev) => {
+                    node.x = startNodeX + (ev.clientX - startX) / interaction.camera.zoom;
+                    node.y = startNodeY + (ev.clientY - startY) / interaction.camera.zoom;
+                    node.vx = 0;
+                    node.vy = 0;
+                };
+
+                const onUp = () => {
+                    window.removeEventListener('pointermove', onMove);
+                    window.removeEventListener('pointerup', onUp);
+                    isDraggingNode = false;
+                    draggedNode = null;
+                };
+
+                window.addEventListener('pointermove', onMove);
+                window.addEventListener('pointerup', onUp);
             });
 
             nodeEl.addEventListener('pointerenter', (e) => {
@@ -356,8 +379,7 @@ window.App = window.App || {};
                 }
             });
 
-            nodeEl.addEventListener('click', (e) => {
-                // Перехід до перегляду в колонках при кліку на вузол графа
+            nodeEl.addEventListener('click', () => {
                 if (window.App.store) {
                     window.App.store.setViewMode('columns');
                 } else if (window.App.state) {
@@ -405,13 +427,7 @@ window.App = window.App || {};
             });
 
             boundPointerMove = (e) => {
-                if (isDraggingNode && draggedNode) {
-                    const world = interaction.screenToWorld(e.clientX, e.clientY, canvas);
-                    draggedNode.x = world.x - (draggedNode.dragOffsetX || 0);
-                    draggedNode.y = world.y - (draggedNode.dragOffsetY || 0);
-                    draggedNode.vx = 0;
-                    draggedNode.vy = 0;
-                } else if (isDraggingCanvas) {
+                if (isDraggingCanvas) {
                     const dx = e.clientX - lastMousePos.x;
                     const dy = e.clientY - lastMousePos.y;
                     interaction.camera.x += dx;
@@ -421,8 +437,6 @@ window.App = window.App || {};
             };
 
             boundPointerUp = () => {
-                isDraggingNode = false;
-                draggedNode = null;
                 isDraggingCanvas = false;
             };
 
@@ -509,21 +523,26 @@ window.App = window.App || {};
             }
             if (zoomResetBtn) {
                 zoomResetBtn.addEventListener('click', () => {
-                    interaction.resetCamera();
+                    const rect = container.getBoundingClientRect();
+                    interaction.resetCamera(rect.width, rect.height);
                 });
             }
         },
 
         startSimulation() {
             isRunning = true;
+            const rect = container ? container.getBoundingClientRect() : { width: 800, height: 600 };
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+
             const loop = () => {
                 if (!isRunning) return;
 
                 if (window.App.graphSimulation) {
                     window.App.graphSimulation.step(nodes, edges, {
                         draggedNode: draggedNode,
-                        width: canvas ? canvas.width : 800,
-                        height: canvas ? canvas.height : 600
+                        centerX: centerX,
+                        centerY: centerY
                     });
                 }
 
@@ -539,11 +558,10 @@ window.App = window.App || {};
                     });
                 }
 
-                // Трансформуємо HTML-вузли разом з камерою
                 if (nodesLayer && canvas) {
                     const interaction = window.App.graphInteraction;
-                    const rect = canvas.getBoundingClientRect();
-                    nodesLayer.style.transform = `translate(${interaction.camera.x}px, ${interaction.camera.y}px) scale(${interaction.camera.zoom}) translate(${-rect.width / 2}px, ${-rect.height / 2}px)`;
+                    const r = canvas.getBoundingClientRect();
+                    nodesLayer.style.transform = `translate(${interaction.camera.x}px, ${interaction.camera.y}px) scale(${interaction.camera.zoom}) translate(${-r.width / 2}px, ${-r.height / 2}px)`;
                 }
 
                 animationFrameId = requestAnimationFrame(loop);

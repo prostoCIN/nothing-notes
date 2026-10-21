@@ -1,4 +1,4 @@
-// js/board/boardView.js - Головний контролер інтерактивної полотно-дошки стікерів
+// js/board/boardView.js - Головний контролер інтерактивної дошки стікерів (Canvas Sticky Board)
 window.App = window.App || {};
 
 (function() {
@@ -10,7 +10,6 @@ window.App = window.App || {};
 
     let nodes = [];
     let edges = [];
-    let animationFrameId = null;
 
     let isDraggingCanvas = false;
     let isDraggingNode = false;
@@ -25,7 +24,6 @@ window.App = window.App || {};
 
     let boundPointerMove = null;
     let boundPointerUp = null;
-    let boundKeyDown = null;
     let boundResize = null;
     let boundWheel = null;
     let boundCanvasContextMenu = null;
@@ -68,7 +66,6 @@ window.App = window.App || {};
             this.createBoardDOM(els.columnsContainer, currentBoard);
             this.resizeCanvas();
             this.buildBoardData();
-            this.draw();
         },
 
         createBoardDOM(parentEl, currentBoard) {
@@ -133,8 +130,6 @@ window.App = window.App || {};
                     </div>
                 </div>
 
-                <div class="board-tags-bar" id="board-tags-bar" style="display: none;"></div>
-
                 <canvas class="board-canvas"></canvas>
                 <div class="board-nodes-layer"></div>
 
@@ -150,12 +145,10 @@ window.App = window.App || {};
                             <line x1="5" y1="12" x2="19" y2="12"></line>
                         </svg>
                     </button>
-                    <button class="board-ctrl-btn" id="board-zoom-reset" title="Скинути положення">
+                    <button class="board-ctrl-btn" id="board-zoom-reset" title="Вирівняти та центрувати">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M15 3h6v6"></path>
-                            <path d="M9 21H3v-6"></path>
-                            <path d="M21 3l-7 7"></path>
-                            <path d="M3 21l7-7"></path>
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <circle cx="12" cy="12" r="3"></circle>
                         </svg>
                     </button>
                 </div>
@@ -163,7 +156,7 @@ window.App = window.App || {};
                 <div class="board-legend-pill">
                     <span>💡 Перетягуйте картки за шапку</span>
                     <span>•</span>
-                    <span>Клікніть правою кнопкою миші на полотні для створення нотатки</span>
+                    <span>Правий клік для створення нової нотатки</span>
                 </div>
             `;
 
@@ -195,12 +188,13 @@ window.App = window.App || {};
 
         buildBoardData() {
             const state = window.App.state;
-            if (!state || !state.notes) return;
+            const noteManager = window.App.noteManager;
+            const allNotes = noteManager ? noteManager.getAllNotes() : (state ? state.notes || [] : []);
 
             const currentBoard = window.App.boardManager ? window.App.boardManager.getActiveBoard() : null;
             if (!currentBoard) return;
 
-            const boardNotes = state.notes.filter(n => n.boardId === currentBoard.id);
+            const boardNotes = allNotes.filter(n => String(n.boardId) === String(currentBoard.id));
             const notesMap = new Map();
             boardNotes.forEach(n => notesMap.set(n.id, n));
 
@@ -208,37 +202,37 @@ window.App = window.App || {};
             nodes = [];
             edges = [];
 
-            const interaction = window.App.boardInteraction;
-            const cardWidth = 380;
-            const levelGapX = 420;
-            const siblingGapY = 24;
+            let anyMissingPosition = false;
 
-            let rootIdx = 0;
-            let currentRootY = 120;
-
-            boardNotes.forEach((note) => {
+            boardNotes.forEach((note, idx) => {
                 const isRoot = !note.parentId || !notesMap.has(note.parentId);
                 const hasChildren = boardNotes.some(child => child.parentId === note.id);
                 const isOrphan = isRoot && !hasChildren;
 
-                let posX = note.boardX !== undefined ? note.boardX : (100 + (rootIdx * 40));
-                let posY = note.boardY !== undefined ? note.boardY : currentRootY;
+                let posX = 0;
+                let posY = 0;
 
-                if (note.boardX === undefined && isRoot) {
-                    currentRootY += 220;
-                    rootIdx++;
+                const rawX = typeof note.canvasX === 'number' ? note.canvasX : (typeof note.boardX === 'number' ? note.boardX : null);
+                const rawY = typeof note.canvasY === 'number' ? note.canvasY : (typeof note.boardY === 'number' ? note.boardY : null);
+
+                if (rawX !== null && rawY !== null) {
+                    posX = rawX;
+                    posY = rawY;
+                } else {
+                    anyMissingPosition = true;
                 }
 
-                const branchColor = getBranchColor(note.parentId || note.id, rootIdx);
+                const branchColor = getBranchColor(note.parentId || note.id, idx);
 
                 const nodeObj = {
                     id: note.id,
                     note: note,
                     title: note.title || '',
                     content: note.content || '',
-                    tags: note.tags || [],
+                    tags: noteManager ? noteManager.getNoteTags(note) : (note.tags || []),
                     isRoot: isRoot,
                     isOrphan: isOrphan,
+                    parentId: note.parentId || null,
                     x: posX,
                     y: posY,
                     color: branchColor,
@@ -252,7 +246,7 @@ window.App = window.App || {};
                     card.style.top = posY + 'px';
                     card.dataset.boardNodeId = note.id;
 
-                    this.attachCardDragEvents(card, nodeObj);
+                    this.attachCardDrag(card, nodeObj);
                     nodesLayer.appendChild(card);
                     nodeObj.element = card;
                 }
@@ -260,10 +254,10 @@ window.App = window.App || {};
                 nodes.push(nodeObj);
             });
 
-            // Будуємо ієрархічні зв'язки
+            // Ієрархічні зв'язки
             nodes.forEach(node => {
-                if (node.note.parentId && notesMap.has(node.note.parentId)) {
-                    const parentNode = nodes.find(n => n.id === node.note.parentId);
+                if (node.parentId && notesMap.has(node.parentId)) {
+                    const parentNode = nodes.find(n => n.id === node.parentId);
                     if (parentNode) {
                         edges.push({
                             id: `hier-${parentNode.id}-${node.id}`,
@@ -278,7 +272,7 @@ window.App = window.App || {};
                 }
             });
 
-            // Зв'язки спільних тегів (якщо увімкнено)
+            // Зв'язки спільних тегів
             if (showTagLinks) {
                 const tagMap = new Map();
                 nodes.forEach(node => {
@@ -319,52 +313,118 @@ window.App = window.App || {};
 
             const orphansEl = container ? container.querySelector('#board-orphans-counter') : null;
             if (orphansEl) orphansEl.textContent = String(nodes.filter(n => n.isOrphan).length);
+
+            if (anyMissingPosition && window.App.boardLayout) {
+                window.App.boardLayout.autoLayout(nodes, edges, {
+                    animate: false,
+                    onUpdate: () => this.draw(),
+                    onComplete: () => {
+                        nodes.forEach(n => this.saveNodePosition(n));
+                        this.centerCameraOnAllNodes();
+                    }
+                });
+            } else {
+                this.centerCameraOnAllNodes();
+            }
         },
 
-        attachCardDragEvents(cardEl, node) {
-            const handle = cardEl.querySelector('.sticker-header') || cardEl;
+        centerCameraOnAllNodes() {
+            if (nodes.length === 0 || !canvas || !container) {
+                if (canvas && container) {
+                    const rect = container.getBoundingClientRect();
+                    window.App.boardInteraction.initCamera(rect.width, rect.height);
+                    this.draw();
+                }
+                return;
+            }
 
-            handle.addEventListener('pointerdown', (e) => {
-                if (e.target.closest('.sticker-menu-trigger') || e.target.closest('button') || e.target.closest('input') || e.target.closest('[contenteditable="true"]')) {
+            const rect = container.getBoundingClientRect();
+            const w = rect.width;
+            const h = rect.height;
+
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            nodes.forEach(n => {
+                const nw = n.element ? (n.element.offsetWidth || 380) : 380;
+                const nh = n.element ? (n.element.offsetHeight || 140) : 140;
+                minX = Math.min(minX, n.x);
+                minY = Math.min(minY, n.y);
+                maxX = Math.max(maxX, n.x + nw);
+                maxY = Math.max(maxY, n.y + nh);
+            });
+
+            const bboxW = Math.max(100, maxX - minX);
+            const bboxH = Math.max(100, maxY - minY);
+            const padding = 100;
+
+            const interaction = window.App.boardInteraction;
+            const targetZoom = Math.max(interaction.camera.minZoom, Math.min(1.0, Math.min((w - padding * 2) / bboxW, (h - padding * 2) / bboxH)));
+            const bboxCenterX = minX + bboxW / 2;
+            const bboxCenterY = minY + bboxH / 2;
+
+            interaction.camera.x = (w / 2) - (bboxCenterX - (w / 2)) * targetZoom;
+            interaction.camera.y = (h / 2) - (bboxCenterY - (h / 2)) * targetZoom;
+            interaction.camera.zoom = targetZoom;
+
+            this.draw();
+        },
+
+        attachCardDrag(cardEl, node) {
+            cardEl.addEventListener('pointerdown', (e) => {
+                if (e.target.closest('.sticker-title, .sticker-content, button, input, .sticker-menu-dropdown, .sticker-tag-dropdown, .sticker-emoji-picker-dropdown, .color-swatch-btn, a, .subnote-preview-item')) {
                     return;
                 }
+                if (e.button !== 0) return;
                 e.stopPropagation();
 
                 isDraggingNode = true;
                 draggedNode = node;
-
-                const interaction = window.App.boardInteraction;
-                const world = interaction.screenToWorld(e.clientX, e.clientY, canvas);
-                node.dragOffsetX = world.x - node.x;
-                node.dragOffsetY = world.y - node.y;
+                const startX = e.clientX;
+                const startY = e.clientY;
+                const startNodeX = node.x;
+                const startNodeY = node.y;
 
                 cardEl.classList.add('is-dragging');
+
+                const interaction = window.App.boardInteraction;
+
+                const onMove = (ev) => {
+                    node.x = startNodeX + (ev.clientX - startX) / interaction.camera.zoom;
+                    node.y = startNodeY + (ev.clientY - startY) / interaction.camera.zoom;
+                    if (node.element) {
+                        node.element.style.left = node.x + 'px';
+                        node.element.style.top = node.y + 'px';
+                    }
+                    this.draw();
+                };
+
+                const onUp = () => {
+                    window.removeEventListener('pointermove', onMove);
+                    window.removeEventListener('pointerup', onUp);
+                    if (node.element) {
+                        node.element.classList.remove('is-dragging');
+                    }
+                    this.saveNodePosition(node);
+                    isDraggingNode = false;
+                    draggedNode = null;
+                };
+
+                window.addEventListener('pointermove', onMove);
+                window.addEventListener('pointerup', onUp);
             });
         },
 
         bindEvents() {
             const interaction = window.App.boardInteraction;
 
-            // Зум та панорамування полотна
             canvas.addEventListener('pointerdown', (e) => {
-                if (e.button === 2) return; // правий клік обробляється окремо
+                if (e.button === 2) return;
                 isDraggingCanvas = true;
                 startMousePos = { x: e.clientX, y: e.clientY };
                 lastMousePos = { x: e.clientX, y: e.clientY };
             });
 
             boundPointerMove = (e) => {
-                if (isDraggingNode && draggedNode) {
-                    const world = interaction.screenToWorld(e.clientX, e.clientY, canvas);
-                    draggedNode.x = world.x - (draggedNode.dragOffsetX || 0);
-                    draggedNode.y = world.y - (draggedNode.dragOffsetY || 0);
-
-                    if (draggedNode.element) {
-                        draggedNode.element.style.left = draggedNode.x + 'px';
-                        draggedNode.element.style.top = draggedNode.y + 'px';
-                    }
-                    this.draw();
-                } else if (isDraggingCanvas) {
+                if (isDraggingCanvas) {
                     const dx = e.clientX - lastMousePos.x;
                     const dy = e.clientY - lastMousePos.y;
                     interaction.camera.x += dx;
@@ -375,14 +435,6 @@ window.App = window.App || {};
             };
 
             boundPointerUp = () => {
-                if (isDraggingNode && draggedNode) {
-                    if (draggedNode.element) {
-                        draggedNode.element.classList.remove('is-dragging');
-                    }
-                    this.saveNodePosition(draggedNode);
-                    isDraggingNode = false;
-                    draggedNode = null;
-                }
                 isDraggingCanvas = false;
             };
 
@@ -400,10 +452,7 @@ window.App = window.App || {};
                     window.App.boardContextMenu.show(e.clientX, e.clientY, world.x, world.y, {
                         onCreateNote: (wx, wy) => this.createNoteAtWorldPosition(wx, wy),
                         onAutoLayout: () => this.runAutoLayout(),
-                        onResetZoom: () => {
-                            interaction.resetCamera(canvas);
-                            this.draw();
-                        }
+                        onResetZoom: () => this.centerCameraOnAllNodes()
                     });
                 }
             };
@@ -421,9 +470,7 @@ window.App = window.App || {};
 
             // Кнопки тулбара
             const layoutBtn = container.querySelector('#board-auto-layout-btn');
-            if (layoutBtn) {
-                layoutBtn.addEventListener('click', () => this.runAutoLayout());
-            }
+            if (layoutBtn) layoutBtn.addEventListener('click', () => this.runAutoLayout());
 
             const orphansBtn = container.querySelector('#board-filter-orphans');
             if (orphansBtn) {
@@ -440,7 +487,6 @@ window.App = window.App || {};
                     showTagLinks = !showTagLinks;
                     tagLinksBtn.classList.toggle('is-active', showTagLinks);
                     this.buildBoardData();
-                    this.draw();
                 });
             }
 
@@ -487,10 +533,7 @@ window.App = window.App || {};
                 });
             }
             if (zoomResetBtn) {
-                zoomResetBtn.addEventListener('click', () => {
-                    interaction.resetCamera(canvas);
-                    this.draw();
-                });
+                zoomResetBtn.addEventListener('click', () => this.centerCameraOnAllNodes());
             }
         },
 
@@ -501,10 +544,15 @@ window.App = window.App || {};
 
             const n = state.notes.find(item => item.id === node.id);
             if (n) {
+                n.canvasX = Math.round(node.x);
+                n.canvasY = Math.round(node.y);
                 n.boardX = Math.round(node.x);
                 n.boardY = Math.round(node.y);
                 if (window.App.storage) {
                     window.App.storage.saveNotes(state.notes);
+                }
+                if (window.App.cloudSync && window.App.cloudSync.syncNote) {
+                    window.App.cloudSync.syncNote(n);
                 }
             }
         },
@@ -512,10 +560,11 @@ window.App = window.App || {};
         runAutoLayout() {
             if (window.App.boardLayout) {
                 window.App.boardLayout.autoLayout(nodes, edges, {
+                    animate: true,
                     onUpdate: () => this.draw(),
                     onComplete: () => {
                         nodes.forEach(n => this.saveNodePosition(n));
-                        this.draw();
+                        this.centerCameraOnAllNodes();
                     }
                 });
             }
@@ -525,17 +574,18 @@ window.App = window.App || {};
             const currentBoard = window.App.boardManager ? window.App.boardManager.getActiveBoard() : null;
             if (!currentBoard) return;
 
-            if (window.App.noteManager && window.App.noteManager.createNote) {
-                const newNote = window.App.noteManager.createNote(currentBoard.id, null, 'Нова нотатка');
+            if (window.App.noteManager && window.App.noteManager.createNewNote) {
+                const newNote = window.App.noteManager.createNewNote(null, false);
                 if (newNote) {
-                    newNote.boardX = Math.round(worldX);
-                    newNote.boardY = Math.round(worldY);
+                    newNote.canvasX = Math.round(worldX - 190);
+                    newNote.canvasY = Math.round(worldY - 70);
+                    newNote.boardX = newNote.canvasX;
+                    newNote.boardY = newNote.canvasY;
                     const state = window.App.state;
                     if (state && window.App.storage) {
                         window.App.storage.saveNotes(state.notes);
                     }
                     this.buildBoardData();
-                    this.draw();
                 }
             }
         },
@@ -572,10 +622,10 @@ window.App = window.App || {};
 
             // Малюємо сітку фонових точок
             const gridSize = 40;
-            const startX = Math.floor((-camera.x / camera.zoom) / gridSize) * gridSize;
-            const endX = startX + (width / camera.zoom) + gridSize * 2;
-            const startY = Math.floor((-camera.y / camera.zoom) / gridSize) * gridSize;
-            const endY = startY + (height / camera.zoom) + gridSize * 2;
+            const startX = Math.floor((-camera.x / camera.zoom) / gridSize) * gridSize - gridSize;
+            const endX = Math.ceil(((width - camera.x) / camera.zoom) / gridSize) * gridSize + gridSize;
+            const startY = Math.floor((-camera.y / camera.zoom) / gridSize) * gridSize - gridSize;
+            const endY = Math.ceil(((height - camera.y) / camera.zoom) / gridSize) * gridSize + gridSize;
 
             ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
             for (let x = startX; x <= endX; x += gridSize) {
@@ -586,7 +636,7 @@ window.App = window.App || {};
                 }
             }
 
-            // Оновлюємо шляхи та малюємо кабелі
+            // Малюємо кабелі
             if (window.App.boardCables) {
                 edges.forEach(edge => {
                     edge.cachedPath = window.App.boardCables.calculatePath(edge.sourceNode, edge.targetNode);
@@ -597,7 +647,7 @@ window.App = window.App || {};
                 });
             }
 
-            // Трансформуємо шар HTML-карток синхронно з камерою
+            // Синхронізація шару карток
             if (nodesLayer) {
                 nodesLayer.style.transform = `translate(${camera.x}px, ${camera.y}px) scale(${camera.zoom}) translate(${-width / 2}px, ${-height / 2}px)`;
             }

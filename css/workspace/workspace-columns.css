@@ -6,7 +6,7 @@
     display: flex;
     flex-direction: row;
     position: relative;
-    gap: 14px; /* Зменшений відступ між усіма колонками */
+    gap: 14px;
     padding: 16px 24px 20px 24px;
     height: calc(100vh - 48px);
     width: 100%;
@@ -15,6 +15,14 @@
     align-items: stretch;
     overflow-x: auto;
     overflow-y: hidden;
+}
+
+.columns-container:has(.board-view-wrapper),
+.columns-container:has(.graph-view-wrapper),
+.columns-container.has-canvas-mode {
+    padding: 0 !important;
+    gap: 0 !important;
+    overflow: hidden !important;
 }
 
 /* Multi-Columns Responsive Widths:

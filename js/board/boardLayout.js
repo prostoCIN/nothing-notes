@@ -1,27 +1,32 @@
-// js/board/boardLayout.js - Алгоритми автоматичного та ієрархічного розміщення стікерів
+// js/board/boardLayout.js - Алгоритми автоматичного ієрархічного розміщення карток на дошці
 window.App = window.App || {};
 
 (function() {
     window.App.boardLayout = {
-        /**
-         * Автоматичне впорядкування стікерів у вигляді ієрархічних колонок з анімацією
-         */
         autoLayout(nodes, edges, options = {}) {
             if (!nodes || nodes.length === 0) return;
 
             const {
+                animate = true,
                 onUpdate = null,
                 onComplete = null
             } = options;
 
-            const rootNodes = nodes.filter(n => n.isRoot);
-            if (rootNodes.length === 0) return;
+            const CARD_WIDTH = 380;
+            const HORIZONTAL_GAP = 70;
+            const VERTICAL_GAP = 28;
 
-            const LEVEL_X_GAP = 420;
-            const SIBLING_Y_GAP = 28;
+            const childrenMap = new Map();
+            const rootNodes = [];
+            nodes.forEach(n => childrenMap.set(n.id, []));
 
-            let currentRootY = 100;
-            const START_X = 100;
+            nodes.forEach(n => {
+                if (n.parentId && childrenMap.has(n.parentId)) {
+                    childrenMap.get(n.parentId).push(n);
+                } else {
+                    rootNodes.push(n);
+                }
+            });
 
             const getNodeHeight = (node) => {
                 if (node.element && node.element.offsetHeight > 40) {
@@ -30,66 +35,84 @@ window.App = window.App || {};
                 return 150;
             };
 
-            const getSubtreeHeight = (nodeId) => {
-                const childEdges = edges.filter(e => e.source === nodeId && e.type === 'hierarchy');
-                const thisHeight = getNodeHeight(nodes.find(n => n.id === nodeId) || {});
-                if (childEdges.length === 0) {
-                    return thisHeight;
-                }
-                let childrenTotal = 0;
-                childEdges.forEach((e, idx) => {
-                    childrenTotal += getSubtreeHeight(e.target);
-                    if (idx < childEdges.length - 1) childrenTotal += SIBLING_Y_GAP;
-                });
-                return Math.max(thisHeight, childrenTotal);
-            };
-
-            const positionSubtree = (nodeId, level, startY) => {
+            const subtreeHeightMap = new Map();
+            const calcSubtreeHeight = (nodeId) => {
                 const node = nodes.find(n => n.id === nodeId);
-                if (!node) return startY;
-
-                const nodeHeight = getNodeHeight(node);
-                const subtreeH = getSubtreeHeight(nodeId);
-                const nodeY = startY + Math.max(0, (subtreeH - nodeHeight) / 2);
-
-                node.targetX = START_X + level * LEVEL_X_GAP;
-                node.targetY = nodeY;
-
-                const childEdges = edges.filter(e => e.source === nodeId && e.type === 'hierarchy');
-                let childCurrentY = startY;
-
-                childEdges.forEach((e) => {
-                    const childH = getSubtreeHeight(e.target);
-                    positionSubtree(e.target, level + 1, childCurrentY);
-                    childCurrentY += childH + SIBLING_Y_GAP;
+                if (!node) return 0;
+                const myH = getNodeHeight(node);
+                const children = childrenMap.get(nodeId) || [];
+                if (children.length === 0) {
+                    subtreeHeightMap.set(nodeId, myH);
+                    return myH;
+                }
+                let totalChildH = 0;
+                children.forEach((child, i) => {
+                    if (i > 0) totalChildH += VERTICAL_GAP;
+                    totalChildH += calcSubtreeHeight(child.id);
                 });
-
-                return startY + subtreeH;
+                const finalH = Math.max(myH, totalChildH);
+                subtreeHeightMap.set(nodeId, finalH);
+                return finalH;
             };
 
-            rootNodes.forEach((root) => {
-                const treeH = positionSubtree(root.id, 0, currentRootY);
-                currentRootY = treeH + SIBLING_Y_GAP * 2;
+            rootNodes.forEach(r => calcSubtreeHeight(r.id));
+
+            let currentRootY = 60;
+            const startX = 60;
+
+            const layoutNode = (node, x, startY) => {
+                const subH = subtreeHeightMap.get(node.id) || getNodeHeight(node);
+                const myH = getNodeHeight(node);
+
+                node.targetX = x;
+                node.targetY = startY + Math.max(0, (subH - myH) / 6);
+
+                const children = childrenMap.get(node.id) || [];
+                let childY = startY;
+                const nextX = x + CARD_WIDTH + HORIZONTAL_GAP;
+
+                children.forEach(child => {
+                    const childSubH = subtreeHeightMap.get(child.id) || getNodeHeight(child);
+                    layoutNode(child, nextX, childY);
+                    childY += childSubH + VERTICAL_GAP;
+                });
+            };
+
+            rootNodes.forEach(root => {
+                const rootH = subtreeHeightMap.get(root.id) || 160;
+                layoutNode(root, startX, currentRootY);
+                currentRootY += rootH + 50;
             });
 
-            // Плавна анімація переміщення карток до цільових координат
-            const startPositions = nodes.map(n => ({ x: n.x, y: n.y }));
-            const duration = 400;
-            const startTime = performance.now();
+            if (!animate) {
+                nodes.forEach(n => {
+                    n.x = n.targetX;
+                    n.y = n.targetY;
+                    if (n.element) {
+                        n.element.style.left = n.x + 'px';
+                        n.element.style.top = n.y + 'px';
+                    }
+                });
+                if (typeof onUpdate === 'function') onUpdate();
+                if (typeof onComplete === 'function') onComplete();
+                return;
+            }
 
-            const animateStep = (time) => {
-                const elapsed = time - startTime;
+            const startTime = performance.now();
+            const duration = 320;
+            const startPositions = nodes.map(n => ({ x: n.x, y: n.y }));
+
+            const animateStep = (now) => {
+                const elapsed = now - startTime;
                 const progress = Math.min(1, elapsed / duration);
-                const ease = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+                const ease = 1 - Math.pow(1 - progress, 3);
 
                 nodes.forEach((n, idx) => {
-                    if (n.targetX !== undefined && n.targetY !== undefined) {
-                        n.x = startPositions[idx].x + (n.targetX - startPositions[idx].x) * ease;
-                        n.y = startPositions[idx].y + (n.targetY - startPositions[idx].y) * ease;
-                        if (n.element) {
-                            n.element.style.left = n.x + 'px';
-                            n.element.style.top = n.y + 'px';
-                        }
+                    n.x = startPositions[idx].x + (n.targetX - startPositions[idx].x) * ease;
+                    n.y = startPositions[idx].y + (n.targetY - startPositions[idx].y) * ease;
+                    if (n.element) {
+                        n.element.style.left = n.x + 'px';
+                        n.element.style.top = n.y + 'px';
                     }
                 });
 

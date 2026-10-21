@@ -1,4 +1,4 @@
-// js/graph/graphInteraction.js - Взаємодія з графом: Pan, Zoom, Drag вузлів, навігація
+// js/graph/graphInteraction.js - Панорамування, зум та перетворення координат графа
 window.App = window.App || {};
 
 (function() {
@@ -9,6 +9,12 @@ window.App = window.App || {};
             zoom: 1,
             minZoom: 0.15,
             maxZoom: 3.5
+        },
+
+        initCamera(width, height) {
+            this.camera.x = width / 2;
+            this.camera.y = height / 2;
+            this.camera.zoom = 1;
         },
 
         screenToWorld(screenX, screenY, canvas) {
@@ -31,17 +37,17 @@ window.App = window.App || {};
             const mouseX = screenX - rect.left;
             const mouseY = screenY - rect.top;
 
-            const worldX = (mouseX - this.camera.x - rect.width / 2) / oldZoom;
-            const worldY = (mouseY - this.camera.y - rect.height / 2) / oldZoom;
+            const worldX = (mouseX - this.camera.x) / oldZoom + (rect.width / 2);
+            const worldY = (mouseY - this.camera.y) / oldZoom + (rect.height / 2);
 
             this.camera.zoom = newZoom;
-            this.camera.x = mouseX - rect.width / 2 - worldX * newZoom;
-            this.camera.y = mouseY - rect.height / 2 - worldY * newZoom;
+            this.camera.x = mouseX - (worldX - rect.width / 2) * newZoom;
+            this.camera.y = mouseY - (worldY - rect.height / 2) * newZoom;
         },
 
-        resetCamera() {
-            this.camera.x = 0;
-            this.camera.y = 0;
+        resetCamera(width, height) {
+            this.camera.x = width / 2;
+            this.camera.y = height / 2;
             this.camera.zoom = 1;
         }
     };
