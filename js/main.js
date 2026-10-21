@@ -80,6 +80,8 @@ import './sync/syncRealtime.js';
 import './sync/syncNotes.js';
 import './sync/syncUI.js';
 import './cloudSync.js';
+import './share/shareMarkdown.js';
+import './share/shareModal.js';
 import './shareManager.js';
 import './authModal.js';
 import './settingsModal.js';
