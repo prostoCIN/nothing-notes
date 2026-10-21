@@ -590,6 +590,44 @@ window.App = window.App || {};
             }
         },
 
+        createSubnoteForNode(parentId) {
+            const parentNode = nodes.find(n => n.id === parentId);
+            if (!parentNode) return;
+
+            const state = window.App.state;
+            const noteManager = window.App.noteManager;
+            if (!noteManager) return;
+
+            const newNote = noteManager.createNewNote(parentId, false);
+            if (!newNote) return;
+
+            const existingChildren = nodes.filter(n => n.parentId === parentId);
+            const ph = parentNode.element ? (parentNode.element.offsetHeight || 140) : 140;
+
+            // Розміщуємо нову піднотатку вертикально під батьківською карткою
+            newNote.canvasX = parentNode.x + (existingChildren.length * 30);
+            newNote.canvasY = parentNode.y + ph + 40 + (existingChildren.length * 150);
+            newNote.boardX = newNote.canvasX;
+            newNote.boardY = newNote.canvasY;
+
+            if (window.App.storage) {
+                window.App.storage.saveNotes(state.notes);
+            }
+
+            this.buildBoardData();
+            this.draw();
+
+            setTimeout(() => {
+                if (nodesLayer) {
+                    const newCard = nodesLayer.querySelector(`.note-sticker[data-note-id="${newNote.id}"]`);
+                    if (newCard) {
+                        const titleEl = newCard.querySelector('.sticker-title');
+                        if (titleEl) titleEl.focus();
+                    }
+                }
+            }, 80);
+        },
+
         applyFilters() {
             nodes.forEach(node => {
                 if (!node.element) return;

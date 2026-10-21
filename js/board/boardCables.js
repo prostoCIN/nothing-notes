@@ -52,7 +52,7 @@ window.App = window.App || {};
                     ctx.shadowBlur = 0;
                 } else {
                     ctx.strokeStyle = branchColor + 'bb';
-                    ctx.lineWidth = 2.0 / camera.zoom;
+                    ctx.lineWidth = 2.2 / camera.zoom;
                     ctx.shadowBlur = 0;
                 }
 
@@ -103,20 +103,53 @@ window.App = window.App || {};
 
             const pw = sourceNode.element ? (sourceNode.element.offsetWidth || 380) : 380;
             const ph = sourceNode.element ? (sourceNode.element.offsetHeight || 140) : 140;
+            const cw = targetNode.element ? (targetNode.element.offsetWidth || 380) : 380;
+            const ch = targetNode.element ? (targetNode.element.offsetHeight || 140) : 140;
 
-            const x1 = sourceNode.x + pw - 24;
-            const y1 = sourceNode.y + ph - 20;
-            const x2 = targetNode.x + 24;
-            const y2 = targetNode.y + 24;
+            // Визначаємо взаємне розташування: зверху-вниз чи зліва-направо
+            const isBelow = (targetNode.y >= sourceNode.y + ph - 25);
 
-            const dx = Math.abs(x2 - x1);
-            const cpOffset = Math.max(80, dx * 0.45);
-            const cp1x = x1 + cpOffset;
-            const cp1y = y1;
-            const cp2x = x2 - cpOffset;
-            const cp2y = y2;
+            if (isBelow) {
+                // Зверху-вниз: з нижнього центру батьківської картки до верхнього центру дочірньої
+                const x1 = sourceNode.x + pw / 2;
+                const y1 = sourceNode.y + ph;
+                const x2 = targetNode.x + cw / 2;
+                const y2 = targetNode.y;
 
-            return { x1, y1, x2, y2, cp1x, cp1y, cp2x, cp2y };
+                const dy = Math.max(25, y2 - y1);
+                const cpOffset = Math.max(40, dy * 0.5);
+                const cp1x = x1;
+                const cp1y = y1 + cpOffset;
+                const cp2x = x2;
+                const cp2y = y2 - cpOffset;
+
+                return { x1, y1, x2, y2, cp1x, cp1y, cp2x, cp2y };
+            } else {
+                // Зліва-направо або довільне положення
+                const isLeft = (targetNode.x + cw <= sourceNode.x);
+                let x1, y1, x2, y2;
+
+                if (isLeft) {
+                    x1 = sourceNode.x;
+                    y1 = sourceNode.y + ph / 2;
+                    x2 = targetNode.x + cw;
+                    y2 = targetNode.y + ch / 2;
+                } else {
+                    x1 = sourceNode.x + pw;
+                    y1 = sourceNode.y + ph / 2;
+                    x2 = targetNode.x;
+                    y2 = targetNode.y + ch / 2;
+                }
+
+                const dx = Math.max(25, Math.abs(x2 - x1));
+                const cpOffset = Math.max(50, dx * 0.45);
+                const cp1x = isLeft ? (x1 - cpOffset) : (x1 + cpOffset);
+                const cp1y = y1;
+                const cp2x = isLeft ? (x2 + cpOffset) : (x2 - cpOffset);
+                const cp2y = y2;
+
+                return { x1, y1, x2, y2, cp1x, cp1y, cp2x, cp2y };
+            }
         }
     };
 })();

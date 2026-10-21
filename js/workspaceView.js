@@ -657,7 +657,12 @@ window.App = window.App || {};
             const isReadOnly = !!targetNote.isReadOnly || !!(currentBoard && currentBoard.isReadOnly) || (targetNote.boardId && targetNote.boardId.startsWith('shared_'));
             if (isReadOnly) return;
 
-            if (state && state.isGraphView) {
+            if (state && (state.viewMode === 'board' || state.isBoardView)) {
+                if (window.App.boardView && window.App.boardView.createSubnoteForNode) {
+                    window.App.boardView.createSubnoteForNode(targetNoteId);
+                    return;
+                }
+            } else if (state && (state.viewMode === 'graph' || state.isGraphView)) {
                 if (window.App.graphView && window.App.graphView.createSubnoteForNode) {
                     window.App.graphView.createSubnoteForNode(targetNoteId);
                     return;
