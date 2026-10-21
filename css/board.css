@@ -1,0 +1,6 @@
+/* css/board.css - Агрегатор стилів інтерактивної полотно-дошки стікерів (Canvas Sticky Board) */
+@import './board/board-base.css';
+@import './board/board-cards.css';
+@import './board/board-toolbar.css';
+@import './board/board-menu.css';
+@import './board/board-mobile.css';

@@ -197,37 +197,31 @@ window.App = window.App || {};
                 }
             });
 
-            // Прив'язка кнопок плаваючого верхнього острівця дій (Workspace Top Island)
+            // Прив'язка кнопок плаваючого верхнього острівця дій (3 режими: Колонки, Дошка, Граф)
             const viewColumnsBtn = document.getElementById('island-view-columns-btn');
+            const viewBoardBtn = document.getElementById('island-view-board-btn');
             const viewGraphBtn = document.getElementById('island-view-graph-btn');
             const selectToggleBtn = document.getElementById('island-select-toggle-btn');
 
-            if (viewColumnsBtn) {
-                viewColumnsBtn.addEventListener('click', () => {
-                    const state = window.App.state;
-                    if (state && state.isGraphView) {
-                        if (window.App.store) {
-                            window.App.store.setGraphView(false);
-                        } else {
-                            state.isGraphView = false;
-                        }
-                        this.render();
-                    }
-                });
-            }
+            const switchView = (mode) => {
+                if (window.App.store) {
+                    window.App.store.setViewMode(mode);
+                } else if (window.App.state) {
+                    window.App.state.viewMode = mode;
+                    window.App.state.isGraphView = (mode === 'graph');
+                    window.App.state.isBoardView = (mode === 'board');
+                }
+                this.render();
+            };
 
+            if (viewColumnsBtn) {
+                viewColumnsBtn.addEventListener('click', () => switchView('columns'));
+            }
+            if (viewBoardBtn) {
+                viewBoardBtn.addEventListener('click', () => switchView('board'));
+            }
             if (viewGraphBtn) {
-                viewGraphBtn.addEventListener('click', () => {
-                    const state = window.App.state;
-                    if (state && !state.isGraphView) {
-                        if (window.App.store) {
-                            window.App.store.setGraphView(true);
-                        } else {
-                            state.isGraphView = true;
-                        }
-                        this.render();
-                    }
-                });
+                viewGraphBtn.addEventListener('click', () => switchView('graph'));
             }
 
             if (selectToggleBtn) {
@@ -411,19 +405,15 @@ window.App = window.App || {};
             if (boardIconEl) boardIconEl.textContent = currentBoard.icon || '';
 
             const viewColumnsBtn = document.getElementById('island-view-columns-btn');
+            const viewBoardBtn = document.getElementById('island-view-board-btn');
             const viewGraphBtn = document.getElementById('island-view-graph-btn');
             const selectToggleBtn = document.getElementById('island-select-toggle-btn');
             const selectText = document.getElementById('island-select-text');
 
-            if (viewColumnsBtn && viewGraphBtn) {
-                if (state && state.isGraphView) {
-                    viewColumnsBtn.classList.remove('active');
-                    viewGraphBtn.classList.add('active');
-                } else {
-                    viewColumnsBtn.classList.add('active');
-                    viewGraphBtn.classList.remove('active');
-                }
-            }
+            const currentMode = (state && state.viewMode) || (state && state.isGraphView ? 'graph' : 'columns');
+            if (viewColumnsBtn) viewColumnsBtn.classList.toggle('active', currentMode === 'columns');
+            if (viewBoardBtn) viewBoardBtn.classList.toggle('active', currentMode === 'board');
+            if (viewGraphBtn) viewGraphBtn.classList.toggle('active', currentMode === 'graph');
 
             if (selectToggleBtn && selectText) {
                 const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
@@ -445,28 +435,38 @@ window.App = window.App || {};
             if (boardWorkspace) boardWorkspace.classList.toggle('is-board-readonly', isBoardReadOnly);
             if (topHeader) topHeader.classList.toggle('is-board-readonly', isBoardReadOnly);
 
-            // Якщо увімкнено режим карти нотаток (Obsidian Graph View)
-            if (state && state.isGraphView && window.App.graphView) {
+            // 1. Якщо увімкнено режим інтерактивної дошки стікерів (Canvas Sticky Board)
+            if (currentMode === 'board' && window.App.boardView) {
                 if (topHeader) topHeader.classList.add('graph-mode-active');
                 if (window.App.brushTool) window.App.brushTool.disable();
                 if (window.App.eraserTool) window.App.eraserTool.disable();
                 if (window.App.textSelectionToolbar) window.App.textSelectionToolbar.hide();
-                if (window.App.workspaceSearch) {
-                    window.App.workspaceSearch.close();
-                } else {
-                    const searchBar = document.getElementById('workspace-search-bar');
-                    if (searchBar) searchBar.style.display = 'none';
-                }
+                if (window.App.workspaceSearch) window.App.workspaceSearch.close();
+                if (window.App.graphView) window.App.graphView.stopSimulation();
+
+                els.columnsContainer.classList.remove('has-many-columns');
+                window.App.boardView.render();
+                return;
+            }
+
+            // 2. Якщо увімкнено режим інтерактивного графа зв'язків (Obsidian Graph View)
+            if (currentMode === 'graph' && window.App.graphView) {
+                if (topHeader) topHeader.classList.add('graph-mode-active');
+                if (window.App.brushTool) window.App.brushTool.disable();
+                if (window.App.eraserTool) window.App.eraserTool.disable();
+                if (window.App.textSelectionToolbar) window.App.textSelectionToolbar.hide();
+                if (window.App.workspaceSearch) window.App.workspaceSearch.close();
+                if (window.App.boardView) window.App.boardView.cleanup();
 
                 els.columnsContainer.classList.remove('has-many-columns');
                 window.App.graphView.render();
                 return;
-            } else {
-                if (topHeader && !isBoardReadOnly) topHeader.classList.remove('graph-mode-active');
-                if (window.App.graphView) {
-                    window.App.graphView.stopSimulation();
-                }
             }
+
+            // 3. Класичний режим колонок (Columns View)
+            if (topHeader && !isBoardReadOnly) topHeader.classList.remove('graph-mode-active');
+            if (window.App.graphView) window.App.graphView.stopSimulation();
+            if (window.App.boardView) window.App.boardView.cleanup();
 
             // Якщо колонок 3 і більше — додаємо спеціальний клас для стилізації ширини
             const totalCols = (state && state.activeChain) ? state.activeChain.length : 1;

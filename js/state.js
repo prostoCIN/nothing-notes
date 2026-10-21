@@ -113,11 +113,24 @@ window.App.storage = {
     saveColumnLayouts(layouts) {
         localStorage.setItem('minimal_column_layouts', JSON.stringify(layouts));
     },
+    getViewMode() {
+        const mode = localStorage.getItem('minimal_view_mode');
+        if (mode === 'columns' || mode === 'board' || mode === 'graph') {
+            return mode;
+        }
+        const legacyGraph = localStorage.getItem('minimal_graph_view_mode') === 'true';
+        return legacyGraph ? 'board' : 'columns';
+    },
+    saveViewMode(mode) {
+        const valid = (mode === 'columns' || mode === 'board' || mode === 'graph') ? mode : 'columns';
+        localStorage.setItem('minimal_view_mode', valid);
+        localStorage.setItem('minimal_graph_view_mode', (valid === 'board' || valid === 'graph') ? 'true' : 'false');
+    },
     getGraphViewMode() {
-        return localStorage.getItem('minimal_graph_view_mode') === 'true';
+        return this.getViewMode() === 'graph';
     },
     saveGraphViewMode(enabled) {
-        localStorage.setItem('minimal_graph_view_mode', enabled ? 'true' : 'false');
+        this.saveViewMode(enabled ? 'graph' : 'columns');
     },
     getReadOnlyBoards() {
         return JSON.parse(localStorage.getItem('minimal_readonly_boards')) || [];
@@ -168,7 +181,9 @@ window.App.storage = {
         selectedSidebarNoteIds: new Set(), // ID виділених нотаток у сайдбарі (Windows-style selection)
         selectedWorkspaceNoteIds: new Set(), // ID вибраних нотаток на головній області (iOS Gallery style)
         isWorkspaceSelectMode: false, // Режим мульти-вибору на головній області
-        isGraphView: window.App.storage.getGraphViewMode(), // Режим перегляду інтерактивного графа (Obsidian Style)
+        viewMode: window.App.storage.getViewMode(), // Режим перегляду: 'columns' | 'board' | 'graph'
+        isGraphView: window.App.storage.getViewMode() === 'graph',
+        isBoardView: window.App.storage.getViewMode() === 'board',
         isDraggingNote: false, // Прапорець активного перетягування нотатки (блокує фонові перерендери)
         draggedNoteId: null, // ID поточної нотатки, що перетягується
         activeTagFilters: new Map(), // Карта фільтрів тегів для колонок: key: parentId || 'root' -> Set<tagText>
@@ -204,8 +219,20 @@ window.App.storage = {
                         case 'activeBoardId':
                             storage.saveActiveBoardId(value);
                             break;
+                        case 'viewMode':
+                            storage.saveViewMode(value);
+                            target.isGraphView = (value === 'graph');
+                            target.isBoardView = (value === 'board');
+                            break;
                         case 'isGraphView':
                             storage.saveGraphViewMode(value);
+                            target.viewMode = value ? 'graph' : 'columns';
+                            target.isBoardView = false;
+                            break;
+                        case 'isBoardView':
+                            target.viewMode = value ? 'board' : 'columns';
+                            target.isGraphView = false;
+                            storage.saveViewMode(target.viewMode);
                             break;
                         case 'columnLayouts':
                             storage.saveColumnLayouts(value);
@@ -296,13 +323,25 @@ window.App.storage = {
             this._notify('activeChain', rawState.activeChain);
         },
 
-        setGraphView(enabled, persist = true) {
-            const val = Boolean(enabled);
-            rawState.isGraphView = val;
+        setViewMode(mode, persist = true) {
+            const valid = (mode === 'columns' || mode === 'board' || mode === 'graph') ? mode : 'columns';
+            rawState.viewMode = valid;
+            rawState.isGraphView = (valid === 'graph');
+            rawState.isBoardView = (valid === 'board');
             if (persist && window.App.storage) {
-                window.App.storage.saveGraphViewMode(val);
+                window.App.storage.saveViewMode(valid);
             }
-            this._notify('isGraphView', val);
+            this._notify('viewMode', valid);
+            this._notify('isGraphView', rawState.isGraphView);
+            this._notify('isBoardView', rawState.isBoardView);
+        },
+
+        setGraphView(enabled, persist = true) {
+            this.setViewMode(enabled ? 'graph' : 'columns', persist);
+        },
+
+        setBoardView(enabled, persist = true) {
+            this.setViewMode(enabled ? 'board' : 'columns', persist);
         },
 
         setColumnLayout(parentKey, layout, persist = true) {

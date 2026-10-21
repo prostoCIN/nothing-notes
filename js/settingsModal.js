@@ -121,7 +121,9 @@ window.App = window.App || {};
                 });
             }
 
-            if (window.App.state && window.App.state.isGraphView && window.App.graphView) {
+            if (window.App.state && window.App.state.viewMode === 'board' && window.App.boardView) {
+                window.App.boardView.render();
+            } else if (window.App.state && window.App.state.viewMode === 'graph' && window.App.graphView) {
                 window.App.graphView.render();
             }
         },

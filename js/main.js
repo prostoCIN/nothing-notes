@@ -52,7 +52,21 @@ import './workspace/stickerCard.js';
 import './workspace/workspaceColumn.js';
 import './workspace/workspacePagination.js';
 import './workspaceView.js';
-import './graphView.js';
+
+// 4. Модулі інтерактивної дошки стікерів (Canvas Sticky Board)
+import './board/boardCables.js';
+import './board/boardLayout.js';
+import './board/boardContextMenu.js';
+import './board/boardInteraction.js';
+import './board/boardView.js';
+
+// 5. Модулі інтерактивного графа зв'язків (Obsidian Graph View)
+import './graph/graphSimulation.js';
+import './graph/graphPreview.js';
+import './graph/graphExport.js';
+import './graph/graphRenderer.js';
+import './graph/graphInteraction.js';
+import './graph/graphView.js';
 
 // 4. Модулі хмари, аутентифікації та налаштувань
 import './supabaseClient.js';

@@ -1,0 +1,34 @@
+/* css/graph/graph-mobile.css - Мобільні адаптації графа */
+.graph-mobile-filters-trigger {
+    display: none;
+    background: var(--toolbar-bg, rgba(26, 26, 30, 0.92));
+    border: 1px solid var(--toolbar-border, rgba(255, 255, 255, 0.15));
+    border-radius: 10px;
+    width: 36px;
+    height: 36px;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    cursor: pointer;
+    position: relative;
+}
+
+@media (max-width: 768px) {
+    .graph-toolbar {
+        top: 10px;
+        left: 12px;
+        right: 12px;
+    }
+
+    .graph-toolbar-filters {
+        display: none !important;
+    }
+
+    .graph-mobile-filters-trigger {
+        display: flex !important;
+    }
+
+    .graph-search-input {
+        width: 140px;
+    }
+}

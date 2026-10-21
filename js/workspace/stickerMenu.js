@@ -282,10 +282,8 @@ window.App = window.App || {};
                     menuDropdown.classList.remove('active');
                     navViewport.classList.remove('is-sub-active');
                     if (onClose) onClose();
-                    if (window.App.state && window.App.state.isGraphView) {
-                        if (window.App.graphView && window.App.graphView.createSubnoteForNode) {
-                            window.App.graphView.createSubnoteForNode(note.id);
-                        } else if (noteManager) {
+                    if (window.App.state && (window.App.state.isBoardView || window.App.state.isGraphView || window.App.state.viewMode !== 'columns')) {
+                        if (noteManager) {
                             noteManager.createNewNote(note.id, true);
                         }
                     } else {

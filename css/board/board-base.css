@@ -1,0 +1,99 @@
+/* css/board/board-base.css - Базові стилі полотна дошки нотаток */
+.board-view-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: var(--graph-bg, radial-gradient(circle at center, #1f1f23 0%, #141416 100%));
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    user-select: none;
+}
+
+.board-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+    touch-action: none;
+    z-index: 1;
+}
+
+.board-canvas:active {
+    cursor: grabbing;
+}
+
+.board-nodes-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 2;
+    transform-origin: 0 0;
+    will-change: transform;
+}
+
+/* Плаваючі кнопки управління зумом у правому нижньому кутку */
+.board-controls-panel {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    background: var(--toolbar-bg, rgba(30, 30, 34, 0.85));
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--toolbar-border, rgba(255, 255, 255, 0.12));
+    border-radius: 12px;
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+    z-index: 10;
+}
+
+.board-ctrl-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.board-ctrl-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--text-main);
+}
+
+.board-ctrl-btn:active {
+    transform: scale(0.92);
+}
+
+.board-legend-pill {
+    position: absolute;
+    bottom: 24px;
+    left: 24px;
+    background: var(--toolbar-bg, rgba(30, 30, 34, 0.85));
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--toolbar-border, rgba(255, 255, 255, 0.12));
+    border-radius: 12px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 11px;
+    color: var(--text-muted);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+    z-index: 10;
+    pointer-events: none;
+}

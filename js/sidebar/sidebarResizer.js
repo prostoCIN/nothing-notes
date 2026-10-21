@@ -66,7 +66,10 @@ window.App = window.App || {};
 
     function notifyResize() {
         window.dispatchEvent(new Event('resize'));
-        if (window.App.state && window.App.state.isGraphView && window.App.graphView && window.App.graphView.resizeCanvas) {
+        if (window.App.boardView && window.App.boardView.resizeCanvas) {
+            window.App.boardView.resizeCanvas();
+        }
+        if (window.App.graphView && window.App.graphView.resizeCanvas) {
             window.App.graphView.resizeCanvas();
         }
     }
@@ -104,7 +107,10 @@ window.App = window.App || {};
         if (rAFId) cancelAnimationFrame(rAFId);
         rAFId = requestAnimationFrame(() => {
             applyWidth(targetWidth, false);
-            if (window.App.state && window.App.state.isGraphView && window.App.graphView && window.App.graphView.resizeCanvas) {
+            if (window.App.boardView && window.App.boardView.resizeCanvas) {
+                window.App.boardView.resizeCanvas();
+            }
+            if (window.App.graphView && window.App.graphView.resizeCanvas) {
                 window.App.graphView.resizeCanvas();
             }
         });
