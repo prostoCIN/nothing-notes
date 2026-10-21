@@ -1,0 +1,426 @@
+/* 7. Колонки та випадаючі меню */
+html[data-theme="light"] .column-more-btn {
+    border-color: rgba(0, 0, 0, 0.1) !important;
+    color: var(--text-muted);
+}
+
+html[data-theme="light"] .column-more-btn:hover {
+    background-color: rgba(0, 0, 0, 0.06) !important;
+    color: #18181b !important;
+    border-color: rgba(0, 0, 0, 0.18) !important;
+}
+
+html[data-theme="light"] .column-more-btn.active {
+    background-color: rgba(0, 0, 0, 0.08) !important;
+    color: #18181b !important;
+    border-color: rgba(0, 0, 0, 0.2) !important;
+}
+
+html[data-theme="light"] .column-filter-active-dot {
+    box-shadow: 0 0 0 1.5px #ffffff !important;
+}
+
+html[data-theme="light"] .column-badge,
+html[data-theme="light"] .column-count-badge,
+html[data-theme="light"] .column-filter-btn,
+html[data-theme="light"] .column-layout-toggle-btn,
+html[data-theme="light"] .column-expand-toggle-btn,
+html[data-theme="light"] .column-graph-toggle-btn,
+html[data-theme="light"] .column-select-toggle-btn {
+    border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+html[data-theme="light"] .column-badge:hover,
+html[data-theme="light"] .column-count-badge:hover,
+html[data-theme="light"] .column-filter-btn:hover,
+html[data-theme="light"] .column-layout-toggle-btn:hover,
+html[data-theme="light"] .column-expand-toggle-btn:hover,
+html[data-theme="light"] .column-graph-toggle-btn:hover,
+html[data-theme="light"] .column-select-toggle-btn:hover {
+    background-color: rgba(0, 0, 0, 0.05) !important;
+    border-color: rgba(0, 0, 0, 0.18) !important;
+    color: #18181b !important;
+}
+
+html[data-theme="light"] .column-filter-dropdown {
+    background-color: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04) !important;
+    color: #18181b !important;
+}
+
+html[data-theme="light"] .column-filter-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+
+html[data-theme="light"] .column-filter-item,
+html[data-theme="light"] .column-filter-item * {
+    color: #18181b;
+}
+
+html[data-theme="light"] .column-filter-item:hover,
+html[data-theme="light"] .column-filter-item:hover * {
+    background-color: rgba(0, 0, 0, 0.05) !important;
+    color: #18181b !important;
+}
+
+html[data-theme="light"] .column-filter-item.active,
+html[data-theme="light"] .column-filter-item.active * {
+    background-color: rgba(16, 185, 129, 0.14) !important;
+    color: #047857 !important;
+    font-weight: 700;
+}
+
+html[data-theme="light"] .column-filter-item.active:hover,
+html[data-theme="light"] .column-filter-item.active:hover * {
+    background-color: rgba(16, 185, 129, 0.22) !important;
+    color: #047857 !important;
+}
+
+html[data-theme="light"] .column-menu-dropdown {
+    background-color: rgba(255, 255, 255, 0.96) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04) !important;
+    color: #18181b !important;
+}
+
+html[data-theme="light"] .column-menu-header-title,
+html[data-theme="light"] .column-menu-header-text,
+html[data-theme="light"] .column-menu-item {
+    color: #18181b !important;
+}
+
+html[data-theme="light"] .column-menu-item:hover {
+    background-color: rgba(0, 0, 0, 0.05) !important;
+    color: #18181b !important;
+}
+
+html[data-theme="light"] .column-menu-item-create {
+    color: #059669 !important;
+}
+
+html[data-theme="light"] .column-menu-item-create svg {
+    stroke: #059669 !important;
+}
+
+html[data-theme="light"] .column-menu-item-create:hover {
+    background-color: rgba(16, 185, 129, 0.1) !important;
+    color: #047857 !important;
+}
+
+html[data-theme="light"] .column-menu-section-header,
+html[data-theme="light"] .column-menu-tag-empty {
+    color: #71717a !important;
+}
+
+html[data-theme="light"] .column-menu-tag-item,
+html[data-theme="light"] .column-menu-tag-item * {
+    color: #18181b;
+}
+
+html[data-theme="light"] .column-menu-tag-item:hover,
+html[data-theme="light"] .column-menu-tag-item:hover * {
+    background-color: rgba(0, 0, 0, 0.05) !important;
+    color: #18181b !important;
+}
+
+html[data-theme="light"] .column-menu-tag-item.active,
+html[data-theme="light"] .column-menu-tag-item.active * {
+    background-color: rgba(16, 185, 129, 0.14) !important;
+    color: #047857 !important;
+    font-weight: 700;
+}
+
+html[data-theme="light"] .column-menu-tag-item.active:hover,
+html[data-theme="light"] .column-menu-tag-item.active:hover * {
+    background-color: rgba(16, 185, 129, 0.22) !important;
+    color: #047857 !important;
+}
+
+html[data-theme="light"] .column-menu-divider {
+    background-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+html[data-theme="light"] .bottom-add-note-btn {
+    background-color: rgba(0, 0, 0, 0.02) !important;
+    border: 2px dashed rgba(0, 0, 0, 0.12) !important;
+}
+
+html[data-theme="light"] .bottom-add-note-btn:hover {
+    background-color: rgba(0, 0, 0, 0.05) !important;
+    border-color: rgba(0, 0, 0, 0.22) !important;
+    color: #18181b !important;
+}
+
+/* 8. Стікери, Emoji Picker, Washi Tags & Polaroid */
+html[data-theme="light"] .sticker-emoji-picker-dropdown {
+    background-color: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04) !important;
+}
+
+html[data-theme="light"] .emoji-search-input {
+    background: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.16) !important;
+    color: #18181b !important;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+html[data-theme="light"] .emoji-search-input:focus {
+    border-color: #10b981 !important;
+    background: #ffffff !important;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2) !important;
+}
+
+html[data-theme="light"] .emoji-search-input::placeholder {
+    color: rgba(0, 0, 0, 0.42) !important;
+}
+
+html[data-theme="light"] .emoji-categories-bar {
+    border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+html[data-theme="light"] .emoji-grid-item:hover {
+    background-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+html[data-theme="light"] .emoji-cat-tab-btn:hover {
+    background-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+html[data-theme="light"] .sticker-tag-dropdown {
+    background-color: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04) !important;
+}
+
+html[data-theme="light"] .tag-option-item {
+    background: rgba(0, 0, 0, 0.03) !important;
+    border: 1px solid rgba(0, 0, 0, 0.06) !important;
+    color: #18181b !important;
+}
+
+html[data-theme="light"] .tag-option-item:hover {
+    background: rgba(0, 0, 0, 0.06) !important;
+    border-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+html[data-theme="light"] .tag-option-item.active {
+    background: rgba(16, 185, 129, 0.12) !important;
+    border-color: #10b981 !important;
+    color: #047857 !important;
+}
+
+html[data-theme="light"] .tag-add-option-row {
+    border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+html[data-theme="light"] .tag-add-input {
+    background: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.16) !important;
+    color: #18181b !important;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+html[data-theme="light"] .tag-add-input:focus {
+    border-color: #10b981 !important;
+    background: #ffffff !important;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2) !important;
+}
+
+html[data-theme="light"] .tag-add-input::placeholder {
+    color: rgba(0, 0, 0, 0.42) !important;
+}
+
+html[data-theme="light"] .tag-add-btn {
+    background: rgba(16, 185, 129, 0.12) !important;
+    border: 1px solid rgba(16, 185, 129, 0.3) !important;
+    color: #047857 !important;
+    font-weight: 600 !important;
+}
+
+html[data-theme="light"] .tag-add-btn:hover {
+    background: #10b981 !important;
+    color: #ffffff !important;
+}
+
+html[data-theme="light"] .sticker-menu-divider {
+    background-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+html[data-theme="light"] .sticker-font-slider {
+    background: rgba(0, 0, 0, 0.12) !important;
+}
+
+html[data-theme="light"] .note-font-tick-line {
+    background: rgba(0, 0, 0, 0.2) !important;
+}
+
+html[data-theme="light"] .sticker-perforation-handle::before {
+    background-image: radial-gradient(circle at center, rgba(0, 0, 0, 0.16) 4px, transparent 5.5px) !important;
+    filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.8)) !important;
+}
+
+html[data-theme="light"] .note-sticker:not(.is-ws-selected) .sticker-select-checkbox {
+    background-color: rgba(0, 0, 0, 0.08) !important;
+    border: 2px solid rgba(0, 0, 0, 0.2) !important;
+}
+
+html[data-theme="light"] .sticker-img-size-group,
+html[data-theme="light"] .sticker-image-remove-btn {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: 1px solid rgba(0, 0, 0, 0.12) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+    color: #18181b !important;
+}
+
+html[data-theme="light"] .img-size-btn:hover {
+    color: #18181b !important;
+    background: rgba(0, 0, 0, 0.06) !important;
+}
+
+html[data-theme="light"] .sticker-image-remove-btn {
+    color: #ef4444 !important;
+}
+
+html[data-theme="light"] .sticker-image-remove-btn:hover {
+    background: #ef4444 !important;
+    color: #ffffff !important;
+}
+
+/* 9. Панель форматування тексту (Text Selection Toolbar) */
+html[data-theme="light"] .text-selection-toolbar {
+    background: rgba(255, 255, 255, 0.96) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+html[data-theme="light"] .text-sel-weight-wrap {
+    background: rgba(0, 0, 0, 0.05) !important;
+}
+
+html[data-theme="light"] .text-sel-weight-btn {
+    color: var(--text-muted) !important;
+}
+
+html[data-theme="light"] .text-sel-weight-btn:hover {
+    background: rgba(0, 0, 0, 0.06) !important;
+    color: #18181b !important;
+}
+
+html[data-theme="light"] .text-sel-scope-btn {
+    background: rgba(0, 0, 0, 0.04) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    color: #18181b !important;
+}
+
+html[data-theme="light"] .text-sel-scope-btn:hover {
+    background: rgba(0, 0, 0, 0.08) !important;
+}
+
+html[data-theme="light"] .text-sel-tooltip {
+    background: #ffffff !important;
+    color: #18181b !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08) !important;
+}
+
+html[data-theme="light"] .text-sel-tooltip::before {
+    border-color: transparent transparent rgba(0, 0, 0, 0.1) transparent !important;
+}
+
+html[data-theme="light"] .text-sel-divider {
+    background: rgba(0, 0, 0, 0.08) !important;
+}
+
+html[data-theme="light"] .text-sel-btn:hover {
+    background: rgba(0, 0, 0, 0.06) !important;
+    color: #18181b !important;
+}
+
+/* 10. Нижня плаваюча панель групового вибору (Selection Bar) */
+html[data-theme="light"] .workspace-selection-bar {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+html[data-theme="light"] .selection-bar-count-desktop {
+    color: #18181b !important;
+}
+
+html[data-theme="light"] .selection-bar-close-btn {
+    background: rgba(0, 0, 0, 0.05) !important;
+    color: var(--text-muted) !important;
+}
+
+html[data-theme="light"] .selection-bar-close-btn:hover {
+    background: rgba(0, 0, 0, 0.08) !important;
+    color: #18181b !important;
+}
+
+html[data-theme="light"] .selection-bar-divider {
+    color: rgba(0, 0, 0, 0.15) !important;
+}
+
+html[data-theme="light"] .selection-action-btn:not(.selection-action-delete-btn) {
+    background: rgba(0, 0, 0, 0.04) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    color: #18181b !important;
+}
+
+html[data-theme="light"] .selection-action-btn:not(.selection-action-delete-btn):hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.08) !important;
+    border-color: rgba(0, 0, 0, 0.15) !important;
+}
+
+html[data-theme="light"] .selection-action-delete-btn {
+    background: rgba(239, 68, 68, 0.12) !important;
+    border: 1px solid rgba(239, 68, 68, 0.25) !important;
+    color: #ef4444 !important;
+}
+
+html[data-theme="light"] .selection-action-delete-btn svg {
+    stroke: #ef4444 !important;
+}
+
+html[data-theme="light"] .selection-action-delete-btn:hover:not(:disabled) {
+    background: #ef4444 !important;
+    border-color: #ef4444 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4) !important;
+}
+
+html[data-theme="light"] .selection-action-delete-btn:hover:not(:disabled) svg {
+    stroke: #ffffff !important;
+}
+
+html[data-theme="light"] .selection-bar-icon-btn {
+    background: rgba(0, 0, 0, 0.04) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    color: #18181b !important;
+}
+
+html[data-theme="light"] .selection-submenu-dropdown {
+    background-color: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.08) !important;
+    color: #18181b !important;
+}
+
+html[data-theme="light"] .selection-tag-item {
+    background: rgba(0, 0, 0, 0.03) !important;
+    border-color: rgba(0, 0, 0, 0.06) !important;
+    color: #18181b !important;
+}
+
+html[data-theme="light"] .selection-tag-item:hover {
+    background: rgba(0, 0, 0, 0.06) !important;
+}
+
+html[data-theme="light"] .selection-tag-item.active {
+    background: rgba(16, 185, 129, 0.12) !important;
+    border-color: #10b981 !important;
+    color: #047857 !important;
+}
+

@@ -1,0 +1,229 @@
+/* 15. Слонова кістка (Ivory) - специфічні бекдропи, модальні вікна, картки та елементи */
+html[data-theme="ivory"] .auth-modal-backdrop,
+html[data-theme="ivory"] .settings-modal-backdrop,
+html[data-theme="ivory"] .share-modal-backdrop,
+html[data-theme="ivory"] .modal-overlay,
+html[data-theme="ivory"] .account-overlay-backdrop,
+html[data-theme="ivory"] .sidebar-overlay,
+html[data-theme="ivory"] .graph-mobile-sheet-backdrop {
+    background: rgba(45, 35, 20, 0.35) !important;
+}
+
+html[data-theme="ivory"] .note-sticker:not(.is-ws-selected) {
+    box-shadow: 0 1px 3px rgba(90, 68, 30, 0.06), 0 1px 2px rgba(90, 68, 30, 0.04) !important;
+}
+
+html[data-theme="ivory"] .note-sticker:not(.is-ws-selected):hover {
+    box-shadow: 0 3px 8px rgba(90, 68, 30, 0.08), 0 1px 3px rgba(90, 68, 30, 0.05) !important;
+}
+
+html[data-theme="ivory"] .note-sticker.is-ws-selected {
+    box-shadow: 0 0 0 3.5px #10b981, 0 8px 24px rgba(16, 185, 129, 0.35) !important;
+}
+
+html[data-theme="ivory"] .board-column {
+    box-shadow: 0 1px 3px rgba(90, 68, 30, 0.04), 0 4px 14px rgba(90, 68, 30, 0.03) !important;
+}
+
+html[data-theme="ivory"] .workspace-top-header {
+    box-shadow: 0 1px 2px rgba(90, 68, 30, 0.04) !important;
+}
+
+html[data-theme="ivory"] .workspace-selection-bar,
+html[data-theme="ivory"] .text-selection-toolbar {
+    background: rgba(255, 253, 246, 0.97) !important;
+    border: 1px solid rgba(90, 68, 30, 0.12) !important;
+    box-shadow: 0 12px 36px rgba(90, 68, 30, 0.10), 0 1px 3px rgba(90, 68, 30, 0.05) !important;
+}
+
+html[data-theme="ivory"] .graph-title-pill,
+html[data-theme="ivory"] .graph-controls-panel,
+html[data-theme="ivory"] .graph-legend-pill,
+html[data-theme="ivory"] .graph-switch-back-btn {
+    box-shadow: 0 2px 8px rgba(90, 68, 30, 0.06) !important;
+}
+
+html[data-theme="ivory"] .settings-modal-card,
+html[data-theme="ivory"] .auth-modal-card,
+html[data-theme="ivory"] .confirm-modal-box,
+html[data-theme="ivory"] .share-modal-card,
+html[data-theme="ivory"] .account-switcher-overlay {
+    background: rgba(255, 253, 246, 0.98) !important;
+    border-color: rgba(90, 68, 30, 0.12) !important;
+    box-shadow: 0 16px 40px rgba(90, 68, 30, 0.12), 0 1px 4px rgba(90, 68, 30, 0.06) !important;
+    color: #2b251f;
+}
+
+html[data-theme="ivory"] .header-action-icon-btn,
+html[data-theme="ivory"] .header-history-control,
+html[data-theme="ivory"] .header-brush-group,
+html[data-theme="ivory"] .header-segment-control,
+html[data-theme="ivory"] .header-select-btn {
+    background: rgba(90, 68, 30, 0.05);
+    border: 1px solid rgba(90, 68, 30, 0.10);
+    color: #2b251f;
+}
+
+html[data-theme="ivory"] .header-action-icon-btn:hover,
+html[data-theme="ivory"] .header-select-btn:hover {
+    background: rgba(90, 68, 30, 0.09);
+    border-color: rgba(90, 68, 30, 0.16);
+}
+
+html[data-theme="ivory"] .header-segment-btn.active {
+    background: #fffdf7;
+    color: #2b251f;
+    box-shadow: 0 1px 3px rgba(90, 68, 30, 0.10);
+}
+
+html[data-theme="ivory"] .header-search-bar {
+    background: #fffdf7;
+    border: 1px solid rgba(90, 68, 30, 0.14);
+    box-shadow: 0 8px 24px rgba(90, 68, 30, 0.08) !important;
+    color: #2b251f !important;
+}
+
+html[data-theme="ivory"] .header-search-bar input {
+    color: #2b251f;
+}
+
+html[data-theme="ivory"] .column-header {
+    border-bottom: 1px solid rgba(90, 68, 30, 0.09);
+}
+
+html[data-theme="ivory"] .column-header-title {
+    color: #2b251f;
+}
+
+html[data-theme="ivory"] .column-title-pipe {
+    color: rgba(90, 68, 30, 0.30);
+}
+
+html[data-theme="ivory"] .column-breadcrumb-link {
+    color: rgba(43, 37, 31, 0.60);
+}
+
+html[data-theme="ivory"] .column-item {
+    border-right-color: rgba(90, 68, 30, 0.09);
+}
+
+html[data-theme="ivory"] .column-filter-dropdown,
+html[data-theme="ivory"] .column-menu-dropdown,
+html[data-theme="ivory"] .sticker-emoji-picker-dropdown,
+html[data-theme="ivory"] .sticker-tag-dropdown {
+    background-color: rgba(255, 253, 246, 0.98) !important;
+    border: 1px solid rgba(90, 68, 30, 0.12) !important;
+    box-shadow: 0 12px 36px rgba(90, 68, 30, 0.10), 0 1px 4px rgba(90, 68, 30, 0.05) !important;
+    color: #2b251f !important;
+}
+
+html[data-theme="ivory"] .column-menu-item,
+html[data-theme="ivory"] .column-menu-header-title,
+html[data-theme="ivory"] .column-menu-header-text,
+html[data-theme="ivory"] .column-filter-item {
+    color: #2b251f !important;
+}
+
+html[data-theme="ivory"] .column-menu-item:hover,
+html[data-theme="ivory"] .column-filter-item:hover {
+    background-color: rgba(90, 68, 30, 0.06) !important;
+}
+
+html[data-theme="ivory"] .sidebar {
+    background-color: var(--column-bg, rgba(255, 253, 246, 0.82)) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-right-color: rgba(90, 68, 30, 0.09) !important;
+}
+
+html[data-theme="ivory"] .sidebar-inline-form input {
+    background-color: #fffdf7 !important;
+    border: 1px solid rgba(90, 68, 30, 0.16) !important;
+    color: #2b251f !important;
+}
+
+html[data-theme="ivory"] .settings-tabs {
+    background: rgba(90, 68, 30, 0.06);
+    border-color: rgba(90, 68, 30, 0.09);
+}
+
+html[data-theme="ivory"] .settings-tab-btn.active {
+    background: #fffdf7;
+    color: #2b251f;
+    box-shadow: 0 1px 4px rgba(90, 68, 30, 0.08);
+}
+
+html[data-theme="ivory"] .settings-item {
+    background: rgba(90, 68, 30, 0.03);
+    border-color: rgba(90, 68, 30, 0.07);
+}
+
+html[data-theme="ivory"] .settings-kbd {
+    background: #fffdf7;
+    border-color: rgba(90, 68, 30, 0.16);
+    box-shadow: 0 1px 2px rgba(90, 68, 30, 0.06);
+    color: #2b251f;
+}
+
+html[data-theme="ivory"] .settings-theme-card {
+    background: rgba(90, 68, 30, 0.03);
+    border-color: rgba(90, 68, 30, 0.09);
+}
+
+html[data-theme="ivory"] .settings-theme-card:hover {
+    background: rgba(90, 68, 30, 0.06);
+    border-color: rgba(90, 68, 30, 0.16);
+}
+
+html[data-theme="ivory"] .settings-toggle-slider,
+html[data-theme="ivory"] .share-toggle-slider {
+    background-color: rgba(90, 68, 30, 0.14) !important;
+    border: 1px solid rgba(90, 68, 30, 0.18) !important;
+}
+
+html[data-theme="ivory"] .graph-html-node-label {
+    color: #2b251f !important;
+    font-weight: 700 !important;
+    text-shadow: 0 0 5px #f9f5ea, 0 0 8px #f9f5ea, 0 1px 2px #f9f5ea !important;
+}
+
+html[data-theme="ivory"] .graph-html-node.is-root .graph-html-node-label {
+    color: #2b251f !important;
+    font-weight: 800 !important;
+    text-shadow: 0 0 6px #f9f5ea, 0 0 10px #f9f5ea, 0 1px 2px #f9f5ea !important;
+}
+
+html[data-theme="ivory"] .graph-preview-card {
+    background: rgba(255, 253, 246, 0.98) !important;
+    border: 1px solid rgba(90, 68, 30, 0.12) !important;
+    box-shadow: 0 16px 40px rgba(90, 68, 30, 0.10), 0 1px 3px rgba(90, 68, 30, 0.05) !important;
+    color: #2b251f !important;
+}
+
+html[data-theme="ivory"] .welcome-screen {
+    background: radial-gradient(circle at 50% 30%, rgba(16, 185, 129, 0.08) 0%, rgba(249, 245, 234, 0.95) 70%, #ece1cb 100%) !important;
+}
+
+html[data-theme="ivory"] .welcome-content {
+    background: rgba(255, 253, 246, 0.97) !important;
+    border: 1px solid rgba(90, 68, 30, 0.10) !important;
+    box-shadow: 0 16px 40px rgba(90, 68, 30, 0.10) !important;
+}
+
+/* Нічне небо (Night Sky) - модальні вікна та бекдропи */
+html[data-theme="night-sky"] .auth-modal-backdrop,
+html[data-theme="night-sky"] .settings-modal-backdrop,
+html[data-theme="night-sky"] .share-modal-backdrop,
+html[data-theme="night-sky"] .modal-overlay,
+html[data-theme="night-sky"] .account-overlay-backdrop {
+    background: rgba(4, 7, 13, 0.75);
+}
+
+/* Темний ліс (Dark Forest) - модальні вікна та бекдропи */
+html[data-theme="forest"] .auth-modal-backdrop,
+html[data-theme="forest"] .settings-modal-backdrop,
+html[data-theme="forest"] .share-modal-backdrop,
+html[data-theme="forest"] .modal-overlay,
+html[data-theme="forest"] .account-overlay-backdrop {
+    background: rgba(18, 19, 15, 0.75);
+}

@@ -1,0 +1,185 @@
+/* 11. Хедер, тултіпи, поле пошуку та мобільні кнопки */
+html[data-theme="light"] .header-tooltip {
+    background: #ffffff !important;
+    color: #18181b !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08) !important;
+}
+
+html[data-theme="light"] .header-tooltip::before {
+    border-color: transparent transparent rgba(0, 0, 0, 0.1) transparent !important;
+}
+
+html[data-theme="light"] .header-brush-dropdown {
+    background: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
+}
+
+html[data-theme="light"] .header-search-bar {
+    background: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.12) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
+    color: #18181b !important;
+}
+
+html[data-theme="light"] .header-search-bar::before {
+    border-color: transparent transparent rgba(0, 0, 0, 0.12) transparent !important;
+}
+
+html[data-theme="light"] .header-search-nav-btns {
+    background: rgba(0, 0, 0, 0.04) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+html[data-theme="light"] .header-search-nav-btn:hover {
+    color: #18181b !important;
+    background: rgba(0, 0, 0, 0.08) !important;
+}
+
+html[data-theme="light"] .header-search-close:hover {
+    color: #18181b !important;
+    background: rgba(0, 0, 0, 0.08) !important;
+}
+
+html[data-theme="light"] .mobile-menu-btn,
+html[data-theme="light"] .header-tools-pill,
+html[data-theme="light"] .header-tools-control {
+    background: rgba(0, 0, 0, 0.04) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    color: #18181b !important;
+}
+
+/* 12. Сайдбар: перетягування, виділення, напрямні дерева */
+html[data-theme="light"] .sidebar-note-tree-node.is-dragging > .note-item {
+    background-color: #ffffff !important;
+    color: #18181b !important;
+    border: 1.5px solid #10b981 !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 0 0 2px rgba(16, 185, 129, 0.25) !important;
+}
+
+html[data-theme="light"] .note-item.is-selected {
+    background-color: rgba(16, 185, 129, 0.15) !important;
+    border-color: #10b981 !important;
+    color: #047857 !important;
+}
+
+html[data-theme="light"] .note-item.is-selected .note-item-title {
+    color: #047857 !important;
+    font-weight: 600;
+}
+
+html[data-theme="light"] .sidebar-drag-count-badge {
+    border: 1.5px solid #ffffff !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+}
+
+html[data-theme="light"] .sidebar-subnotes-list {
+    border-left-color: rgba(0, 0, 0, 0.1);
+}
+
+html[data-theme="light"] .sidebar-child-count {
+    background: rgba(0, 0, 0, 0.05) !important;
+    border: 1px solid rgba(0, 0, 0, 0.06) !important;
+    color: var(--text-muted) !important;
+}
+
+html[data-theme="light"] .note-toggle-arrow:hover {
+    background-color: rgba(0, 0, 0, 0.06) !important;
+    color: #18181b !important;
+}
+
+html[data-theme="light"] .note-item.touch-drag-active {
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* 13. Порожній стан робочого простору та Екран вітання */
+html[data-theme="light"] .workspace-empty-card {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.06) !important;
+}
+
+html[data-theme="light"] .workspace-empty-title {
+    color: #18181b !important;
+}
+
+html[data-theme="light"] .workspace-create-board-input {
+    background: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.14) !important;
+    color: #18181b !important;
+}
+
+html[data-theme="light"] .workspace-create-board-input::placeholder {
+    color: rgba(0, 0, 0, 0.4) !important;
+}
+
+html[data-theme="light"] .welcome-screen {
+    background: radial-gradient(circle at 50% 30%, rgba(16, 185, 129, 0.08) 0%, rgba(247, 247, 250, 0.95) 70%, #eceef3 100%) !important;
+}
+
+html[data-theme="light"] .welcome-content {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08) !important;
+}
+
+html[data-theme="light"] .welcome-auth-divider span {
+    background: rgba(255, 255, 255, 0.95) !important;
+}
+
+html[data-theme="light"] .welcome-guest-btn {
+    background: rgba(0, 0, 0, 0.04) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    color: #18181b !important;
+}
+
+/* 14. Шеринг та Markdown перегляд */
+html[data-theme="light"] .share-modal-card {
+    background: rgba(255, 255, 255, 0.96);
+    border-color: rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+    color: #18181b;
+}
+
+html[data-theme="light"] .share-modal-title {
+    color: #18181b;
+}
+
+html[data-theme="light"] .share-modal-tabs {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="light"] .share-modal-tab-btn.active {
+    background: #ffffff;
+    color: #18181b;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="light"] .share-markdown-preview-box {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="light"] .share-markdown-preview-box pre {
+    color: #18181b;
+}
+
+html[data-theme="light"] .share-link-box {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+html[data-theme="light"] .share-secondary-btn {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
+    color: #18181b;
+}
+
+html[data-theme="light"] .raw-markdown-content-box {
+    background: rgba(0, 0, 0, 0.02);
+    border-color: rgba(0, 0, 0, 0.08);
+    color: #18181b;
+}
+

@@ -1,0 +1,295 @@
+/* css/themes.css - Кольорові теми сайту: Асфальт, Біла, Слонова кістка, Нічне небо, Темний ліс */
+/* Смарагдовий акцентний колір NothingNotes (#16b981) та нейтральні кольори тексту залишаються незмінними */
+
+/* 1. Асфальт (Поточна темна тема за замовчуванням) */
+:root,
+html[data-theme="asphalt"] {
+    --theme-name: 'asphalt';
+    --bg-color: #141416;
+    --sidebar-bg: #1a1a1d;
+    --modal-bg: rgba(26, 26, 30, 0.88);
+    --header-bg: rgba(22, 22, 26, 0.75);
+    --column-bg: rgba(26, 26, 30, 0.45);
+    --column-border: rgba(255, 255, 255, 0.08);
+    --graph-bg: radial-gradient(circle at center, #1f1f23 0%, #141416 100%);
+    --toolbar-bg: rgba(26, 26, 30, 0.92);
+    --toolbar-border: rgba(255, 255, 255, 0.14);
+
+    /* Текст та підказки нейтральні, без кольорових домішок */
+    --text-main: rgba(255, 255, 255, 0.94);
+    --text-muted: rgba(255, 255, 255, 0.55);
+    --border-color: rgba(255, 255, 255, 0.08);
+    --hover-bg: rgba(255, 255, 255, 0.06);
+    --active-bg: rgba(255, 255, 255, 0.12);
+    --danger-color: #ff6b6b;
+    --scrollbar-thumb: rgba(255, 255, 255, 0.1);
+    --scrollbar-thumb-hover: rgba(255, 255, 255, 0.2);
+    --sticker-shadow: 0 4px 14px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.08);
+
+    /* Фірмовий смарагдовий градієнт та акцент NothingNotes */
+    --accent-color: #16b981;
+    --emerald-gradient: linear-gradient(135deg, #B3CD9D 0%, #16B981 30%, #ACF9DF 65%, #16B981 85%, #B3CD9D 100%);
+    --emerald-gradient-text: linear-gradient(120deg, #B3CD9D 0%, #16B981 35%, #ACF9DF 70%, #16B981 100%);
+    --emerald-glow: 0 8px 32px rgba(22, 185, 129, 0.22), 0 0 0 1px rgba(172, 249, 223, 0.15);
+
+    --glass-bg: rgba(24, 24, 28, 0.72);
+    --glass-bg-subtle: rgba(255, 255, 255, 0.035);
+    --glass-border: rgba(255, 255, 255, 0.12);
+    --glass-specular: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 8px 24px rgba(0, 0, 0, 0.35);
+    --glass-blur: blur(24px) saturate(180%);
+    --glass-card-shadow: 0 12px 36px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+
+    /* Семантичні токени поверхонь для модальних вікон, вкладок, коду та оверлеїв */
+    --bg-secondary: #1e1e24;
+    --code-bg: rgba(0, 0, 0, 0.45);
+    --code-text: #e5e7eb;
+    --code-border: rgba(255, 255, 255, 0.08);
+    --tab-bg: rgba(0, 0, 0, 0.2);
+    --tab-border: rgba(255, 255, 255, 0.08);
+    --modal-footer-bg: rgba(0, 0, 0, 0.25);
+    --modal-shadow: 0 24px 60px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.08);
+    --stats-banner-bg: rgba(16, 185, 129, 0.08);
+    --stats-banner-border: rgba(16, 185, 129, 0.2);
+    --stats-banner-text: #a7f3d0;
+    --btn-secondary-bg: rgba(255, 255, 255, 0.08);
+    --btn-secondary-border: rgba(255, 255, 255, 0.15);
+    --btn-secondary-hover: rgba(255, 255, 255, 0.16);
+
+    --body-bg-gradient: 
+        radial-gradient(at 10% 15%, rgba(22, 185, 129, 0.055) 0px, transparent 55%),
+        radial-gradient(at 85% 85%, rgba(0, 59, 39, 0.09) 0px, transparent 65%),
+        radial-gradient(at 90% 10%, rgba(172, 249, 223, 0.035) 0px, transparent 50%);
+}
+
+/* 2. Біла (Світла тема) */
+html[data-theme="light"] {
+    --theme-name: 'light';
+    --bg-color: #f7f7fa;
+    --sidebar-bg: rgba(255, 255, 255, 0.78);
+    --modal-bg: rgba(255, 255, 255, 0.94);
+    --header-bg: rgba(247, 247, 250, 0.88);
+    --column-bg: rgba(255, 255, 255, 0.78);
+    --column-border: rgba(0, 0, 0, 0.08);
+    --graph-bg: radial-gradient(circle at center, #ffffff 0%, #eceef3 100%);
+    --toolbar-bg: rgba(255, 255, 255, 0.94);
+    --toolbar-border: rgba(0, 0, 0, 0.09);
+
+    /* Текст та підказки нейтральні */
+    --text-main: #18181b;
+    --text-muted: rgba(0, 0, 0, 0.55);
+    --border-color: rgba(0, 0, 0, 0.09);
+    --hover-bg: rgba(0, 0, 0, 0.05);
+    --active-bg: rgba(0, 0, 0, 0.08);
+    --danger-color: #e11d48;
+    --scrollbar-thumb: rgba(0, 0, 0, 0.14);
+    --scrollbar-thumb-hover: rgba(0, 0, 0, 0.25);
+    --sticker-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+
+    /* Фірмовий смарагдовий градієнт та акцент NothingNotes (незмінний!) */
+    --accent-color: #16b981;
+    --emerald-gradient: linear-gradient(135deg, #B3CD9D 0%, #16B981 30%, #ACF9DF 65%, #16B981 85%, #B3CD9D 100%);
+    --emerald-gradient-text: linear-gradient(120deg, #B3CD9D 0%, #16B981 35%, #ACF9DF 70%, #16B981 100%);
+    --emerald-glow: 0 8px 32px rgba(22, 185, 129, 0.22), 0 0 0 1px rgba(172, 249, 223, 0.15);
+
+    --glass-bg: rgba(255, 255, 255, 0.88);
+    --glass-bg-subtle: rgba(0, 0, 0, 0.03);
+    --glass-border: rgba(0, 0, 0, 0.09);
+    --glass-specular: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 4px 14px rgba(0, 0, 0, 0.03);
+    --glass-card-shadow: 0 4px 16px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+
+    /* Семантичні токени поверхонь для модальних вікон, вкладок, коду та оверлеїв */
+    --bg-secondary: #ffffff;
+    --code-bg: #f3f4f6;
+    --code-text: #1f2937;
+    --code-border: rgba(0, 0, 0, 0.09);
+    --tab-bg: rgba(0, 0, 0, 0.035);
+    --tab-border: rgba(0, 0, 0, 0.08);
+    --modal-footer-bg: rgba(0, 0, 0, 0.025);
+    --modal-shadow: 0 20px 48px rgba(0, 0, 0, 0.1), 0 1px 4px rgba(0, 0, 0, 0.05);
+    --stats-banner-bg: rgba(16, 185, 129, 0.1);
+    --stats-banner-border: rgba(16, 185, 129, 0.25);
+    --stats-banner-text: #065f46;
+    --btn-secondary-bg: rgba(0, 0, 0, 0.05);
+    --btn-secondary-border: rgba(0, 0, 0, 0.1);
+    --btn-secondary-hover: rgba(0, 0, 0, 0.08);
+
+    --body-bg-gradient: 
+        radial-gradient(at 10% 15%, rgba(16, 185, 129, 0.06) 0px, transparent 55%),
+        radial-gradient(at 85% 85%, rgba(14, 165, 233, 0.05) 0px, transparent 65%),
+        radial-gradient(at 90% 10%, rgba(187, 247, 208, 0.1) 0px, transparent 50%);
+}
+
+/* 3. Слонова кістка (Тепла молочно-кремова світла тема з приємним теплим відтінком) */
+html[data-theme="ivory"] {
+    --theme-name: 'ivory';
+    --bg-color: #f9f5ea;
+    --sidebar-bg: rgba(255, 252, 243, 0.85);
+    --modal-bg: rgba(255, 253, 246, 0.97);
+    --header-bg: rgba(249, 245, 234, 0.90);
+    --column-bg: rgba(255, 253, 246, 0.82);
+    --column-border: rgba(90, 68, 30, 0.09);
+    --graph-bg: radial-gradient(circle at center, #fcf8ee 0%, #ece1cb 100%);
+    --toolbar-bg: rgba(255, 253, 246, 0.95);
+    --toolbar-border: rgba(90, 68, 30, 0.10);
+
+    /* Теплий насичений кавово-вугільний текст для ідеального контрасту */
+    --text-main: #2b251f;
+    --text-muted: rgba(43, 37, 31, 0.60);
+    --border-color: rgba(90, 68, 30, 0.10);
+    --hover-bg: rgba(90, 68, 30, 0.06);
+    --active-bg: rgba(90, 68, 30, 0.10);
+    --danger-color: #e11d48;
+    --scrollbar-thumb: rgba(90, 68, 30, 0.16);
+    --scrollbar-thumb-hover: rgba(90, 68, 30, 0.28);
+    --sticker-shadow: 0 1px 3px rgba(90, 68, 30, 0.06), 0 1px 2px rgba(90, 68, 30, 0.04);
+
+    /* Фірмовий смарагдовий градієнт та акцент NothingNotes */
+    --accent-color: #16b981;
+    --emerald-gradient: linear-gradient(135deg, #B3CD9D 0%, #16B981 30%, #ACF9DF 65%, #16B981 85%, #B3CD9D 100%);
+    --emerald-gradient-text: linear-gradient(120deg, #B3CD9D 0%, #16B981 35%, #ACF9DF 70%, #16B981 100%);
+    --emerald-glow: 0 8px 32px rgba(22, 185, 129, 0.22), 0 0 0 1px rgba(172, 249, 223, 0.15);
+
+    --glass-bg: rgba(255, 253, 246, 0.90);
+    --glass-bg-subtle: rgba(90, 68, 30, 0.035);
+    --glass-border: rgba(90, 68, 30, 0.10);
+    --glass-specular: inset 0 1px 0 rgba(255, 255, 255, 0.95), 0 4px 14px rgba(90, 68, 30, 0.04);
+    --glass-card-shadow: 0 4px 16px rgba(90, 68, 30, 0.05), 0 0 0 1px rgba(90, 68, 30, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+
+    /* Семантичні токени поверхонь для модальних вікон, вкладок, коду та оверлеїв */
+    --bg-secondary: #fffdf7;
+    --code-bg: #eee5d3;
+    --code-text: #2b251f;
+    --code-border: rgba(90, 68, 30, 0.10);
+    --tab-bg: rgba(90, 68, 30, 0.05);
+    --tab-border: rgba(90, 68, 30, 0.09);
+    --modal-footer-bg: rgba(90, 68, 30, 0.035);
+    --modal-shadow: 0 20px 48px rgba(90, 68, 30, 0.12), 0 1px 4px rgba(90, 68, 30, 0.05);
+    --stats-banner-bg: rgba(16, 185, 129, 0.1);
+    --stats-banner-border: rgba(16, 185, 129, 0.25);
+    --stats-banner-text: #065f46;
+    --btn-secondary-bg: rgba(90, 68, 30, 0.06);
+    --btn-secondary-border: rgba(90, 68, 30, 0.12);
+    --btn-secondary-hover: rgba(90, 68, 30, 0.09);
+
+    --body-bg-gradient: 
+        radial-gradient(at 10% 15%, rgba(16, 185, 129, 0.06) 0px, transparent 55%),
+        radial-gradient(at 85% 85%, rgba(224, 184, 122, 0.18) 0px, transparent 65%),
+        radial-gradient(at 90% 10%, rgba(252, 237, 206, 0.55) 0px, transparent 50%);
+}
+
+/* 4. Нічне небо (Темно-синя тема) */
+html[data-theme="night-sky"] {
+    --theme-name: 'night-sky';
+    --bg-color: #0b0f19;
+    --sidebar-bg: #0f172a;
+    --modal-bg: rgba(15, 23, 42, 0.92);
+    --header-bg: rgba(11, 15, 25, 0.82);
+    --column-bg: rgba(15, 23, 42, 0.55);
+    --column-border: rgba(99, 130, 180, 0.16);
+    --graph-bg: radial-gradient(circle at center, #131d36 0%, #0b0f19 100%);
+    --toolbar-bg: rgba(15, 23, 42, 0.9);
+    --toolbar-border: rgba(148, 163, 184, 0.18);
+
+    /* Текст та підказки нейтральні */
+    --text-main: rgba(255, 255, 255, 0.94);
+    --text-muted: rgba(255, 255, 255, 0.55);
+    --border-color: rgba(148, 163, 184, 0.14);
+    --hover-bg: rgba(255, 255, 255, 0.06);
+    --active-bg: rgba(255, 255, 255, 0.12);
+    --danger-color: #f43f5e;
+    --scrollbar-thumb: rgba(148, 163, 184, 0.2);
+    --scrollbar-thumb-hover: rgba(148, 163, 184, 0.35);
+    --sticker-shadow: 0 4px 14px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.1);
+
+    /* Фірмовий смарагдовий градієнт та акцент NothingNotes (незмінний!) */
+    --accent-color: #16b981;
+    --emerald-gradient: linear-gradient(135deg, #B3CD9D 0%, #16B981 30%, #ACF9DF 65%, #16B981 85%, #B3CD9D 100%);
+    --emerald-gradient-text: linear-gradient(120deg, #B3CD9D 0%, #16B981 35%, #ACF9DF 70%, #16B981 100%);
+    --emerald-glow: 0 8px 32px rgba(22, 185, 129, 0.22), 0 0 0 1px rgba(172, 249, 223, 0.15);
+
+    --glass-bg: rgba(15, 23, 42, 0.8);
+    --glass-bg-subtle: rgba(255, 255, 255, 0.03);
+    --glass-border: rgba(148, 163, 184, 0.18);
+    --glass-specular: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 8px 24px rgba(0, 0, 0, 0.45);
+    --glass-card-shadow: 0 12px 36px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(148, 163, 184, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+
+    /* Семантичні токени поверхонь для модальних вікон, вкладок, коду та оверлеїв */
+    --bg-secondary: #131b2e;
+    --code-bg: rgba(11, 15, 25, 0.65);
+    --code-text: #e2e8f0;
+    --code-border: rgba(148, 163, 184, 0.14);
+    --tab-bg: rgba(11, 15, 25, 0.35);
+    --tab-border: rgba(148, 163, 184, 0.14);
+    --modal-footer-bg: rgba(11, 15, 25, 0.4);
+    --modal-shadow: 0 24px 60px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(148, 163, 184, 0.15);
+    --stats-banner-bg: rgba(16, 185, 129, 0.1);
+    --stats-banner-border: rgba(16, 185, 129, 0.22);
+    --stats-banner-text: #a7f3d0;
+    --btn-secondary-bg: rgba(255, 255, 255, 0.08);
+    --btn-secondary-border: rgba(148, 163, 184, 0.2);
+    --btn-secondary-hover: rgba(255, 255, 255, 0.15);
+
+    --body-bg-gradient: 
+        radial-gradient(at 10% 15%, rgba(22, 185, 129, 0.06) 0px, transparent 55%),
+        radial-gradient(at 85% 85%, rgba(15, 23, 42, 0.3) 0px, transparent 65%),
+        radial-gradient(at 90% 10%, rgba(30, 58, 138, 0.15) 0px, transparent 50%);
+}
+
+/* 4. Темний ліс (Приглушена жовто-зелена / Monokai стиль) */
+html[data-theme="forest"] {
+    --theme-name: 'forest';
+    --bg-color: #1d1e19;
+    --sidebar-bg: #272822;
+    --modal-bg: rgba(39, 40, 34, 0.95);
+    --header-bg: rgba(29, 30, 25, 0.85);
+    --column-bg: rgba(39, 40, 34, 0.55);
+    --column-border: rgba(255, 255, 255, 0.08);
+    --graph-bg: radial-gradient(circle at center, #272822 0%, #1d1e19 100%);
+    --toolbar-bg: rgba(39, 40, 34, 0.92);
+    --toolbar-border: rgba(255, 255, 255, 0.12);
+
+    /* Текст та підказки нейтральні */
+    --text-main: rgba(255, 255, 255, 0.94);
+    --text-muted: rgba(255, 255, 255, 0.55);
+    --border-color: rgba(255, 255, 255, 0.08);
+    --hover-bg: rgba(255, 255, 255, 0.06);
+    --active-bg: rgba(255, 255, 255, 0.12);
+    --danger-color: #f92672;
+    --scrollbar-thumb: rgba(255, 255, 255, 0.12);
+    --scrollbar-thumb-hover: rgba(255, 255, 255, 0.22);
+    --sticker-shadow: 0 4px 14px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.1);
+
+    /* Фірмовий смарагдовий градієнт та акцент NothingNotes (незмінний!) */
+    --accent-color: #16b981;
+    --emerald-gradient: linear-gradient(135deg, #B3CD9D 0%, #16B981 30%, #ACF9DF 65%, #16B981 85%, #B3CD9D 100%);
+    --emerald-gradient-text: linear-gradient(120deg, #B3CD9D 0%, #16B981 35%, #ACF9DF 70%, #16B981 100%);
+    --emerald-glow: 0 8px 32px rgba(22, 185, 129, 0.22), 0 0 0 1px rgba(172, 249, 223, 0.15);
+
+    --glass-bg: rgba(39, 40, 34, 0.8);
+    --glass-bg-subtle: rgba(255, 255, 255, 0.03);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-specular: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 8px 24px rgba(0, 0, 0, 0.45);
+    --glass-card-shadow: 0 12px 36px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+
+    /* Семантичні токени поверхонь для модальних вікон, вкладок, коду та оверлеїв */
+    --bg-secondary: #272822;
+    --code-bg: rgba(29, 30, 25, 0.7);
+    --code-text: #f8f8f2;
+    --code-border: rgba(255, 255, 255, 0.08);
+    --tab-bg: rgba(29, 30, 25, 0.4);
+    --tab-border: rgba(255, 255, 255, 0.08);
+    --modal-footer-bg: rgba(29, 30, 25, 0.45);
+    --modal-shadow: 0 24px 60px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);
+    --stats-banner-bg: rgba(16, 185, 129, 0.1);
+    --stats-banner-border: rgba(16, 185, 129, 0.22);
+    --stats-banner-text: #a7f3d0;
+    --btn-secondary-bg: rgba(255, 255, 255, 0.08);
+    --btn-secondary-border: rgba(255, 255, 255, 0.15);
+    --btn-secondary-hover: rgba(255, 255, 255, 0.16);
+
+    --body-bg-gradient: 
+        radial-gradient(at 10% 15%, rgba(166, 226, 46, 0.04) 0px, transparent 55%),
+        radial-gradient(at 85% 85%, rgba(15, 16, 12, 0.4) 0px, transparent 65%),
+        radial-gradient(at 90% 10%, rgba(230, 219, 116, 0.03) 0px, transparent 50%);
+}
+
