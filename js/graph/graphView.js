@@ -329,40 +329,80 @@ window.App = window.App || {};
 
         attachNodeEvents(nodeEl, node) {
             nodeEl.style.pointerEvents = 'auto';
-            nodeEl.style.cursor = 'pointer';
+            nodeEl.style.cursor = 'grab';
 
-            nodeEl.addEventListener('pointerdown', (e) => {
-                e.stopPropagation();
-                isDraggingNode = true;
-                draggedNode = node;
+            let isDraggingThis = false;
+            let hasDragged = false;
+            let dragThresholdPassed = false;
+            let startPointerX = 0;
+            let startPointerY = 0;
+            let startNodeX = 0;
+            let startNodeY = 0;
 
-                const startX = e.clientX;
-                const startY = e.clientY;
-                const startNodeX = node.x;
-                const startNodeY = node.y;
+            const onMove = (ev) => {
+                const dist = Math.hypot(ev.clientX - startPointerX, ev.clientY - startPointerY);
+                if (!dragThresholdPassed && dist > 5) {
+                    dragThresholdPassed = true;
+                    hasDragged = true;
+                    isDraggingThis = true;
+                    isDraggingNode = true;
+                    draggedNode = node;
+                    nodeEl.style.cursor = 'grabbing';
+                    if (window.App.graphPreview) {
+                        window.App.graphPreview.hide();
+                    }
+                }
 
-                const interaction = window.App.graphInteraction;
-
-                const onMove = (ev) => {
-                    node.x = startNodeX + (ev.clientX - startX) / interaction.camera.zoom;
-                    node.y = startNodeY + (ev.clientY - startY) / interaction.camera.zoom;
+                if (dragThresholdPassed) {
+                    const interaction = window.App.graphInteraction;
+                    const zoom = (interaction && interaction.camera && interaction.camera.zoom) ? interaction.camera.zoom : 1;
+                    node.x = startNodeX + (ev.clientX - startPointerX) / zoom;
+                    node.y = startNodeY + (ev.clientY - startPointerY) / zoom;
                     node.vx = 0;
                     node.vy = 0;
-                };
+                }
+            };
 
-                const onUp = () => {
-                    window.removeEventListener('pointermove', onMove);
-                    window.removeEventListener('pointerup', onUp);
+            const onUp = () => {
+                window.removeEventListener('pointermove', onMove);
+                window.removeEventListener('pointerup', onUp);
+                window.removeEventListener('pointercancel', onUp);
+                nodeEl.style.cursor = 'grab';
+
+                if (isDraggingThis) {
                     isDraggingNode = false;
                     draggedNode = null;
-                };
+                    isDraggingThis = false;
+                }
+
+                if (hasDragged) {
+                    // Запобігаємо спрацьовуванню кліку після завершення перетягування
+                    setTimeout(() => {
+                        hasDragged = false;
+                        dragThresholdPassed = false;
+                    }, 120);
+                }
+            };
+
+            nodeEl.addEventListener('pointerdown', (e) => {
+                if (e.button !== 0) return; // Тільки ліва кнопка миші
+                e.stopPropagation();
+
+                hasDragged = false;
+                dragThresholdPassed = false;
+                isDraggingThis = false;
+                startPointerX = e.clientX;
+                startPointerY = e.clientY;
+                startNodeX = node.x;
+                startNodeY = node.y;
 
                 window.addEventListener('pointermove', onMove);
                 window.addEventListener('pointerup', onUp);
+                window.addEventListener('pointercancel', onUp);
             });
 
             nodeEl.addEventListener('pointerenter', (e) => {
-                if (isDraggingNode) return;
+                if (isDraggingNode || hasDragged) return;
                 hoveredNode = node;
                 cachedSubtreeIds = this.getSubtreeIds(node.id);
 
@@ -372,6 +412,7 @@ window.App = window.App || {};
             });
 
             nodeEl.addEventListener('pointerleave', () => {
+                if (isDraggingNode || hasDragged) return;
                 hoveredNode = null;
                 cachedSubtreeIds = null;
                 if (window.App.graphPreview) {
@@ -379,14 +420,29 @@ window.App = window.App || {};
                 }
             });
 
-            nodeEl.addEventListener('click', () => {
+            nodeEl.addEventListener('click', (e) => {
+                if (hasDragged || dragThresholdPassed) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    return;
+                }
+
+                if (window.App.graphPreview) {
+                    window.App.graphPreview.hide();
+                }
+
                 if (window.App.store) {
                     window.App.store.setViewMode('columns');
                 } else if (window.App.state) {
                     window.App.state.viewMode = 'columns';
                 }
+
                 if (window.App.workspaceView) {
-                    window.App.workspaceView.render();
+                    if (window.App.workspaceView.scrollToNote) {
+                        window.App.workspaceView.scrollToNote(node.id);
+                    } else {
+                        window.App.workspaceView.render();
+                    }
                 }
             });
         },

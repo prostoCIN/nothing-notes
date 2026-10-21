@@ -46,6 +46,14 @@
     transform: translate(-50%, -50%);
     will-change: transform, opacity;
     transition: opacity 0.2s ease;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: grab;
+}
+
+.graph-html-node.is-dragging {
+    cursor: grabbing !important;
+    z-index: 100;
 }
 
 .graph-html-node-circle {
