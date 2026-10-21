@@ -1,0 +1,276 @@
+/* ==========================================================================
+   Account Switcher Overlay
+   ========================================================================== */
+.account-overlay-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 9998;
+}
+
+.account-switcher-overlay {
+    position: fixed;
+    z-index: 9999;
+    width: 290px;
+    max-width: calc(100vw - 24px);
+    background: var(--modal-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 12px;
+    box-shadow: var(--glass-card-shadow);
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+    transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+    color: var(--text-main);
+}
+
+.account-switcher-overlay.active {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+.account-switcher-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 6px 10px 6px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.account-switcher-title {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.account-switcher-title svg {
+    color: var(--accent-color, #10b981);
+}
+
+.account-switcher-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 18px;
+    line-height: 1;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.account-switcher-close:hover {
+    color: var(--text-main);
+    background: var(--hover-bg);
+}
+
+.account-switcher-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 240px;
+    overflow-y: auto;
+    padding: 8px 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+.account-switcher-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.account-switcher-list::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 4px;
+}
+
+.account-switcher-section-title {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    padding: 6px 8px 2px 8px;
+}
+
+.account-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+    user-select: none;
+    position: relative;
+}
+
+.account-item.is-current {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.28);
+}
+
+.account-item.account-other-item {
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+
+.account-item.account-other-item:hover {
+    background: var(--hover-bg);
+    border-color: var(--border-color);
+}
+
+.account-item.account-loading {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.account-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--emerald-gradient, linear-gradient(135deg, #10b981 0%, #059669 100%));
+    color: #062419;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.account-other-item .account-avatar {
+    background: var(--hover-bg);
+    color: var(--text-main);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
+}
+
+.account-details {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.account-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.account-email {
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.account-badge-current {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.15);
+    padding: 3px 7px;
+    border-radius: 12px;
+    flex-shrink: 0;
+}
+
+.account-item-logout-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: color 0.15s, background 0.15s, transform 0.12s;
+}
+
+.account-item-logout-btn:hover {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.16);
+    transform: scale(1.08);
+}
+
+.account-guest-notice {
+    padding: 10px;
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.account-switcher-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-color);
+}
+
+.account-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    padding: 9px 12px;
+    border-radius: 9px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    border: 1px solid transparent;
+    transition: all 0.15s ease;
+}
+
+.account-add-btn {
+    background: var(--hover-bg);
+    color: var(--text-main);
+    border-color: var(--border-color);
+}
+
+.account-add-btn:hover {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+    border-color: rgba(16, 185, 129, 0.28);
+}
+
+.account-logout-btn {
+    background: transparent;
+    color: var(--text-muted);
+    border-color: transparent;
+}
+
+.account-logout-btn:hover {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.25);
+}

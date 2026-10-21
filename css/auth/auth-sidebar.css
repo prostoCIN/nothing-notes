@@ -1,0 +1,209 @@
+/* auth.css - Стилі модального вікна входу / реєстрації та профілю користувача */
+.sidebar-user-profile {
+    margin-top: auto;
+    padding: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    margin-left: 8px;
+    margin-right: 8px;
+    margin-bottom: 8px;
+}
+
+.sidebar-login-btn {
+    flex: 1;
+    min-width: 0;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-main);
+    padding: 0 10px;
+    border-radius: 8px;
+    font-size: var(--font-xs);
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-sizing: border-box;
+}
+
+.sidebar-login-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.sidebar-settings-btn,
+.sidebar-settings-guest-btn {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+    box-sizing: border-box;
+}
+
+.sidebar-settings-btn:hover,
+.sidebar-settings-guest-btn:hover {
+    color: var(--accent-color, #10b981);
+    background: rgba(16, 185, 129, 0.12);
+    border-color: rgba(16, 185, 129, 0.25);
+}
+
+.user-profile-clickable {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+    height: 38px;
+    cursor: pointer;
+    padding: 0 8px 0 6px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    box-sizing: border-box;
+}
+
+.user-profile-clickable:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.18);
+}
+
+.user-profile-clickable.is-open {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent-color, #10b981);
+}
+
+.user-profile-chevron {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    transition: transform 0.2s ease, color 0.2s ease;
+    flex-shrink: 0;
+    margin-right: 2px;
+}
+
+.user-profile-clickable:hover .user-profile-chevron {
+    color: var(--text-main);
+}
+
+.user-profile-clickable.is-open .user-profile-chevron {
+    transform: rotate(180deg);
+    color: var(--accent-color, #10b981);
+}
+
+.user-avatar {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--emerald-gradient);
+    box-shadow: 0 2px 8px rgba(22, 185, 129, 0.35);
+    color: #062419;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.user-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+}
+
+.user-name-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.user-email {
+    font-size: var(--font-xs);
+    font-weight: 600;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-cloud-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-color, #10b981);
+    flex-shrink: 0;
+    line-height: 1;
+    filter: drop-shadow(0 1px 3px rgba(16, 185, 129, 0.25));
+}
+
+.user-cloud-icon svg {
+    display: block;
+    width: 14px;
+    height: 14px;
+}
+
+.user-profile-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+.user-action-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s, background 0.15s, transform 0.15s;
+}
+
+.user-action-btn:hover {
+    color: var(--text-main);
+    background: var(--hover-bg, rgba(255, 255, 255, 0.08));
+    transform: scale(1.05);
+}
+
+.user-settings-btn:hover {
+    color: var(--accent-color, #10b981);
+    background: rgba(16, 185, 129, 0.15);
+}
+
+.user-logout-btn:hover {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.15);
+}
+
+
