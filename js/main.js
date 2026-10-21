@@ -37,6 +37,8 @@ import './workspace/stickerGallery.js';
 import './workspace/stickerMenu.js';
 import './workspace/stickerTags.js';
 import './workspace/stickerHeader.js';
+import './workspace/stickerPasteSanitizer.js';
+import './workspace/stickerPasteHandler.js';
 import './workspace/stickerContent.js';
 import './workspace/stickerSubnotes.js';
 import './workspace/columnMenu.js';
