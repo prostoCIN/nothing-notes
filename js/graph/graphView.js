@@ -29,6 +29,12 @@ window.App = window.App || {};
     let boundPointerUp = null;
     let boundResize = null;
     let boundWheel = null;
+    let boundTouchStart = null;
+    let boundTouchMove = null;
+    let boundTouchEnd = null;
+    let isPinching = false;
+    let touchPinchDist = 0;
+    let touchPinchCenter = null;
 
     const BRANCH_COLORS = [
         '#10b981', '#3b82f6', '#f59e0b', '#ec4899', '#8b5cf6',
@@ -340,6 +346,11 @@ window.App = window.App || {};
             let startNodeY = 0;
 
             const onMove = (ev) => {
+                if (isPinching) {
+                    onUp();
+                    return;
+                }
+
                 const dist = Math.hypot(ev.clientX - startPointerX, ev.clientY - startPointerY);
                 if (!dragThresholdPassed && dist > 5) {
                     dragThresholdPassed = true;
@@ -385,7 +396,7 @@ window.App = window.App || {};
             };
 
             nodeEl.addEventListener('pointerdown', (e) => {
-                if (e.button !== 0) return; // Тільки ліва кнопка миші
+                if (e.button !== 0 || isPinching) return; // Тільки ліва кнопка миші і якщо не щипок
                 e.stopPropagation();
 
                 hasDragged = false;
@@ -477,12 +488,87 @@ window.App = window.App || {};
         bindEvents() {
             const interaction = window.App.graphInteraction;
 
+            // 1. Жест масштабування двома пальцями (Pinch-to-zoom) на смартфонах і сенсорних екранах
+            boundTouchStart = (e) => {
+                if (e.touches.length >= 2) {
+                    e.preventDefault();
+                    isPinching = true;
+                    isDraggingCanvas = false;
+                    isDraggingNode = false;
+                    draggedNode = null;
+
+                    const t1 = e.touches[0];
+                    const t2 = e.touches[1];
+                    touchPinchDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+                    touchPinchCenter = {
+                        x: (t1.clientX + t2.clientX) / 2,
+                        y: (t1.clientY + t2.clientY) / 2
+                    };
+                }
+            };
+
+            boundTouchMove = (e) => {
+                if (e.touches.length >= 2 && touchPinchDist > 0) {
+                    e.preventDefault();
+                    isPinching = true;
+                    isDraggingCanvas = false;
+
+                    const t1 = e.touches[0];
+                    const t2 = e.touches[1];
+                    const currentDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+                    const currentCenter = {
+                        x: (t1.clientX + t2.clientX) / 2,
+                        y: (t1.clientY + t2.clientY) / 2
+                    };
+
+                    if (currentDist > 0 && touchPinchDist > 0) {
+                        const factor = currentDist / touchPinchDist;
+                        // М'який плавний зум без різких ривків
+                        const clampedFactor = Math.min(1.3, Math.max(0.7, factor));
+                        interaction.zoomAt(clampedFactor, currentCenter.x, currentCenter.y, canvas);
+
+                        if (touchPinchCenter) {
+                            const panDx = currentCenter.x - touchPinchCenter.x;
+                            const panDy = currentCenter.y - touchPinchCenter.y;
+                            interaction.camera.x += panDx;
+                            interaction.camera.y += panDy;
+                        }
+                    }
+
+                    touchPinchDist = currentDist;
+                    touchPinchCenter = currentCenter;
+                }
+            };
+
+            boundTouchEnd = (e) => {
+                if (e.touches.length < 2) {
+                    touchPinchDist = 0;
+                    touchPinchCenter = null;
+                    if (e.touches.length === 1) {
+                        // Якщо залишився 1 палець — перемикаємо на плавне переміщення без ривків
+                        isPinching = false;
+                        lastMousePos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                        isDraggingCanvas = true;
+                    } else {
+                        isPinching = false;
+                        isDraggingCanvas = false;
+                    }
+                }
+            };
+
+            container.addEventListener('touchstart', boundTouchStart, { passive: false });
+            window.addEventListener('touchmove', boundTouchMove, { passive: false });
+            window.addEventListener('touchend', boundTouchEnd);
+            window.addEventListener('touchcancel', boundTouchEnd);
+
             canvas.addEventListener('pointerdown', (e) => {
+                if (isPinching) return;
                 isDraggingCanvas = true;
                 lastMousePos = { x: e.clientX, y: e.clientY };
             });
 
             boundPointerMove = (e) => {
+                if (isPinching) return;
                 if (isDraggingCanvas) {
                     const dx = e.clientX - lastMousePos.x;
                     const dy = e.clientY - lastMousePos.y;
@@ -493,7 +579,9 @@ window.App = window.App || {};
             };
 
             boundPointerUp = () => {
-                isDraggingCanvas = false;
+                if (!isPinching) {
+                    isDraggingCanvas = false;
+                }
             };
 
             boundWheel = (e) => {
@@ -510,6 +598,7 @@ window.App = window.App || {};
 
             window.addEventListener('pointermove', boundPointerMove);
             window.addEventListener('pointerup', boundPointerUp);
+            window.addEventListener('pointercancel', boundPointerUp);
             container.addEventListener('wheel', boundWheel, { passive: false });
 
             boundResize = () => {
@@ -648,8 +737,25 @@ window.App = window.App || {};
             }
             if (boundPointerUp) {
                 window.removeEventListener('pointerup', boundPointerUp);
+                window.removeEventListener('pointercancel', boundPointerUp);
                 boundPointerUp = null;
             }
+            if (container && boundTouchStart) {
+                container.removeEventListener('touchstart', boundTouchStart);
+                boundTouchStart = null;
+            }
+            if (boundTouchMove) {
+                window.removeEventListener('touchmove', boundTouchMove);
+                boundTouchMove = null;
+            }
+            if (boundTouchEnd) {
+                window.removeEventListener('touchend', boundTouchEnd);
+                window.removeEventListener('touchcancel', boundTouchEnd);
+                boundTouchEnd = null;
+            }
+            isPinching = false;
+            touchPinchDist = 0;
+            touchPinchCenter = null;
             if (boundResize) {
                 window.removeEventListener('resize', boundResize);
                 boundResize = null;
