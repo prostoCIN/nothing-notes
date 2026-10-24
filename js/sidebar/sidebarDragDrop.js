@@ -539,6 +539,9 @@ window.App = window.App || {};
                                     draggedNoteIds.forEach(id => noteManager.moveNoteToParent(id, null, false));
                                     state.selectedSidebarNoteIds.clear();
                                     window.App.renderApp();
+                                },
+                                onCancel: () => {
+                                    sidebarView.renderNotesList();
                                 }
                             });
                             return;

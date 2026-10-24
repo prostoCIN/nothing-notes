@@ -64,14 +64,14 @@ window.App = window.App || {};
         holdBtnText = modalBox.querySelector('.hold-btn-text');
 
         // Скасування
-        cancelBtn.addEventListener('click', closeModal);
+        cancelBtn.addEventListener('click', () => closeModal(false));
         overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) closeModal();
+            if (e.target === overlay) closeModal(false);
         });
 
         window.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && overlay.classList.contains('active')) {
-                closeModal();
+                closeModal(false);
             }
         });
 
@@ -174,6 +174,7 @@ window.App = window.App || {};
     }
 
     function closeModal(isConfirmed = false) {
+        const confirmed = isConfirmed === true;
         if (!overlay) return;
         if (holdTimerId) {
             cancelAnimationFrame(holdTimerId);
@@ -184,7 +185,7 @@ window.App = window.App || {};
         const cancelCb = onCancelCallback;
         onConfirmCallback = null;
         onCancelCallback = null;
-        if (!isConfirmed && cancelCb) {
+        if (!confirmed && cancelCb) {
             cancelCb();
         }
     }
