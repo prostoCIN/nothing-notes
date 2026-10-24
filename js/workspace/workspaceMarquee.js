@@ -98,7 +98,7 @@ window.App = window.App || {};
 
                 const state = window.App.state;
                 // Не запускаємо в режимах дошки/графу або під час перетягування нотатки
-                if (state && (state.viewMode !== 'columns' || state.isGraphView || state.isBoardView || state.isDraggingNote)) return;
+                if (state && (state.viewMode !== 'columns' || state.isDraggingNote)) return;
 
                 // Перевіряємо, чи клік не припав на інтерактивний елемент або нотатку
                 const invalidTarget = e.target.closest(

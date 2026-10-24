@@ -208,8 +208,6 @@ window.App = window.App || {};
                     window.App.store.setViewMode(mode);
                 } else if (window.App.state) {
                     window.App.state.viewMode = mode;
-                    window.App.state.isGraphView = (mode === 'graph');
-                    window.App.state.isBoardView = (mode === 'board');
                 }
                 this.render();
             };
@@ -410,7 +408,7 @@ window.App = window.App || {};
             const selectToggleBtn = document.getElementById('island-select-toggle-btn');
             const selectText = document.getElementById('island-select-text');
 
-            const currentMode = (state && state.viewMode) || (state && state.isGraphView ? 'graph' : 'columns');
+            const currentMode = (state && state.viewMode) || 'columns';
             if (viewColumnsBtn) viewColumnsBtn.classList.toggle('active', currentMode === 'columns');
             if (viewBoardBtn) viewBoardBtn.classList.toggle('active', currentMode === 'board');
             if (viewGraphBtn) viewGraphBtn.classList.toggle('active', currentMode === 'graph');

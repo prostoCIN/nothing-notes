@@ -282,7 +282,7 @@ window.App = window.App || {};
                     menuDropdown.classList.remove('active');
                     navViewport.classList.remove('is-sub-active');
                     if (onClose) onClose();
-                    if (window.App.state && (window.App.state.isBoardView || window.App.state.isGraphView || window.App.state.viewMode !== 'columns')) {
+                    if (window.App.state && window.App.state.viewMode !== 'columns') {
                         if (noteManager) {
                             noteManager.createNewNote(note.id, true);
                         }
