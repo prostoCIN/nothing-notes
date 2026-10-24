@@ -101,6 +101,24 @@
     z-index: 20;
 }
 
+/* Підняття колонки та шапки над іншими елементами, коли відкрито пікер емодзі блокноту/колонки */
+.board-column.has-active-emoji-picker,
+.board-column:has(.sticker-emoji-picker-dropdown.active) {
+    z-index: 1000 !important;
+}
+
+.column-header.has-active-emoji-picker,
+.column-header:has(.sticker-emoji-picker-dropdown.active) {
+    z-index: 1001 !important;
+    overflow: visible !important;
+}
+
+.column-title-wrap.has-active-emoji-picker,
+.column-title-wrap:has(.sticker-emoji-picker-dropdown.active) {
+    z-index: 1002 !important;
+    overflow: visible !important;
+}
+
 .column-title-wrap {
     display: flex;
     align-items: center;

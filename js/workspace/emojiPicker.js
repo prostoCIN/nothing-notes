@@ -35,6 +35,16 @@ window.App = window.App || {};
             removeBtn.title = 'Прибрати іконку';
             removeBtn.style.display = currentIcon ? 'block' : 'none';
 
+            const setPickerActiveState = (active) => {
+                const col = emojiWrap.closest('.board-column');
+                const header = emojiWrap.closest('.column-header');
+                const titleWrap = emojiWrap.closest('.column-title-wrap');
+                emojiWrap.classList.toggle('has-active-emoji-picker', active);
+                if (titleWrap) titleWrap.classList.toggle('has-active-emoji-picker', active);
+                if (header) header.classList.toggle('has-active-emoji-picker', active);
+                if (col) col.classList.toggle('has-active-emoji-picker', active);
+            };
+
             removeBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 if (isNote) {
@@ -46,6 +56,7 @@ window.App = window.App || {};
                 emojiBtn.title = 'Додати емодзі';
                 removeBtn.style.display = 'none';
                 emojiDropdown.classList.remove('active');
+                setPickerActiveState(false);
                 if (customRemoveHandler) {
                     customRemoveHandler();
                 } else if (onIconChange) {
@@ -93,6 +104,7 @@ window.App = window.App || {};
                         emojiBtn.title = 'Змінити емодзі';
                         removeBtn.style.display = 'block';
                         emojiDropdown.classList.remove('active');
+                        setPickerActiveState(false);
                         if (onIconChange) onIconChange(emoji);
                         if (isNote && window.App.sidebarView) {
                             window.App.sidebarView.renderNotesList();
@@ -189,6 +201,9 @@ window.App = window.App || {};
                 document.querySelectorAll('.sticker-emoji-picker-dropdown.active, .sticker-menu-dropdown.active, .sticker-tag-dropdown.active, .column-filter-dropdown.active').forEach(el => {
                     if (el !== emojiDropdown) el.classList.remove('active', 'open-upward');
                 });
+                document.querySelectorAll('.has-active-emoji-picker').forEach(el => {
+                    if (!el.contains(emojiDropdown)) el.classList.remove('has-active-emoji-picker');
+                });
 
                 const willOpen = !emojiDropdown.classList.contains('active');
                 if (willOpen) {
@@ -196,9 +211,13 @@ window.App = window.App || {};
                         window.App.smartPositionDropdown(emojiBtn, emojiDropdown, 320);
                     }
                     emojiDropdown.classList.add('active');
-                    setTimeout(() => searchInput.focus(), 60);
+                    setPickerActiveState(true);
+                    if (window.innerWidth > 768) {
+                        setTimeout(() => searchInput.focus(), 60);
+                    }
                 } else {
                     emojiDropdown.classList.remove('active', 'open-upward');
+                    setPickerActiveState(false);
                 }
             });
 
