@@ -498,13 +498,19 @@ window.App = window.App || {};
 
             boundWheel = (e) => {
                 e.preventDefault();
-                const delta = e.deltaY < 0 ? 1.1 : 0.9;
+                if (e.target.closest('input, textarea, button')) {
+                    if (!e.ctrlKey && !e.metaKey) return;
+                }
+                const isTrackpadPinch = (e.ctrlKey || e.metaKey) && e.deltaMode === 0 && Math.abs(e.deltaY) < 50;
+                const delta = isTrackpadPinch
+                    ? Math.exp(-e.deltaY * 0.005)
+                    : (e.deltaY < 0 ? 1.1 : 0.9);
                 interaction.zoomAt(delta, e.clientX, e.clientY, canvas);
             };
 
             window.addEventListener('pointermove', boundPointerMove);
             window.addEventListener('pointerup', boundPointerUp);
-            canvas.addEventListener('wheel', boundWheel, { passive: false });
+            container.addEventListener('wheel', boundWheel, { passive: false });
 
             boundResize = () => {
                 this.resizeCanvas();
@@ -648,7 +654,10 @@ window.App = window.App || {};
                 window.removeEventListener('resize', boundResize);
                 boundResize = null;
             }
-            if (canvas && boundWheel) {
+            if (container && boundWheel) {
+                container.removeEventListener('wheel', boundWheel);
+                boundWheel = null;
+            } else if (canvas && boundWheel) {
                 canvas.removeEventListener('wheel', boundWheel);
                 boundWheel = null;
             }

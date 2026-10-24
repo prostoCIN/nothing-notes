@@ -246,6 +246,7 @@ window.App = window.App || {};
             const columnsContainer = document.getElementById('columns-container');
             if (columnsContainer) {
                 columnsContainer.addEventListener('wheel', (e) => {
+                    if (e.ctrlKey || e.metaKey) return;
                     if (e.target.closest('.sticker-menu-dropdown') ||
                         e.target.closest('.sticker-emoji-picker-dropdown') ||
                         e.target.closest('.sticker-tag-dropdown') ||

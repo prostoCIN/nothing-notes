@@ -294,6 +294,7 @@ window.App = window.App || {};
 
                     // Скрол коліщатком миші по горизонталі
                     breadcrumbs.addEventListener('wheel', (e) => {
+                        if (e.ctrlKey || e.metaKey) return;
                         if (breadcrumbs.scrollWidth > breadcrumbs.clientWidth) {
                             const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
                             if (delta !== 0) {

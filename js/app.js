@@ -186,8 +186,53 @@ function bootstrapApp() {
         window.App.i18n.updateDOM();
     }
 
+    initGlobalZoomPrevention();
+
     // Початкова перевірка стану
     initApp();
+}
+
+/**
+ * Запобігання небажаному масштабуванню вікна браузера при Ctrl + Wheel, трекпад-жестах та гарячих клавішах
+ */
+function initGlobalZoomPrevention() {
+    // Блокуємо браузерний зум сторінки при Ctrl + Wheel або трекпад pinch-to-zoom
+    window.addEventListener('wheel', (e) => {
+        if (e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+
+    // Блокуємо жести масштабування сторінки у WebKit / Safari
+    ['gesturestart', 'gesturechange', 'gestureend'].forEach((eventName) => {
+        document.addEventListener(eventName, (e) => {
+            e.preventDefault();
+        });
+    });
+
+    // Блокуємо комбінації клавіш Ctrl + '+', '-', '0' і спрямовуємо їх у граф чи дошку
+    window.addEventListener('keydown', (e) => {
+        if (e.ctrlKey || e.metaKey) {
+            const isZoomIn = e.key === '+' || e.key === '=' || e.code === 'NumpadAdd';
+            const isZoomOut = e.key === '-' || e.key === '_' || e.code === 'NumpadSubtract';
+            const isZoomReset = e.key === '0' || e.code === 'Digit0' || e.code === 'Numpad0';
+
+            if (isZoomIn || isZoomOut || isZoomReset) {
+                e.preventDefault();
+
+                const mode = window.App?.state?.viewMode;
+                if (mode === 'board') {
+                    if (isZoomIn) document.getElementById('board-zoom-in')?.click();
+                    else if (isZoomOut) document.getElementById('board-zoom-out')?.click();
+                    else if (isZoomReset) document.getElementById('board-zoom-reset')?.click();
+                } else if (mode === 'graph') {
+                    if (isZoomIn) document.getElementById('graph-zoom-in')?.click();
+                    else if (isZoomOut) document.getElementById('graph-zoom-out')?.click();
+                    else if (isZoomReset) document.getElementById('graph-zoom-reset')?.click();
+                }
+            }
+        }
+    });
 }
 
 if (document.readyState === 'loading') {
