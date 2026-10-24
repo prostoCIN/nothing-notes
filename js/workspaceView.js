@@ -167,8 +167,7 @@ window.App = window.App || {};
                     return;
                 }
 
-                // Гаряча клавіша Shift + "+" для швидкого створення піднотатки для поточної активної/сфокусованої нотатки
-                // На мобільних телефонах/планшетах повністю вимикаємо, щоб віртуальна клавіатура могла вільно друкувати "+"
+                // На мобільних телефонах/планшетах повністю вимикаємо будь-які хоткеї створення
                 const isMobileDevice = window.innerWidth <= 768 ||
                     (window.matchMedia && (window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(max-width: 768px)').matches)) ||
                     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -176,29 +175,48 @@ window.App = window.App || {};
                     return;
                 }
 
-                // Також не перехоплюємо "+" під час активного введення тексту користувачем у полях чи нотатках
-                const activeEl = document.activeElement;
-                const isEditingText = activeEl && (activeEl.isContentEditable || activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA');
-                if (isEditingText) {
+                // Не перехоплюємо, якщо відкрите будь-яке модальне вікно
+                const isModalOpen = document.querySelector('.modal-overlay.active, .confirm-modal-overlay.active, .settings-modal-overlay.active, .share-modal-overlay.active, .auth-modal-overlay.active');
+                if (isModalOpen) {
                     return;
                 }
 
-                const isPlusKey = e.key === '+' || e.key === '=' || e.code === 'Equal' || e.code === 'NumpadAdd';
-                if (e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey && isPlusKey) {
-                    const focusedCard = activeEl ? activeEl.closest('.note-sticker[data-note-id]') : null;
+                // Не спрацьовуємо, якщо фокус у текстовому полі пошуку, інпуті тощо
+                const activeEl = document.activeElement;
+                if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) {
+                    return;
+                }
 
-                    // Працює коли картка вибрана/сфокусована на десктопі
-                    let targetNoteId = focusedCard ? focusedCard.dataset.noteId : null;
-                    if (!targetNoteId && state && state.activeNoteId) {
-                        const activeCard = document.querySelector(`.note-sticker[data-note-id="${state.activeNoteId}"]`);
-                        if (activeCard && activeCard.contains(activeEl)) {
-                            targetNoteId = state.activeNoteId;
-                        }
+                // Розумний хоткей Alt + N: створення піднотатки (при хавері/фокусі на нотатці) або нової нотатки в колонці (при хавері на колонці)
+                const isAltN = e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey && (e.code === 'KeyN' || e.key.toLowerCase() === 'n');
+                if (isAltN) {
+                    e.preventDefault();
+
+                    // 1. Шукаємо нотатку під курсором або у фокусі -> створюємо піднотатку для неї
+                    const hoveredNote = document.querySelector('.note-sticker[data-note-id]:hover');
+                    const focusedNote = activeEl ? activeEl.closest('.note-sticker[data-note-id]') : null;
+                    const targetNote = hoveredNote || focusedNote;
+
+                    if (targetNote && targetNote.dataset && targetNote.dataset.noteId) {
+                        this.createSubnoteForNote(targetNote.dataset.noteId);
+                        return;
                     }
 
-                    if (targetNoteId) {
-                        e.preventDefault();
-                        this.createSubnoteForNote(targetNoteId);
+                    // 2. Якщо курсор не над нотаткою — шукаємо колонку під курсором або у фокусі -> створюємо нову нотатку в цій колонці
+                    const hoveredColumn = document.querySelector('.board-column:hover');
+                    const focusedColumn = activeEl ? activeEl.closest('.board-column') : null;
+                    const targetColumn = hoveredColumn || focusedColumn || document.querySelector('.board-column[data-col-index="0"]');
+
+                    if (targetColumn && window.App.noteManager) {
+                        const rawParentId = targetColumn.dataset.parentId;
+                        const parentNoteId = (!rawParentId || rawParentId === 'root') ? null : rawParentId;
+                        window.App.noteManager.createNewNote(parentNoteId, true);
+                        return;
+                    }
+
+                    // 3. Якщо режим дошки або графу без колонок
+                    if (window.App.noteManager) {
+                        window.App.noteManager.createNewNote(null, true);
                     }
                 }
             });

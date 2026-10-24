@@ -310,6 +310,7 @@ export const en = {
             redo: 'Redo action',
             search: 'Search words on board',
             bold: 'Bold text',
+            smartCreate: 'Create note (in column) or subnote (on hovered note)',
             createSubnote: 'Create subnote',
             close: 'Close modal / exit highlighter',
             searchNav: 'Navigate search matches'

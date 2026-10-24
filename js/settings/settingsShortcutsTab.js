@@ -46,11 +46,11 @@ window.App = window.App || {};
                         </div>
                     </div>
                     <div class="settings-shortcut-row">
-                        <span class="settings-shortcut-label" data-i18n="settings.shortcuts.createSubnote">${t('settings.shortcuts.createSubnote')}</span>
+                        <span class="settings-shortcut-label" data-i18n="settings.shortcuts.smartCreate">${t('settings.shortcuts.smartCreate')}</span>
                         <div class="settings-shortcut-keys">
-                            <kbd class="settings-kbd">Shift</kbd>
+                            <kbd class="settings-kbd">Alt</kbd>
                             <span>+</span>
-                            <kbd class="settings-kbd">+</kbd>
+                            <kbd class="settings-kbd">N</kbd>
                         </div>
                     </div>
                     <div class="settings-shortcut-row">
