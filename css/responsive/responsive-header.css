@@ -123,6 +123,11 @@
         gap: 2px !important;
     }
 
+    /* Приховуємо вкладку дошки на мобільних пристроях (дошка для малих екранів не потрібна) */
+    #island-view-board-btn {
+        display: none !important;
+    }
+
     .header-segment-btn {
         width: 32px !important;
         height: 30px !important;

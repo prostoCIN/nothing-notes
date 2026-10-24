@@ -230,6 +230,18 @@ window.App = window.App || {};
                 });
             }
 
+            // Якщо розмір вікна змінився на мобільний під час відкритої дошки — повертаємося до колонок
+            window.addEventListener('resize', () => {
+                if (window.innerWidth <= 768 && window.App.state && window.App.state.viewMode === 'board') {
+                    if (window.App.store) {
+                        window.App.store.setViewMode('columns');
+                    } else {
+                        window.App.state.viewMode = 'columns';
+                    }
+                    this.render();
+                }
+            });
+
             // Горизонтальний скрол колонок робочої області коліщатком миші
             const columnsContainer = document.getElementById('columns-container');
             if (columnsContainer) {
@@ -409,6 +421,17 @@ window.App = window.App || {};
             const selectText = document.getElementById('island-select-text');
 
             const currentMode = (state && state.viewMode) || 'columns';
+
+            // На мобільних пристроях дошка вимкнена — перемикаємо на колонки
+            if (window.innerWidth <= 768 && currentMode === 'board') {
+                if (window.App.store) {
+                    window.App.store.setViewMode('columns');
+                } else if (state) {
+                    state.viewMode = 'columns';
+                }
+                return this.render();
+            }
+
             if (viewColumnsBtn) viewColumnsBtn.classList.toggle('active', currentMode === 'columns');
             if (viewBoardBtn) viewBoardBtn.classList.toggle('active', currentMode === 'board');
             if (viewGraphBtn) viewGraphBtn.classList.toggle('active', currentMode === 'graph');
