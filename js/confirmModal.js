@@ -1,4 +1,4 @@
-// js/confirmModal.js - Вспливаюче вікно підтвердження видалення з кнопкою затискання
+// js/confirmModal.js - Вспливаюче вікно підтвердження видалення/переміщення з кнопкою затискання
 window.App = window.App || {};
 
 (function() {
@@ -16,7 +16,6 @@ window.App = window.App || {};
     const HOLD_DURATION = 600; // 0.6 секунди для швидкого та комфортного затискання
     let onConfirmCallback = null;
     let onCancelCallback = null;
-    let currentType = 'danger';
     let activePointerId = null;
 
     let iconBadgeEl = null;
@@ -80,14 +79,6 @@ window.App = window.App || {};
         holdBtn.addEventListener('pointerdown', startHold);
         window.addEventListener('pointerup', cancelHold);
         window.addEventListener('pointercancel', cancelHold);
-
-        // Для інформаційних дій (наприклад перенесення нотаток) або тачу — дозволяємо звичайний клік
-        holdBtn.addEventListener('click', (e) => {
-            if (currentType === 'info') {
-                e.preventDefault();
-                completeHold();
-            }
-        });
     }
 
     function startHold(e) {
@@ -102,19 +93,15 @@ window.App = window.App || {};
             }
         } catch (err) {}
 
-        // Якщо це інформаційна дія (переміщення) і пристрій мобільний/сенсорний — підтверджуємо миттєво
-        if (currentType === 'info' && (e.pointerType === 'touch' || window.innerWidth <= 768)) {
-            completeHold();
-            return;
-        }
-
         holdStartTime = Date.now();
         holdBtn.classList.add('holding');
+        if (holdProgress) holdProgress.style.transition = 'none';
 
         function updateProgress() {
+            if (!holdStartTime) return;
             const elapsed = Date.now() - holdStartTime;
             const progress = Math.min(100, (elapsed / HOLD_DURATION) * 100);
-            holdProgress.style.width = `${progress}%`;
+            if (holdProgress) holdProgress.style.width = `${progress}%`;
 
             if (progress >= 100) {
                 completeHold();
@@ -138,18 +125,49 @@ window.App = window.App || {};
             cancelAnimationFrame(holdTimerId);
             holdTimerId = null;
         }
+
+        // Якщо затискання вже дійшло до кінця таймера, завершуємо дію
+        if (holdStartTime > 0 && (Date.now() - holdStartTime) >= HOLD_DURATION) {
+            holdStartTime = 0;
+            completeHold();
+            return;
+        }
+        holdStartTime = 0;
+
         if (holdBtn) {
             holdBtn.classList.remove('holding');
-            holdProgress.style.transition = 'width 0.2s ease-out';
-            holdProgress.style.width = '0%';
-            setTimeout(() => {
-                if (holdProgress) holdProgress.style.transition = 'width 0.05s linear';
-            }, 200);
+            if (holdProgress) {
+                holdProgress.style.transition = 'width 0.2s ease-out';
+                holdProgress.style.width = '0%';
+                setTimeout(() => {
+                    if (holdProgress) holdProgress.style.transition = 'none';
+                }, 200);
+            }
         }
     }
 
     function completeHold() {
-        cancelHold();
+        if (activePointerId && holdBtn && holdBtn.hasPointerCapture && holdBtn.hasPointerCapture(activePointerId)) {
+            try {
+                holdBtn.releasePointerCapture(activePointerId);
+            } catch (err) {}
+        }
+        activePointerId = null;
+
+        if (holdTimerId) {
+            cancelAnimationFrame(holdTimerId);
+            holdTimerId = null;
+        }
+        holdStartTime = 0;
+
+        if (holdBtn) {
+            holdBtn.classList.remove('holding');
+            if (holdProgress) {
+                holdProgress.style.transition = 'none';
+                holdProgress.style.width = '100%';
+            }
+        }
+
         const cb = onConfirmCallback;
         closeModal(true);
         if (cb) cb();
@@ -157,7 +175,11 @@ window.App = window.App || {};
 
     function closeModal(isConfirmed = false) {
         if (!overlay) return;
-        cancelHold();
+        if (holdTimerId) {
+            cancelAnimationFrame(holdTimerId);
+            holdTimerId = null;
+        }
+        holdStartTime = 0;
         overlay.classList.remove('active');
         const cancelCb = onCancelCallback;
         onConfirmCallback = null;
@@ -175,19 +197,12 @@ window.App = window.App || {};
         show({ title, message, confirmText, type = 'danger', onConfirm, onCancel }) {
             createModalDOM();
 
-            currentType = type;
             const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
 
             titleEl.textContent = title || t('common.confirm');
             descEl.innerHTML = message || '';
             cancelBtn.textContent = t('common.cancel');
-
-            const isMobile = window.innerWidth <= 768;
-            if (type === 'info' && isMobile && confirmText && confirmText.startsWith('Затисніть для ')) {
-                holdBtnText.textContent = confirmText.replace('Затисніть для ', '');
-            } else {
-                holdBtnText.textContent = confirmText || (type === 'danger' ? t('common.holdToConfirm') : t('common.confirm'));
-            }
+            holdBtnText.textContent = confirmText || (type === 'danger' ? t('common.holdToConfirm') : t('common.confirm'));
 
             onConfirmCallback = onConfirm;
             onCancelCallback = onCancel;
@@ -214,7 +229,10 @@ window.App = window.App || {};
                 holdBtn.className = 'hold-delete-btn';
             }
 
-            holdProgress.style.width = '0%';
+            if (holdProgress) {
+                holdProgress.style.transition = 'none';
+                holdProgress.style.width = '0%';
+            }
             holdBtn.classList.remove('holding');
 
             overlay.classList.add('active');

@@ -516,7 +516,7 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                             confirmModal.show({
                                 title: 'Зробити піднотатками?',
                                 message: `Ви дійсно хочете зробити з ${countPhrase} піднотатки для <span class="confirm-modal-highlight">"${escapeHtml(parentTitle)}"</span>?`,
-                                confirmText: 'Затисніть для переміщення',
+                                confirmText: 'Перемістити',
                                 type: 'info',
                                 onConfirm: () => {
                                     if (window.App.workspaceSelectionActions && window.App.workspaceSelectionActions.moveNotesToParent) {
@@ -547,7 +547,7 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                         confirmModal.show({
                             title: 'Зробити піднотаткою?',
                             message: `Ви дійсно хочете зробити нотатку <span class="confirm-modal-highlight">"${escapeHtml(draggedTitle)}"</span> піднотаткою для <span class="confirm-modal-highlight">"${escapeHtml(parentTitle)}"</span>?`,
-                            confirmText: 'Затисніть для переміщення',
+                            confirmText: 'Перемістити',
                             type: 'info',
                             onConfirm: () => {
                                 if (state && state.selectedWorkspaceNoteIds && state.selectedWorkspaceNoteIds.has(draggedNoteId)) {
@@ -617,7 +617,7 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                                 confirmModal.show({
                                     title: newParentId === null ? 'Перемістити в головні нотатки?' : 'Перемістити в іншу колонку?',
                                     message: `Ви дійсно хочете перемістити ${countPhrase} в ${targetName}?`,
-                                    confirmText: 'Затисніть для переміщення',
+                                    confirmText: 'Перемістити',
                                     type: 'info',
                                     onConfirm: () => {
                                         if (window.App.workspaceSelectionActions && window.App.workspaceSelectionActions.moveNotesToParent) {
@@ -649,7 +649,7 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                             confirmModal.show({
                                 title: newParentId === null ? 'Перемістити в головні нотатки?' : 'Перемістити в іншу колонку?',
                                 message: `Ви дійсно хочете перемістити <span class="confirm-modal-highlight">"${escapeHtml(draggedTitle)}"</span> в ${targetName}?`,
-                                confirmText: 'Затисніть для переміщення',
+                                confirmText: 'Перемістити',
                                 type: 'info',
                                 onConfirm: () => {
                                     if (state && state.selectedWorkspaceNoteIds && state.selectedWorkspaceNoteIds.has(draggedNoteId)) {

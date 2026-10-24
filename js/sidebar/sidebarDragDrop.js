@@ -533,7 +533,7 @@ window.App = window.App || {};
                             confirmModal.show({
                                 title: confirmTitle,
                                 message: confirmMsg,
-                                confirmText: 'Затисніть для переміщення',
+                                confirmText: 'Перемістити',
                                 type: 'info',
                                 onConfirm: () => {
                                     draggedNoteIds.forEach(id => noteManager.moveNoteToParent(id, null, false));
@@ -565,7 +565,7 @@ window.App = window.App || {};
                             confirmModal.show({
                                 title: confirmTitle,
                                 message: confirmMsg,
-                                confirmText: 'Затисніть для переміщення',
+                                confirmText: 'Перемістити',
                                 type: 'info',
                                 onConfirm: () => {
                                     state.expandedSidebarNoteIds.add(targetParentId);
@@ -634,7 +634,7 @@ window.App = window.App || {};
                             confirmModal.show({
                                 title: confirmTitle,
                                 message: confirmMsg,
-                                confirmText: 'Затисніть для переміщення',
+                                confirmText: 'Перемістити',
                                 type: 'info',
                                 onConfirm: () => {
                                     if (finalParentId) state.expandedSidebarNoteIds.add(finalParentId);
