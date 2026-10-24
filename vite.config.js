@@ -8,8 +8,25 @@ export default defineConfig({
     sourcemap: false,
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['@supabase/supabase-js', 'dompurify']
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
+          if (id.includes('/js/graph/') || id.includes('\\js\\graph\\')) {
+            return 'graph';
+          }
+          if (id.includes('/js/board/') || id.includes('\\js\\board\\')) {
+            return 'board';
+          }
+          if (id.includes('/js/sync/') || id.includes('\\js\\sync\\') || id.includes('cloudSync.js')) {
+            return 'sync';
+          }
+          if (id.includes('/js/share/') || id.includes('\\js\\share\\') || id.includes('shareManager.js')) {
+            return 'share';
+          }
+          if (id.includes('settingsModal.js') || id.includes('authModal.js') || id.includes('accountManager.js')) {
+            return 'modals';
+          }
         }
       }
     }
