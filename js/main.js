@@ -84,6 +84,10 @@ import './share/shareMarkdown.js';
 import './share/shareModal.js';
 import './shareManager.js';
 import './authModal.js';
+import './settings/settingsPreferences.js';
+import './settings/settingsAppearanceTab.js';
+import './settings/settingsAccountTab.js';
+import './settings/settingsShortcutsTab.js';
 import './settingsModal.js';
 import './accountManager.js';
 
