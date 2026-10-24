@@ -13,6 +13,16 @@
         min-height: 0 !important;
     }
 
+    /* Під час перетягування нотатки вимикаємо scroll-snap, щоб автоскрол міг плавно переміщати екран між колонками */
+    body.is-sticker-dragging .columns-container {
+        scroll-snap-type: none !important;
+    }
+
+    body.is-sticker-dragging .board-column {
+        scroll-snap-align: none !important;
+        scroll-snap-stop: normal !important;
+    }
+
     /* Приховуємо кнопку перемикання списку/сітки (Pinterest) та кнопку розтягування на мобільних, оскільки на телефоні завжди 1-колонковий вигляд на 100% ширини */
     .column-layout-toggle-btn,
     .column-expand-toggle-btn {

@@ -16,6 +16,8 @@ window.App = window.App || {};
     const HOLD_DURATION = 600; // 0.6 секунди для швидкого та комфортного затискання
     let onConfirmCallback = null;
     let onCancelCallback = null;
+    let currentType = 'danger';
+    let activePointerId = null;
 
     let iconBadgeEl = null;
 
@@ -78,11 +80,33 @@ window.App = window.App || {};
         holdBtn.addEventListener('pointerdown', startHold);
         window.addEventListener('pointerup', cancelHold);
         window.addEventListener('pointercancel', cancelHold);
+
+        // Для інформаційних дій (наприклад перенесення нотаток) або тачу — дозволяємо звичайний клік
+        holdBtn.addEventListener('click', (e) => {
+            if (currentType === 'info') {
+                e.preventDefault();
+                completeHold();
+            }
+        });
     }
 
     function startHold(e) {
-        if (e.button !== 0) return; // Тільки ліва кнопка миші
+        // Дозволяємо ліву кнопку миші (0) або тач/перо (button: 0, undefined або -1)
+        if (e.button !== undefined && e.button > 0) return;
         e.preventDefault();
+
+        activePointerId = e.pointerId;
+        try {
+            if (e.pointerId && holdBtn.setPointerCapture) {
+                holdBtn.setPointerCapture(e.pointerId);
+            }
+        } catch (err) {}
+
+        // Якщо це інформаційна дія (переміщення) і пристрій мобільний/сенсорний — підтверджуємо миттєво
+        if (currentType === 'info' && (e.pointerType === 'touch' || window.innerWidth <= 768)) {
+            completeHold();
+            return;
+        }
 
         holdStartTime = Date.now();
         holdBtn.classList.add('holding');
@@ -103,6 +127,13 @@ window.App = window.App || {};
     }
 
     function cancelHold() {
+        if (activePointerId && holdBtn && holdBtn.hasPointerCapture && holdBtn.hasPointerCapture(activePointerId)) {
+            try {
+                holdBtn.releasePointerCapture(activePointerId);
+            } catch (err) {}
+        }
+        activePointerId = null;
+
         if (holdTimerId) {
             cancelAnimationFrame(holdTimerId);
             holdTimerId = null;
@@ -144,12 +175,20 @@ window.App = window.App || {};
         show({ title, message, confirmText, type = 'danger', onConfirm, onCancel }) {
             createModalDOM();
 
+            currentType = type;
             const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
 
             titleEl.textContent = title || t('common.confirm');
             descEl.innerHTML = message || '';
             cancelBtn.textContent = t('common.cancel');
-            holdBtnText.textContent = confirmText || (type === 'danger' ? t('common.holdToConfirm') : t('common.confirm'));
+
+            const isMobile = window.innerWidth <= 768;
+            if (type === 'info' && isMobile && confirmText && confirmText.startsWith('Затисніть для ')) {
+                holdBtnText.textContent = confirmText.replace('Затисніть для ', '');
+            } else {
+                holdBtnText.textContent = confirmText || (type === 'danger' ? t('common.holdToConfirm') : t('common.confirm'));
+            }
+
             onConfirmCallback = onConfirm;
             onCancelCallback = onCancel;
 

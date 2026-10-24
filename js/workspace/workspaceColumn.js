@@ -359,6 +359,9 @@ window.App = window.App || {};
                         linkBtn.type = 'button';
                         linkBtn.className = 'column-breadcrumb-link';
                         linkBtn.title = t('column.goTo', { title: anc.title });
+                        linkBtn.dataset.targetColIndex = String(anc.colIndex);
+                        linkBtn.dataset.targetNoteId = anc.noteId || 'root';
+                        linkBtn.dataset.targetTitle = anc.title || '';
 
                         const iconSpan = document.createElement('span');
                         iconSpan.className = 'column-breadcrumb-icon';

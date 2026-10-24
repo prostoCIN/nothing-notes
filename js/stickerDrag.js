@@ -93,6 +93,7 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
 
             let currentNestTarget = null;
             let currentColumnDropTarget = null;
+            let currentBreadcrumbTarget = null;
 
             // Заборонені цілі для вкладення (усі вибрані нотатки та їхні нащадки, щоб уникнути циклів)
             const invalidTargetIds = new Set();
@@ -227,6 +228,43 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                     currentNestTarget = null;
                 }
                 placeholder.style.opacity = '1';
+
+                // 1.5. Шукаємо хлібні крихти (переміщення в батьківську колонку на вищий рівень)
+                const allBreadcrumbs = [...document.querySelectorAll('.column-breadcrumb-link')];
+                let hoveredBreadcrumb = null;
+
+                for (const b of allBreadcrumbs) {
+                    const r = b.getBoundingClientRect();
+                    if (
+                        clientX >= r.left - 4 &&
+                        clientX <= r.right + 4 &&
+                        clientY >= r.top - 6 &&
+                        clientY <= r.bottom + 6
+                    ) {
+                        const targetId = b.dataset.targetNoteId === 'root' ? null : b.dataset.targetNoteId;
+                        if (targetId !== originalParentId && !invalidTargetIds.has(targetId)) {
+                            hoveredBreadcrumb = b;
+                            break;
+                        }
+                    }
+                }
+
+                if (hoveredBreadcrumb) {
+                    if (currentBreadcrumbTarget !== hoveredBreadcrumb) {
+                        if (currentBreadcrumbTarget) currentBreadcrumbTarget.classList.remove('drag-breadcrumb-target');
+                        currentBreadcrumbTarget = hoveredBreadcrumb;
+                        currentBreadcrumbTarget.classList.add('drag-breadcrumb-target');
+                    }
+                    if (currentColumnDropTarget) {
+                        currentColumnDropTarget.classList.remove('drag-column-target');
+                        currentColumnDropTarget = null;
+                    }
+                    placeholder.style.opacity = '0.3';
+                    return;
+                } else if (currentBreadcrumbTarget) {
+                    currentBreadcrumbTarget.classList.remove('drag-breadcrumb-target');
+                    currentBreadcrumbTarget = null;
+                }
 
                 // 2. Визначаємо колонку під курсором
                 const allColumns = [...document.querySelectorAll('.board-column')];
@@ -410,7 +448,14 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                     currentNestTarget = null;
                 }
 
-                const colTarget = currentColumnDropTarget;
+                const breadcrumbTarget = currentBreadcrumbTarget;
+                if (currentBreadcrumbTarget) {
+                    currentBreadcrumbTarget.classList.remove('drag-breadcrumb-target');
+                    currentBreadcrumbTarget = null;
+                }
+
+                const droppedInColumn = placeholder ? placeholder.closest('.board-column') : null;
+                const colTarget = currentColumnDropTarget || droppedInColumn;
                 if (currentColumnDropTarget) {
                     currentColumnDropTarget.classList.remove('drag-column-target');
                     currentColumnDropTarget = null;
@@ -479,6 +524,9 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                                     } else {
                                         notesToMoveIds.forEach(id => noteManager.moveNoteToParent(id, targetParentId));
                                     }
+                                },
+                                onCancel: () => {
+                                    if (window.App.workspaceView) window.App.workspaceView.render();
                                 }
                             });
                         } else {
@@ -509,6 +557,9 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                                     }
                                 }
                                 noteManager.moveNoteToParent(draggedNoteId, targetParentId);
+                            },
+                            onCancel: () => {
+                                if (window.App.workspaceView) window.App.workspaceView.render();
                             }
                         });
                     } else {
@@ -523,10 +574,15 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                     return;
                 }
 
-                // Варіант 2: Відпустили над іншою колонкою
-                if (colTarget && noteManager) {
-                    const newParentId = colTarget.dataset.parentId === 'root' ? null : colTarget.dataset.parentId;
-                    if (newParentId !== originalParentId) {
+                // Варіант 2: Відпустили над іншою колонкою або над хлібними крихтами
+                const targetDropArea = breadcrumbTarget || colTarget;
+                if (targetDropArea && noteManager) {
+                    const rawParentId = breadcrumbTarget
+                        ? (breadcrumbTarget.dataset.targetNoteId === 'root' ? null : breadcrumbTarget.dataset.targetNoteId)
+                        : (colTarget.dataset.parentId === 'root' ? null : colTarget.dataset.parentId);
+                    const newParentId = rawParentId || null;
+
+                    if (newParentId !== originalParentId && !invalidTargetIds.has(newParentId)) {
                         const currentActiveBoard = boardManager ? boardManager.getActiveBoard() : null;
                         const boardName = currentActiveBoard ? currentActiveBoard.name : 'блокнот';
 
@@ -534,7 +590,15 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                         if (newParentId) {
                             const pNote = noteManager.getNoteById(newParentId);
                             targetName = `колонку піднотаток для "${pNote ? (pNote.title.trim() || 'Без назви') : ''}"`;
+                        } else if (breadcrumbTarget && breadcrumbTarget.dataset.targetTitle) {
+                            targetName = `колонку "${breadcrumbTarget.dataset.targetTitle}"`;
                         }
+
+                        const afterMove = () => {
+                            if (window.innerWidth <= 768 && colTarget && colTarget.scrollIntoView) {
+                                colTarget.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+                            }
+                        };
 
                         if (isMultiSelectDrag && notesToMoveIds.length > 1) {
                             const count = notesToMoveIds.length;
@@ -561,6 +625,10 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                                         } else {
                                             notesToMoveIds.forEach(id => noteManager.moveNoteToParent(id, newParentId));
                                         }
+                                        afterMove();
+                                    },
+                                    onCancel: () => {
+                                        if (window.App.workspaceView) window.App.workspaceView.render();
                                     }
                                 });
                             } else {
@@ -569,6 +637,7 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                                 } else {
                                     notesToMoveIds.forEach(id => noteManager.moveNoteToParent(id, newParentId));
                                 }
+                                afterMove();
                             }
                             return;
                         }
@@ -586,20 +655,27 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                                     if (state && state.selectedWorkspaceNoteIds && state.selectedWorkspaceNoteIds.has(draggedNoteId)) {
                                         if (window.App.workspaceSelectionActions && window.App.workspaceSelectionActions.moveNotesToParent) {
                                             window.App.workspaceSelectionActions.moveNotesToParent([draggedNoteId], newParentId);
+                                            afterMove();
                                             return;
                                         }
                                     }
                                     noteManager.moveNoteToParent(draggedNoteId, newParentId);
+                                    afterMove();
+                                },
+                                onCancel: () => {
+                                    if (window.App.workspaceView) window.App.workspaceView.render();
                                 }
                             });
                         } else {
                             if (state && state.selectedWorkspaceNoteIds && state.selectedWorkspaceNoteIds.has(draggedNoteId)) {
                                 if (window.App.workspaceSelectionActions && window.App.workspaceSelectionActions.moveNotesToParent) {
                                     window.App.workspaceSelectionActions.moveNotesToParent([draggedNoteId], newParentId);
+                                    afterMove();
                                     return;
                                 }
                             }
                             noteManager.moveNoteToParent(draggedNoteId, newParentId);
+                            afterMove();
                         }
                         return;
                     }
