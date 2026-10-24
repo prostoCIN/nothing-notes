@@ -145,8 +145,11 @@
         height: 14px !important;
     }
 
-    /* Повнорозмірний вертикальний скрол списку нотаток на мобільному (з прихованою смугою скролу) */
+    /* Повнорозмірний вертикальний скрол списку нотаток на мобільному (з прихованою смугою скролу та компактним відступом між картками) */
     .column-notes-list {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 10px !important;
         flex: 1 1 auto !important;
         height: 100% !important;
         min-height: 0 !important;
@@ -156,6 +159,10 @@
         -ms-overflow-style: none !important;  /* IE and Edge */
         padding: 4px 0 110px 0 !important; /* Забезпечує вільний простір унизу під кнопкою */
         box-sizing: border-box !important;
+    }
+
+    body.compact-notes-mode .column-notes-list {
+        gap: 6px !important;
     }
 
     .column-notes-list::-webkit-scrollbar {

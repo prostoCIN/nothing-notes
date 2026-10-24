@@ -2,7 +2,7 @@
     /* 5. Картки стікерів та адаптивна типографіка на телефоні */
     .note-sticker {
         width: 100%;
-        margin-bottom: 14px;
+        margin-bottom: 0 !important;
         padding: 16px 16px 16px 42px !important;
         box-sizing: border-box !important;
         -webkit-tap-highlight-color: transparent !important;
