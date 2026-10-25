@@ -2,9 +2,20 @@
 window.App = window.App || {};
 
 (function() {
+    function getActiveDiv(ctx) {
+        if (ctx && typeof ctx.getActiveContentDiv === 'function') {
+            return ctx.getActiveContentDiv();
+        }
+        if (window.App && window.App.textSelectionToolbar && typeof window.App.textSelectionToolbar.getActiveContentDiv === 'function') {
+            return window.App.textSelectionToolbar.getActiveContentDiv();
+        }
+        return null;
+    }
+
     window.App.textToolbarBatch = {
         // Застосування маркера до ВСІХ однакових слів у цій нотатці
         applyMarkerToAllOccurrences(targetText, markerClass) {
+            const activeContentDiv = getActiveDiv(this);
             if (!targetText || !activeContentDiv) return;
 
             if (window.App.historyManager) {
@@ -77,6 +88,7 @@ window.App = window.App || {};
 
         // Зняття маркера з усіх однакових слів у нотатці
         clearMarkerFromAllOccurrences(targetText) {
+            const activeContentDiv = getActiveDiv(this);
             if (!targetText || !activeContentDiv) return;
 
             if (window.App.historyManager) {
@@ -102,6 +114,7 @@ window.App = window.App || {};
 
         // Застосування розміру шрифту до ВСІХ однакових слів у нотатці
         applyFontSizeToAllOccurrences(targetText, fontSizeStr) {
+            const activeContentDiv = getActiveDiv(this);
             if (!targetText || !activeContentDiv) return;
 
             if (window.App.historyManager) {
@@ -171,6 +184,7 @@ window.App = window.App || {};
 
         // Застосування Regular / Bold до ВСІХ однакових слів у нотатці
         applyFontWeightToAllOccurrences(targetText, weight) {
+            const activeContentDiv = getActiveDiv(this);
             if (!targetText || !activeContentDiv) return;
 
             if (window.App.historyManager) {
@@ -239,6 +253,7 @@ window.App = window.App || {};
 
         // Скидання ВСЬОГО форматування для всіх однакових слів у нотатці
         resetAllFormattingFromAllOccurrences(targetText) {
+            const activeContentDiv = getActiveDiv(this);
             if (!targetText || !activeContentDiv) return;
 
             if (window.App.historyManager) {

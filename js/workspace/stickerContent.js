@@ -2,6 +2,10 @@
 window.App = window.App || {};
 
 (function() {
+    const SENTENCE_START_REGEX = /(?:^[\s\u00A0]*|[\r\n]+[\s\u00A0]*|(?:[.!?…]+|\.\.\.)[\s\u00A0]*(?:[\s\u00A0\r\n]|["'«»“”„(\[—–-])[\s\u00A0]*)$/;
+    let isAutoCapitalizing = false;
+    let lastAutoCapitalized = null;
+
     window.App.stickerContent = {
         /**
          * Створює блок контенту для стікера та прив'язує необхідні обробники подій
@@ -157,8 +161,17 @@ window.App = window.App || {};
                                                     try {
                                                         if (document.queryCommandSupported && document.queryCommandSupported('insertText')) {
                                                             document.execCommand('insertText', false, upper);
+                                                        } else if (window.App.stickerPasteHandler && window.App.stickerPasteHandler.insertTextAtCaret) {
+                                                            window.App.stickerPasteHandler.insertTextAtCaret(upper, contentDiv, note);
                                                         } else {
-                                                            insertTextAtCaret(upper, contentDiv, note);
+                                                            const textNode = document.createTextNode(upper);
+                                                            range.deleteContents();
+                                                            range.insertNode(textNode);
+                                                            const newRange = document.createRange();
+                                                            newRange.setStartAfter(textNode);
+                                                            newRange.collapse(true);
+                                                            sel.removeAllRanges();
+                                                            sel.addRange(newRange);
                                                         }
                                                     } finally {
                                                         isAutoCapitalizing = false;

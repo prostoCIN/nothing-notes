@@ -26,10 +26,6 @@ window.App = window.App || {};
         'violet': 'hl-purple'
     };
 
-    const SENTENCE_START_REGEX = /(?:^[\s\u00A0]*|[\r\n]+[\s\u00A0]*|(?:[.!?…]+|\.\.\.)[\s\u00A0]*(?:[\s\u00A0\r\n]|["'«»“”„(\[—–-])[\s\u00A0]*)$/;
-    let isAutoCapitalizing = false;
-    let lastAutoCapitalized = null;
-
     let testColorEl = null;
     function resolveColorToRgb(colorStr) {
         if (!testColorEl && typeof document !== 'undefined') {

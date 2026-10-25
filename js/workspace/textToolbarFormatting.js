@@ -2,9 +2,20 @@
 window.App = window.App || {};
 
 (function() {
+    function getActiveDiv(ctx) {
+        if (ctx && typeof ctx.getActiveContentDiv === 'function') {
+            return ctx.getActiveContentDiv();
+        }
+        if (window.App && window.App.textSelectionToolbar && typeof window.App.textSelectionToolbar.getActiveContentDiv === 'function') {
+            return window.App.textSelectionToolbar.getActiveContentDiv();
+        }
+        return null;
+    }
+
     window.App.textToolbarFormatting = {
         // Отримання всіх текстових вузлів, які перетинаються з Range
         getTextNodesInRange(range) {
+            const activeContentDiv = getActiveDiv(this);
             const textNodes = [];
             if (!range || !activeContentDiv) return textNodes;
 
@@ -35,6 +46,7 @@ window.App = window.App || {};
 
         // Універсальна утиліта для обгортання виділених текстових вузлів у будь-який HTML-елемент
         wrapTextNodesInRange(range, createElementFn) {
+            const activeContentDiv = getActiveDiv(this);
             if (!range || !activeContentDiv) return;
 
             const textNodes = this.getTextNodesInRange(range);
@@ -103,6 +115,7 @@ window.App = window.App || {};
 
         // Зняття маркера (Гумка) для конкретного Range з точним збереженням неторканих шматочків
         clearMarkerFromRange(range) {
+            const activeContentDiv = getActiveDiv(this);
             if (!range || !activeContentDiv) return;
 
             const marks = Array.from(activeContentDiv.querySelectorAll('mark.note-marker'));
@@ -207,6 +220,7 @@ window.App = window.App || {};
 
         // Regular / Bold для конкретного Range
         applyFontWeightToRange(range, weight) {
+            const activeContentDiv = getActiveDiv(this);
             if (!range || !activeContentDiv) return;
 
             if (weight === 'normal') {
@@ -263,6 +277,7 @@ window.App = window.App || {};
 
         // ПОВНИЙ РЕСЕТ для конкретного Range з точним збереженням стилів сусіднього тексту
         resetAllFormattingFromRange(range) {
+            const activeContentDiv = getActiveDiv(this);
             if (!range || !activeContentDiv) return;
 
             // 1. Знімаємо маркери (з точним розбиттям <mark>)
