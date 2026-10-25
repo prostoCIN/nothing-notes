@@ -96,11 +96,11 @@
 /* Точки з'єднання (плюсики) по 4 краях картки для створення піднотаток */
 .board-connect-handle {
     position: absolute;
-    width: 22px;
-    height: 22px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     background: #18181b;
-    border: 1.5px solid rgba(255, 255, 255, 0.35);
+    border: 2px solid rgba(255, 255, 255, 0.35);
     color: #e4e4e7;
     display: flex;
     align-items: center;
@@ -109,7 +109,7 @@
     opacity: 0;
     pointer-events: none;
     z-index: 20;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
     transition: opacity 0.16s ease, transform 0.16s ease, background 0.16s ease, border-color 0.16s ease, color 0.16s ease;
     user-select: none;
 }
@@ -117,29 +117,31 @@
 .board-connect-handle svg {
     pointer-events: none;
     display: block;
+    width: 16px;
+    height: 16px;
 }
 
 /* Позиціонування 4-х точок */
 .board-connect-handle-top {
-    top: -11px;
+    top: -16px;
     left: 50%;
     transform: translateX(-50%) scale(0.65);
 }
 
 .board-connect-handle-bottom {
-    bottom: -11px;
+    bottom: -16px;
     left: 50%;
     transform: translateX(-50%) scale(0.65);
 }
 
 .board-connect-handle-left {
-    left: -11px;
+    left: -16px;
     top: 50%;
     transform: translateY(-50%) scale(0.65);
 }
 
 .board-connect-handle-right {
-    right: -11px;
+    right: -16px;
     top: 50%;
     transform: translateY(-50%) scale(0.65);
 }
@@ -171,17 +173,17 @@
     background: var(--accent-emerald, #10b981) !important;
     border-color: #ffffff !important;
     color: #ffffff !important;
-    box-shadow: 0 0 14px rgba(16, 185, 129, 0.7) !important;
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.75) !important;
 }
 
 .board-connect-handle-top:hover,
 .board-connect-handle-bottom:hover {
-    transform: translateX(-50%) scale(1.22) !important;
+    transform: translateX(-50%) scale(1.18) !important;
 }
 
 .board-connect-handle-left:hover,
 .board-connect-handle-right:hover {
-    transform: translateY(-50%) scale(1.22) !important;
+    transform: translateY(-50%) scale(1.18) !important;
 }
 
 /* Стан під час активного протягування лінії */
@@ -213,7 +215,7 @@
 .board-nodes-layer .note-sticker.is-connect-target-valid::after {
     content: "Зробити піднотаткою";
     position: absolute;
-    top: -30px;
+    top: -34px;
     left: 50%;
     transform: translateX(-50%);
     background: var(--accent-emerald, #10b981);
@@ -237,7 +239,7 @@
 .board-nodes-layer .note-sticker.is-connect-target-invalid::after {
     content: "Вже є піднотаткою";
     position: absolute;
-    top: -30px;
+    top: -34px;
     left: 50%;
     transform: translateX(-50%);
     background: #ef4444;
