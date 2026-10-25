@@ -682,6 +682,9 @@ window.App = window.App || {};
             state.isWorkspaceSelectMode = true;
             document.body.classList.add('is-workspace-select-mode');
             this.updateUI();
+            if (window.App.boardView && window.App.boardView.updateSelectModeUI) {
+                window.App.boardView.updateSelectModeUI();
+            }
         },
 
         exitSelectMode() {
@@ -691,6 +694,9 @@ window.App = window.App || {};
             document.body.classList.remove('is-workspace-select-mode');
             this.closeSubmenus();
             this.updateUI();
+            if (window.App.boardView && window.App.boardView.updateSelectModeUI) {
+                window.App.boardView.updateSelectModeUI();
+            }
         },
 
         toggleSelectMode() {

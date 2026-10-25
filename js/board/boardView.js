@@ -22,11 +22,22 @@ window.App = window.App || {};
     let showTagLinks = true;
     let activeTagFilter = null;
 
+    let isSpacePressed = false;
+    let isPreparingMarquee = false;
+    let isMarquee = false;
+    let marqueeStartPos = { x: 0, y: 0 };
+    let marqueeInitialSelection = new Set();
+    let wasInSelectMode = false;
+    let marqueeEl = null;
+
     let boundPointerMove = null;
     let boundPointerUp = null;
     let boundResize = null;
     let boundWheel = null;
     let boundCanvasContextMenu = null;
+    let boundKeyDown = null;
+    let boundKeyUp = null;
+    let boundWindowBlur = null;
 
     const BRANCH_COLORS = [
         '#10b981', '#3b82f6', '#f59e0b', '#ec4899', '#8b5cf6',
@@ -134,6 +145,12 @@ window.App = window.App || {};
                 <div class="board-nodes-layer"></div>
 
                 <div class="board-controls-panel">
+                    <button class="board-ctrl-btn" id="board-select-mode-btn" title="Виділення області (Shift + перетягування)">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 3h4M15 3h4a2 2 0 0 1 2 2v4M21 15v4a2 2 0 0 1-2 2h-4M9 21H5a2 2 0 0 1-2-2v-4M3 9V5a2 2 0 0 1 2-2"></path>
+                        </svg>
+                    </button>
+                    <div class="board-ctrl-divider"></div>
                     <button class="board-ctrl-btn" id="board-zoom-in" title="Збільшити масштаб (+)">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -156,6 +173,8 @@ window.App = window.App || {};
                 <div class="board-legend-pill">
                     <span>💡 Перетягуйте картки за шапку</span>
                     <span>•</span>
+                    <span>Shift + перетягування для виділення області</span>
+                    <span>•</span>
                     <span>Правий клік для створення нової нотатки</span>
                 </div>
             `;
@@ -168,6 +187,7 @@ window.App = window.App || {};
             searchInput = container.querySelector('#board-search-input');
 
             this.bindEvents();
+            this.updateSelectModeUI();
         },
 
         resizeCanvas() {
@@ -471,11 +491,93 @@ window.App = window.App || {};
             }
         },
 
+        updateSelectModeUI() {
+            if (!container) return;
+            const state = window.App.state;
+            const isSel = Boolean(state && state.isWorkspaceSelectMode);
+            const selectModeBtn = container.querySelector('#board-select-mode-btn');
+            if (selectModeBtn) {
+                selectModeBtn.classList.toggle('is-active', isSel);
+            }
+            container.classList.toggle('is-select-mode-active', isSel);
+        },
+
+        checkMarqueeIntersection(marqueeRect, initialSet) {
+            const state = window.App.state;
+            if (!state || !state.selectedWorkspaceNoteIds) return;
+            if (!nodesLayer) return;
+
+            const cards = nodesLayer.querySelectorAll('.note-sticker[data-note-id]');
+            cards.forEach(card => {
+                const noteId = card.dataset.noteId;
+                if (!noteId) return;
+                if (card.style.display === 'none') return;
+
+                const cardRect = card.getBoundingClientRect();
+                const isIntersecting = !(
+                    cardRect.right < marqueeRect.left ||
+                    cardRect.left > marqueeRect.right ||
+                    cardRect.bottom < marqueeRect.top ||
+                    cardRect.top > marqueeRect.bottom
+                );
+
+                if (isIntersecting) {
+                    state.selectedWorkspaceNoteIds.add(noteId);
+                } else if (!initialSet || !initialSet.has(noteId)) {
+                    state.selectedWorkspaceNoteIds.delete(noteId);
+                }
+            });
+
+            if (window.App.workspaceSelectionBar) {
+                window.App.workspaceSelectionBar.updateUI();
+            }
+        },
+
         bindEvents() {
             const interaction = window.App.boardInteraction;
 
+            const selectModeBtn = container.querySelector('#board-select-mode-btn');
+            if (selectModeBtn) {
+                selectModeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const state = window.App.state;
+                    const selBar = window.App.workspaceSelectionBar;
+                    if (!selBar || !state) return;
+                    if (state.isWorkspaceSelectMode) {
+                        selBar.exitSelectMode();
+                    } else {
+                        selBar.enterSelectMode();
+                    }
+                    this.updateSelectModeUI();
+                });
+            }
+
             canvas.addEventListener('pointerdown', (e) => {
                 if (e.button === 2) return;
+                if (e.button === 1) {
+                    // Середня кнопка миші — завжди переміщення полотна
+                    isDraggingCanvas = true;
+                    startMousePos = { x: e.clientX, y: e.clientY };
+                    lastMousePos = { x: e.clientX, y: e.clientY };
+                    return;
+                }
+                if (e.button !== 0) return;
+
+                const state = window.App.state;
+                const isModifier = Boolean(e.ctrlKey || e.metaKey || e.shiftKey);
+                const shouldMarquee = e.shiftKey || (state && state.isWorkspaceSelectMode && !isSpacePressed);
+
+                if (shouldMarquee) {
+                    isPreparingMarquee = true;
+                    isMarquee = false;
+                    marqueeStartPos = { x: e.clientX, y: e.clientY };
+                    wasInSelectMode = Boolean(state && state.isWorkspaceSelectMode);
+                    marqueeInitialSelection = (isModifier && state && state.selectedWorkspaceNoteIds)
+                        ? new Set(state.selectedWorkspaceNoteIds)
+                        : new Set();
+                    return;
+                }
+
                 isDraggingCanvas = true;
                 startMousePos = { x: e.clientX, y: e.clientY };
                 lastMousePos = { x: e.clientX, y: e.clientY };
@@ -486,6 +588,54 @@ window.App = window.App || {};
                     window.App.boardConnect.handleConnectingMove(e, this);
                     return;
                 }
+
+                if (isPreparingMarquee) {
+                    const dx = e.clientX - marqueeStartPos.x;
+                    const dy = e.clientY - marqueeStartPos.y;
+
+                    if (!isMarquee && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
+                        isMarquee = true;
+                        document.body.style.userSelect = 'none';
+
+                        const state = window.App.state;
+                        if (window.App.workspaceSelectionBar && state && !state.isWorkspaceSelectMode) {
+                            window.App.workspaceSelectionBar.enterSelectMode();
+                        }
+
+                        const isModifier = Boolean(e.ctrlKey || e.metaKey || e.shiftKey);
+                        if (!isModifier && state && state.selectedWorkspaceNoteIds) {
+                            state.selectedWorkspaceNoteIds.clear();
+                        }
+
+                        if (!marqueeEl) {
+                            marqueeEl = document.createElement('div');
+                            marqueeEl.className = 'workspace-marquee-selection';
+                            document.body.appendChild(marqueeEl);
+                        }
+                    }
+
+                    if (isMarquee && marqueeEl) {
+                        e.preventDefault();
+                        const left = Math.min(marqueeStartPos.x, e.clientX);
+                        const top = Math.min(marqueeStartPos.y, e.clientY);
+                        const width = Math.abs(e.clientX - marqueeStartPos.x);
+                        const height = Math.abs(e.clientY - marqueeStartPos.y);
+
+                        marqueeEl.style.left = left + 'px';
+                        marqueeEl.style.top = top + 'px';
+                        marqueeEl.style.width = width + 'px';
+                        marqueeEl.style.height = height + 'px';
+
+                        this.checkMarqueeIntersection({
+                            left: left,
+                            top: top,
+                            right: left + width,
+                            bottom: top + height
+                        }, marqueeInitialSelection);
+                        return;
+                    }
+                }
+
                 if (isDraggingCanvas) {
                     const dx = e.clientX - lastMousePos.x;
                     const dy = e.clientY - lastMousePos.y;
@@ -501,6 +651,40 @@ window.App = window.App || {};
                     window.App.boardConnect.handleConnectingUp(e, this);
                     return;
                 }
+
+                if (isPreparingMarquee || isMarquee) {
+                    document.body.style.userSelect = '';
+                    if (marqueeEl) {
+                        marqueeEl.remove();
+                        marqueeEl = null;
+                    }
+
+                    const state = window.App.state;
+                    if (isMarquee) {
+                        if (window.App.workspaceSelectionBar) {
+                            window.App.workspaceSelectionBar.updateUI();
+                        }
+                        if (!wasInSelectMode && state && state.selectedWorkspaceNoteIds && state.selectedWorkspaceNoteIds.size === 0) {
+                            if (window.App.workspaceSelectionBar) {
+                                window.App.workspaceSelectionBar.exitSelectMode();
+                            }
+                        }
+                    } else {
+                        // Клік без перетягування
+                        const dx = Math.abs(e.clientX - marqueeStartPos.x);
+                        const dy = Math.abs(e.clientY - marqueeStartPos.y);
+                        if (dx < 5 && dy < 5 && wasInSelectMode && !e.shiftKey) {
+                            if (window.App.workspaceSelectionBar) {
+                                window.App.workspaceSelectionBar.exitSelectMode();
+                            }
+                        }
+                    }
+
+                    isPreparingMarquee = false;
+                    isMarquee = false;
+                    return;
+                }
+
                 if (isDraggingCanvas && startMousePos) {
                     const dx = Math.abs(e.clientX - startMousePos.x);
                     const dy = Math.abs(e.clientY - startMousePos.y);
@@ -539,10 +723,45 @@ window.App = window.App || {};
                 }
             };
 
-            window.addEventListener('pointermove', boundPointerMove);
+            window.addEventListener('pointermove', boundPointerMove, { passive: false });
             window.addEventListener('pointerup', boundPointerUp);
+            window.addEventListener('pointercancel', boundPointerUp);
             container.addEventListener('wheel', boundWheel, { passive: false });
             canvas.addEventListener('contextmenu', boundCanvasContextMenu);
+
+            boundKeyDown = (e) => {
+                if (e.key === 'Shift') {
+                    if (container) container.classList.add('is-shift-down');
+                }
+                if (e.code === 'Space' && !isSpacePressed) {
+                    const activeEl = document.activeElement;
+                    const isTyping = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable);
+                    if (!isTyping) {
+                        isSpacePressed = true;
+                        if (canvas) canvas.style.cursor = 'grab';
+                    }
+                }
+            };
+
+            boundKeyUp = (e) => {
+                if (e.key === 'Shift') {
+                    if (container) container.classList.remove('is-shift-down');
+                }
+                if (e.code === 'Space') {
+                    isSpacePressed = false;
+                    if (canvas) canvas.style.cursor = '';
+                }
+            };
+
+            boundWindowBlur = () => {
+                isSpacePressed = false;
+                if (container) container.classList.remove('is-shift-down');
+                if (canvas) canvas.style.cursor = '';
+            };
+
+            window.addEventListener('keydown', boundKeyDown);
+            window.addEventListener('keyup', boundKeyUp);
+            window.addEventListener('blur', boundWindowBlur);
 
             boundResize = () => {
                 this.resizeCanvas();
@@ -854,13 +1073,34 @@ window.App = window.App || {};
         },
 
         cleanup() {
+            if (marqueeEl) {
+                marqueeEl.remove();
+                marqueeEl = null;
+            }
+            isPreparingMarquee = false;
+            isMarquee = false;
+            isSpacePressed = false;
+
             if (boundPointerMove) {
                 window.removeEventListener('pointermove', boundPointerMove);
                 boundPointerMove = null;
             }
             if (boundPointerUp) {
                 window.removeEventListener('pointerup', boundPointerUp);
+                window.removeEventListener('pointercancel', boundPointerUp);
                 boundPointerUp = null;
+            }
+            if (boundKeyDown) {
+                window.removeEventListener('keydown', boundKeyDown);
+                boundKeyDown = null;
+            }
+            if (boundKeyUp) {
+                window.removeEventListener('keyup', boundKeyUp);
+                boundKeyUp = null;
+            }
+            if (boundWindowBlur) {
+                window.removeEventListener('blur', boundWindowBlur);
+                boundWindowBlur = null;
             }
             if (boundResize) {
                 window.removeEventListener('resize', boundResize);
@@ -883,6 +1123,8 @@ window.App = window.App || {};
             if (container) {
                 container.classList.remove('board-lod-compact');
                 container.classList.remove('is-connecting-mode');
+                container.classList.remove('is-select-mode-active');
+                container.classList.remove('is-shift-down');
             }
             if (window.App.boardConnect) {
                 window.App.boardConnect.reset();

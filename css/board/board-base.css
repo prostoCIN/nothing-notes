@@ -79,6 +79,22 @@
     transform: scale(0.92);
 }
 
+.board-ctrl-btn.is-active {
+    background: var(--accent-emerald, #10b981) !important;
+    color: #ffffff !important;
+}
+
+.board-ctrl-divider {
+    height: 1px;
+    background: var(--toolbar-border, rgba(255, 255, 255, 0.12));
+    margin: 2px 4px;
+}
+
+.board-view-wrapper.is-select-mode-active .board-canvas,
+.board-view-wrapper.is-shift-down .board-canvas {
+    cursor: crosshair !important;
+}
+
 .board-legend-pill {
     position: absolute;
     bottom: 24px;
