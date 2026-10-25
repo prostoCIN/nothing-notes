@@ -62,6 +62,7 @@ import './board/boardCables.js';
 import './board/boardLayout.js';
 import './board/boardContextMenu.js';
 import './board/boardInteraction.js';
+import './board/boardConnect.js';
 import './board/boardView.js';
 
 // 5. Модулі інтерактивного графа зв'язків (Obsidian Graph View)

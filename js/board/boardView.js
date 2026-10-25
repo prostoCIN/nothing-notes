@@ -18,14 +18,6 @@ window.App = window.App || {};
     let lastMousePos = { x: 0, y: 0 };
     let searchQuery = '';
 
-    let isConnecting = false;
-    let connectingSourceNode = null;
-    let connectingSourceSide = null;
-    let connectingStartPos = null;
-    let connectingCurrentPos = null;
-    let connectingTargetNode = null;
-    let connectingIsValid = false;
-
     let isOrphansOnly = false;
     let showTagLinks = true;
     let activeTagFilter = null;
@@ -257,7 +249,9 @@ window.App = window.App || {};
                     card.dataset.boardNodeId = note.id;
 
                     this.attachCardDrag(card, nodeObj);
-                    this.attachConnectionHandles(card, nodeObj);
+                    if (window.App.boardConnect) {
+                        window.App.boardConnect.attachConnectionHandles(card, nodeObj, this);
+                    }
                     nodesLayer.appendChild(card);
                     nodeObj.element = card;
                     if (card.offsetWidth > 0) {
@@ -436,206 +430,6 @@ window.App = window.App || {};
             });
         },
 
-        attachConnectionHandles(cardEl, node) {
-            const sides = ['top', 'bottom', 'left', 'right'];
-            sides.forEach(side => {
-                const handle = document.createElement('div');
-                handle.className = `board-connect-handle board-connect-handle-${side}`;
-                handle.dataset.side = side;
-                handle.title = "Провести зв'язок (зробити піднотаткою)";
-                handle.innerHTML = `
-                    <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor">
-                        <path d="M8 2a.75.75 0 0 1 .75.75v4.5h4.5a.75.75 0 0 1 0 1.5h-4.5v4.5a.75.75 0 0 1-1.5 0v-4.5h-4.5a.75.75 0 0 1 0-1.5h4.5v-4.5A.75.75 0 0 1 8 2z"/>
-                    </svg>
-                `;
-
-                handle.addEventListener('pointerdown', (e) => {
-                    if (e.button !== 0) return;
-                    e.stopPropagation();
-                    e.preventDefault();
-                    this.startConnecting(node, side, e);
-                });
-
-                cardEl.appendChild(handle);
-            });
-        },
-
-        startConnecting(node, side, e) {
-            isConnecting = true;
-            connectingSourceNode = node;
-            connectingSourceSide = side;
-
-            const nw = node.width || (node.element ? node.element.offsetWidth || 380 : 380);
-            const nh = node.height || (node.element ? node.element.offsetHeight || 140 : 140);
-
-            let startX = node.x + nw / 2;
-            let startY = node.y + nh / 2;
-            if (side === 'top') {
-                startX = node.x + nw / 2;
-                startY = node.y;
-            } else if (side === 'bottom') {
-                startX = node.x + nw / 2;
-                startY = node.y + nh;
-            } else if (side === 'left') {
-                startX = node.x;
-                startY = node.y + nh / 2;
-            } else if (side === 'right') {
-                startX = node.x + nw;
-                startY = node.y + nh / 2;
-            }
-
-            connectingStartPos = { x: startX, y: startY };
-            const interaction = window.App.boardInteraction;
-            const world = interaction.screenToWorld(e.clientX, e.clientY, canvas);
-            connectingCurrentPos = { x: world.x, y: world.y };
-            connectingTargetNode = null;
-            connectingIsValid = false;
-
-            if (container) {
-                container.classList.add('is-connecting-mode');
-            }
-
-            this.draw();
-        },
-
-        handleConnectingMove(e) {
-            if (!isConnecting) return;
-
-            const interaction = window.App.boardInteraction;
-            const world = interaction.screenToWorld(e.clientX, e.clientY, canvas);
-            connectingCurrentPos = { x: world.x, y: world.y };
-
-            // Пошук картки під курсором
-            let candidateNode = null;
-            const el = document.elementFromPoint(e.clientX, e.clientY)?.closest('.note-sticker');
-            if (el && el.dataset.boardNodeId) {
-                candidateNode = nodes.find(n => n.id === el.dataset.boardNodeId);
-            }
-            if (!candidateNode) {
-                for (let i = nodes.length - 1; i >= 0; i--) {
-                    const n = nodes[i];
-                    const nw = n.width || 380;
-                    const nh = n.height || 140;
-                    if (world.x >= n.x && world.x <= n.x + nw && world.y >= n.y && world.y <= n.y + nh) {
-                        candidateNode = n;
-                        break;
-                    }
-                }
-            }
-
-            // Очищення попереднього підсвічування при зміні цілі
-            if (connectingTargetNode && connectingTargetNode.element && connectingTargetNode !== candidateNode) {
-                connectingTargetNode.element.classList.remove('is-connect-target-valid', 'is-connect-target-invalid');
-                delete connectingTargetNode.element.dataset.connectBadge;
-            }
-
-            connectingTargetNode = candidateNode;
-            if (candidateNode) {
-                connectingIsValid = this.isValidConnection(connectingSourceNode, candidateNode);
-                if (candidateNode.element) {
-                    candidateNode.element.classList.toggle('is-connect-target-valid', connectingIsValid);
-                    candidateNode.element.classList.toggle('is-connect-target-invalid', !connectingIsValid);
-
-                    if (connectingIsValid) {
-                        const currentParentId = candidateNode.parentId || (candidateNode.note ? candidateNode.note.parentId : null);
-                        candidateNode.element.dataset.connectBadge = currentParentId ? "Змінити зв'язок" : "Зробити піднотаткою";
-                    } else {
-                        if (candidateNode.id === connectingSourceNode.id) {
-                            candidateNode.element.dataset.connectBadge = "Неможливо (сама до себе)";
-                        } else if (candidateNode.parentId === connectingSourceNode.id || (candidateNode.note && candidateNode.note.parentId === connectingSourceNode.id)) {
-                            candidateNode.element.dataset.connectBadge = "Вже є піднотаткою";
-                        } else {
-                            candidateNode.element.dataset.connectBadge = "Неможливо (цикл)";
-                        }
-                    }
-                }
-            } else {
-                connectingIsValid = false;
-            }
-
-            this.draw();
-        },
-
-        handleConnectingUp(e) {
-            if (!isConnecting) return;
-
-            if (connectingTargetNode && connectingTargetNode.element) {
-                connectingTargetNode.element.classList.remove('is-connect-target-valid', 'is-connect-target-invalid');
-                delete connectingTargetNode.element.dataset.connectBadge;
-            }
-            if (container) {
-                container.classList.remove('is-connecting-mode');
-            }
-
-            const source = connectingSourceNode;
-            const target = connectingTargetNode;
-            const isValid = connectingIsValid;
-
-            isConnecting = false;
-            connectingSourceNode = null;
-            connectingSourceSide = null;
-            connectingStartPos = null;
-            connectingCurrentPos = null;
-            connectingTargetNode = null;
-            connectingIsValid = false;
-
-            if (isValid && source && target) {
-                this.connectNodes(source, target);
-            } else {
-                this.draw();
-            }
-        },
-
-        isValidConnection(sourceNode, targetNode) {
-            if (!sourceNode || !targetNode) return false;
-            if (sourceNode.id === targetNode.id) return false;
-
-            // Якщо вона вже є піднотаткою саме цієї вихідної нотатки
-            const currentParentId = targetNode.parentId || (targetNode.note ? targetNode.note.parentId : null);
-            if (currentParentId === sourceNode.id) {
-                return false;
-            }
-
-            // Перевірка належності до одного блокноту
-            const sourceBoardId = sourceNode.note ? sourceNode.note.boardId : null;
-            const targetBoardId = targetNode.note ? targetNode.note.boardId : null;
-            if (sourceBoardId && targetBoardId && String(sourceBoardId) !== String(targetBoardId)) {
-                return false;
-            }
-
-            // Захист від циклічних зв'язків: цільова нотатка не може бути предком вихідної
-            let curr = sourceNode;
-            const visited = new Set();
-            while (curr && curr.parentId) {
-                if (curr.parentId === targetNode.id) return false;
-                if (visited.has(curr.parentId)) break;
-                visited.add(curr.parentId);
-                curr = nodes.find(n => n.id === curr.parentId);
-            }
-
-            // Додатково перевіряємо дерево нащадків цільової нотатки
-            if (window.App.noteManager && window.App.noteManager.getDescendantIds) {
-                const descendantIds = new Set(window.App.noteManager.getDescendantIds(targetNode.id));
-                if (descendantIds.has(sourceNode.id)) return false;
-            }
-
-            return true;
-        },
-
-        connectNodes(sourceNode, targetNode) {
-            if (!sourceNode || !targetNode) return;
-            if (!this.isValidConnection(sourceNode, targetNode)) return;
-
-            if (window.App.noteManager) {
-                const success = window.App.noteManager.moveNoteToParent(targetNode.id, sourceNode.id);
-                if (success) {
-                    this.buildBoardData({ preserveCamera: true });
-                    if (window.App.workspaceView) window.App.workspaceView.render();
-                    if (window.App.sidebarView) window.App.sidebarView.render();
-                }
-            }
-        },
-
         bindEvents() {
             const interaction = window.App.boardInteraction;
 
@@ -647,8 +441,8 @@ window.App = window.App || {};
             });
 
             boundPointerMove = (e) => {
-                if (isConnecting) {
-                    this.handleConnectingMove(e);
+                if (window.App.boardConnect && window.App.boardConnect.isConnecting()) {
+                    window.App.boardConnect.handleConnectingMove(e, this);
                     return;
                 }
                 if (isDraggingCanvas) {
@@ -662,8 +456,8 @@ window.App = window.App || {};
             };
 
             boundPointerUp = (e) => {
-                if (isConnecting) {
-                    this.handleConnectingUp(e);
+                if (window.App.boardConnect && window.App.boardConnect.isConnecting()) {
+                    window.App.boardConnect.handleConnectingUp(e, this);
                     return;
                 }
                 isDraggingCanvas = false;
@@ -930,14 +724,15 @@ window.App = window.App || {};
                 });
 
                 // Малюємо активний кабель створення зв'язку від плюсика
-                if (isConnecting && connectingStartPos && connectingCurrentPos && window.App.boardCables.drawDraftCable) {
+                const connectState = window.App.boardConnect ? window.App.boardConnect.getState() : null;
+                if (connectState && connectState.isConnecting && connectState.startPos && connectState.currentPos && window.App.boardCables.drawDraftCable) {
                     window.App.boardCables.drawDraftCable(
                         ctx,
-                        connectingStartPos,
-                        connectingCurrentPos,
-                        connectingTargetNode,
-                        connectingIsValid,
-                        connectingSourceSide,
+                        connectState.startPos,
+                        connectState.currentPos,
+                        connectState.targetNode,
+                        connectState.isValid,
+                        connectState.sourceSide,
                         camera
                     );
                 }
@@ -972,6 +767,7 @@ window.App = window.App || {};
             const maxY = Math.max(worldTop, worldBottom) + buffer;
 
             const activeEl = document.activeElement;
+            const connectState = window.App.boardConnect ? window.App.boardConnect.getState() : null;
 
             nodes.forEach(node => {
                 if (!node.element) return;
@@ -994,7 +790,7 @@ window.App = window.App || {};
 
                 // Якщо картка перетягується, з'єднується або містить поточний фокус редагування — не приховуємо її
                 const isDraggingThis = isDraggingNode && draggedNode === node;
-                const isConnectingThis = isConnecting && (connectingSourceNode === node || connectingTargetNode === node);
+                const isConnectingThis = connectState && connectState.isConnecting && (connectState.sourceNode === node || connectState.targetNode === node);
                 const hasFocus = activeEl && node.element.contains(activeEl);
 
                 const shouldShow = inViewport || isDraggingThis || isConnectingThis || hasFocus;
@@ -1037,22 +833,26 @@ window.App = window.App || {};
                 container.classList.remove('board-lod-compact');
                 container.classList.remove('is-connecting-mode');
             }
-            if (connectingTargetNode && connectingTargetNode.element) {
-                connectingTargetNode.element.classList.remove('is-connect-target-valid', 'is-connect-target-invalid');
-                delete connectingTargetNode.element.dataset.connectBadge;
+            if (window.App.boardConnect) {
+                window.App.boardConnect.reset();
             }
-            isConnecting = false;
-            connectingSourceNode = null;
-            connectingSourceSide = null;
-            connectingStartPos = null;
-            connectingCurrentPos = null;
-            connectingTargetNode = null;
-            connectingIsValid = false;
             nodes = [];
             edges = [];
             draggedNode = null;
             isDraggingNode = false;
             isDraggingCanvas = false;
+        },
+
+        getContainer() {
+            return container;
+        },
+
+        getCanvas() {
+            return canvas;
+        },
+
+        getNodes() {
+            return nodes;
         },
 
         destroy() {
