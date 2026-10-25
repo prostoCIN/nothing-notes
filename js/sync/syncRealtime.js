@@ -61,8 +61,6 @@ window.App = window.App || {};
                         }
                     })
                     .on('postgres_changes', { event: '*', schema: 'public', table: 'notes' }, (payload) => {
-                        console.log('[CloudSync] ⚡ Realtime change detected from cloud:', payload.eventType, payload);
-
                         const offlineQueue = window.App.offlineQueue;
 
                         // Якщо це подія ВИДАЛЕННЯ (DELETE)
