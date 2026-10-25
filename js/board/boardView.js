@@ -387,40 +387,66 @@ window.App = window.App || {};
 
         attachCardDrag(cardEl, node) {
             cardEl.addEventListener('pointerdown', (e) => {
-                if (e.target.closest('.sticker-title, .sticker-content, button, input, .sticker-menu-dropdown, .sticker-tag-dropdown, .sticker-emoji-picker-dropdown, .color-swatch-btn, a, .subnote-preview-item, .board-connect-handle')) {
+                if (e.target.closest('.board-connect-handle')) {
                     return;
                 }
                 if (e.button !== 0) return;
+
+                // Shift + ЛКМ: виділення нотатки (додавання/зняття з мульти-вибору)
+                if (e.shiftKey) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    this.handleShiftSelect(node.id);
+                    return;
+                }
+
+                if (e.target.closest('.sticker-title, .sticker-content, button, input, .sticker-menu-dropdown, .sticker-tag-dropdown, .sticker-emoji-picker-dropdown, .color-swatch-btn, a, .subnote-preview-item')) {
+                    return;
+                }
                 e.stopPropagation();
 
                 isDraggingNode = true;
                 draggedNode = node;
                 const startX = e.clientX;
                 const startY = e.clientY;
-                const startNodeX = node.x;
-                const startNodeY = node.y;
 
                 cardEl.classList.add('is-dragging');
 
                 const interaction = window.App.boardInteraction;
 
+                // Групове перетягування якщо виділено декілька нотаток
+                const state = window.App.state;
+                const isMulti = state && state.selectedWorkspaceNoteIds && state.selectedWorkspaceNoteIds.has(node.id) && state.selectedWorkspaceNoteIds.size > 1;
+                const dragNodes = isMulti
+                    ? nodes.filter(n => state.selectedWorkspaceNoteIds.has(n.id))
+                    : [node];
+                const initialPositions = dragNodes.map(n => ({ node: n, x: n.x, y: n.y }));
+
+                dragNodes.forEach(n => {
+                    if (n.element) n.element.classList.add('is-dragging');
+                });
+
                 const onMove = (ev) => {
-                    node.x = startNodeX + (ev.clientX - startX) / interaction.camera.zoom;
-                    node.y = startNodeY + (ev.clientY - startY) / interaction.camera.zoom;
-                    if (node.element) {
-                        node.element.style.left = node.x + 'px';
-                        node.element.style.top = node.y + 'px';
-                    }
+                    const dx = (ev.clientX - startX) / interaction.camera.zoom;
+                    const dy = (ev.clientY - startY) / interaction.camera.zoom;
+                    initialPositions.forEach(item => {
+                        item.node.x = item.x + dx;
+                        item.node.y = item.y + dy;
+                        if (item.node.element) {
+                            item.node.element.style.left = item.node.x + 'px';
+                            item.node.element.style.top = item.node.y + 'px';
+                        }
+                    });
                     this.draw();
                 };
 
                 const onUp = () => {
                     window.removeEventListener('pointermove', onMove);
                     window.removeEventListener('pointerup', onUp);
-                    if (node.element) {
-                        node.element.classList.remove('is-dragging');
-                    }
-                    this.saveNodePosition(node);
+                    dragNodes.forEach(n => {
+                        if (n.element) n.element.classList.remove('is-dragging');
+                        this.saveNodePosition(n);
+                    });
                     isDraggingNode = false;
                     draggedNode = null;
                 };
@@ -428,6 +454,21 @@ window.App = window.App || {};
                 window.addEventListener('pointermove', onMove);
                 window.addEventListener('pointerup', onUp);
             });
+        },
+
+        handleShiftSelect(noteId) {
+            const selBar = window.App.workspaceSelectionBar;
+            const state = window.App.state;
+            if (!selBar || !state) return;
+
+            if (!state.isWorkspaceSelectMode) {
+                selBar.enterSelectMode();
+            }
+            selBar.toggleNoteSelection(noteId);
+
+            if (state.selectedWorkspaceNoteIds.size === 0) {
+                selBar.exitSelectMode();
+            }
         },
 
         bindEvents() {
@@ -459,6 +500,16 @@ window.App = window.App || {};
                 if (window.App.boardConnect && window.App.boardConnect.isConnecting()) {
                     window.App.boardConnect.handleConnectingUp(e, this);
                     return;
+                }
+                if (isDraggingCanvas && startMousePos) {
+                    const dx = Math.abs(e.clientX - startMousePos.x);
+                    const dy = Math.abs(e.clientY - startMousePos.y);
+                    if (dx < 5 && dy < 5 && !e.shiftKey) {
+                        const state = window.App.state;
+                        if (state && state.isWorkspaceSelectMode && window.App.workspaceSelectionBar) {
+                            window.App.workspaceSelectionBar.exitSelectMode();
+                        }
+                    }
                 }
                 isDraggingCanvas = false;
             };
@@ -835,6 +886,9 @@ window.App = window.App || {};
             }
             if (window.App.boardConnect) {
                 window.App.boardConnect.reset();
+            }
+            if (window.App.state && window.App.state.isWorkspaceSelectMode && window.App.workspaceSelectionBar) {
+                window.App.workspaceSelectionBar.exitSelectMode();
             }
             nodes = [];
             edges = [];

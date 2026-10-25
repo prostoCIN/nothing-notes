@@ -67,10 +67,27 @@ window.App = window.App || {};
                     e.stopPropagation();
                     return;
                 }
-                if (window.App.state && window.App.state.isWorkspaceSelectMode) {
+                // На дошці виділення обробляється окремо через Shift+ЛКМ або клік по чекбоксу
+                if (card.dataset.boardNodeId) {
+                    if (e.target.closest('.sticker-select-checkbox')) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (window.App.boardView && window.App.boardView.handleShiftSelect) {
+                            window.App.boardView.handleShiftSelect(note.id);
+                        } else if (window.App.workspaceSelectionBar) {
+                            window.App.workspaceSelectionBar.toggleNoteSelection(note.id);
+                        }
+                    }
+                    return;
+                }
+                const isSelectMode = window.App.state && window.App.state.isWorkspaceSelectMode;
+                if (e.shiftKey || isSelectMode) {
                     e.preventDefault();
                     e.stopPropagation();
                     if (window.App.workspaceSelectionBar) {
+                        if (!isSelectMode) {
+                            window.App.workspaceSelectionBar.enterSelectMode();
+                        }
                         window.App.workspaceSelectionBar.toggleNoteSelection(note.id);
                     }
                 }

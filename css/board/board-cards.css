@@ -49,7 +49,16 @@
 }
 
 .board-nodes-layer .note-sticker .sticker-select-checkbox {
-    display: none !important;
+    display: none;
+}
+
+.board-nodes-layer .note-sticker.in-select-mode .sticker-select-checkbox,
+.board-nodes-layer .note-sticker.is-ws-selected .sticker-select-checkbox {
+    display: flex !important;
+}
+
+.board-nodes-layer .note-sticker.is-ws-selected {
+    box-shadow: 0 0 0 3px var(--accent-emerald, #10b981), 0 16px 40px rgba(16, 185, 129, 0.45) !important;
 }
 
 .board-nodes-layer .note-sticker.is-faded {
