@@ -526,6 +526,7 @@ window.App = window.App || {};
             // Очищення попереднього підсвічування при зміні цілі
             if (connectingTargetNode && connectingTargetNode.element && connectingTargetNode !== candidateNode) {
                 connectingTargetNode.element.classList.remove('is-connect-target-valid', 'is-connect-target-invalid');
+                delete connectingTargetNode.element.dataset.connectBadge;
             }
 
             connectingTargetNode = candidateNode;
@@ -534,6 +535,19 @@ window.App = window.App || {};
                 if (candidateNode.element) {
                     candidateNode.element.classList.toggle('is-connect-target-valid', connectingIsValid);
                     candidateNode.element.classList.toggle('is-connect-target-invalid', !connectingIsValid);
+
+                    if (connectingIsValid) {
+                        const currentParentId = candidateNode.parentId || (candidateNode.note ? candidateNode.note.parentId : null);
+                        candidateNode.element.dataset.connectBadge = currentParentId ? "Змінити зв'язок" : "Зробити піднотаткою";
+                    } else {
+                        if (candidateNode.id === connectingSourceNode.id) {
+                            candidateNode.element.dataset.connectBadge = "Неможливо (сама до себе)";
+                        } else if (candidateNode.parentId === connectingSourceNode.id || (candidateNode.note && candidateNode.note.parentId === connectingSourceNode.id)) {
+                            candidateNode.element.dataset.connectBadge = "Вже є піднотаткою";
+                        } else {
+                            candidateNode.element.dataset.connectBadge = "Неможливо (цикл)";
+                        }
+                    }
                 }
             } else {
                 connectingIsValid = false;
@@ -547,6 +561,7 @@ window.App = window.App || {};
 
             if (connectingTargetNode && connectingTargetNode.element) {
                 connectingTargetNode.element.classList.remove('is-connect-target-valid', 'is-connect-target-invalid');
+                delete connectingTargetNode.element.dataset.connectBadge;
             }
             if (container) {
                 container.classList.remove('is-connecting-mode');
@@ -575,8 +590,9 @@ window.App = window.App || {};
             if (!sourceNode || !targetNode) return false;
             if (sourceNode.id === targetNode.id) return false;
 
-            // Нотатка, до якої проводиться лінія, не може вже бути піднотаткою
-            if (targetNode.parentId || (targetNode.note && targetNode.note.parentId)) {
+            // Якщо вона вже є піднотаткою саме цієї вихідної нотатки
+            const currentParentId = targetNode.parentId || (targetNode.note ? targetNode.note.parentId : null);
+            if (currentParentId === sourceNode.id) {
                 return false;
             }
 
@@ -587,7 +603,7 @@ window.App = window.App || {};
                 return false;
             }
 
-            // Захист від циклічних зв'язків (цільова нотатка не може бути предком вихідної)
+            // Захист від циклічних зв'язків: цільова нотатка не може бути предком вихідної
             let curr = sourceNode;
             const visited = new Set();
             while (curr && curr.parentId) {
@@ -595,6 +611,12 @@ window.App = window.App || {};
                 if (visited.has(curr.parentId)) break;
                 visited.add(curr.parentId);
                 curr = nodes.find(n => n.id === curr.parentId);
+            }
+
+            // Додатково перевіряємо дерево нащадків цільової нотатки
+            if (window.App.noteManager && window.App.noteManager.getDescendantIds) {
+                const descendantIds = new Set(window.App.noteManager.getDescendantIds(targetNode.id));
+                if (descendantIds.has(sourceNode.id)) return false;
             }
 
             return true;
@@ -1017,6 +1039,7 @@ window.App = window.App || {};
             }
             if (connectingTargetNode && connectingTargetNode.element) {
                 connectingTargetNode.element.classList.remove('is-connect-target-valid', 'is-connect-target-invalid');
+                delete connectingTargetNode.element.dataset.connectBadge;
             }
             isConnecting = false;
             connectingSourceNode = null;

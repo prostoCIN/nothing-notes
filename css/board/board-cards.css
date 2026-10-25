@@ -213,7 +213,7 @@
 }
 
 .board-nodes-layer .note-sticker.is-connect-target-valid::after {
-    content: "Зробити піднотаткою";
+    content: attr(data-connect-badge);
     position: absolute;
     top: -34px;
     left: 50%;
@@ -237,7 +237,7 @@
 }
 
 .board-nodes-layer .note-sticker.is-connect-target-invalid::after {
-    content: "Вже є піднотаткою";
+    content: attr(data-connect-badge);
     position: absolute;
     top: -34px;
     left: 50%;
