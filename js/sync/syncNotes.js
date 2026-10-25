@@ -9,7 +9,9 @@ window.App = window.App || {};
     window.App.syncNotes = {
         // 1. Завантаження нотаток та блокнотів з Supabase у локальний стан
         async pullFromCloud(cloudSync) {
-            const currentUser = cloudSync.getCurrentUser();
+            const cs = cloudSync || window.App.cloudSync;
+            if (!cs) return;
+            const currentUser = cs.getCurrentUser ? cs.getCurrentUser() : null;
             if (!currentUser || !window.App.supabase) return;
             const supabase = window.App.supabase;
             const state = window.App.state;
@@ -17,23 +19,23 @@ window.App = window.App || {};
 
             // Якщо прямо зараз триває перетягування нотатки — відкладаємо pull до завершення
             if (state && state.isDraggingNote) {
-                cloudSync._pendingPullAfterDrag = true;
+                cs._pendingPullAfterDrag = true;
                 return;
             }
 
             // Якщо інший запит pullFromCloud вже в процесі — плануємо перезапуск після завершення
-            if (cloudSync.isPullingFromCloud) {
-                cloudSync._rePullNeeded = true;
+            if (cs.isPullingFromCloud) {
+                cs._rePullNeeded = true;
                 return;
             }
 
-            cloudSync.isPullingFromCloud = true;
+            cs.isPullingFromCloud = true;
 
             try {
                 // Отримуємо найсвіжіші дані користувача з сервера
                 const { data: freshUserResp } = await supabase.auth.getUser();
                 if (freshUserResp && freshUserResp.user) {
-                    cloudSync.currentUser = freshUserResp.user;
+                    cs.currentUser = freshUserResp.user;
                 }
 
                 // 1. Завантаження блокнотів із таблиці `boards`
@@ -84,7 +86,7 @@ window.App = window.App || {};
                             state.activeBoardId = state.boards[0].id;
                             window.App.storage.saveActiveBoardId(state.activeBoardId);
                         }
-                        await this.syncBoards(cloudSync);
+                        await this.syncBoards(cs);
                     }
                 }
 
@@ -162,7 +164,7 @@ window.App = window.App || {};
 
                         const cloudUpdatedAt = n.updated_at ? new Date(n.updated_at).getTime() : 0;
                         const localUpdatedAt = (localNote && localNote.updatedAt) ? Number(localNote.updatedAt) : 0;
-                        const hasPendingSync = (cloudSync._pendingSyncNotesMap && cloudSync._pendingSyncNotesMap.has(n.id)) || pendingUpsertIds.has(n.id);
+                        const hasPendingSync = (cs._pendingSyncNotesMap && cs._pendingSyncNotesMap.has(n.id)) || pendingUpsertIds.has(n.id);
                         const isLocalStrictlyNewer = localNote && (localUpdatedAt > cloudUpdatedAt);
 
                         if (localNote && isLocalStrictlyNewer && hasPendingSync) {
@@ -174,8 +176,8 @@ window.App = window.App || {};
                             offlineQueue.removeOfflineAction(n.id, 'upsert_note');
                             offlineQueue.unmarkOfflineCreated(n.id);
                         }
-                        if (cloudSync._pendingSyncNotesMap) cloudSync._pendingSyncNotesMap.delete(n.id);
-                        if (cloudSync._pendingReorderNotesMap) cloudSync._pendingReorderNotesMap.delete(n.id);
+                        if (cs._pendingSyncNotesMap) cs._pendingSyncNotesMap.delete(n.id);
+                        if (cs._pendingReorderNotesMap) cs._pendingReorderNotesMap.delete(n.id);
 
                         return {
                             id: n.id,
@@ -214,8 +216,8 @@ window.App = window.App || {};
                                     offlineQueue.removeOfflineAction(localNote.id);
                                     offlineQueue.unmarkOfflineCreated(localNote.id);
                                 }
-                                if (cloudSync._pendingSyncNotesMap) cloudSync._pendingSyncNotesMap.delete(localNote.id);
-                                if (cloudSync._pendingReorderNotesMap) cloudSync._pendingReorderNotesMap.delete(localNote.id);
+                                if (cs._pendingSyncNotesMap) cs._pendingSyncNotesMap.delete(localNote.id);
+                                if (cs._pendingReorderNotesMap) cs._pendingReorderNotesMap.delete(localNote.id);
                                 if (localNote.isOfflineCreated) delete localNote.isOfflineCreated;
                             }
                         }
@@ -223,7 +225,7 @@ window.App = window.App || {};
 
                     if (state && state.isDraggingNote) {
                         console.log('[CloudSync] Notes pulled during drag, deferring update...');
-                        cloudSync._deferredPulledNotes = formattedNotes;
+                        cs._deferredPulledNotes = formattedNotes;
                         return;
                     }
 
@@ -239,12 +241,12 @@ window.App = window.App || {};
                     }
 
                     if (offlineQueue) {
-                        offlineQueue.flushOfflineQueue();
+                        offlineQueue.flushOfflineQueue(cs);
                     }
                 } else {
                     if (state.notes.length > 0) {
                         console.log('[CloudSync] Pushing local notes to empty cloud...');
-                        await this.pushAllToCloud(cloudSync);
+                        await this.pushAllToCloud(cs);
                     } else {
                         state.notes = [];
                         window.App.storage.saveNotes(state.notes, true);
@@ -255,12 +257,12 @@ window.App = window.App || {};
             } catch (err) {
                 console.error('[CloudSync] Pull exception:', err);
             } finally {
-                cloudSync.isPullingFromCloud = false;
-                if (cloudSync._rePullNeeded) {
-                    cloudSync._rePullNeeded = false;
+                cs.isPullingFromCloud = false;
+                if (cs._rePullNeeded) {
+                    cs._rePullNeeded = false;
                     clearTimeout(pullDebounceTimer);
                     pullDebounceTimer = setTimeout(() => {
-                        this.pullFromCloud(cloudSync);
+                        this.pullFromCloud(cs);
                     }, 200);
                 }
             }
@@ -268,6 +270,7 @@ window.App = window.App || {};
 
         // 2. Відправка нотатки в хмару
         syncNote(note, isNew = false, cloudSync) {
+            const cs = cloudSync || window.App.cloudSync;
             if (!note) return;
             const offlineQueue = window.App.offlineQueue;
 
@@ -286,20 +289,21 @@ window.App = window.App || {};
                 offlineQueue.queueOfflineAction({ type: 'upsert_note', id: note.id });
             }
 
-            const currentUser = cloudSync.getCurrentUser();
+            const currentUser = cs && cs.getCurrentUser ? cs.getCurrentUser() : null;
             if (!currentUser || !window.App.supabase) return;
 
-            cloudSync.lastLocalEditTimestamps.set(note.id, Date.now());
-            cloudSync._pendingSyncNotesMap.set(note.id, note);
+            if (cs && cs.lastLocalEditTimestamps) cs.lastLocalEditTimestamps.set(note.id, Date.now());
+            if (cs && cs._pendingSyncNotesMap) cs._pendingSyncNotesMap.set(note.id, note);
 
             clearTimeout(syncDebounceTimer);
             syncDebounceTimer = setTimeout(async () => {
-                await this.flushPendingNotes(cloudSync);
+                await this.flushPendingNotes(cs);
             }, 300);
         },
 
         // Дебаунс синхронізації зміни порядку карток
         syncReorderNotes(notes, cloudSync) {
+            const cs = cloudSync || window.App.cloudSync;
             if (!notes || notes.length === 0) return;
             const offlineQueue = window.App.offlineQueue;
 
@@ -314,56 +318,63 @@ window.App = window.App || {};
                 });
             }
 
-            const currentUser = cloudSync.getCurrentUser();
+            const currentUser = cs && cs.getCurrentUser ? cs.getCurrentUser() : null;
             if (!currentUser || !window.App.supabase) return;
 
             const now = Date.now();
             validNotes.forEach(note => {
-                cloudSync.lastLocalEditTimestamps.set(note.id, now);
-                cloudSync._pendingReorderNotesMap.set(note.id, note);
+                if (cs && cs.lastLocalEditTimestamps) cs.lastLocalEditTimestamps.set(note.id, now);
+                if (cs && cs._pendingReorderNotesMap) cs._pendingReorderNotesMap.set(note.id, note);
             });
 
             clearTimeout(reorderDebounceTimer);
             reorderDebounceTimer = setTimeout(async () => {
-                await this.flushPendingReorders(cloudSync);
+                await this.flushPendingReorders(cs);
             }, 400);
         },
 
         async flushPendingReorders(cloudSync) {
-            if (!cloudSync._pendingReorderNotesMap || cloudSync._pendingReorderNotesMap.size === 0) return;
+            const cs = cloudSync || window.App.cloudSync;
+            if (!cs || !cs._pendingReorderNotesMap || cs._pendingReorderNotesMap.size === 0) return;
 
-            const notesToPush = Array.from(cloudSync._pendingReorderNotesMap.values());
-            cloudSync._pendingReorderNotesMap.clear();
+            const notesToPush = Array.from(cs._pendingReorderNotesMap.values());
+            cs._pendingReorderNotesMap.clear();
             clearTimeout(reorderDebounceTimer);
             reorderDebounceTimer = null;
 
             const now = Date.now();
-            notesToPush.forEach(n => cloudSync.lastLocalEditTimestamps.set(n.id, now));
+            if (cs.lastLocalEditTimestamps) {
+                notesToPush.forEach(n => cs.lastLocalEditTimestamps.set(n.id, now));
+            }
 
-            await this._pushMultipleNotesToCloud(notesToPush, cloudSync);
+            await this._pushMultipleNotesToCloud(notesToPush, cs);
         },
 
         async flushPendingNotes(cloudSync) {
-            if (!cloudSync._pendingSyncNotesMap || cloudSync._pendingSyncNotesMap.size === 0) return;
+            const cs = cloudSync || window.App.cloudSync;
+            if (!cs || !cs._pendingSyncNotesMap || cs._pendingSyncNotesMap.size === 0) return;
 
-            const notesToPush = Array.from(cloudSync._pendingSyncNotesMap.values());
-            cloudSync._pendingSyncNotesMap.clear();
+            const notesToPush = Array.from(cs._pendingSyncNotesMap.values());
+            cs._pendingSyncNotesMap.clear();
             clearTimeout(syncDebounceTimer);
             syncDebounceTimer = null;
 
             const now = Date.now();
-            notesToPush.forEach(n => cloudSync.lastLocalEditTimestamps.set(n.id, now));
+            if (cs.lastLocalEditTimestamps) {
+                notesToPush.forEach(n => cs.lastLocalEditTimestamps.set(n.id, now));
+            }
 
             if (notesToPush.length === 1) {
-                await this._pushNoteToCloud(notesToPush[0], cloudSync);
+                await this._pushNoteToCloud(notesToPush[0], cs);
             } else {
-                await this._pushMultipleNotesToCloud(notesToPush, cloudSync);
+                await this._pushMultipleNotesToCloud(notesToPush, cs);
             }
         },
 
         async _pushMultipleNotesToCloud(notes, cloudSync) {
             const supabase = window.App.supabase;
-            const currentUser = cloudSync.getCurrentUser();
+            const cs = cloudSync || window.App.cloudSync;
+            const currentUser = cs && cs.getCurrentUser ? cs.getCurrentUser() : null;
             if (!supabase || !currentUser || !notes || notes.length === 0) return;
             const state = window.App.state;
             const offlineQueue = window.App.offlineQueue;
@@ -374,7 +385,9 @@ window.App = window.App || {};
             if (validNotes.length === 0) return;
 
             const now = Date.now();
-            validNotes.forEach(n => cloudSync.lastLocalEditTimestamps.set(n.id, now));
+            if (cs && cs.lastLocalEditTimestamps) {
+                validNotes.forEach(n => cs.lastLocalEditTimestamps.set(n.id, now));
+            }
 
             const payloads = validNotes.map(note => {
                 const noteIndex = typeof note.orderIndex === 'number'
@@ -425,7 +438,8 @@ window.App = window.App || {};
 
         async _pushNoteToCloud(note, cloudSync) {
             const supabase = window.App.supabase;
-            const currentUser = cloudSync.getCurrentUser();
+            const cs = cloudSync || window.App.cloudSync;
+            const currentUser = cs && cs.getCurrentUser ? cs.getCurrentUser() : null;
             if (!supabase || !currentUser || !note) return;
             const state = window.App.state;
             const offlineQueue = window.App.offlineQueue;
@@ -437,7 +451,9 @@ window.App = window.App || {};
                 return;
             }
 
-            cloudSync.lastLocalEditTimestamps.set(note.id, Date.now());
+            if (cs && cs.lastLocalEditTimestamps) {
+                cs.lastLocalEditTimestamps.set(note.id, Date.now());
+            }
 
             const noteIndex = typeof note.orderIndex === 'number'
                 ? note.orderIndex
@@ -484,6 +500,8 @@ window.App = window.App || {};
         async deleteNoteFromCloud(noteId, cloudSync) {
             if (!noteId) return;
             const offlineQueue = window.App.offlineQueue;
+            const cs = cloudSync || window.App.cloudSync;
+
             if (offlineQueue) {
                 offlineQueue.persistDeletedId(noteId);
                 offlineQueue.removeOfflineAction(noteId, 'upsert_note');
@@ -491,10 +509,10 @@ window.App = window.App || {};
                 offlineQueue.unmarkOfflineCreated(noteId);
             }
 
-            if (cloudSync._pendingSyncNotesMap) cloudSync._pendingSyncNotesMap.delete(noteId);
-            if (cloudSync._pendingReorderNotesMap) cloudSync._pendingReorderNotesMap.delete(noteId);
+            if (cs && cs._pendingSyncNotesMap) cs._pendingSyncNotesMap.delete(noteId);
+            if (cs && cs._pendingReorderNotesMap) cs._pendingReorderNotesMap.delete(noteId);
 
-            const currentUser = cloudSync.getCurrentUser();
+            const currentUser = cs && cs.getCurrentUser ? cs.getCurrentUser() : null;
             if (!currentUser || !window.App.supabase) return;
             const supabase = window.App.supabase;
 
@@ -518,6 +536,7 @@ window.App = window.App || {};
         async deleteNotesFromCloud(noteIds, cloudSync) {
             if (!noteIds || noteIds.length === 0) return;
             const offlineQueue = window.App.offlineQueue;
+            const cs = cloudSync || window.App.cloudSync;
 
             noteIds.forEach(id => {
                 if (offlineQueue) {
@@ -526,11 +545,11 @@ window.App = window.App || {};
                     offlineQueue.queueOfflineAction({ type: 'delete_note', id });
                     offlineQueue.unmarkOfflineCreated(id);
                 }
-                if (cloudSync._pendingSyncNotesMap) cloudSync._pendingSyncNotesMap.delete(id);
-                if (cloudSync._pendingReorderNotesMap) cloudSync._pendingReorderNotesMap.delete(id);
+                if (cs && cs._pendingSyncNotesMap) cs._pendingSyncNotesMap.delete(id);
+                if (cs && cs._pendingReorderNotesMap) cs._pendingReorderNotesMap.delete(id);
             });
 
-            const currentUser = cloudSync.getCurrentUser();
+            const currentUser = cs && cs.getCurrentUser ? cs.getCurrentUser() : null;
             if (!currentUser || !window.App.supabase) return;
             const supabase = window.App.supabase;
 
@@ -560,7 +579,8 @@ window.App = window.App || {};
         },
 
         async syncBoards(cloudSync) {
-            const currentUser = cloudSync.getCurrentUser();
+            const cs = cloudSync || window.App.cloudSync;
+            const currentUser = cs && cs.getCurrentUser ? cs.getCurrentUser() : null;
             if (!currentUser || !window.App.supabase) return;
             const state = window.App.state;
             if (!state.boards || state.boards.length === 0) return;
@@ -596,7 +616,8 @@ window.App = window.App || {};
             if (!boardId) return;
             const offlineQueue = window.App.offlineQueue;
             if (offlineQueue) offlineQueue.queueOfflineAction({ type: 'delete_board', id: boardId });
-            const currentUser = cloudSync.getCurrentUser();
+            const cs = cloudSync || window.App.cloudSync;
+            const currentUser = cs && cs.getCurrentUser ? cs.getCurrentUser() : null;
             if (!currentUser || !window.App.supabase) return;
 
             try {
@@ -617,7 +638,8 @@ window.App = window.App || {};
         },
 
         async syncTagOptions(boardId = null, cloudSync) {
-            const currentUser = cloudSync.getCurrentUser();
+            const cs = cloudSync || window.App.cloudSync;
+            const currentUser = cs && cs.getCurrentUser ? cs.getCurrentUser() : null;
             if (!currentUser || !window.App.supabase) return;
             const state = window.App.state;
             const targetBoardId = boardId || state.activeBoardId;
@@ -641,7 +663,8 @@ window.App = window.App || {};
         },
 
         async syncSharedTokens(tokensToSync = null, cloudSync) {
-            const currentUser = cloudSync.getCurrentUser();
+            const cs = cloudSync || window.App.cloudSync;
+            const currentUser = cs && cs.getCurrentUser ? cs.getCurrentUser() : null;
             if (!currentUser || !window.App.supabase) return;
             const state = window.App.state;
 
@@ -681,7 +704,8 @@ window.App = window.App || {};
         },
 
         async pushAllToCloud(cloudSync) {
-            const currentUser = cloudSync.getCurrentUser();
+            const cs = cloudSync || window.App.cloudSync;
+            const currentUser = cs && cs.getCurrentUser ? cs.getCurrentUser() : null;
             if (!currentUser || !window.App.supabase) return;
             const state = window.App.state;
             const supabase = window.App.supabase;
@@ -711,7 +735,9 @@ window.App = window.App || {};
             if (payloads.length === 0) return;
 
             const now = Date.now();
-            payloads.forEach(p => cloudSync.lastLocalEditTimestamps.set(p.id, now));
+            if (cs && cs.lastLocalEditTimestamps) {
+                payloads.forEach(p => cs.lastLocalEditTimestamps.set(p.id, now));
+            }
 
             try {
                 const { error } = await supabase.from('notes').upsert(payloads, { onConflict: 'id' });

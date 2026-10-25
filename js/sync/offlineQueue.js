@@ -99,8 +99,9 @@ window.App = window.App || {};
         },
 
         // Обробка накопиченої черги дій при відновленні зв'язку
-        async flushOfflineQueue() {
-            const currentUser = window.App.cloudSync ? window.App.cloudSync.getCurrentUser() : null;
+        async flushOfflineQueue(cloudSync) {
+            const cs = cloudSync || window.App.cloudSync;
+            const currentUser = cs && cs.getCurrentUser ? cs.getCurrentUser() : null;
             if (!currentUser || !window.App.supabase || !navigator.onLine) return;
             const queue = this.getOfflineQueue();
             if (!queue || queue.length === 0) return;
@@ -166,7 +167,7 @@ window.App = window.App || {};
 
                 const notesToPush = state.notes.filter(n => upsertNoteIds.has(n.id) && !locallyDeletedNoteIds.has(n.id));
                 if (notesToPush.length > 0 && window.App.syncNotes) {
-                    await window.App.syncNotes._pushMultipleNotesToCloud(notesToPush);
+                    await window.App.syncNotes._pushMultipleNotesToCloud(notesToPush, cs);
                 }
             }
         }

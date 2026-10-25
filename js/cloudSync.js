@@ -213,7 +213,7 @@ window.App = window.App || {};
 
         // Делегати до offlineQueue
         async flushOfflineQueue() {
-            if (window.App.offlineQueue) return window.App.offlineQueue.flushOfflineQueue();
+            if (window.App.offlineQueue) return window.App.offlineQueue.flushOfflineQueue(this);
         },
 
         // Делегати до syncStorage
