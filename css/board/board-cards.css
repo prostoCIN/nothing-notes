@@ -92,3 +92,162 @@
 .board-view-wrapper.board-lod-compact .board-nodes-layer .note-sticker:focus-within .sticker-more-btn {
     display: block !important;
 }
+
+/* Точки з'єднання (плюсики) по 4 краях картки для створення піднотаток */
+.board-connect-handle {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #18181b;
+    border: 1.5px solid rgba(255, 255, 255, 0.35);
+    color: #e4e4e7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: crosshair;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 20;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45);
+    transition: opacity 0.16s ease, transform 0.16s ease, background 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+    user-select: none;
+}
+
+.board-connect-handle svg {
+    pointer-events: none;
+    display: block;
+}
+
+/* Позиціонування 4-х точок */
+.board-connect-handle-top {
+    top: -11px;
+    left: 50%;
+    transform: translateX(-50%) scale(0.65);
+}
+
+.board-connect-handle-bottom {
+    bottom: -11px;
+    left: 50%;
+    transform: translateX(-50%) scale(0.65);
+}
+
+.board-connect-handle-left {
+    left: -11px;
+    top: 50%;
+    transform: translateY(-50%) scale(0.65);
+}
+
+.board-connect-handle-right {
+    right: -11px;
+    top: 50%;
+    transform: translateY(-50%) scale(0.65);
+}
+
+/* Відображення при наведенні курсору на картку */
+.board-nodes-layer .note-sticker:hover .board-connect-handle {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.board-nodes-layer .note-sticker:hover .board-connect-handle-top {
+    transform: translateX(-50%) scale(1);
+}
+
+.board-nodes-layer .note-sticker:hover .board-connect-handle-bottom {
+    transform: translateX(-50%) scale(1);
+}
+
+.board-nodes-layer .note-sticker:hover .board-connect-handle-left {
+    transform: translateY(-50%) scale(1);
+}
+
+.board-nodes-layer .note-sticker:hover .board-connect-handle-right {
+    transform: translateY(-50%) scale(1);
+}
+
+/* Ефект наведення на сам плюсик */
+.board-connect-handle:hover {
+    background: var(--accent-emerald, #10b981) !important;
+    border-color: #ffffff !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 14px rgba(16, 185, 129, 0.7) !important;
+}
+
+.board-connect-handle-top:hover,
+.board-connect-handle-bottom:hover {
+    transform: translateX(-50%) scale(1.22) !important;
+}
+
+.board-connect-handle-left:hover,
+.board-connect-handle-right:hover {
+    transform: translateY(-50%) scale(1.22) !important;
+}
+
+/* Стан під час активного протягування лінії */
+.board-view-wrapper.is-connecting-mode {
+    cursor: crosshair !important;
+}
+
+.board-view-wrapper.is-connecting-mode .board-canvas {
+    cursor: crosshair !important;
+}
+
+.board-view-wrapper.is-connecting-mode .board-connect-handle {
+    pointer-events: none !important;
+    opacity: 0 !important;
+}
+
+/* Приховуємо плюсики під час перетягування нотатки або в компактному LOD-режимі */
+.board-nodes-layer .note-sticker.is-dragging .board-connect-handle,
+.board-view-wrapper.board-lod-compact .board-connect-handle {
+    display: none !important;
+}
+
+/* Підсвічування цільової картки при з'єднанні */
+.board-nodes-layer .note-sticker.is-connect-target-valid {
+    outline: 2.5px solid var(--accent-emerald, #10b981) !important;
+    box-shadow: 0 0 24px rgba(16, 185, 129, 0.5) !important;
+}
+
+.board-nodes-layer .note-sticker.is-connect-target-valid::after {
+    content: "Зробити піднотаткою";
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent-emerald, #10b981);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 6px;
+    white-space: nowrap;
+    pointer-events: none;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    z-index: 50;
+}
+
+.board-nodes-layer .note-sticker.is-connect-target-invalid {
+    outline: 2px dashed #ef4444 !important;
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.45) !important;
+    cursor: not-allowed !important;
+}
+
+.board-nodes-layer .note-sticker.is-connect-target-invalid::after {
+    content: "Вже є піднотаткою";
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ef4444;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 6px;
+    white-space: nowrap;
+    pointer-events: none;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+    z-index: 50;
+}

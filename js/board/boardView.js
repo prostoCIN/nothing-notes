@@ -18,6 +18,14 @@ window.App = window.App || {};
     let lastMousePos = { x: 0, y: 0 };
     let searchQuery = '';
 
+    let isConnecting = false;
+    let connectingSourceNode = null;
+    let connectingSourceSide = null;
+    let connectingStartPos = null;
+    let connectingCurrentPos = null;
+    let connectingTargetNode = null;
+    let connectingIsValid = false;
+
     let isOrphansOnly = false;
     let showTagLinks = true;
     let activeTagFilter = null;
@@ -186,7 +194,7 @@ window.App = window.App || {};
             }
         },
 
-        buildBoardData() {
+        buildBoardData(options = {}) {
             const state = window.App.state;
             const noteManager = window.App.noteManager;
             const allNotes = noteManager ? noteManager.getAllNotes() : (state ? state.notes || [] : []);
@@ -249,6 +257,7 @@ window.App = window.App || {};
                     card.dataset.boardNodeId = note.id;
 
                     this.attachCardDrag(card, nodeObj);
+                    this.attachConnectionHandles(card, nodeObj);
                     nodesLayer.appendChild(card);
                     nodeObj.element = card;
                     if (card.offsetWidth > 0) {
@@ -326,11 +335,19 @@ window.App = window.App || {};
                     onUpdate: () => this.draw(),
                     onComplete: () => {
                         nodes.forEach(n => this.saveNodePosition(n));
-                        this.centerCameraOnAllNodes();
+                        if (!options || !options.preserveCamera) {
+                            this.centerCameraOnAllNodes();
+                        } else {
+                            this.draw();
+                        }
                     }
                 });
             } else {
-                this.centerCameraOnAllNodes();
+                if (!options || !options.preserveCamera) {
+                    this.centerCameraOnAllNodes();
+                } else {
+                    this.draw();
+                }
             }
         },
 
@@ -376,7 +393,7 @@ window.App = window.App || {};
 
         attachCardDrag(cardEl, node) {
             cardEl.addEventListener('pointerdown', (e) => {
-                if (e.target.closest('.sticker-title, .sticker-content, button, input, .sticker-menu-dropdown, .sticker-tag-dropdown, .sticker-emoji-picker-dropdown, .color-swatch-btn, a, .subnote-preview-item')) {
+                if (e.target.closest('.sticker-title, .sticker-content, button, input, .sticker-menu-dropdown, .sticker-tag-dropdown, .sticker-emoji-picker-dropdown, .color-swatch-btn, a, .subnote-preview-item, .board-connect-handle')) {
                     return;
                 }
                 if (e.button !== 0) return;
@@ -419,6 +436,184 @@ window.App = window.App || {};
             });
         },
 
+        attachConnectionHandles(cardEl, node) {
+            const sides = ['top', 'bottom', 'left', 'right'];
+            sides.forEach(side => {
+                const handle = document.createElement('div');
+                handle.className = `board-connect-handle board-connect-handle-${side}`;
+                handle.dataset.side = side;
+                handle.title = "Провести зв'язок (зробити піднотаткою)";
+                handle.innerHTML = `
+                    <svg viewBox="0 0 16 16" width="10" height="10" fill="currentColor">
+                        <path d="M8 2a.75.75 0 0 1 .75.75v4.5h4.5a.75.75 0 0 1 0 1.5h-4.5v4.5a.75.75 0 0 1-1.5 0v-4.5h-4.5a.75.75 0 0 1 0-1.5h4.5v-4.5A.75.75 0 0 1 8 2z"/>
+                    </svg>
+                `;
+
+                handle.addEventListener('pointerdown', (e) => {
+                    if (e.button !== 0) return;
+                    e.stopPropagation();
+                    e.preventDefault();
+                    this.startConnecting(node, side, e);
+                });
+
+                cardEl.appendChild(handle);
+            });
+        },
+
+        startConnecting(node, side, e) {
+            isConnecting = true;
+            connectingSourceNode = node;
+            connectingSourceSide = side;
+
+            const nw = node.width || (node.element ? node.element.offsetWidth || 380 : 380);
+            const nh = node.height || (node.element ? node.element.offsetHeight || 140 : 140);
+
+            let startX = node.x + nw / 2;
+            let startY = node.y + nh / 2;
+            if (side === 'top') {
+                startX = node.x + nw / 2;
+                startY = node.y;
+            } else if (side === 'bottom') {
+                startX = node.x + nw / 2;
+                startY = node.y + nh;
+            } else if (side === 'left') {
+                startX = node.x;
+                startY = node.y + nh / 2;
+            } else if (side === 'right') {
+                startX = node.x + nw;
+                startY = node.y + nh / 2;
+            }
+
+            connectingStartPos = { x: startX, y: startY };
+            const interaction = window.App.boardInteraction;
+            const world = interaction.screenToWorld(e.clientX, e.clientY, canvas);
+            connectingCurrentPos = { x: world.x, y: world.y };
+            connectingTargetNode = null;
+            connectingIsValid = false;
+
+            if (container) {
+                container.classList.add('is-connecting-mode');
+            }
+
+            this.draw();
+        },
+
+        handleConnectingMove(e) {
+            if (!isConnecting) return;
+
+            const interaction = window.App.boardInteraction;
+            const world = interaction.screenToWorld(e.clientX, e.clientY, canvas);
+            connectingCurrentPos = { x: world.x, y: world.y };
+
+            // Пошук картки під курсором
+            let candidateNode = null;
+            const el = document.elementFromPoint(e.clientX, e.clientY)?.closest('.note-sticker');
+            if (el && el.dataset.boardNodeId) {
+                candidateNode = nodes.find(n => n.id === el.dataset.boardNodeId);
+            }
+            if (!candidateNode) {
+                for (let i = nodes.length - 1; i >= 0; i--) {
+                    const n = nodes[i];
+                    const nw = n.width || 380;
+                    const nh = n.height || 140;
+                    if (world.x >= n.x && world.x <= n.x + nw && world.y >= n.y && world.y <= n.y + nh) {
+                        candidateNode = n;
+                        break;
+                    }
+                }
+            }
+
+            // Очищення попереднього підсвічування при зміні цілі
+            if (connectingTargetNode && connectingTargetNode.element && connectingTargetNode !== candidateNode) {
+                connectingTargetNode.element.classList.remove('is-connect-target-valid', 'is-connect-target-invalid');
+            }
+
+            connectingTargetNode = candidateNode;
+            if (candidateNode) {
+                connectingIsValid = this.isValidConnection(connectingSourceNode, candidateNode);
+                if (candidateNode.element) {
+                    candidateNode.element.classList.toggle('is-connect-target-valid', connectingIsValid);
+                    candidateNode.element.classList.toggle('is-connect-target-invalid', !connectingIsValid);
+                }
+            } else {
+                connectingIsValid = false;
+            }
+
+            this.draw();
+        },
+
+        handleConnectingUp(e) {
+            if (!isConnecting) return;
+
+            if (connectingTargetNode && connectingTargetNode.element) {
+                connectingTargetNode.element.classList.remove('is-connect-target-valid', 'is-connect-target-invalid');
+            }
+            if (container) {
+                container.classList.remove('is-connecting-mode');
+            }
+
+            const source = connectingSourceNode;
+            const target = connectingTargetNode;
+            const isValid = connectingIsValid;
+
+            isConnecting = false;
+            connectingSourceNode = null;
+            connectingSourceSide = null;
+            connectingStartPos = null;
+            connectingCurrentPos = null;
+            connectingTargetNode = null;
+            connectingIsValid = false;
+
+            if (isValid && source && target) {
+                this.connectNodes(source, target);
+            } else {
+                this.draw();
+            }
+        },
+
+        isValidConnection(sourceNode, targetNode) {
+            if (!sourceNode || !targetNode) return false;
+            if (sourceNode.id === targetNode.id) return false;
+
+            // Нотатка, до якої проводиться лінія, не може вже бути піднотаткою
+            if (targetNode.parentId || (targetNode.note && targetNode.note.parentId)) {
+                return false;
+            }
+
+            // Перевірка належності до одного блокноту
+            const sourceBoardId = sourceNode.note ? sourceNode.note.boardId : null;
+            const targetBoardId = targetNode.note ? targetNode.note.boardId : null;
+            if (sourceBoardId && targetBoardId && String(sourceBoardId) !== String(targetBoardId)) {
+                return false;
+            }
+
+            // Захист від циклічних зв'язків (цільова нотатка не може бути предком вихідної)
+            let curr = sourceNode;
+            const visited = new Set();
+            while (curr && curr.parentId) {
+                if (curr.parentId === targetNode.id) return false;
+                if (visited.has(curr.parentId)) break;
+                visited.add(curr.parentId);
+                curr = nodes.find(n => n.id === curr.parentId);
+            }
+
+            return true;
+        },
+
+        connectNodes(sourceNode, targetNode) {
+            if (!sourceNode || !targetNode) return;
+            if (!this.isValidConnection(sourceNode, targetNode)) return;
+
+            if (window.App.noteManager) {
+                const success = window.App.noteManager.moveNoteToParent(targetNode.id, sourceNode.id);
+                if (success) {
+                    this.buildBoardData({ preserveCamera: true });
+                    if (window.App.workspaceView) window.App.workspaceView.render();
+                    if (window.App.sidebarView) window.App.sidebarView.render();
+                }
+            }
+        },
+
         bindEvents() {
             const interaction = window.App.boardInteraction;
 
@@ -430,6 +625,10 @@ window.App = window.App || {};
             });
 
             boundPointerMove = (e) => {
+                if (isConnecting) {
+                    this.handleConnectingMove(e);
+                    return;
+                }
                 if (isDraggingCanvas) {
                     const dx = e.clientX - lastMousePos.x;
                     const dy = e.clientY - lastMousePos.y;
@@ -440,7 +639,11 @@ window.App = window.App || {};
                 }
             };
 
-            boundPointerUp = () => {
+            boundPointerUp = (e) => {
+                if (isConnecting) {
+                    this.handleConnectingUp(e);
+                    return;
+                }
                 isDraggingCanvas = false;
             };
 
@@ -703,6 +906,19 @@ window.App = window.App || {};
                     draggedNode: draggedNode,
                     activeTagFilter: activeTagFilter
                 });
+
+                // Малюємо активний кабель створення зв'язку від плюсика
+                if (isConnecting && connectingStartPos && connectingCurrentPos && window.App.boardCables.drawDraftCable) {
+                    window.App.boardCables.drawDraftCable(
+                        ctx,
+                        connectingStartPos,
+                        connectingCurrentPos,
+                        connectingTargetNode,
+                        connectingIsValid,
+                        connectingSourceSide,
+                        camera
+                    );
+                }
             }
 
             // Синхронізація шару карток (округлення цілих пікселів для запобігання розмиттю тексту)
@@ -754,11 +970,12 @@ window.App = window.App || {};
                     node.y <= maxY
                 );
 
-                // Якщо картка перетягується або містить поточний фокус редагування — не приховуємо її
+                // Якщо картка перетягується, з'єднується або містить поточний фокус редагування — не приховуємо її
                 const isDraggingThis = isDraggingNode && draggedNode === node;
+                const isConnectingThis = isConnecting && (connectingSourceNode === node || connectingTargetNode === node);
                 const hasFocus = activeEl && node.element.contains(activeEl);
 
-                const shouldShow = inViewport || isDraggingThis || hasFocus;
+                const shouldShow = inViewport || isDraggingThis || isConnectingThis || hasFocus;
                 const targetDisplay = shouldShow ? '' : 'none';
 
                 if (node.element.style.display !== targetDisplay) {
@@ -796,7 +1013,18 @@ window.App = window.App || {};
             }
             if (container) {
                 container.classList.remove('board-lod-compact');
+                container.classList.remove('is-connecting-mode');
             }
+            if (connectingTargetNode && connectingTargetNode.element) {
+                connectingTargetNode.element.classList.remove('is-connect-target-valid', 'is-connect-target-invalid');
+            }
+            isConnecting = false;
+            connectingSourceNode = null;
+            connectingSourceSide = null;
+            connectingStartPos = null;
+            connectingCurrentPos = null;
+            connectingTargetNode = null;
+            connectingIsValid = false;
             nodes = [];
             edges = [];
             draggedNode = null;
