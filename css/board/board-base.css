@@ -34,7 +34,8 @@
     pointer-events: none;
     z-index: 2;
     transform-origin: 0 0;
-    will-change: transform;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: subpixel-antialiased;
 }
 
 /* Плаваючі кнопки управління зумом у правому нижньому кутку */

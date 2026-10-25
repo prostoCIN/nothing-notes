@@ -101,10 +101,10 @@ window.App = window.App || {};
         calculatePath(sourceNode, targetNode) {
             if (!sourceNode || !targetNode) return null;
 
-            const pw = sourceNode.element ? (sourceNode.element.offsetWidth || 380) : 380;
-            const ph = sourceNode.element ? (sourceNode.element.offsetHeight || 140) : 140;
-            const cw = targetNode.element ? (targetNode.element.offsetWidth || 380) : 380;
-            const ch = targetNode.element ? (targetNode.element.offsetHeight || 140) : 140;
+            const pw = sourceNode.width || (sourceNode.element ? (sourceNode.element.offsetWidth || 380) : 380);
+            const ph = sourceNode.height || (sourceNode.element ? (sourceNode.element.offsetHeight || 140) : 140);
+            const cw = targetNode.width || (targetNode.element ? (targetNode.element.offsetWidth || 380) : 380);
+            const ch = targetNode.height || (targetNode.element ? (targetNode.element.offsetHeight || 140) : 140);
 
             // Визначаємо взаємне розташування: зверху-вниз чи зліва-направо
             const isBelow = (targetNode.y >= sourceNode.y + ph - 25);

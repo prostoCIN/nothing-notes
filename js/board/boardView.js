@@ -235,6 +235,8 @@ window.App = window.App || {};
                     parentId: note.parentId || null,
                     x: posX,
                     y: posY,
+                    width: 380,
+                    height: 140,
                     color: branchColor,
                     element: null
                 };
@@ -249,6 +251,10 @@ window.App = window.App || {};
                     this.attachCardDrag(card, nodeObj);
                     nodesLayer.appendChild(card);
                     nodeObj.element = card;
+                    if (card.offsetWidth > 0) {
+                        nodeObj.width = card.offsetWidth;
+                        nodeObj.height = card.offsetHeight;
+                    }
                 }
 
                 nodes.push(nodeObj);
@@ -344,8 +350,8 @@ window.App = window.App || {};
 
             let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
             nodes.forEach(n => {
-                const nw = n.element ? (n.element.offsetWidth || 380) : 380;
-                const nh = n.element ? (n.element.offsetHeight || 140) : 140;
+                const nw = n.width || (n.element ? (n.element.offsetWidth || 380) : 380);
+                const nh = n.height || (n.element ? (n.element.offsetHeight || 140) : 140);
                 minX = Math.min(minX, n.x);
                 minY = Math.min(minY, n.y);
                 maxX = Math.max(maxX, n.x + nw);
@@ -657,6 +663,14 @@ window.App = window.App || {};
             const width = rect.width;
             const height = rect.height;
 
+            // Оновлення режиму низької деталізації (LOD) при сильному віддаленні камери
+            if (container) {
+                container.classList.toggle('board-lod-compact', camera.zoom < 0.45);
+            }
+
+            // Viewport Culling: приховуємо картки за межами екрану для максимальної швидкодії DOM
+            this.updateViewportCulling(width, height, camera);
+
             ctx.clearRect(0, 0, width, height);
 
             ctx.save();
@@ -691,12 +705,66 @@ window.App = window.App || {};
                 });
             }
 
-            // Синхронізація шару карток
+            // Синхронізація шару карток (округлення цілих пікселів для запобігання розмиттю тексту)
             if (nodesLayer) {
-                nodesLayer.style.transform = `translate(${camera.x}px, ${camera.y}px) scale(${camera.zoom}) translate(${-width / 2}px, ${-height / 2}px)`;
+                const tx = Math.round(camera.x);
+                const ty = Math.round(camera.y);
+                const cx = Math.round(-width / 2);
+                const cy = Math.round(-height / 2);
+                nodesLayer.style.transform = `translate(${tx}px, ${ty}px) scale(${camera.zoom}) translate(${cx}px, ${cy}px)`;
             }
 
             ctx.restore();
+        },
+
+        updateViewportCulling(width, height, camera) {
+            if (!nodes || nodes.length === 0) return;
+
+            // Світові межі видимого екрану камери
+            const worldLeft = (0 - camera.x) / camera.zoom + (width / 2);
+            const worldTop = (0 - camera.y) / camera.zoom + (height / 2);
+            const worldRight = (width - camera.x) / camera.zoom + (width / 2);
+            const worldBottom = (height - camera.y) / camera.zoom + (height / 2);
+
+            // Запас 250px у світових одиницях, щоб картки з'являлись плавно без раптового виринання
+            const buffer = 250 / camera.zoom;
+            const minX = Math.min(worldLeft, worldRight) - buffer;
+            const maxX = Math.max(worldLeft, worldRight) + buffer;
+            const minY = Math.min(worldTop, worldBottom) - buffer;
+            const maxY = Math.max(worldTop, worldBottom) + buffer;
+
+            const activeEl = document.activeElement;
+
+            nodes.forEach(node => {
+                if (!node.element) return;
+
+                // Кешуємо розміри, поки картка видима в DOM
+                if (node.element.offsetWidth > 0) {
+                    node.width = node.element.offsetWidth;
+                    node.height = node.element.offsetHeight;
+                }
+                const nw = node.width || 380;
+                const nh = node.height || 140;
+
+                // Перевірка AABB перетину картки з видимим вікном
+                const inViewport = (
+                    (node.x + nw) >= minX &&
+                    node.x <= maxX &&
+                    (node.y + nh) >= minY &&
+                    node.y <= maxY
+                );
+
+                // Якщо картка перетягується або містить поточний фокус редагування — не приховуємо її
+                const isDraggingThis = isDraggingNode && draggedNode === node;
+                const hasFocus = activeEl && node.element.contains(activeEl);
+
+                const shouldShow = inViewport || isDraggingThis || hasFocus;
+                const targetDisplay = shouldShow ? '' : 'none';
+
+                if (node.element.style.display !== targetDisplay) {
+                    node.element.style.display = targetDisplay;
+                }
+            });
         },
 
         cleanup() {
@@ -725,6 +793,9 @@ window.App = window.App || {};
             }
             if (window.App.boardContextMenu) {
                 window.App.boardContextMenu.close();
+            }
+            if (container) {
+                container.classList.remove('board-lod-compact');
             }
             nodes = [];
             edges = [];
