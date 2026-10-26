@@ -67,17 +67,8 @@ window.App = window.App || {};
                     e.stopPropagation();
                     return;
                 }
-                // На дошці виділення обробляється окремо через Shift+ЛКМ або клік по чекбоксу
+                // На дошці виділення та кліки обробляються контролером boardView
                 if (card.dataset.boardNodeId) {
-                    if (e.target.closest('.sticker-select-checkbox')) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        if (window.App.boardView && window.App.boardView.handleShiftSelect) {
-                            window.App.boardView.handleShiftSelect(note.id);
-                        } else if (window.App.workspaceSelectionBar) {
-                            window.App.workspaceSelectionBar.toggleNoteSelection(note.id);
-                        }
-                    }
                     return;
                 }
                 const isSelectMode = window.App.state && window.App.state.isWorkspaceSelectMode;

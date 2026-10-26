@@ -412,67 +412,85 @@ window.App = window.App || {};
                 }
                 if (e.button !== 0) return;
 
-                // Shift + ЛКМ: виділення нотатки (додавання/зняття з мульти-вибору)
-                if (e.shiftKey) {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    this.handleShiftSelect(node.id);
-                    return;
-                }
+                const state = window.App.state;
+                const isSelectMode = Boolean(state && state.isWorkspaceSelectMode);
 
-                if (e.target.closest('.sticker-title, .sticker-content, button, input, .sticker-menu-dropdown, .sticker-tag-dropdown, .sticker-emoji-picker-dropdown, .color-swatch-btn, a, .subnote-preview-item')) {
+                // Якщо активний режим вибору або затиснутий Shift:
+                // блокуємо фокус на текстових полях, щоб ЛКМ перемикав вибір
+                if (e.shiftKey || isSelectMode) {
+                    e.preventDefault();
+                } else if (e.target.closest('.sticker-title, .sticker-content, button, input, .sticker-menu-dropdown, .sticker-tag-dropdown, .sticker-emoji-picker-dropdown, .color-swatch-btn, a, .subnote-preview-item')) {
                     return;
                 }
                 e.stopPropagation();
 
-                isDraggingNode = true;
-                draggedNode = node;
+                let hasMoved = false;
                 const startX = e.clientX;
                 const startY = e.clientY;
-
-                cardEl.classList.add('is-dragging');
 
                 const interaction = window.App.boardInteraction;
 
                 // Групове перетягування якщо виділено декілька нотаток
-                const state = window.App.state;
                 const isMulti = state && state.selectedWorkspaceNoteIds && state.selectedWorkspaceNoteIds.has(node.id) && state.selectedWorkspaceNoteIds.size > 1;
                 const dragNodes = isMulti
                     ? nodes.filter(n => state.selectedWorkspaceNoteIds.has(n.id))
                     : [node];
                 const initialPositions = dragNodes.map(n => ({ node: n, x: n.x, y: n.y }));
 
-                dragNodes.forEach(n => {
-                    if (n.element) n.element.classList.add('is-dragging');
-                });
-
                 const onMove = (ev) => {
-                    const dx = (ev.clientX - startX) / interaction.camera.zoom;
-                    const dy = (ev.clientY - startY) / interaction.camera.zoom;
-                    initialPositions.forEach(item => {
-                        item.node.x = item.x + dx;
-                        item.node.y = item.y + dy;
-                        if (item.node.element) {
-                            item.node.element.style.left = item.node.x + 'px';
-                            item.node.element.style.top = item.node.y + 'px';
-                        }
-                    });
-                    this.draw();
+                    const totalDx = Math.abs(ev.clientX - startX);
+                    const totalDy = Math.abs(ev.clientY - startY);
+
+                    if (!hasMoved && (totalDx > 4 || totalDy > 4)) {
+                        hasMoved = true;
+                        isDraggingNode = true;
+                        draggedNode = node;
+                        dragNodes.forEach(n => {
+                            if (n.element) n.element.classList.add('is-dragging');
+                        });
+                    }
+
+                    if (hasMoved) {
+                        const dx = (ev.clientX - startX) / interaction.camera.zoom;
+                        const dy = (ev.clientY - startY) / interaction.camera.zoom;
+                        initialPositions.forEach(item => {
+                            item.node.x = item.x + dx;
+                            item.node.y = item.y + dy;
+                            if (item.node.element) {
+                                item.node.element.style.left = item.node.x + 'px';
+                                item.node.element.style.top = item.node.y + 'px';
+                            }
+                        });
+                        this.draw();
+                    }
                 };
 
                 const onUp = () => {
                     window.removeEventListener('pointermove', onMove);
                     window.removeEventListener('pointerup', onUp);
-                    dragNodes.forEach(n => {
-                        if (n.element) n.element.classList.remove('is-dragging');
-                        this.saveNodePosition(n);
-                    });
-                    isDraggingNode = false;
-                    draggedNode = null;
+                    window.removeEventListener('pointercancel', onUp);
+
+                    if (hasMoved) {
+                        dragNodes.forEach(n => {
+                            if (n.element) n.element.classList.remove('is-dragging');
+                            this.saveNodePosition(n);
+                        });
+                        isDraggingNode = false;
+                        draggedNode = null;
+                        cardEl.dataset.justDragged = 'true';
+                        setTimeout(() => delete cardEl.dataset.justDragged, 100);
+                    } else {
+                        // Якщо це був простий клік без перетягування:
+                        // при активному режимі вибору АБО затиснутому Shift виділяємо/знімаємо виділення
+                        if (e.shiftKey || isSelectMode) {
+                            this.handleShiftSelect(node.id);
+                        }
+                    }
                 };
 
                 window.addEventListener('pointermove', onMove);
                 window.addEventListener('pointerup', onUp);
+                window.addEventListener('pointercancel', onUp);
             });
         },
 
@@ -485,10 +503,6 @@ window.App = window.App || {};
                 selBar.enterSelectMode();
             }
             selBar.toggleNoteSelection(noteId);
-
-            if (state.selectedWorkspaceNoteIds.size === 0) {
-                selBar.exitSelectMode();
-            }
         },
 
         updateSelectModeUI() {

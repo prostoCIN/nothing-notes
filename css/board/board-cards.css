@@ -57,6 +57,13 @@
     display: flex !important;
 }
 
+.board-nodes-layer .note-sticker.in-select-mode,
+.board-nodes-layer .note-sticker.in-select-mode .sticker-header,
+.board-nodes-layer .note-sticker.in-select-mode .sticker-title,
+.board-nodes-layer .note-sticker.in-select-mode .sticker-content {
+    cursor: pointer !important;
+}
+
 .board-nodes-layer .note-sticker.is-ws-selected {
     box-shadow: 0 0 0 3px var(--accent-emerald, #10b981), 0 16px 40px rgba(16, 185, 129, 0.45) !important;
 }
