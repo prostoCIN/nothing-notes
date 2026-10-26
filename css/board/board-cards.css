@@ -72,34 +72,45 @@
 
 /* Level of Detail (LOD) - режим низької деталізації при сильному віддаленні камери (zoom < 0.45) */
 .board-view-wrapper.board-lod-compact .board-nodes-layer .note-sticker {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
 }
 
+.board-view-wrapper.board-lod-compact .board-nodes-layer .note-sticker.is-ws-selected {
+    box-shadow: 0 0 0 3px var(--accent-emerald, #10b981), 0 16px 40px rgba(16, 185, 129, 0.45) !important;
+}
+
+/* Приховуємо деталі вмісту без зміни розмірів картки:
+   використовуємо visibility: hidden замість display: none, щоб картка зберігала
+   свої точні габарити і висоту, не смикалася та не ламала позиції кабелів */
 .board-view-wrapper.board-lod-compact .board-nodes-layer .note-sticker .sticker-content,
-.board-view-wrapper.board-lod-compact .board-nodes-layer .note-sticker .sticker-subnotes-container,
 .board-view-wrapper.board-lod-compact .board-nodes-layer .note-sticker .sticker-tags-container,
-.board-view-wrapper.board-lod-compact .board-nodes-layer .note-sticker .sticker-image-gallery,
+.board-view-wrapper.board-lod-compact .board-nodes-layer .note-sticker .sticker-image-gallery {
+    visibility: hidden !important;
+    pointer-events: none !important;
+    user-select: none !important;
+}
+
 .board-view-wrapper.board-lod-compact .board-nodes-layer .note-sticker .sticker-more-btn {
-    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
 }
 
-.board-view-wrapper.board-lod-compact .board-nodes-layer .note-sticker .sticker-header {
-    padding: 8px 12px !important;
-    border-bottom: none !important;
-}
-
-.board-view-wrapper.board-lod-compact .board-nodes-layer .note-sticker .sticker-title {
-    font-size: 15px !important;
-    font-weight: 700 !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-}
-
+/* При наведенні миші або фокусі на картці показуємо вміст назад */
+.board-view-wrapper.board-lod-compact .board-nodes-layer .note-sticker:hover .sticker-content,
 .board-view-wrapper.board-lod-compact .board-nodes-layer .note-sticker:focus-within .sticker-content,
+.board-view-wrapper.board-lod-compact .board-nodes-layer .note-sticker:hover .sticker-tags-container,
 .board-view-wrapper.board-lod-compact .board-nodes-layer .note-sticker:focus-within .sticker-tags-container,
+.board-view-wrapper.board-lod-compact .board-nodes-layer .note-sticker:hover .sticker-image-gallery,
+.board-view-wrapper.board-lod-compact .board-nodes-layer .note-sticker:focus-within .sticker-image-gallery {
+    visibility: visible !important;
+    pointer-events: auto !important;
+    user-select: text !important;
+}
+
+.board-view-wrapper.board-lod-compact .board-nodes-layer .note-sticker:hover .sticker-more-btn,
 .board-view-wrapper.board-lod-compact .board-nodes-layer .note-sticker:focus-within .sticker-more-btn {
-    display: block !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
 }
 
 /* Точки з'єднання (плюсики) по 4 краях картки для створення піднотаток */
