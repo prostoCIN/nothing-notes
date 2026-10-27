@@ -297,22 +297,11 @@
 .column-layout-toggle-btn:hover,
 .column-expand-toggle-btn:hover,
 .column-graph-toggle-btn:hover,
-.column-select-toggle-btn:hover,
-.column-add-note-btn:hover {
+.column-select-toggle-btn:hover {
     background-color: var(--hover-bg);
     color: var(--text-main);
     border-color: rgba(255, 255, 255, 0.2);
     transform: scale(0.96);
-}
-
-.column-add-note-btn:hover {
-    color: #34d399;
-    border-color: rgba(52, 211, 153, 0.35);
-    background-color: rgba(16, 185, 129, 0.08);
-}
-
-.column-add-note-btn:active {
-    transform: scale(0.92);
 }
 
 .column-layout-toggle-btn.active,

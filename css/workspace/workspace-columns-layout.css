@@ -352,8 +352,7 @@
 
 .column-filter-btn,
 .column-layout-toggle-btn,
-.column-expand-toggle-btn,
-.column-add-note-btn {
+.column-expand-toggle-btn {
     background: none;
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: var(--text-muted);
@@ -373,10 +372,42 @@
 }
 
 .column-layout-toggle-btn,
-.column-expand-toggle-btn,
-.column-add-note-btn {
+.column-expand-toggle-btn {
     width: 26px;
     padding: 0;
+}
+
+/* Головна кнопка створення нової нотатки в шапці колонки (виділена зеленим акцентом) */
+.column-add-note-btn {
+    background-color: var(--accent-color, #10b981);
+    border: 1px solid var(--accent-color, #10b981);
+    color: #ffffff;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border-radius: 7px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+    user-select: none;
+    font-family: inherit;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+}
+
+.column-add-note-btn:hover {
+    background-color: #059669;
+    border-color: #059669;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.48);
+    transform: translateY(-1px);
+}
+
+.column-add-note-btn:active {
+    transform: scale(0.93);
+    box-shadow: 0 1px 4px rgba(16, 185, 129, 0.25);
 }
 
 .column-header-actions {
