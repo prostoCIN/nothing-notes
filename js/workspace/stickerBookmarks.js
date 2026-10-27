@@ -6,7 +6,7 @@ window.App = window.App || {};
 
     window.App.stickerBookmarks = {
         /**
-         * Створює блок стрічок-закладок для картки стікера
+         * Створює блок стрічок-закладок для картки стікера (на всю ширину картки)
          * @param {Object} note - Об'єкт нотатки
          * @param {HTMLElement} card - DOM-елемент картки
          * @param {boolean} isReadOnly - Прапорець тільки для читання
@@ -135,7 +135,7 @@ window.App = window.App || {};
         },
 
         /**
-         * Відкриває модальний поповер для пошуку та вибору нотатки
+         * Відкриває оверлей вибору закладок: спочатку блокноти, далі нотатки обраного блокнота
          * @param {Object} note - Поточна нотатка
          * @param {HTMLElement} card - DOM-елемент картки
          */
@@ -151,9 +151,21 @@ window.App = window.App || {};
             const t = (key) => i18n ? i18n.t(key) : '';
             const allNotes = state.notes || [];
 
-            // Доступні для закладки нотатки: виключаємо саму себе та вже додані
+            // Доступні для закладки нотатки (виключаємо саму себе та вже додані)
             const currentLinked = new Set(Array.isArray(note.linkedNoteIds) ? note.linkedNoteIds : []);
             const availableNotes = allNotes.filter(n => n.id !== note.id && !currentLinked.has(n.id) && !n.isDeleted);
+
+            // Отримуємо всі блокноти (власні та спільні)
+            const ownBoards = Array.isArray(state.boards) ? state.boards : [];
+            const readOnlyBoards = Array.isArray(state.readOnlyBoards) ? state.readOnlyBoards : [];
+            const allBoards = [...ownBoards, ...readOnlyBoards];
+            const primaryBoardId = ownBoards[0]?.id;
+
+            // Стан оверлею: 'boards' (список блокнотів) або 'notes' (нотатки обраного блокнота)
+            let currentView = 'boards';
+            let selectedBoard = null;
+            let selectedIndex = -1;
+            let currentFilteredItems = [];
 
             // Побудова DOM модалки
             const backdrop = document.createElement('div');
@@ -164,15 +176,6 @@ window.App = window.App || {};
 
             const header = document.createElement('div');
             header.className = 'bookmark-picker-header';
-            header.innerHTML = `
-                <div class="bookmark-picker-title-wrap">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path>
-                    </svg>
-                    <span>${t('sticker.addBookmark') || 'Додати закладку'}</span>
-                </div>
-                <button type="button" class="bookmark-picker-close-btn" title="${t('common.close') || 'Закрити'}">✕</button>
-            `;
 
             const searchWrap = document.createElement('div');
             searchWrap.className = 'bookmark-picker-search-wrap';
@@ -197,10 +200,6 @@ window.App = window.App || {};
             activeModal = backdrop;
 
             const inputEl = searchWrap.querySelector('.bookmark-picker-input');
-            const closeBtn = header.querySelector('.bookmark-picker-close-btn');
-
-            let selectedIndex = -1;
-            let currentFilteredItems = [];
 
             const getBoardName = (boardId) => {
                 if (!boardManager || !boardManager.getBoardById) return '';
@@ -219,7 +218,60 @@ window.App = window.App || {};
                 return parts.join(' › ');
             };
 
-            const renderList = (query = '') => {
+            const updateHeader = () => {
+                header.innerHTML = '';
+
+                const leftWrap = document.createElement('div');
+                leftWrap.className = 'bookmark-picker-header-left';
+
+                if (currentView === 'notes' && selectedBoard) {
+                    const backBtn = document.createElement('button');
+                    backBtn.type = 'button';
+                    backBtn.className = 'bookmark-picker-back-btn';
+                    backBtn.innerHTML = `
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                        <span>${t('sticker.backToNotebooks') || 'Назад'}</span>
+                    `;
+                    backBtn.addEventListener('click', () => {
+                        currentView = 'boards';
+                        selectedBoard = null;
+                        inputEl.value = '';
+                        inputEl.placeholder = t('sticker.bookmarksSearchPlaceholder') || 'Пошук нотатки для закладки...';
+                        updateHeader();
+                        renderContent('');
+                    });
+                    leftWrap.appendChild(backBtn);
+
+                    const titleEl = document.createElement('div');
+                    titleEl.className = 'bookmark-picker-title-wrap';
+                    titleEl.innerHTML = `<span>📁 ${selectedBoard.name}</span>`;
+                    leftWrap.appendChild(titleEl);
+                } else {
+                    const titleEl = document.createElement('div');
+                    titleEl.className = 'bookmark-picker-title-wrap';
+                    titleEl.innerHTML = `
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path>
+                        </svg>
+                        <span>${t('sticker.selectNotebook') || 'Оберіть блокнот'}</span>
+                    `;
+                    leftWrap.appendChild(titleEl);
+                }
+
+                const closeBtn = document.createElement('button');
+                closeBtn.type = 'button';
+                closeBtn.className = 'bookmark-picker-close-btn';
+                closeBtn.title = t('common.close') || 'Закрити';
+                closeBtn.innerHTML = '✕';
+                closeBtn.addEventListener('click', () => this.closeBookmarkPicker());
+
+                header.appendChild(leftWrap);
+                header.appendChild(closeBtn);
+            };
+
+            const renderContent = (query = '') => {
                 listEl.innerHTML = '';
                 selectedIndex = -1;
                 const cleanQuery = query.toLowerCase().trim();
@@ -230,39 +282,14 @@ window.App = window.App || {};
                     return;
                 }
 
-                if (!cleanQuery) {
-                    // Zero-state: показуємо Нещодавні (до 5) та Нотатки цього ж блокнота
-                    const recent = [...availableNotes].sort((a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0)).slice(0, 5);
-                    const currentBoardNotes = availableNotes.filter(n => n.boardId === note.boardId && !recent.some(r => r.id === n.id)).slice(0, 5);
-
-                    currentFilteredItems = [];
-
-                    if (recent.length > 0) {
-                        const secTitle = document.createElement('div');
-                        secTitle.className = 'bookmark-picker-section-title';
-                        secTitle.textContent = t('sticker.recentNotes') || 'Нещодавні нотатки';
-                        listEl.appendChild(secTitle);
-
-                        recent.forEach(n => {
-                            currentFilteredItems.push(n);
-                            appendNoteItem(n, currentFilteredItems.length - 1);
-                        });
+                // Якщо користувач ввів пошуковий запит — виконуємо прямий пошук нотаток
+                if (cleanQuery) {
+                    let searchPool = availableNotes;
+                    if (currentView === 'notes' && selectedBoard) {
+                        searchPool = availableNotes.filter(n => n.boardId === selectedBoard.id || (!n.boardId && selectedBoard.id === primaryBoardId));
                     }
 
-                    if (currentBoardNotes.length > 0) {
-                        const secTitle = document.createElement('div');
-                        secTitle.className = 'bookmark-picker-section-title';
-                        secTitle.textContent = t('sticker.currentNotebookNotes') || 'З цього блокнота';
-                        listEl.appendChild(secTitle);
-
-                        currentBoardNotes.forEach(n => {
-                            currentFilteredItems.push(n);
-                            appendNoteItem(n, currentFilteredItems.length - 1);
-                        });
-                    }
-                } else {
-                    // Фільтрація за назвою, назвою блокнота або текстом
-                    const matches = availableNotes.filter(n => {
+                    const matches = searchPool.filter(n => {
                         const titleMatch = (n.title || '').toLowerCase().includes(cleanQuery);
                         const bName = getBoardName(n.boardId).toLowerCase();
                         const boardMatch = bName.includes(cleanQuery);
@@ -270,7 +297,7 @@ window.App = window.App || {};
                         return titleMatch || boardMatch || contentMatch;
                     });
 
-                    // Сортуємо: збіг на початку назви > збіг всередині назви > збіг у блокноті
+                    // Сортуємо за релевантністю
                     matches.sort((a, b) => {
                         const aTitle = (a.title || '').toLowerCase();
                         const bTitle = (b.title || '').toLowerCase();
@@ -289,12 +316,84 @@ window.App = window.App || {};
                     }
 
                     matches.forEach((n, idx) => appendNoteItem(n, idx, cleanQuery));
+                } else if (currentView === 'boards') {
+                    // РЕЖИМ 1: Список блокнотів + секція Нещодавніх зверху
+                    currentFilteredItems = [];
+
+                    // 1. Секція нещодавніх нотаток для швидкого доступу
+                    const recent = [...availableNotes]
+                        .sort((a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0))
+                        .slice(0, 3);
+
+                    if (recent.length > 0) {
+                        const secTitle = document.createElement('div');
+                        secTitle.className = 'bookmark-picker-section-title';
+                        secTitle.textContent = t('sticker.recentNotes') || 'Нещодавні нотатки';
+                        listEl.appendChild(secTitle);
+
+                        recent.forEach(n => {
+                            currentFilteredItems.push({ type: 'note', data: n });
+                            appendNoteItem(n, currentFilteredItems.length - 1);
+                        });
+                    }
+
+                    // 2. Секція блокнотів
+                    const boardsTitle = document.createElement('div');
+                    boardsTitle.className = 'bookmark-picker-section-title';
+                    boardsTitle.textContent = t('sticker.notebooksSection') || 'Блокноти';
+                    listEl.appendChild(boardsTitle);
+
+                    allBoards.forEach(board => {
+                        const boardNotes = availableNotes.filter(n => n.boardId === board.id || (!n.boardId && board.id === primaryBoardId));
+                        currentFilteredItems.push({ type: 'board', data: board, count: boardNotes.length });
+                        appendBoardItem(board, boardNotes.length, currentFilteredItems.length - 1);
+                    });
+                } else if (currentView === 'notes' && selectedBoard) {
+                    // РЕЖИМ 2: Нотатки обраного блокнота
+                    const boardNotes = availableNotes.filter(n => n.boardId === selectedBoard.id || (!n.boardId && selectedBoard.id === primaryBoardId));
+                    currentFilteredItems = boardNotes;
+
+                    if (boardNotes.length === 0) {
+                        listEl.innerHTML = `<div class="bookmark-picker-empty">${t('sticker.emptyNotebook') || 'У цьому блокноті немає доступних нотаток'}</div>`;
+                        return;
+                    }
+
+                    boardNotes.forEach((n, idx) => appendNoteItem(n, idx));
                 }
 
                 if (currentFilteredItems.length > 0) {
                     selectedIndex = 0;
                     updateItemSelection();
                 }
+            };
+
+            const appendBoardItem = (board, notesCount, index) => {
+                const item = document.createElement('div');
+                item.className = 'bookmark-picker-board-item';
+                item.dataset.index = index;
+
+                item.innerHTML = `
+                    <div class="bookmark-picker-board-left">
+                        <div class="bookmark-picker-board-icon">${board.icon || '📁'}</div>
+                        <div class="bookmark-picker-board-name">${board.name}</div>
+                    </div>
+                    <div class="bookmark-picker-board-right">
+                        <span class="bookmark-picker-board-count">${notesCount}</span>
+                        <span class="bookmark-picker-board-arrow">›</span>
+                    </div>
+                `;
+
+                item.addEventListener('click', () => {
+                    currentView = 'notes';
+                    selectedBoard = board;
+                    inputEl.value = '';
+                    inputEl.placeholder = `Пошук у "${board.name}"...`;
+                    updateHeader();
+                    renderContent('');
+                    inputEl.focus();
+                });
+
+                listEl.appendChild(item);
             };
 
             const appendNoteItem = (targetNote, index, highlightQuery = '') => {
@@ -332,7 +431,7 @@ window.App = window.App || {};
             };
 
             const updateItemSelection = () => {
-                const items = listEl.querySelectorAll('.bookmark-picker-item');
+                const items = listEl.querySelectorAll('.bookmark-picker-item, .bookmark-picker-board-item');
                 items.forEach((it, idx) => {
                     const isSel = idx === selectedIndex;
                     it.classList.toggle('is-selected', isSel);
@@ -344,7 +443,7 @@ window.App = window.App || {};
 
             // Обробка пошукового вводу
             inputEl.addEventListener('input', (e) => {
-                renderList(e.target.value);
+                renderContent(e.target.value);
             });
 
             // Навігація клавіатурою
@@ -365,25 +464,44 @@ window.App = window.App || {};
                     e.preventDefault();
                     if (selectedIndex >= 0 && selectedIndex < currentFilteredItems.length) {
                         const target = currentFilteredItems[selectedIndex];
-                        this.addBookmark(note, target.id, card, false);
-                        this.closeBookmarkPicker();
+                        if (target.type === 'board') {
+                            currentView = 'notes';
+                            selectedBoard = target.data;
+                            inputEl.value = '';
+                            inputEl.placeholder = `Пошук у "${selectedBoard.name}"...`;
+                            updateHeader();
+                            renderContent('');
+                        } else {
+                            const noteObj = target.data || target;
+                            this.addBookmark(note, noteObj.id, card, false);
+                            this.closeBookmarkPicker();
+                        }
                     }
                 } else if (e.key === 'Escape') {
                     e.preventDefault();
-                    this.closeBookmarkPicker();
+                    if (currentView === 'notes') {
+                        currentView = 'boards';
+                        selectedBoard = null;
+                        inputEl.value = '';
+                        inputEl.placeholder = t('sticker.bookmarksSearchPlaceholder') || 'Пошук нотатки для закладки...';
+                        updateHeader();
+                        renderContent('');
+                    } else {
+                        this.closeBookmarkPicker();
+                    }
                 }
             });
 
-            // Закриття
-            closeBtn.addEventListener('click', () => this.closeBookmarkPicker());
+            // Закриття кліком по фону
             backdrop.addEventListener('click', (e) => {
                 if (e.target === backdrop) {
                     this.closeBookmarkPicker();
                 }
             });
 
-            // Початковий рендер та фокус
-            renderList('');
+            // Початковий рендер
+            updateHeader();
+            renderContent('');
             setTimeout(() => inputEl.focus(), 50);
         },
 
