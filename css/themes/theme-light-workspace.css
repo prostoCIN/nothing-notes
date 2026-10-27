@@ -26,7 +26,8 @@ html[data-theme="light"] .column-filter-btn,
 html[data-theme="light"] .column-layout-toggle-btn,
 html[data-theme="light"] .column-expand-toggle-btn,
 html[data-theme="light"] .column-graph-toggle-btn,
-html[data-theme="light"] .column-select-toggle-btn {
+html[data-theme="light"] .column-select-toggle-btn,
+html[data-theme="light"] .column-add-note-btn {
     border-color: rgba(0, 0, 0, 0.1) !important;
 }
 
@@ -36,7 +37,8 @@ html[data-theme="light"] .column-filter-btn:hover,
 html[data-theme="light"] .column-layout-toggle-btn:hover,
 html[data-theme="light"] .column-expand-toggle-btn:hover,
 html[data-theme="light"] .column-graph-toggle-btn:hover,
-html[data-theme="light"] .column-select-toggle-btn:hover {
+html[data-theme="light"] .column-select-toggle-btn:hover,
+html[data-theme="light"] .column-add-note-btn:hover {
     background-color: rgba(0, 0, 0, 0.05) !important;
     border-color: rgba(0, 0, 0, 0.18) !important;
     color: #18181b !important;
