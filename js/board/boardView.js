@@ -11,6 +11,21 @@ window.App = window.App || {};
     let nodes = [];
     let edges = [];
 
+    let currentRenderedBoardId = null;
+    let isCameraInitializedForBoard = false;
+    const boardCameras = new Map(); // boardId -> { x, y, zoom }
+
+    function saveCurrentBoardCamera() {
+        if (!currentRenderedBoardId) return;
+        const interaction = window.App.boardInteraction;
+        if (!interaction || !interaction.camera) return;
+        boardCameras.set(currentRenderedBoardId, {
+            x: interaction.camera.x,
+            y: interaction.camera.y,
+            zoom: interaction.camera.zoom
+        });
+    }
+
     let isDraggingCanvas = false;
     let isDraggingNode = false;
     let draggedNode = null;
@@ -58,11 +73,30 @@ window.App = window.App || {};
     window.App.boardView = {
         init() {},
 
-        render() {
-            this.cleanup();
-
+        render(options = {}) {
             const els = window.App.getElements();
             if (!els.columnsContainer) return;
+
+            const currentBoard = window.App.boardManager ? window.App.boardManager.getActiveBoard() : null;
+            if (!currentBoard) return;
+
+            // Якщо дошка вже змонтована для цього ж блокнота
+            const isAlreadyMountedForSameBoard = container && container.parentNode === els.columnsContainer && currentRenderedBoardId === currentBoard.id;
+
+            if (isAlreadyMountedForSameBoard) {
+                // Оновлюємо дані дошки без перестворення контейнера та зі збереженням камери
+                this.buildBoardData({ preserveCamera: !options.resetCamera });
+                return;
+            }
+
+            // Зберігаємо камеру попереднього блокнота перед перемиканням
+            if (currentRenderedBoardId && currentRenderedBoardId !== currentBoard.id) {
+                saveCurrentBoardCamera();
+            }
+
+            currentRenderedBoardId = currentBoard.id;
+
+            this.cleanup();
 
             const pagination = document.getElementById('mobile-columns-pagination');
             if (pagination) {
@@ -72,12 +106,21 @@ window.App = window.App || {};
 
             els.columnsContainer.innerHTML = '';
 
-            const currentBoard = window.App.boardManager ? window.App.boardManager.getActiveBoard() : null;
-            if (!currentBoard) return;
-
             this.createBoardDOM(els.columnsContainer, currentBoard);
             this.resizeCanvas();
-            this.buildBoardData();
+
+            if (boardCameras.has(currentBoard.id) && !options.resetCamera) {
+                const saved = boardCameras.get(currentBoard.id);
+                const interaction = window.App.boardInteraction;
+                interaction.camera.x = saved.x;
+                interaction.camera.y = saved.y;
+                interaction.camera.zoom = saved.zoom;
+                isCameraInitializedForBoard = true;
+                this.buildBoardData({ preserveCamera: true });
+            } else {
+                isCameraInitializedForBoard = false;
+                this.buildBoardData({ preserveCamera: false });
+            }
         },
 
         createBoardDOM(parentEl, currentBoard) {
@@ -247,6 +290,11 @@ window.App = window.App || {};
             const currentBoard = window.App.boardManager ? window.App.boardManager.getActiveBoard() : null;
             if (!currentBoard) return;
 
+            // Якщо для цього блокнота камера вже була ініціалізована або збережена — за замовчуванням зберігаємо положення камери
+            const shouldPreserveCamera = options.preserveCamera !== undefined
+                ? Boolean(options.preserveCamera)
+                : Boolean(isCameraInitializedForBoard);
+
             const boardNotes = allNotes.filter(n => String(n.boardId) === String(currentBoard.id));
             const notesMap = new Map();
             boardNotes.forEach(n => notesMap.set(n.id, n));
@@ -385,7 +433,7 @@ window.App = window.App || {};
                     onUpdate: () => this.draw(),
                     onComplete: () => {
                         nodes.forEach(n => this.saveNodePosition(n));
-                        if (!options || !options.preserveCamera) {
+                        if (!shouldPreserveCamera) {
                             this.centerCameraOnAllNodes();
                         } else {
                             this.draw();
@@ -393,7 +441,7 @@ window.App = window.App || {};
                     }
                 });
             } else {
-                if (!options || !options.preserveCamera) {
+                if (!shouldPreserveCamera) {
                     this.centerCameraOnAllNodes();
                 } else {
                     this.draw();
@@ -406,6 +454,8 @@ window.App = window.App || {};
                 if (canvas && container) {
                     const rect = container.getBoundingClientRect();
                     window.App.boardInteraction.initCamera(rect.width, rect.height);
+                    isCameraInitializedForBoard = true;
+                    saveCurrentBoardCamera();
                     this.draw();
                 }
                 return;
@@ -437,6 +487,9 @@ window.App = window.App || {};
             interaction.camera.x = (w / 2) - (bboxCenterX - (w / 2)) * targetZoom;
             interaction.camera.y = (h / 2) - (bboxCenterY - (h / 2)) * targetZoom;
             interaction.camera.zoom = targetZoom;
+
+            isCameraInitializedForBoard = true;
+            saveCurrentBoardCamera();
 
             this.draw();
         },
@@ -692,6 +745,7 @@ window.App = window.App || {};
                     interaction.camera.x += dx;
                     interaction.camera.y += dy;
                     lastMousePos = { x: e.clientX, y: e.clientY };
+                    saveCurrentBoardCamera();
                     this.draw();
                 }
             };
@@ -758,6 +812,7 @@ window.App = window.App || {};
                     ? Math.exp(-e.deltaY * 0.005)
                     : (e.deltaY < 0 ? 1.1 : 0.9);
                 interaction.zoomAt(delta, e.clientX, e.clientY, canvas);
+                saveCurrentBoardCamera();
                 this.draw();
             };
 
@@ -837,7 +892,7 @@ window.App = window.App || {};
                 tagLinksBtn.addEventListener('click', () => {
                     showTagLinks = !showTagLinks;
                     tagLinksBtn.classList.toggle('is-active', showTagLinks);
-                    this.buildBoardData();
+                    this.buildBoardData({ preserveCamera: true });
                 });
             }
 
@@ -873,6 +928,7 @@ window.App = window.App || {};
                 zoomInBtn.addEventListener('click', () => {
                     const rect = canvas.getBoundingClientRect();
                     interaction.zoomAt(1.2, rect.left + rect.width / 2, rect.top + rect.height / 2, canvas);
+                    saveCurrentBoardCamera();
                     this.draw();
                 });
             }
@@ -880,6 +936,7 @@ window.App = window.App || {};
                 zoomOutBtn.addEventListener('click', () => {
                     const rect = canvas.getBoundingClientRect();
                     interaction.zoomAt(0.8, rect.left + rect.width / 2, rect.top + rect.height / 2, canvas);
+                    saveCurrentBoardCamera();
                     this.draw();
                 });
             }
@@ -963,7 +1020,7 @@ window.App = window.App || {};
                     if (state && window.App.storage) {
                         window.App.storage.saveNotes(state.notes);
                     }
-                    this.buildBoardData();
+                    this.buildBoardData({ preserveCamera: true });
                 }
             }
         },
@@ -992,7 +1049,7 @@ window.App = window.App || {};
                 window.App.storage.saveNotes(state.notes);
             }
 
-            this.buildBoardData();
+            this.buildBoardData({ preserveCamera: true });
             this.draw();
 
             setTimeout(() => {
@@ -1150,6 +1207,7 @@ window.App = window.App || {};
         },
 
         cleanup() {
+            saveCurrentBoardCamera();
             if (marqueeEl) {
                 marqueeEl.remove();
                 marqueeEl = null;
@@ -1233,6 +1291,7 @@ window.App = window.App || {};
         },
 
         destroy() {
+            saveCurrentBoardCamera();
             this.cleanup();
             if (container && container.parentNode) {
                 container.parentNode.removeChild(container);
@@ -1241,6 +1300,8 @@ window.App = window.App || {};
             canvas = null;
             ctx = null;
             nodesLayer = null;
+            currentRenderedBoardId = null;
+            isCameraInitializedForBoard = false;
         }
     };
 })();

@@ -419,16 +419,9 @@ window.App = window.App || {};
                 }
             });
 
-            // Зберігаємо позиції стікерів перед оновленням для FLIP-анімації
-            const prevStickerRects = new Map();
-            els.columnsContainer.querySelectorAll('.note-sticker[data-note-id]').forEach(card => {
-                prevStickerRects.set(card.dataset.noteId, card.getBoundingClientRect());
-            });
-
-            els.columnsContainer.innerHTML = '';
-
             const currentBoard = window.App.boardManager ? window.App.boardManager.getActiveBoard() : null;
             if (!currentBoard) {
+                els.columnsContainer.innerHTML = '';
                 renderEmptyWorkspace(els.columnsContainer);
                 return;
             }
@@ -492,7 +485,7 @@ window.App = window.App || {};
 
                 els.columnsContainer.classList.add('has-canvas-mode');
                 els.columnsContainer.classList.remove('has-many-columns');
-                window.App.boardView.render();
+                window.App.boardView.render({ preserveCamera: true });
                 return;
             }
 
@@ -513,6 +506,14 @@ window.App = window.App || {};
 
             // 3. Класичний режим колонок (Columns View)
             els.columnsContainer.classList.remove('has-canvas-mode');
+
+            // Зберігаємо позиції стікерів перед оновленням для FLIP-анімації
+            const prevStickerRects = new Map();
+            els.columnsContainer.querySelectorAll('.note-sticker[data-note-id]').forEach(card => {
+                prevStickerRects.set(card.dataset.noteId, card.getBoundingClientRect());
+            });
+
+            els.columnsContainer.innerHTML = '';
             if (topHeader && !isBoardReadOnly) topHeader.classList.remove('graph-mode-active');
             if (window.App.graphView) window.App.graphView.stopSimulation();
             if (window.App.boardView) window.App.boardView.cleanup();

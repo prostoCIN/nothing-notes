@@ -217,11 +217,14 @@ window.App = window.App || {};
             const nodes = boardView.getNodes();
             if (!this.isValidConnection(sourceNode, targetNode, nodes)) return;
 
+            if (window.App.historyManager) {
+                window.App.historyManager.recordState('connect_nodes');
+            }
+
             if (window.App.noteManager) {
                 const success = window.App.noteManager.moveNoteToParent(targetNode.id, sourceNode.id);
                 if (success) {
                     boardView.buildBoardData({ preserveCamera: true });
-                    if (window.App.workspaceView) window.App.workspaceView.render();
                     if (window.App.sidebarView) window.App.sidebarView.render();
                 }
             }
