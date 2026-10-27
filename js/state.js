@@ -36,7 +36,19 @@ window.App.storage = {
         localStorage.setItem('minimal_boards', JSON.stringify(boards));
     },
     getNotes() {
-        return JSON.parse(localStorage.getItem('minimal_notes')) || [];
+        const raw = JSON.parse(localStorage.getItem('minimal_notes')) || [];
+        if (!Array.isArray(raw)) return [];
+        try {
+            const bookmarksMap = JSON.parse(localStorage.getItem('minimal_note_bookmarks') || '{}');
+            if (bookmarksMap && Object.keys(bookmarksMap).length > 0) {
+                raw.forEach(n => {
+                    if ((!Array.isArray(n.linkedNoteIds) || n.linkedNoteIds.length === 0) && bookmarksMap[n.id]) {
+                        n.linkedNoteIds = [...bookmarksMap[n.id]];
+                    }
+                });
+            }
+        } catch {}
+        return raw;
     },
 
     // Оптимізоване збереження нотаток з дебаунсом 300мс для уникнення надлишкових I/O операцій
@@ -58,6 +70,21 @@ window.App.storage = {
     flushNotes() {
         if (this._pendingNotes) {
             try {
+                if (Array.isArray(this._pendingNotes)) {
+                    try {
+                        const map = JSON.parse(localStorage.getItem('minimal_note_bookmarks') || '{}');
+                        let mapChanged = false;
+                        this._pendingNotes.forEach(n => {
+                            if (Array.isArray(n.linkedNoteIds) && n.linkedNoteIds.length > 0) {
+                                map[n.id] = n.linkedNoteIds;
+                                mapChanged = true;
+                            }
+                        });
+                        if (mapChanged) {
+                            localStorage.setItem('minimal_note_bookmarks', JSON.stringify(map));
+                        }
+                    } catch {}
+                }
                 localStorage.setItem('minimal_notes', JSON.stringify(this._pendingNotes));
                 this._pendingNotes = null;
                 clearTimeout(this._notesSaveTimer);

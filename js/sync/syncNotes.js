@@ -179,6 +179,15 @@ window.App = window.App || {};
                         if (cs._pendingSyncNotesMap) cs._pendingSyncNotesMap.delete(n.id);
                         if (cs._pendingReorderNotesMap) cs._pendingReorderNotesMap.delete(n.id);
 
+                        const savedBookmarks = (window.App.stickerBookmarks && window.App.stickerBookmarks.getSavedBookmarks)
+                            ? window.App.stickerBookmarks.getSavedBookmarks(n.id)
+                            : [];
+                        const resolvedLinkedIds = (Array.isArray(n.linked_note_ids) && n.linked_note_ids.length > 0)
+                            ? n.linked_note_ids
+                            : ((localNote && Array.isArray(localNote.linkedNoteIds) && localNote.linkedNoteIds.length > 0)
+                                ? [...localNote.linkedNoteIds]
+                                : savedBookmarks);
+
                         return {
                             id: n.id,
                             boardId: resolvedBoardId,
@@ -191,6 +200,7 @@ window.App = window.App || {};
                             images: n.images || [],
                             isCollapsed: !!n.is_collapsed,
                             tags: Array.isArray(n.tags) ? n.tags : [],
+                            linkedNoteIds: resolvedLinkedIds,
                             orderIndex: typeof n.order_index === 'number' ? n.order_index : 0,
                             gridCol: localNote && localNote.gridCol ? localNote.gridCol : undefined,
                             createdAt: new Date(n.created_at).getTime() || Date.now(),

@@ -6,6 +6,69 @@ window.App = window.App || {};
 
     window.App.stickerBookmarks = {
         /**
+         * Отримує збережені ID закладок для нотатки з резервного персистентного сховища LocalStorage
+         * @param {string} noteId
+         * @returns {string[]}
+         */
+        getSavedBookmarks(noteId) {
+            if (!noteId) return [];
+            try {
+                const map = JSON.parse(localStorage.getItem('minimal_note_bookmarks') || '{}');
+                return Array.isArray(map[noteId]) ? map[noteId] : [];
+            } catch {
+                return [];
+            }
+        },
+
+        /**
+         * Зберігає зв'язки закладок нотатки у персистентне резервне сховище
+         * @param {string} noteId
+         * @param {string[]} linkedIds
+         */
+        saveLocalBookmarks(noteId, linkedIds) {
+            if (!noteId) return;
+            try {
+                const map = JSON.parse(localStorage.getItem('minimal_note_bookmarks') || '{}');
+                if (Array.isArray(linkedIds) && linkedIds.length > 0) {
+                    map[noteId] = linkedIds;
+                } else {
+                    delete map[noteId];
+                }
+                localStorage.setItem('minimal_note_bookmarks', JSON.stringify(map));
+            } catch (e) {
+                console.warn('[Bookmarks] Failed to persist bookmark map:', e);
+            }
+        },
+
+        /**
+         * Очищує посилання на видалені нотатки зі сховища закладок
+         * @param {Set<string>|string[]} deletedIds
+         */
+        cleanBookmarksForDeletedNotes(deletedIds) {
+            const delSet = deletedIds instanceof Set ? deletedIds : new Set(deletedIds);
+            if (delSet.size === 0) return;
+            try {
+                const map = JSON.parse(localStorage.getItem('minimal_note_bookmarks') || '{}');
+                let changed = false;
+                for (const key of Object.keys(map)) {
+                    if (delSet.has(key)) {
+                        delete map[key];
+                        changed = true;
+                    } else if (Array.isArray(map[key])) {
+                        const filtered = map[key].filter(id => !delSet.has(id));
+                        if (filtered.length !== map[key].length) {
+                            map[key] = filtered;
+                            changed = true;
+                        }
+                    }
+                }
+                if (changed) {
+                    localStorage.setItem('minimal_note_bookmarks', JSON.stringify(map));
+                }
+            } catch {}
+        },
+
+        /**
          * Створює блок стрічок-закладок для картки стікера (на всю ширину картки)
          * @param {Object} note - Об'єкт нотатки
          * @param {HTMLElement} card - DOM-елемент картки
@@ -13,7 +76,15 @@ window.App = window.App || {};
          * @returns {HTMLElement|null} - Контейнер закладок або null якщо закладок немає
          */
         createBookmarksBlock(note, card, isReadOnly) {
-            const linkedIds = Array.isArray(note.linkedNoteIds) ? note.linkedNoteIds : [];
+            let linkedIds = Array.isArray(note.linkedNoteIds) ? note.linkedNoteIds : [];
+            if (linkedIds.length === 0) {
+                // Відновлюємо з персистентного сховища закладок якщо на об'єкті нотатки не збереглося
+                const stored = this.getSavedBookmarks(note.id);
+                if (stored.length > 0) {
+                    note.linkedNoteIds = [...stored];
+                    linkedIds = note.linkedNoteIds;
+                }
+            }
             if (linkedIds.length === 0) return null;
 
             const noteManager = window.App.noteManager;
@@ -92,7 +163,16 @@ window.App = window.App || {};
             const updated = currentIds.filter(id => id !== targetNoteId);
             note.linkedNoteIds = updated;
 
+            this.saveLocalBookmarks(note.id, updated);
             noteManager.updateNote(note.id, { linkedNoteIds: updated });
+            if (window.App.storage) {
+                if (window.App.state && window.App.state.notes) {
+                    window.App.storage.saveNotes(window.App.state.notes, true);
+                }
+                if (window.App.storage.flushNotes) {
+                    window.App.storage.flushNotes();
+                }
+            }
             this.refreshCardBookmarks(note, card, isReadOnly);
         },
 
@@ -107,7 +187,17 @@ window.App = window.App || {};
             if (!currentIds.includes(targetNoteId)) {
                 currentIds.push(targetNoteId);
                 note.linkedNoteIds = currentIds;
+
+                this.saveLocalBookmarks(note.id, currentIds);
                 noteManager.updateNote(note.id, { linkedNoteIds: currentIds });
+                if (window.App.storage) {
+                    if (window.App.state && window.App.state.notes) {
+                        window.App.storage.saveNotes(window.App.state.notes, true);
+                    }
+                    if (window.App.storage.flushNotes) {
+                        window.App.storage.flushNotes();
+                    }
+                }
                 this.refreshCardBookmarks(note, card, isReadOnly);
             }
         },

@@ -254,6 +254,16 @@ window.DOMPurify = window.DOMPurify || DOMPurify;
 
                     state.notes = state.notes.filter(note => !ownToDeleteIds.has(note.id));
 
+                    // Очищуємо посилання на видалені нотатки з інших нотаток та сховища
+                    state.notes.forEach(note => {
+                        if (Array.isArray(note.linkedNoteIds) && note.linkedNoteIds.some(id => toDeleteIds.has(id))) {
+                            note.linkedNoteIds = note.linkedNoteIds.filter(id => !toDeleteIds.has(id));
+                        }
+                    });
+                    if (window.App.stickerBookmarks && window.App.stickerBookmarks.cleanBookmarksForDeletedNotes) {
+                        window.App.stickerBookmarks.cleanBookmarksForDeletedNotes(toDeleteIds);
+                    }
+
                     if (window.App.cloudSync) {
                         const idsArr = Array.from(ownToDeleteIds);
                         if (window.App.cloudSync.deleteNotesFromCloud) {
@@ -572,6 +582,7 @@ window.DOMPurify = window.DOMPurify || DOMPurify;
                     icon: noteToClone.icon || null,
                     tags: Array.isArray(noteToClone.tags) ? [...noteToClone.tags] : (noteToClone.tag ? [noteToClone.tag.text || noteToClone.tag] : []),
                     images: Array.isArray(noteToClone.images) ? JSON.parse(JSON.stringify(noteToClone.images)) : [],
+                    linkedNoteIds: Array.isArray(noteToClone.linkedNoteIds) ? [...noteToClone.linkedNoteIds] : [],
                     fontSize: noteToClone.fontSize !== undefined ? noteToClone.fontSize : 16,
                     createdAt: Date.now(),
                     updatedAt: Date.now(),

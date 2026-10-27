@@ -16,7 +16,7 @@
     pointer-events: auto;
 }
 
-/* Окрема стрічка-закладка на всю ширину з трикутним вирізом зліва — канонічний смарагдовий градієнт */
+/* Окрема стрічка-закладка на всю ширину з трикутним вирізом зліва — заливка та бордер як у sticker-subnotes-container */
 .sticker-bookmark-ribbon {
     position: relative;
     display: flex;
@@ -27,29 +27,31 @@
     box-sizing: border-box;
     padding: 0 14px 0 24px; /* Зліва 24px, щоб контент не перетинав 14px виріз */
     clip-path: polygon(14px 50%, 0% 0%, 100% 0%, 100% 100%, 0% 100%);
-    background: var(--emerald-gradient, linear-gradient(135deg, #B3CD9D 0%, #16B981 30%, #ACF9DF 65%, #16B981 85%, #B3CD9D 100%));
-    border-right: 4px solid #059669;
-    color: #062419;
+    background-color: rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 0 8px 8px 0;
+    color: #292524;
     font-size: 13px;
-    font-weight: 700;
+    font-weight: 600;
     font-family: inherit;
     cursor: pointer;
     user-select: none;
-    filter: drop-shadow(-2px 3px 5px rgba(16, 185, 129, 0.35)) drop-shadow(-1px 1px 2px rgba(0, 0, 0, 0.15));
-    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), filter 0.18s ease;
-    border-radius: 0 3px 3px 0;
+    filter: drop-shadow(-1px 1px 2px rgba(0, 0, 0, 0.04));
+    transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), filter 0.18s ease;
 }
 
 .sticker-bookmark-ribbon:hover {
+    background-color: rgba(0, 0, 0, 0.07);
+    border-color: rgba(0, 0, 0, 0.14);
     transform: translateX(-4px);
-    filter: drop-shadow(-4px 4px 8px rgba(16, 185, 129, 0.5)) drop-shadow(-1px 1px 2px rgba(0, 0, 0, 0.2));
+    filter: drop-shadow(-2px 2px 4px rgba(0, 0, 0, 0.08));
 }
 
 .sticker-bookmark-icon {
     font-size: 15px;
     line-height: 1;
     flex-shrink: 0;
-    color: #062419;
+    color: #292524;
 }
 
 .sticker-bookmark-title {
@@ -58,14 +60,14 @@
     white-space: nowrap;
     letter-spacing: -0.15px;
     flex-grow: 1;
-    color: #062419;
+    color: #292524;
 }
 
 /* Кнопка видалення закладки (з'являється при наведенні) */
 .sticker-bookmark-remove {
     background: transparent;
     border: none;
-    color: #062419;
+    color: #78716c;
     opacity: 0;
     font-size: 12px;
     width: 20px;
@@ -77,18 +79,19 @@
     cursor: pointer;
     margin-left: 6px;
     flex-shrink: 0;
-    transition: opacity 0.15s ease, background-color 0.15s ease, transform 0.12s ease;
+    transition: opacity 0.15s ease, background-color 0.15s ease, color 0.15s ease, transform 0.12s ease;
     padding: 0;
     line-height: 1;
 }
 
 .sticker-bookmark-ribbon:hover .sticker-bookmark-remove {
-    opacity: 0.6;
+    opacity: 0.7;
 }
 
 .sticker-bookmark-remove:hover {
     opacity: 1 !important;
-    background-color: rgba(6, 36, 25, 0.15);
+    background-color: rgba(0, 0, 0, 0.08);
+    color: #dc2626;
     transform: scale(1.15);
 }
 

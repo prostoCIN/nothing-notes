@@ -39,7 +39,8 @@ window.App = window.App || {};
             .map(n => ({
                 ...n,
                 images: Array.isArray(n.images) ? JSON.parse(JSON.stringify(n.images)) : [],
-                tags: Array.isArray(n.tags) ? [...n.tags] : []
+                tags: Array.isArray(n.tags) ? [...n.tags] : [],
+                linkedNoteIds: Array.isArray(n.linkedNoteIds) ? [...n.linkedNoteIds] : []
             }));
     }
 
@@ -64,6 +65,14 @@ window.App = window.App || {};
         if (aTags.length !== bTags.length) return false;
         for (let i = 0; i < aTags.length; i++) {
             if (aTags[i] !== bTags[i]) return false;
+        }
+
+        // Порівняння закладок
+        const aLinked = Array.isArray(a.linkedNoteIds) ? a.linkedNoteIds : [];
+        const bLinked = Array.isArray(b.linkedNoteIds) ? b.linkedNoteIds : [];
+        if (aLinked.length !== bLinked.length) return false;
+        for (let i = 0; i < aLinked.length; i++) {
+            if (aLinked[i] !== bLinked[i]) return false;
         }
 
         // Порівняння зображень
