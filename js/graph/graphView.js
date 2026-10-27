@@ -22,6 +22,7 @@ window.App = window.App || {};
 
     let isOrphansOnly = false;
     let showTagLinks = true;
+    let showBookmarkLinks = true;
     let activeTagFilter = null;
     let cachedSubtreeIds = null;
 
@@ -113,6 +114,12 @@ window.App = window.App || {};
                                     <line x1="7" y1="7" x2="7.01" y2="7"></line>
                                 </svg>
                                 <span>Зв'язки тегів</span>
+                            </button>
+                            <button class="graph-toolbar-filter-btn is-active" id="graph-toggle-bookmark-links" title="Увімкнути/вимкнути зв'язки закладок">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path>
+                                </svg>
+                                <span>Закладки</span>
                             </button>
                         </div>
                     </div>
@@ -228,7 +235,9 @@ window.App = window.App || {};
                 const dist = 50 + (idx % 4) * 45;
                 const isRoot = !note.parentId || !notesMap.has(note.parentId);
                 const hasChildren = boardNotes.some(child => child.parentId === note.id);
-                const isOrphan = isRoot && !hasChildren;
+                const hasBookmarks = (Array.isArray(note.linkedNoteIds) && note.linkedNoteIds.length > 0)
+                    || boardNotes.some(other => Array.isArray(other.linkedNoteIds) && other.linkedNoteIds.includes(note.id));
+                const isOrphan = isRoot && !hasChildren && !hasBookmarks;
 
                 const posX = centerX + Math.cos(angle) * dist;
                 const posY = centerY + Math.sin(angle) * dist;
@@ -323,6 +332,35 @@ window.App = window.App || {};
                             }
                         }
                     }
+                });
+            }
+
+            // Зв'язки закладок (Bookmarks) — пунктирні зв'язки смарагдового кольору
+            if (showBookmarkLinks) {
+                const addedBookmarkPairs = new Set();
+                nodes.forEach(node => {
+                    const noteObj = node.note;
+                    const linkedIds = Array.isArray(noteObj.linkedNoteIds) ? noteObj.linkedNoteIds : [];
+                    linkedIds.forEach(targetId => {
+                        if (targetId && targetId !== node.id && notesMap.has(targetId)) {
+                            const targetNode = nodes.find(n => n.id === targetId);
+                            if (targetNode) {
+                                const pairKey = `bm-${node.id}-${targetNode.id}`;
+                                if (!addedBookmarkPairs.has(pairKey)) {
+                                    addedBookmarkPairs.add(pairKey);
+                                    edges.push({
+                                        id: pairKey,
+                                        source: node.id,
+                                        target: targetNode.id,
+                                        type: 'bookmark',
+                                        color: '#10b981',
+                                        sourceNode: node,
+                                        targetNode: targetNode
+                                    });
+                                }
+                            }
+                        }
+                    });
                 });
             }
 
@@ -482,6 +520,13 @@ window.App = window.App || {};
 
             addDescendants(nodeId);
             addAncestors(nodeId);
+
+            // Додаємо зв'язані закладками нотатки для підсвічування при наведенні
+            edges.filter(e => (e.source === nodeId || e.target === nodeId) && e.type === 'bookmark').forEach(e => {
+                set.add(e.source);
+                set.add(e.target);
+            });
+
             return set;
         },
 
@@ -620,6 +665,15 @@ window.App = window.App || {};
                 tagLinksBtn.addEventListener('click', () => {
                     showTagLinks = !showTagLinks;
                     tagLinksBtn.classList.toggle('is-active', showTagLinks);
+                    this.buildGraphData();
+                });
+            }
+
+            const bookmarkLinksBtn = container.querySelector('#graph-toggle-bookmark-links');
+            if (bookmarkLinksBtn) {
+                bookmarkLinksBtn.addEventListener('click', () => {
+                    showBookmarkLinks = !showBookmarkLinks;
+                    bookmarkLinksBtn.classList.toggle('is-active', showBookmarkLinks);
                     this.buildGraphData();
                 });
             }

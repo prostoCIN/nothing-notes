@@ -141,6 +141,8 @@ window.App = window.App || {};
                 if (e.type === 'hierarchy') {
                     res += `    n_${e.source} --> n_${e.target}\n`;
                 } else if (e.type === 'tag') {
+                    res += `    n_${e.source} --- n_${e.target}\n`;
+                } else if (e.type === 'bookmark') {
                     res += `    n_${e.source} -.- n_${e.target}\n`;
                 }
             });

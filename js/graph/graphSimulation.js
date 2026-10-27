@@ -52,7 +52,7 @@ window.App = window.App || {};
                 const dx = n2.x - n1.x;
                 const dy = n2.y - n1.y;
                 const dist = Math.sqrt(dx * dx + dy * dy) || 0.001;
-                const displacement = dist - (edge.type === 'tag' ? springLength * 1.5 : springLength);
+                const displacement = dist - (edge.type === 'tag' ? springLength * 1.5 : (edge.type === 'bookmark' ? springLength * 1.3 : springLength));
 
                 const force = springConstant * displacement;
                 const fx = (dx / dist) * force;

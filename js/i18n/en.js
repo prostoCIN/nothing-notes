@@ -102,6 +102,8 @@ export const en = {
         orphansTitle: 'Show only isolated notes without parents or subnotes',
         tagLinks: "Tag links",
         tagLinksTitle: "Toggle links between notes sharing the same tags",
+        bookmarkLinks: "Bookmarks",
+        bookmarkLinksTitle: "Toggle bookmark links between notes",
         directedLinks: "Directed links",
         directedLinksTitle: "Toggle directed pipeline links",
         connectMode: "Connect",
