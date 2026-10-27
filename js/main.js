@@ -40,6 +40,7 @@ import './workspace/stickerHeader.js';
 import './workspace/stickerPasteSanitizer.js';
 import './workspace/stickerPasteHandler.js';
 import './workspace/stickerContent.js';
+import './workspace/stickerBookmarks.js';
 import './workspace/stickerSubnotes.js';
 import './workspace/columnMenu.js';
 import './workspace/columnFilter.js';

@@ -129,7 +129,15 @@ window.App = window.App || {};
                 }
             }
 
-            // 5. Блок списку піднотаток (якщо є)
+            // 5. Блок стрічок-закладок (Bookmark Ribbons)
+            if (window.App.stickerBookmarks) {
+                const bookmarksBlock = window.App.stickerBookmarks.createBookmarksBlock(note, card, isReadOnly);
+                if (bookmarksBlock) {
+                    card.appendChild(bookmarksBlock);
+                }
+            }
+
+            // 6. Блок списку піднотаток (якщо є)
             if (window.App.stickerSubnotes) {
                 const subnotesBlock = window.App.stickerSubnotes.createSubnotesBlock(note, colIndex, isChainOpen);
                 if (subnotesBlock) {
@@ -137,7 +145,7 @@ window.App = window.App || {};
                 }
             }
 
-            // 6. Виклик тулбоксу/меню нотатки на ПКМ (тільки для власних редагованих нотаток)
+            // 7. Виклик тулбоксу/меню нотатки на ПКМ (тільки для власних редагованих нотаток)
             if (!isReadOnly) {
                 card.addEventListener('contextmenu', (e) => {
                     const selection = window.getSelection();

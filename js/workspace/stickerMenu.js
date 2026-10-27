@@ -366,6 +366,26 @@ window.App = window.App || {};
                     }
                 });
                 container.appendChild(tagItem);
+
+                // 4. Додати закладку
+                const bookmarkItem = document.createElement('div');
+                bookmarkItem.className = 'sticker-menu-item';
+                bookmarkItem.innerHTML = `
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path>
+                    </svg>
+                    <span>${t('sticker.addBookmark') || 'Додати закладку'}</span>
+                `;
+                bookmarkItem.addEventListener('click', (ev) => {
+                    ev.stopPropagation();
+                    menuDropdown.classList.remove('active');
+                    navViewport.classList.remove('is-sub-active');
+                    if (onClose) onClose();
+                    if (window.App.stickerBookmarks) {
+                        window.App.stickerBookmarks.openBookmarkPicker(note, card);
+                    }
+                });
+                container.appendChild(bookmarkItem);
             });
         });
         mainPanel.appendChild(addGroupItem);
