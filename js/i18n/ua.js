@@ -154,6 +154,7 @@ export const ua = {
         createFirstSubnote: 'Додати першу піднотатку',
         addNote: 'Додати нотатку',
         addSubnote: 'Додати піднотатку',
+        addBtnText: 'Додати',
         editBoardTitle: 'Натисніть для редагування назви блокнота',
         editNoteTitle: 'Натисніть для редагування назви нотатки',
         breadcrumbsLabel: 'Шлях до нотатки'

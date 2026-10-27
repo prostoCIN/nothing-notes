@@ -23,9 +23,10 @@
         scroll-snap-stop: normal !important;
     }
 
-    /* Приховуємо кнопку перемикання списку/сітки (Pinterest) та кнопку розтягування на мобільних, оскільки на телефоні завжди 1-колонковий вигляд на 100% ширини */
+    /* Приховуємо кнопку перемикання списку/сітки (Pinterest), кнопку розтягування та розділювач на мобільних */
     .column-layout-toggle-btn,
-    .column-expand-toggle-btn {
+    .column-expand-toggle-btn,
+    .column-header-divider {
         display: none !important;
     }
 

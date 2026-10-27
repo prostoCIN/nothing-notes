@@ -84,13 +84,15 @@ window.App = window.App || {};
                 addNoteBtn = document.createElement('button');
                 addNoteBtn.className = 'column-add-note-btn';
                 const addNoteTitle = colIndex === 0 ? t('column.createNote') : (t('column.createSubnote') || 'Додати піднотатку');
+                const addBtnLabel = t('column.addBtnText') || 'Додати';
                 addNoteBtn.title = addNoteTitle;
                 addNoteBtn.setAttribute('aria-label', addNoteTitle);
                 addNoteBtn.innerHTML = `
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="12" y1="5" x2="12" y2="19"></line>
                         <line x1="5" y1="12" x2="19" y2="12"></line>
                     </svg>
+                    <span>${addBtnLabel}</span>
                 `;
                 addNoteBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -564,15 +566,25 @@ window.App = window.App || {};
                 }
             });
 
-            // Блок дій у шапці колонки праворуч (Actions: перемикач сітки, розтягування колонки, кнопка "+", меню "три крапки", кнопка закриття)
+            // Блок дій у шапці колонки праворуч:
+            // 1. Головна дія (Primary CTA): створення нотатки
+            // 2. Розділювач
+            // 3. Режими відображення: сітка / розтягування
+            // 4. Меню опцій
+            // 5. Закриття (якщо дочірня колонка)
             const actionsWrap = document.createElement('div');
             actionsWrap.className = 'column-header-actions';
 
-            actionsWrap.appendChild(layoutToggleBtn);
-            actionsWrap.appendChild(expandColumnBtn);
             if (addNoteBtn) {
                 actionsWrap.appendChild(addNoteBtn);
+
+                const headerDivider = document.createElement('div');
+                headerDivider.className = 'column-header-divider';
+                actionsWrap.appendChild(headerDivider);
             }
+
+            actionsWrap.appendChild(layoutToggleBtn);
+            actionsWrap.appendChild(expandColumnBtn);
 
             // Тулбар-меню "три крапки" (з фільтрами, перейменуванням та поширенням)
             if (window.App.columnMenu) {

@@ -154,6 +154,7 @@ export const en = {
         createFirstSubnote: 'Add first subnote',
         addNote: 'Add note',
         addSubnote: 'Add subnote',
+        addBtnText: 'Add',
         editBoardTitle: 'Click to edit notebook name',
         editNoteTitle: 'Click to edit note name',
         breadcrumbsLabel: 'Path to note'
