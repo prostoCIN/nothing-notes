@@ -38,6 +38,7 @@ window.App = window.App || {};
     let boundKeyDown = null;
     let boundKeyUp = null;
     let boundWindowBlur = null;
+    let boundDocPointerDown = null;
 
     const BRANCH_COLORS = [
         '#10b981', '#3b82f6', '#f59e0b', '#ec4899', '#8b5cf6',
@@ -96,7 +97,7 @@ window.App = window.App || {};
                                 </svg>
                             </span>
                             <span class="board-title-text">${currentBoard.name}</span>
-                            <span class="board-nodes-count" id="board-nodes-counter">0 стікерів</span>
+                            <span class="board-nodes-count" id="board-nodes-counter" title="Кількість стікерів">0</span>
                         </div>
 
                         <div class="board-toolbar-filters">
@@ -107,29 +108,26 @@ window.App = window.App || {};
                                     <rect x="14" y="14" width="7" height="7"></rect>
                                     <rect x="3" y="14" width="7" height="7"></rect>
                                 </svg>
-                                <span>Впорядкувати</span>
                             </button>
-                            <button class="board-toolbar-filter-btn is-orphans-btn" id="board-filter-orphans" title="Показати лише ізольовані нотатки">
+                            <button class="board-toolbar-filter-btn is-orphans-btn" id="board-filter-orphans" title="Показати лише ізольовані нотатки (острови)">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                     <circle cx="12" cy="12" r="3.5" fill="currentColor"></circle>
                                     <circle cx="12" cy="12" r="8" stroke-dasharray="2 3"></circle>
                                 </svg>
-                                <span>Острови</span>
-                                <span class="board-nodes-count" id="board-orphans-counter" style="border:none;padding:0;">0</span>
+                                <span class="board-nodes-count" id="board-orphans-counter" style="border:none;padding:0;font-size:10.5px;font-weight:600;">0</span>
                             </button>
-                            <button class="board-toolbar-filter-btn is-active" id="board-toggle-tag-links" title="Увімкнути/вимкнути зв'язки спільних тегів">
+                            <button class="board-toolbar-filter-btn is-active" id="board-toggle-tag-links" title="Зв'язки спільних тегів (увімк/вимк)">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
                                     <line x1="7" y1="7" x2="7.01" y2="7"></line>
                                 </svg>
-                                <span>Зв'язки тегів</span>
                             </button>
                         </div>
                     </div>
 
                     <div class="board-top-actions">
                         <div class="board-search-box">
-                            <input type="text" class="board-search-input" id="board-search-input" placeholder="Пошук на дошці..." autocomplete="off">
+                            <input type="text" class="board-search-input" id="board-search-input" placeholder="Пошук..." autocomplete="off">
                             <span class="board-search-icon-right" id="board-search-icon-right">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                     <circle cx="11" cy="11" r="8"></circle>
@@ -170,12 +168,47 @@ window.App = window.App || {};
                     </button>
                 </div>
 
-                <div class="board-legend-pill">
-                    <span>💡 Перетягуйте картки за шапку</span>
-                    <span>•</span>
-                    <span>Shift + перетягування для виділення області</span>
-                    <span>•</span>
-                    <span>Правий клік для створення нової нотатки</span>
+                <div class="board-help-pill">
+                    <button class="board-help-btn" id="board-help-btn" title="Підказки дій та клавіш">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                        <span>Підказки</span>
+                    </button>
+                    <div class="board-help-popover" id="board-help-popover">
+                        <div class="board-help-header">
+                            <span class="board-help-title">Підказки дошки</span>
+                            <button class="board-help-close-btn" id="board-help-close-btn" title="Закрити">✕</button>
+                        </div>
+                        <div class="board-help-list">
+                            <div class="board-help-item">
+                                <span class="board-help-badge">Перетягування</span>
+                                <span class="board-help-text">Рух полотна</span>
+                            </div>
+                            <div class="board-help-item">
+                                <span class="board-help-badge">Коліщатко</span>
+                                <span class="board-help-text">Масштаб (зум)</span>
+                            </div>
+                            <div class="board-help-item">
+                                <span class="board-help-badge">Шапка картки</span>
+                                <span class="board-help-text">Переміщення</span>
+                            </div>
+                            <div class="board-help-item">
+                                <span class="board-help-badge">Shift + ЛКМ</span>
+                                <span class="board-help-text">Виділення області</span>
+                            </div>
+                            <div class="board-help-item">
+                                <span class="board-help-badge">Правий клік</span>
+                                <span class="board-help-text">Нова нотатка / Меню</span>
+                            </div>
+                            <div class="board-help-item">
+                                <span class="board-help-badge">Конектор справа</span>
+                                <span class="board-help-text">З'єднання нотаток</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             `;
 
@@ -338,7 +371,10 @@ window.App = window.App || {};
             }
 
             const counterEl = container ? container.querySelector('#board-nodes-counter') : null;
-            if (counterEl) counterEl.textContent = `${nodes.length} стікерів`;
+            if (counterEl) {
+                counterEl.textContent = String(nodes.length);
+                counterEl.title = `${nodes.length} стікерів на дошці`;
+            }
 
             const orphansEl = container ? container.querySelector('#board-orphans-counter') : null;
             if (orphansEl) orphansEl.textContent = String(nodes.filter(n => n.isOrphan).length);
@@ -850,6 +886,33 @@ window.App = window.App || {};
             if (zoomResetBtn) {
                 zoomResetBtn.addEventListener('click', () => this.centerCameraOnAllNodes());
             }
+
+            // Підказки дошки (help popover)
+            const helpBtn = container.querySelector('#board-help-btn');
+            const helpPopover = container.querySelector('#board-help-popover');
+            const helpCloseBtn = container.querySelector('#board-help-close-btn');
+
+            if (helpBtn && helpPopover) {
+                helpBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    helpPopover.classList.toggle('is-open');
+                });
+                if (helpCloseBtn) {
+                    helpCloseBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        helpPopover.classList.remove('is-open');
+                    });
+                }
+                helpPopover.addEventListener('pointerdown', (e) => {
+                    e.stopPropagation();
+                });
+                boundDocPointerDown = (e) => {
+                    if (!e.target.closest('.board-help-pill')) {
+                        helpPopover.classList.remove('is-open');
+                    }
+                };
+                document.addEventListener('pointerdown', boundDocPointerDown);
+            }
         },
 
         saveNodePosition(node) {
@@ -1119,6 +1182,10 @@ window.App = window.App || {};
             if (boundResize) {
                 window.removeEventListener('resize', boundResize);
                 boundResize = null;
+            }
+            if (boundDocPointerDown) {
+                document.removeEventListener('pointerdown', boundDocPointerDown);
+                boundDocPointerDown = null;
             }
             if (container && boundWheel) {
                 container.removeEventListener('wheel', boundWheel);
