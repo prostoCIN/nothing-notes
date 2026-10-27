@@ -256,7 +256,7 @@ window.App = window.App || {};
                     nodeEl.className = 'graph-html-node' + (isRoot ? ' is-root' : '') + (isOrphan ? ' is-orphan' : '');
                     nodeEl.style.setProperty('--node-branch-color', branchColor);
 
-                    const icon = note.icon || (isRoot ? '🗒️' : '📄');
+                    const icon = note.icon || '📄';
                     nodeEl.innerHTML = `
                         <div class="graph-html-node-circle" style="border-color: ${branchColor}; background: ${branchColor}22;">
                             ${icon}
