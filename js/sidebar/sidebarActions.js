@@ -100,6 +100,7 @@ window.App = window.App || {};
                 if (!isEditing || textElement.contentEditable !== 'true') return;
                 isEditing = false;
                 textElement.contentEditable = 'false';
+                delete textElement.dataset.placeholder;
                 rowElement.classList.remove('is-editing');
                 textElement.scrollLeft = 0;
                 document.removeEventListener('pointerdown', onOutsidePointerDown, true);
@@ -135,6 +136,7 @@ window.App = window.App || {};
                 isEditing = true;
                 rowElement.classList.add('is-editing');
                 textElement.contentEditable = 'true';
+                textElement.dataset.placeholder = options.defaultDisplay || (window.App && window.App.i18n ? window.App.i18n.t('common.untitled') : 'Без назви');
 
                 const originalText = options.getCurrentText ? options.getCurrentText() : '';
                 if (!originalText || !originalText.trim()) {
@@ -171,6 +173,7 @@ window.App = window.App || {};
                     e.preventDefault();
                     isEditing = false;
                     document.removeEventListener('pointerdown', onOutsidePointerDown, true);
+                    delete textElement.dataset.placeholder;
                     rowElement.classList.remove('is-editing');
                     textElement.scrollLeft = 0;
                     const orig = options.getCurrentText ? options.getCurrentText() : '';

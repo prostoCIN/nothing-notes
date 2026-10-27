@@ -98,52 +98,131 @@
     min-width: 0;
 }
 
-.board-item-text[contenteditable="true"],
-.note-item-title[contenteditable="true"] {
-    background-color: var(--bg-color);
-    box-shadow: 0 0 0 1px var(--accent-color);
-    color: var(--text-main);
-    cursor: text;
-    user-select: text;
+/* ==========================================================================
+   Універсальне просторе поле редагування назви блокноту та нотатки в сайдбарі
+   ========================================================================== */
+
+/* Плашка рядка під час редагування */
+.board-item.is-editing,
+.note-item.is-editing {
+    min-height: 36px !important;
+    height: 36px !important;
+    padding: 2px 4px 2px 6px !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+    border-radius: 7px !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    box-sizing: border-box !important;
+    cursor: default !important;
+}
+
+html[data-theme="light"] .board-item.is-editing,
+html[data-theme="light"] .note-item.is-editing,
+html[data-theme="ivory"] .board-item.is-editing,
+html[data-theme="ivory"] .note-item.is-editing {
+    background: rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Контейнер імені блокноту під час редагування */
+.board-item.is-editing .board-item-name {
+    display: flex !important;
+    align-items: center !important;
+    flex: 1 1 auto !important;
+    width: 100% !important;
+    height: 100% !important;
+    gap: 6px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+}
+
+/* Іконки в режимі редагування */
+.board-item.is-editing .board-item-icon,
+.note-item.is-editing .note-item-icon {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 14px !important;
+    width: 20px !important;
+    height: 20px !important;
+    flex-shrink: 0 !important;
+    margin: 0 !important;
+    transform: none !important;
+}
+
+.note-item.is-editing .note-toggle-arrow {
+    flex-shrink: 0 !important;
+    margin-right: 0 !important;
+}
+
+/* Приховуємо бейджі лічильників та кнопки дій у режимі редагування */
+.board-item.is-editing .sidebar-child-count,
+.note-item.is-editing .sidebar-child-count,
+.board-item.is-editing .board-actions,
+.note-item.is-editing .note-actions,
+.note-item.is-editing .item-actions {
+    display: none !important;
+}
+
+/* Універсальне поле введення на всю висоту плашки */
+.board-item.is-editing .board-item-text[contenteditable="true"],
+.note-item.is-editing .note-item-title[contenteditable="true"] {
+    display: block !important;
+    flex: 1 1 auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 30px !important;
+    min-height: 30px !important;
+    max-height: 30px !important;
+    line-height: 28px !important;
+    padding: 0 10px !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    letter-spacing: -0.1px !important;
+    color: var(--text-main, #ffffff) !important;
+    background: rgba(18, 18, 22, 0.95) !important;
+    border: 1.5px solid var(--accent-emerald, #10b981) !important;
+    border-radius: 6px !important;
+    box-shadow: 0 0 0 2.5px rgba(16, 185, 129, 0.22), 0 2px 8px rgba(0, 0, 0, 0.35) !important;
+    outline: none !important;
+    cursor: text !important;
+    user-select: text !important;
     text-overflow: clip !important;
     overflow-x: auto !important;
     overflow-y: hidden !important;
     white-space: nowrap !important;
-    min-width: 50px !important;
-    max-width: 100% !important;
-    flex: 1 1 auto !important;
     scrollbar-width: none !important;
-    border-radius: 4px;
-    padding: 1px 4px;
-    margin: -1px -4px;
+    caret-color: var(--accent-emerald, #10b981) !important;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Підтримка світлих тем для поля вводу */
+html[data-theme="light"] .board-item.is-editing .board-item-text[contenteditable="true"],
+html[data-theme="light"] .note-item.is-editing .note-item-title[contenteditable="true"],
+html[data-theme="ivory"] .board-item.is-editing .board-item-text[contenteditable="true"],
+html[data-theme="ivory"] .note-item.is-editing .note-item-title[contenteditable="true"] {
+    background: #ffffff !important;
+    color: #111827 !important;
+    border-color: #10b981 !important;
+    box-shadow: 0 0 0 2.5px rgba(16, 185, 129, 0.2), 0 1px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Плейсхолдер для порожнього значення */
+.board-item.is-editing .board-item-text[contenteditable="true"]:empty::before,
+.note-item.is-editing .note-item-title[contenteditable="true"]:empty::before {
+    content: attr(data-placeholder);
+    color: var(--text-muted, #71717a) !important;
+    opacity: 0.6 !important;
+    pointer-events: none !important;
 }
 
 .board-item-text[contenteditable="true"]::-webkit-scrollbar,
 .note-item-title[contenteditable="true"]::-webkit-scrollbar {
-    display: none !important;
-}
-
-/* Під час редагування назви дошки або нотатки даємо полю повну ширину рядка і приховуємо лічильник та дії */
-.board-item.is-editing,
-.note-item.is-editing {
-    overflow: hidden !important;
-}
-
-.board-item.is-editing .board-item-name,
-.note-item.is-editing .note-item-title {
-    overflow: hidden !important;
-    flex: 1 1 auto !important;
-    min-width: 0 !important;
-}
-
-.board-item.is-editing .sidebar-child-count,
-.note-item.is-editing .sidebar-child-count {
-    display: none !important;
-}
-
-.board-item.is-editing .board-actions,
-.note-item.is-editing .note-actions,
-.note-item.is-editing .item-actions {
     display: none !important;
 }
 
