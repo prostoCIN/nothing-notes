@@ -35,8 +35,7 @@ window.App = window.App || {};
 
             validTargetNotes.forEach(targetNote => {
                 const ribbon = document.createElement('div');
-                const noteColor = targetNote.color || 'yellow';
-                ribbon.className = `sticker-bookmark-ribbon color-${noteColor}`;
+                ribbon.className = 'sticker-bookmark-ribbon';
                 ribbon.dataset.targetNoteId = targetNote.id;
 
                 const displayTitle = (targetNote.title && targetNote.title.trim()) ? targetNote.title.trim() : untitledText;

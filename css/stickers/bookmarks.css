@@ -15,7 +15,7 @@
     pointer-events: auto;
 }
 
-/* Окрема стрічка-закладка з трикутним вирізом зліва */
+/* Окрема стрічка-закладка з трикутним вирізом зліва — класичний червоний колір */
 .sticker-bookmark-ribbon {
     position: relative;
     display: inline-flex;
@@ -24,20 +24,24 @@
     height: 24px;
     padding: 0 10px 0 18px; /* Зліва 18px, щоб текст не накладався на виріз */
     clip-path: polygon(10px 50%, 0% 0%, 100% 0%, 100% 100%, 0% 100%);
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    border-right: 3px solid #991b1b;
+    color: #ffffff;
     font-size: 11.5px;
     font-weight: 600;
     font-family: inherit;
     cursor: pointer;
     user-select: none;
     max-width: 220px;
-    filter: drop-shadow(-2px 2px 3px rgba(0, 0, 0, 0.16));
-    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), filter 0.18s ease;
+    filter: drop-shadow(-2px 2px 4px rgba(220, 38, 38, 0.35)) drop-shadow(-1px 1px 2px rgba(0, 0, 0, 0.2));
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), filter 0.18s ease, background 0.18s ease;
     border-radius: 0 3px 3px 0;
 }
 
 .sticker-bookmark-ribbon:hover {
     transform: translateX(-5px);
-    filter: drop-shadow(-4px 3px 7px rgba(0, 0, 0, 0.24));
+    background: linear-gradient(135deg, #f87171 0%, #dc2626 100%);
+    filter: drop-shadow(-4px 3px 8px rgba(220, 38, 38, 0.5)) drop-shadow(-1px 1px 2px rgba(0, 0, 0, 0.3));
 }
 
 .sticker-bookmark-icon {
@@ -57,7 +61,7 @@
 .sticker-bookmark-remove {
     background: transparent;
     border: none;
-    color: inherit;
+    color: #ffffff;
     opacity: 0;
     font-size: 10px;
     width: 15px;
@@ -69,18 +73,19 @@
     cursor: pointer;
     margin-left: 2px;
     flex-shrink: 0;
-    transition: opacity 0.15s ease, background-color 0.15s ease;
+    transition: opacity 0.15s ease, background-color 0.15s ease, transform 0.12s ease;
     padding: 0;
     line-height: 1;
 }
 
 .sticker-bookmark-ribbon:hover .sticker-bookmark-remove {
-    opacity: 0.65;
+    opacity: 0.75;
 }
 
 .sticker-bookmark-remove:hover {
     opacity: 1 !important;
-    background-color: rgba(0, 0, 0, 0.15);
+    background-color: rgba(0, 0, 0, 0.25);
+    transform: scale(1.15);
 }
 
 /* Кнопка швидкого додавання ще однієї закладки (міні-плюсик під стрічками) */
@@ -105,49 +110,6 @@
     background: rgba(0, 0, 0, 0.12);
     color: var(--text-main);
     transform: translateX(-3px);
-}
-
-/* Палітра кольорів стрічок-закладок (відповідає кольору цільової нотатки) */
-.sticker-bookmark-ribbon.color-yellow {
-    background-color: #fef08a;
-    color: #713f12;
-    border-right: 3px solid #eab308;
-}
-
-.sticker-bookmark-ribbon.color-green {
-    background-color: #bbf7d0;
-    color: #14532d;
-    border-right: 3px solid #22c55e;
-}
-
-.sticker-bookmark-ribbon.color-blue {
-    background-color: #bae6fd;
-    color: #0c4a6e;
-    border-right: 3px solid #0ea5e9;
-}
-
-.sticker-bookmark-ribbon.color-purple {
-    background-color: #e9d5ff;
-    color: #581c87;
-    border-right: 3px solid #a855f7;
-}
-
-.sticker-bookmark-ribbon.color-pink {
-    background-color: #fbcfe8;
-    color: #831843;
-    border-right: 3px solid #ec4899;
-}
-
-.sticker-bookmark-ribbon.color-orange {
-    background-color: #fed7aa;
-    color: #7c2d12;
-    border-right: 3px solid #f97316;
-}
-
-.sticker-bookmark-ribbon.color-gray {
-    background-color: #e2e8f0;
-    color: #1e293b;
-    border-right: 3px solid #94a3b8;
 }
 
 /* ==========================================================================
@@ -219,7 +181,7 @@
 }
 
 .bookmark-picker-title-wrap svg {
-    color: #10b981;
+    color: #ef4444;
 }
 
 .bookmark-picker-close-btn {
@@ -273,8 +235,8 @@
 }
 
 .bookmark-picker-input:focus {
-    border-color: #10b981;
-    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
+    border-color: #ef4444;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25);
     background: rgba(255, 255, 255, 0.09);
 }
 
@@ -341,7 +303,7 @@
 }
 
 .bookmark-picker-item-title .bookmark-picker-match {
-    color: #10b981;
+    color: #ef4444;
     text-decoration: underline;
     font-weight: 700;
 }
