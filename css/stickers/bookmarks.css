@@ -16,7 +16,7 @@
     pointer-events: auto;
 }
 
-/* Окрема стрічка-закладка на всю ширину з трикутним вирізом зліва — заливка та бордер як у sticker-subnotes-container */
+/* Окрема стрічка-закладка на всю ширину з м'яко закругленими лівими куточками та прямим правим стиком */
 .sticker-bookmark-ribbon {
     position: relative;
     display: flex;
@@ -26,10 +26,27 @@
     width: 100%;
     box-sizing: border-box;
     padding: 0 14px 0 24px; /* Зліва 24px, щоб контент не перетинав 14px виріз */
-    clip-path: polygon(14px 50%, 0% 0%, 100% 0%, 100% 100%, 0% 100%);
+    clip-path: polygon(
+        100% 0%,
+        100% 100%,
+        4px 100%,
+        2px calc(100% - 0.5px),
+        0.8px calc(100% - 1.5px),
+        0.6px calc(100% - 2.8px),
+        1.8px calc(100% - 4.4px),
+        12.8px calc(50% + 2px),
+        14px 50%,
+        12.8px calc(50% - 2px),
+        1.8px 4.4px,
+        0.6px 2.8px,
+        0.8px 1.5px,
+        2px 0.5px,
+        4px 0%
+    );
     background-color: rgba(0, 0, 0, 0.04);
     border: 1px solid rgba(0, 0, 0, 0.08);
-    border-radius: 0 8px 8px 0;
+    border-right: none;
+    border-radius: 0;
     color: #292524;
     font-size: 13px;
     font-weight: 600;
@@ -43,6 +60,7 @@
 .sticker-bookmark-ribbon:hover {
     background-color: rgba(0, 0, 0, 0.07);
     border-color: rgba(0, 0, 0, 0.14);
+    border-right: none;
     transform: translateX(-4px);
     filter: drop-shadow(-2px 2px 4px rgba(0, 0, 0, 0.08));
 }
