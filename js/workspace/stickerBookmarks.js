@@ -390,9 +390,9 @@ window.App = window.App || {};
                     return;
                 }
 
-                let matches = availableNotes;
                 if (cleanQuery) {
-                    matches = availableNotes.filter(n => {
+                    // Пошук за введеним текстом
+                    const matches = availableNotes.filter(n => {
                         const titleMatch = (n.title || '').toLowerCase().includes(cleanQuery);
                         const contentMatch = (n.content || '').toLowerCase().includes(cleanQuery);
                         return titleMatch || contentMatch;
@@ -407,16 +407,46 @@ window.App = window.App || {};
                         if (!aStarts && bStarts) return 1;
                         return 0;
                     });
+
+                    currentFilteredItems = matches;
+
+                    if (matches.length === 0) {
+                        listEl.innerHTML = `<div class="bookmark-picker-empty">${t('sticker.noNotesFound') || 'Нотаток не знайдено'}</div>`;
+                        return;
+                    }
+
+                    matches.forEach((n, idx) => appendNoteItem(n, idx, cleanQuery));
+                } else {
+                    // Без пошукового запиту: формуємо блок "Останні взаємодії" (до 5 нотаток) + "Всі нотатки"
+                    currentFilteredItems = [];
+
+                    const topRecent = availableNotes.slice(0, 5);
+                    const remainingNotes = availableNotes.slice(5);
+
+                    // 1. Секція останніх взаємодій в межах поточного блокнота
+                    const recentHeader = document.createElement('div');
+                    recentHeader.className = 'bookmark-picker-section-title';
+                    recentHeader.textContent = t('sticker.recentNotes') || 'Останні взаємодії';
+                    listEl.appendChild(recentHeader);
+
+                    topRecent.forEach(n => {
+                        currentFilteredItems.push(n);
+                        appendNoteItem(n, currentFilteredItems.length - 1);
+                    });
+
+                    // 2. Секція решти нотаток блокнота (якщо доступно більше 5 нотаток)
+                    if (remainingNotes.length > 0) {
+                        const allHeader = document.createElement('div');
+                        allHeader.className = 'bookmark-picker-section-title';
+                        allHeader.textContent = t('sticker.allNotesSection') || 'Всі нотатки';
+                        listEl.appendChild(allHeader);
+
+                        remainingNotes.forEach(n => {
+                            currentFilteredItems.push(n);
+                            appendNoteItem(n, currentFilteredItems.length - 1);
+                        });
+                    }
                 }
-
-                currentFilteredItems = matches;
-
-                if (matches.length === 0) {
-                    listEl.innerHTML = `<div class="bookmark-picker-empty">${t('sticker.noNotesFound') || 'Нотаток не знайдено'}</div>`;
-                    return;
-                }
-
-                matches.forEach((n, idx) => appendNoteItem(n, idx, cleanQuery));
 
                 if (currentFilteredItems.length > 0) {
                     selectedIndex = 0;
