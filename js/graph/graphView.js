@@ -36,6 +36,7 @@ window.App = window.App || {};
     let isPinching = false;
     let touchPinchDist = 0;
     let touchPinchCenter = null;
+    let boundHelpDocPointerDown = null;
 
     const BRANCH_COLORS = [
         '#10b981', '#3b82f6', '#f59e0b', '#ec4899', '#8b5cf6',
@@ -100,33 +101,30 @@ window.App = window.App || {};
                         </div>
 
                         <div class="graph-toolbar-filters">
-                            <button class="graph-toolbar-filter-btn is-orphans-btn" id="graph-filter-orphans" title="Показати лише ізольовані нотатки">
+                            <button class="graph-toolbar-filter-btn is-orphans-btn" id="graph-filter-orphans" title="Показати лише ізольовані нотатки (острови)">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                     <circle cx="12" cy="12" r="3.5" fill="currentColor"></circle>
                                     <circle cx="12" cy="12" r="8" stroke-dasharray="2 3"></circle>
                                 </svg>
-                                <span>Острови</span>
-                                <span class="graph-nodes-count" id="graph-orphans-counter" style="border:none;padding:0;">0</span>
+                                <span class="graph-nodes-count" id="graph-orphans-counter" style="border:none;padding:0;font-size:10.5px;font-weight:600;">0</span>
                             </button>
-                            <button class="graph-toolbar-filter-btn is-active" id="graph-toggle-tag-links" title="Увімкнути/вимкнути зв'язки спільних тегів">
+                            <button class="graph-toolbar-filter-btn is-active" id="graph-toggle-tag-links" title="Зв'язки спільних тегів (увімк/вимк)">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
                                     <line x1="7" y1="7" x2="7.01" y2="7"></line>
                                 </svg>
-                                <span>Зв'язки тегів</span>
                             </button>
-                            <button class="graph-toolbar-filter-btn is-active" id="graph-toggle-bookmark-links" title="Увімкнути/вимкнути зв'язки закладок">
+                            <button class="graph-toolbar-filter-btn is-active" id="graph-toggle-bookmark-links" title="Зв'язки закладок (увімк/вимк)">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path>
                                 </svg>
-                                <span>Закладки</span>
                             </button>
                         </div>
                     </div>
 
                     <div class="graph-top-actions">
                         <div class="graph-search-box">
-                            <input type="text" class="graph-search-input" id="graph-search-input" placeholder="Пошук у графі..." autocomplete="off">
+                            <input type="text" class="graph-search-input" id="graph-search-input" placeholder="Пошук..." autocomplete="off">
                             <span class="graph-search-icon-right" id="graph-search-icon-right">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                     <circle cx="11" cy="11" r="8"></circle>
@@ -150,17 +148,18 @@ window.App = window.App || {};
                 <div class="graph-nodes-layer"></div>
 
                 <div class="graph-controls-panel">
-                    <button class="graph-ctrl-btn" id="graph-zoom-in" title="Збільшити (+)">
+                    <button class="graph-ctrl-btn" id="graph-zoom-in" title="Збільшити масштаб (+)">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="12" y1="5" x2="12" y2="19"></line>
                             <line x1="5" y1="12" x2="19" y2="12"></line>
                         </svg>
                     </button>
-                    <button class="graph-ctrl-btn" id="graph-zoom-out" title="Зменшити (-)">
+                    <button class="graph-ctrl-btn" id="graph-zoom-out" title="Зменшити масштаб (-)">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="5" y1="12" x2="19" y2="12"></line>
                         </svg>
                     </button>
+                    <div class="graph-ctrl-divider"></div>
                     <button class="graph-ctrl-btn" id="graph-zoom-reset" title="Скинути положення">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="10"></circle>
@@ -169,10 +168,39 @@ window.App = window.App || {};
                     </button>
                 </div>
 
-                <div class="graph-legend-pill">
-                    <span>💡 Клікніть на вузол для переходу до нотатки</span>
-                    <span>•</span>
-                    <span>Наведення підсвічує зв'язки</span>
+                <div class="graph-help-pill">
+                    <button class="graph-help-btn" id="graph-help-btn" title="Підказки дій та взаємодій">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                        <span>Підказки</span>
+                    </button>
+                    <div class="graph-help-popover" id="graph-help-popover">
+                        <div class="graph-help-header">
+                            <span class="graph-help-title">Підказки графа</span>
+                            <button class="graph-help-close-btn" id="graph-help-close-btn" title="Закрити">✕</button>
+                        </div>
+                        <div class="graph-help-list">
+                            <div class="graph-help-item">
+                                <span class="graph-help-badge">Клік на вузол</span>
+                                <span class="graph-help-text">Перехід до нотатки</span>
+                            </div>
+                            <div class="graph-help-item">
+                                <span class="graph-help-badge">Наведення</span>
+                                <span class="graph-help-text">Прев'ю та зв'язки</span>
+                            </div>
+                            <div class="graph-help-item">
+                                <span class="graph-help-badge">Перетягування</span>
+                                <span class="graph-help-text">Рух вузла / полотна</span>
+                            </div>
+                            <div class="graph-help-item">
+                                <span class="graph-help-badge">Коліщатко</span>
+                                <span class="graph-help-text">Масштаб (зум)</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             `;
 
@@ -732,6 +760,33 @@ window.App = window.App || {};
                     interaction.resetCamera(rect.width, rect.height);
                 });
             }
+
+            // Підказки графа (help popover)
+            const helpBtn = container.querySelector('#graph-help-btn');
+            const helpPopover = container.querySelector('#graph-help-popover');
+            const helpCloseBtn = container.querySelector('#graph-help-close-btn');
+
+            if (helpBtn && helpPopover) {
+                helpBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    helpPopover.classList.toggle('is-open');
+                });
+                if (helpCloseBtn) {
+                    helpCloseBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        helpPopover.classList.remove('is-open');
+                    });
+                }
+                helpPopover.addEventListener('pointerdown', (e) => {
+                    e.stopPropagation();
+                });
+                boundHelpDocPointerDown = (e) => {
+                    if (!e.target.closest('.graph-help-pill')) {
+                        helpPopover.classList.remove('is-open');
+                    }
+                };
+                document.addEventListener('pointerdown', boundHelpDocPointerDown);
+            }
         },
 
         startSimulation() {
@@ -820,6 +875,10 @@ window.App = window.App || {};
             } else if (canvas && boundWheel) {
                 canvas.removeEventListener('wheel', boundWheel);
                 boundWheel = null;
+            }
+            if (boundHelpDocPointerDown) {
+                document.removeEventListener('pointerdown', boundHelpDocPointerDown);
+                boundHelpDocPointerDown = null;
             }
             if (window.App.graphPreview) {
                 window.App.graphPreview.hide();

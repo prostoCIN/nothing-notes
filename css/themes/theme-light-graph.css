@@ -143,16 +143,16 @@ html[data-theme="light"] .graph-tag-chip.is-active {
 }
 
 html[data-theme="light"] .graph-toolbar-filter-btn {
-    background: rgba(255, 255, 255, 0.94) !important;
-    border: 1px solid rgba(0, 0, 0, 0.1) !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
     color: #52525b !important;
 }
 
 html[data-theme="light"] .graph-toolbar-filter-btn:hover {
     background: rgba(0, 0, 0, 0.05) !important;
     color: #18181b !important;
-    border-color: rgba(0, 0, 0, 0.18) !important;
+    border: none !important;
 }
 
 html[data-theme="light"] .filter-btn-badge {
@@ -161,24 +161,22 @@ html[data-theme="light"] .filter-btn-badge {
 }
 
 html[data-theme="light"] .graph-nodes-count {
-    background: rgba(16, 185, 129, 0.12) !important;
-    border: 1px solid rgba(16, 185, 129, 0.35) !important;
-    color: #047857 !important;
-    font-weight: 700 !important;
+    border-left-color: rgba(0, 0, 0, 0.1) !important;
+    color: #71717a !important;
 }
 
 html[data-theme="light"] .graph-toolbar-filter-btn.is-active {
-    background: rgba(16, 185, 129, 0.14) !important;
-    border-color: #10b981 !important;
+    background: rgba(16, 185, 129, 0.18) !important;
+    border: none !important;
     color: #047857 !important;
-    box-shadow: 0 2px 10px rgba(16, 185, 129, 0.2) !important;
+    box-shadow: none !important;
 }
 
 html[data-theme="light"] .graph-toolbar-filter-btn.is-active.is-orphans-btn {
-    background: rgba(245, 158, 11, 0.14) !important;
-    border-color: #d97706 !important;
+    background: rgba(245, 158, 11, 0.18) !important;
+    border: none !important;
     color: #b45309 !important;
-    box-shadow: 0 2px 10px rgba(245, 158, 11, 0.2) !important;
+    box-shadow: none !important;
 }
 
 html[data-theme="light"] .graph-preview-open-btn {

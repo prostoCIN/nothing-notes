@@ -1,15 +1,16 @@
 /* css/graph/graph-toolbar.css - Тулбар та фільтри інтерактивного графа */
 .graph-toolbar {
     position: absolute;
-    top: 16px;
-    left: 24px;
-    right: 24px;
+    top: 12px;
+    left: 16px;
+    right: 16px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     z-index: 10;
     pointer-events: none;
-    gap: 12px;
+    gap: 8px;
 }
 
 .graph-toolbar > * {
@@ -19,7 +20,7 @@
 .graph-toolbar-left {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
 }
 
 .graph-title-pill {
@@ -27,15 +28,17 @@
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--toolbar-border, rgba(255, 255, 255, 0.15));
-    border-radius: 10px;
-    padding: 6px 14px;
+    border-radius: 8px;
+    height: 32px;
+    box-sizing: border-box;
+    padding: 0 10px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     font-size: var(--font-xs);
     font-weight: 600;
     color: var(--text-main);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
 }
 
 .graph-title-icon {
@@ -45,7 +48,7 @@
 }
 
 .graph-title-text {
-    max-width: 180px;
+    max-width: 140px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -54,67 +57,74 @@
 .graph-nodes-count {
     color: var(--text-muted);
     font-size: 11px;
-    font-weight: 500;
-    padding-left: 4px;
+    font-weight: 600;
+    padding-left: 6px;
     border-left: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .graph-toolbar-filters {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.graph-toolbar-filter-btn {
     background: var(--toolbar-bg, rgba(26, 26, 30, 0.92));
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--toolbar-border, rgba(255, 255, 255, 0.15));
-    border-radius: 10px;
-    padding: 6px 12px;
+    border-radius: 8px;
+    height: 32px;
+    box-sizing: border-box;
+    padding: 2px;
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: var(--font-xs);
+    gap: 2px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.graph-toolbar-filter-btn {
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    height: 26px;
+    min-width: 28px;
+    padding: 0 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 11px;
     font-weight: 500;
     font-family: inherit;
     color: var(--text-muted);
     cursor: pointer;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    box-shadow: none;
     transition: all var(--transition-fast);
 }
 
 .graph-toolbar-filter-btn:hover {
     color: var(--text-main);
-    border-color: rgba(255, 255, 255, 0.25);
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .graph-toolbar-filter-btn.is-active {
     background: rgba(16, 185, 129, 0.2);
-    border-color: #10b981;
     color: #10b981;
     font-weight: 600;
 }
 
 .graph-toolbar-filter-btn.is-active.is-orphans-btn {
-    background: rgba(245, 158, 11, 0.18);
-    border-color: #f59e0b;
+    background: rgba(245, 158, 11, 0.2);
     color: #f59e0b;
 }
 
 .graph-top-actions {
     display: flex;
     align-items: center;
-    gap: 10px;
-    height: 36px;
+    gap: 8px;
+    height: 32px;
 }
 
 .graph-search-box {
     position: relative;
     display: flex;
     align-items: center;
-    height: 36px;
+    height: 32px;
 }
 
 .graph-search-input {
@@ -122,28 +132,29 @@
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--toolbar-border, rgba(255, 255, 255, 0.15));
-    border-radius: 10px;
-    height: 36px;
+    border-radius: 8px;
+    height: 32px;
     box-sizing: border-box;
-    padding: 0 32px 0 12px;
+    padding: 0 28px 0 10px;
     color: var(--text-main);
     font-size: 11.5px;
     font-weight: 500;
     font-family: inherit;
     outline: none;
-    width: 220px;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    width: 150px;
+    transition: width 0.22s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
 }
 
 .graph-search-input:focus {
+    width: 200px;
     border-color: #10b981;
     box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
 }
 
 .graph-search-icon-right {
     position: absolute;
-    right: 11px;
+    right: 8px;
     top: 50%;
     transform: translateY(-50%);
     color: var(--text-muted);
@@ -154,7 +165,7 @@
 
 .graph-search-clear-btn {
     position: absolute;
-    right: 8px;
+    right: 6px;
     top: 50%;
     transform: translateY(-50%);
     background: transparent;
@@ -171,31 +182,33 @@
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--toolbar-border, rgba(255, 255, 255, 0.15));
-    border-radius: 10px;
-    padding: 0 14px;
-    height: 36px;
+    border-radius: 8px;
+    height: 32px;
+    box-sizing: border-box;
+    padding: 0 10px;
     display: flex;
     align-items: center;
-    gap: 7px;
-    font-size: var(--font-xs);
-    font-weight: 600;
+    gap: 6px;
+    font-size: 11.5px;
+    font-weight: 500;
     font-family: inherit;
-    color: var(--text-main);
+    color: var(--text-muted);
     cursor: pointer;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
     transition: all var(--transition-fast);
 }
 
 .graph-export-btn:hover {
-    border-color: rgba(255, 255, 255, 0.3);
+    color: var(--text-main);
     background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.22);
 }
 
 .graph-tags-bar {
     position: absolute;
-    top: 66px;
-    left: 24px;
-    right: 24px;
+    top: 52px;
+    left: 16px;
+    right: 16px;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -220,7 +233,7 @@
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 20px;
-    padding: 4px 10px;
+    padding: 3px 9px;
     color: var(--text-muted);
     font-size: 11px;
     font-weight: 500;
@@ -237,4 +250,36 @@
     border-color: #10b981;
     color: #10b981;
     font-weight: 700;
+}
+
+/* Light / Ivory theme overrides */
+html[data-theme="light"] .graph-title-pill,
+html[data-theme="ivory"] .graph-title-pill,
+html[data-theme="light"] .graph-toolbar-filters,
+html[data-theme="ivory"] .graph-toolbar-filters,
+html[data-theme="light"] .graph-search-input,
+html[data-theme="ivory"] .graph-search-input,
+html[data-theme="light"] .graph-export-btn,
+html[data-theme="ivory"] .graph-export-btn,
+html[data-theme="light"] .graph-tag-chip,
+html[data-theme="ivory"] .graph-tag-chip {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="light"] .graph-toolbar-filter-btn:hover,
+html[data-theme="ivory"] .graph-toolbar-filter-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+html[data-theme="light"] .graph-export-btn:hover,
+html[data-theme="ivory"] .graph-export-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: #18181b;
+}
+
+html[data-theme="light"] .graph-nodes-count,
+html[data-theme="ivory"] .graph-nodes-count {
+    border-left-color: rgba(0, 0, 0, 0.1);
 }
