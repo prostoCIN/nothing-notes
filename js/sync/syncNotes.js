@@ -188,6 +188,23 @@ window.App = window.App || {};
                                 ? [...localNote.linkedNoteIds]
                                 : savedBookmarks);
 
+                        const savedPosMap = (window.App.storage && window.App.storage.getBoardPositions)
+                            ? window.App.storage.getBoardPositions()
+                            : (JSON.parse(localStorage.getItem('minimal_board_positions') || '{}'));
+                        const savedPos = savedPosMap[n.id] || {};
+                        const resolvedCanvasX = (localNote && typeof localNote.canvasX === 'number')
+                            ? localNote.canvasX
+                            : (typeof savedPos.canvasX === 'number' ? savedPos.canvasX : undefined);
+                        const resolvedCanvasY = (localNote && typeof localNote.canvasY === 'number')
+                            ? localNote.canvasY
+                            : (typeof savedPos.canvasY === 'number' ? savedPos.canvasY : undefined);
+                        const resolvedBoardX = (localNote && typeof localNote.boardX === 'number')
+                            ? localNote.boardX
+                            : (typeof savedPos.boardX === 'number' ? savedPos.boardX : undefined);
+                        const resolvedBoardY = (localNote && typeof localNote.boardY === 'number')
+                            ? localNote.boardY
+                            : (typeof savedPos.boardY === 'number' ? savedPos.boardY : undefined);
+
                         return {
                             id: n.id,
                             boardId: resolvedBoardId,
@@ -202,6 +219,10 @@ window.App = window.App || {};
                             tags: Array.isArray(n.tags) ? n.tags : [],
                             linkedNoteIds: resolvedLinkedIds,
                             orderIndex: typeof n.order_index === 'number' ? n.order_index : 0,
+                            canvasX: resolvedCanvasX,
+                            canvasY: resolvedCanvasY,
+                            boardX: resolvedBoardX,
+                            boardY: resolvedBoardY,
                             gridCol: localNote && localNote.gridCol ? localNote.gridCol : undefined,
                             createdAt: new Date(n.created_at).getTime() || Date.now(),
                             updatedAt: cloudUpdatedAt || Date.now()

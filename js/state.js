@@ -35,6 +35,21 @@ window.App.storage = {
     saveBoards(boards) {
         localStorage.setItem('minimal_boards', JSON.stringify(boards));
     },
+    getBoardPositions() {
+        try {
+            return JSON.parse(localStorage.getItem('minimal_board_positions') || '{}');
+        } catch {
+            return {};
+        }
+    },
+    saveBoardPosition(noteId, x, y) {
+        if (!noteId) return;
+        try {
+            const map = this.getBoardPositions();
+            map[noteId] = { canvasX: Math.round(x), canvasY: Math.round(y), boardX: Math.round(x), boardY: Math.round(y) };
+            localStorage.setItem('minimal_board_positions', JSON.stringify(map));
+        } catch {}
+    },
     getNotes() {
         const raw = JSON.parse(localStorage.getItem('minimal_notes')) || [];
         if (!Array.isArray(raw)) return [];
@@ -44,6 +59,28 @@ window.App.storage = {
                 raw.forEach(n => {
                     if ((!Array.isArray(n.linkedNoteIds) || n.linkedNoteIds.length === 0) && bookmarksMap[n.id]) {
                         n.linkedNoteIds = [...bookmarksMap[n.id]];
+                    }
+                });
+            }
+        } catch {}
+        try {
+            const posMap = JSON.parse(localStorage.getItem('minimal_board_positions') || '{}');
+            if (posMap && Object.keys(posMap).length > 0) {
+                raw.forEach(n => {
+                    const savedPos = posMap[n.id];
+                    if (savedPos) {
+                        if (typeof n.canvasX !== 'number' && typeof savedPos.canvasX === 'number') {
+                            n.canvasX = savedPos.canvasX;
+                        }
+                        if (typeof n.canvasY !== 'number' && typeof savedPos.canvasY === 'number') {
+                            n.canvasY = savedPos.canvasY;
+                        }
+                        if (typeof n.boardX !== 'number' && typeof savedPos.boardX === 'number') {
+                            n.boardX = savedPos.boardX;
+                        }
+                        if (typeof n.boardY !== 'number' && typeof savedPos.boardY === 'number') {
+                            n.boardY = savedPos.boardY;
+                        }
                     }
                 });
             }
@@ -82,6 +119,19 @@ window.App.storage = {
                         });
                         if (mapChanged) {
                             localStorage.setItem('minimal_note_bookmarks', JSON.stringify(map));
+                        }
+                    } catch {}
+                    try {
+                        const posMap = JSON.parse(localStorage.getItem('minimal_board_positions') || '{}');
+                        let posChanged = false;
+                        this._pendingNotes.forEach(n => {
+                            if (typeof n.canvasX === 'number' && typeof n.canvasY === 'number') {
+                                posMap[n.id] = { canvasX: n.canvasX, canvasY: n.canvasY, boardX: n.canvasX, boardY: n.canvasY };
+                                posChanged = true;
+                            }
+                        });
+                        if (posChanged) {
+                            localStorage.setItem('minimal_board_positions', JSON.stringify(posMap));
                         }
                     } catch {}
                 }

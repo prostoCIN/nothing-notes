@@ -13,18 +13,73 @@ window.App = window.App || {};
 
     let currentRenderedBoardId = null;
     let isCameraInitializedForBoard = false;
+    const BOARD_CAMERAS_KEY = 'minimal_board_cameras';
     const boardCameras = new Map(); // boardId -> { x, y, zoom }
 
-    function saveCurrentBoardCamera() {
+    function loadBoardCameras() {
+        try {
+            const raw = localStorage.getItem(BOARD_CAMERAS_KEY);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (parsed && typeof parsed === 'object') {
+                    Object.entries(parsed).forEach(([id, cam]) => {
+                        if (cam && typeof cam.x === 'number' && typeof cam.y === 'number' && typeof cam.zoom === 'number') {
+                            boardCameras.set(String(id), cam);
+                        }
+                    });
+                }
+            }
+        } catch (e) {
+            console.warn('[BoardView] Failed to load board cameras:', e);
+        }
+    }
+
+    loadBoardCameras();
+
+    let saveCameraTimeout = null;
+    function persistBoardCamerasToStorage(immediate = false) {
+        const doSave = () => {
+            try {
+                const obj = {};
+                boardCameras.forEach((cam, id) => {
+                    obj[id] = cam;
+                });
+                localStorage.setItem(BOARD_CAMERAS_KEY, JSON.stringify(obj));
+            } catch (e) {
+                console.warn('[BoardView] Failed to persist board cameras:', e);
+            }
+        };
+
+        if (immediate) {
+            if (saveCameraTimeout) {
+                clearTimeout(saveCameraTimeout);
+                saveCameraTimeout = null;
+            }
+            doSave();
+        } else {
+            if (saveCameraTimeout) clearTimeout(saveCameraTimeout);
+            saveCameraTimeout = setTimeout(() => {
+                saveCameraTimeout = null;
+                doSave();
+            }, 200);
+        }
+    }
+
+    function saveCurrentBoardCamera(immediate = false) {
         if (!currentRenderedBoardId) return;
         const interaction = window.App.boardInteraction;
         if (!interaction || !interaction.camera) return;
-        boardCameras.set(currentRenderedBoardId, {
+        boardCameras.set(String(currentRenderedBoardId), {
             x: interaction.camera.x,
             y: interaction.camera.y,
             zoom: interaction.camera.zoom
         });
+        persistBoardCamerasToStorage(immediate);
     }
+
+    window.addEventListener('beforeunload', () => {
+        saveCurrentBoardCamera(true);
+    });
 
     let isDraggingCanvas = false;
     let isDraggingNode = false;
@@ -80,8 +135,10 @@ window.App = window.App || {};
             const currentBoard = window.App.boardManager ? window.App.boardManager.getActiveBoard() : null;
             if (!currentBoard) return;
 
+            const boardIdStr = String(currentBoard.id);
+
             // Якщо дошка вже змонтована для цього ж блокнота
-            const isAlreadyMountedForSameBoard = container && container.parentNode === els.columnsContainer && currentRenderedBoardId === currentBoard.id;
+            const isAlreadyMountedForSameBoard = container && container.parentNode === els.columnsContainer && currentRenderedBoardId === boardIdStr;
 
             if (isAlreadyMountedForSameBoard) {
                 // Оновлюємо дані дошки без перестворення контейнера та зі збереженням камери
@@ -90,11 +147,11 @@ window.App = window.App || {};
             }
 
             // Зберігаємо камеру попереднього блокнота перед перемиканням
-            if (currentRenderedBoardId && currentRenderedBoardId !== currentBoard.id) {
-                saveCurrentBoardCamera();
+            if (currentRenderedBoardId && currentRenderedBoardId !== boardIdStr) {
+                saveCurrentBoardCamera(true);
             }
 
-            currentRenderedBoardId = currentBoard.id;
+            currentRenderedBoardId = boardIdStr;
 
             this.cleanup();
 
@@ -109,8 +166,8 @@ window.App = window.App || {};
             this.createBoardDOM(els.columnsContainer, currentBoard);
             this.resizeCanvas();
 
-            if (boardCameras.has(currentBoard.id) && !options.resetCamera) {
-                const saved = boardCameras.get(currentBoard.id);
+            if (boardCameras.has(boardIdStr) && !options.resetCamera) {
+                const saved = boardCameras.get(boardIdStr);
                 const interaction = window.App.boardInteraction;
                 interaction.camera.x = saved.x;
                 interaction.camera.y = saved.y;
@@ -269,12 +326,14 @@ window.App = window.App || {};
         resizeCanvas() {
             if (!canvas || !container) return;
             const rect = container.getBoundingClientRect();
+            const width = (rect && rect.width > 50) ? rect.width : (canvas.offsetWidth || container.offsetWidth || window.innerWidth || 800);
+            const height = (rect && rect.height > 50) ? rect.height : (canvas.offsetHeight || container.offsetHeight || window.innerHeight || 600);
             const dpr = window.devicePixelRatio || 1;
 
-            canvas.width = rect.width * dpr;
-            canvas.height = rect.height * dpr;
-            canvas.style.width = rect.width + 'px';
-            canvas.style.height = rect.height + 'px';
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
 
             if (ctx) {
                 ctx.resetTransform();
@@ -290,12 +349,14 @@ window.App = window.App || {};
             const currentBoard = window.App.boardManager ? window.App.boardManager.getActiveBoard() : null;
             if (!currentBoard) return;
 
+            const boardIdStr = String(currentBoard.id);
+
             // Якщо для цього блокнота камера вже була ініціалізована або збережена — за замовчуванням зберігаємо положення камери
             const shouldPreserveCamera = options.preserveCamera !== undefined
                 ? Boolean(options.preserveCamera)
-                : Boolean(isCameraInitializedForBoard);
+                : Boolean(isCameraInitializedForBoard || boardCameras.has(boardIdStr));
 
-            const boardNotes = allNotes.filter(n => String(n.boardId) === String(currentBoard.id));
+            const boardNotes = allNotes.filter(n => String(n.boardId) === boardIdStr);
             const notesMap = new Map();
             boardNotes.forEach(n => notesMap.set(n.id, n));
 
@@ -313,8 +374,20 @@ window.App = window.App || {};
                 let posX = 0;
                 let posY = 0;
 
-                const rawX = typeof note.canvasX === 'number' ? note.canvasX : (typeof note.boardX === 'number' ? note.boardX : null);
-                const rawY = typeof note.canvasY === 'number' ? note.canvasY : (typeof note.boardY === 'number' ? note.boardY : null);
+                let rawX = typeof note.canvasX === 'number' ? note.canvasX : (typeof note.boardX === 'number' ? note.boardX : null);
+                let rawY = typeof note.canvasY === 'number' ? note.canvasY : (typeof note.boardY === 'number' ? note.boardY : null);
+
+                if ((rawX === null || rawY === null) && window.App.storage && window.App.storage.getBoardPositions) {
+                    const posMap = window.App.storage.getBoardPositions();
+                    if (posMap && posMap[note.id]) {
+                        rawX = posMap[note.id].x;
+                        rawY = posMap[note.id].y;
+                        note.canvasX = rawX;
+                        note.canvasY = rawY;
+                        note.boardX = rawX;
+                        note.boardY = rawY;
+                    }
+                }
 
                 if (rawX !== null && rawY !== null) {
                     posX = rawX;
@@ -450,20 +523,18 @@ window.App = window.App || {};
         },
 
         centerCameraOnAllNodes() {
-            if (nodes.length === 0 || !canvas || !container) {
-                if (canvas && container) {
-                    const rect = container.getBoundingClientRect();
-                    window.App.boardInteraction.initCamera(rect.width, rect.height);
-                    isCameraInitializedForBoard = true;
-                    saveCurrentBoardCamera();
-                    this.draw();
-                }
+            if (!canvas || !container) return;
+            const rect = container.getBoundingClientRect();
+            const w = (rect && rect.width > 50) ? rect.width : (canvas.offsetWidth || container.offsetWidth || window.innerWidth || 800);
+            const h = (rect && rect.height > 50) ? rect.height : (canvas.offsetHeight || container.offsetHeight || window.innerHeight || 600);
+
+            if (nodes.length === 0) {
+                window.App.boardInteraction.initCamera(w, h);
+                isCameraInitializedForBoard = true;
+                saveCurrentBoardCamera(true);
+                this.draw();
                 return;
             }
-
-            const rect = container.getBoundingClientRect();
-            const w = rect.width;
-            const h = rect.height;
 
             let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
             nodes.forEach(n => {
@@ -477,10 +548,12 @@ window.App = window.App || {};
 
             const bboxW = Math.max(100, maxX - minX);
             const bboxH = Math.max(100, maxY - minY);
-            const padding = 100;
+            const padding = Math.min(80, Math.floor(Math.min(w, h) * 0.1));
 
             const interaction = window.App.boardInteraction;
-            const targetZoom = Math.max(interaction.camera.minZoom, Math.min(1.0, Math.min((w - padding * 2) / bboxW, (h - padding * 2) / bboxH)));
+            const fitZoom = Math.min((w - padding * 2) / bboxW, (h - padding * 2) / bboxH);
+            const minZ = (interaction && interaction.camera && interaction.camera.minZoom) ? interaction.camera.minZoom : 0.15;
+            const targetZoom = Math.max(minZ, Math.min(1.0, isNaN(fitZoom) ? 1.0 : fitZoom));
             const bboxCenterX = minX + bboxW / 2;
             const bboxCenterY = minY + bboxH / 2;
 
@@ -489,7 +562,7 @@ window.App = window.App || {};
             interaction.camera.zoom = targetZoom;
 
             isCameraInitializedForBoard = true;
-            saveCurrentBoardCamera();
+            saveCurrentBoardCamera(true);
 
             this.draw();
         },
@@ -984,6 +1057,9 @@ window.App = window.App || {};
                 n.boardX = Math.round(node.x);
                 n.boardY = Math.round(node.y);
                 if (window.App.storage) {
+                    if (window.App.storage.saveBoardPosition) {
+                        window.App.storage.saveBoardPosition(n.id, n.canvasX, n.canvasY);
+                    }
                     window.App.storage.saveNotes(state.notes);
                 }
                 if (window.App.cloudSync && window.App.cloudSync.syncNote) {
@@ -1018,6 +1094,9 @@ window.App = window.App || {};
                     newNote.boardY = newNote.canvasY;
                     const state = window.App.state;
                     if (state && window.App.storage) {
+                        if (window.App.storage.saveBoardPosition) {
+                            window.App.storage.saveBoardPosition(newNote.id, newNote.canvasX, newNote.canvasY);
+                        }
                         window.App.storage.saveNotes(state.notes);
                     }
                     this.buildBoardData({ preserveCamera: true });
@@ -1046,6 +1125,9 @@ window.App = window.App || {};
             newNote.boardY = newNote.canvasY;
 
             if (window.App.storage) {
+                if (window.App.storage.saveBoardPosition) {
+                    window.App.storage.saveBoardPosition(newNote.id, newNote.canvasX, newNote.canvasY);
+                }
                 window.App.storage.saveNotes(state.notes);
             }
 
@@ -1157,14 +1239,26 @@ window.App = window.App || {};
         updateViewportCulling(width, height, camera) {
             if (!nodes || nodes.length === 0) return;
 
-            // Світові межі видимого екрану камери
-            const worldLeft = (0 - camera.x) / camera.zoom + (width / 2);
-            const worldTop = (0 - camera.y) / camera.zoom + (height / 2);
-            const worldRight = (width - camera.x) / camera.zoom + (width / 2);
-            const worldBottom = (height - camera.y) / camera.zoom + (height / 2);
+            // Якщо нотаток небагато (< 80), не приховуємо їх через display: none,
+            // щоб DOM завжди залишався доступним для вимірювання розмірів та без будь-яких зникань.
+            if (nodes.length < 80) {
+                nodes.forEach(node => {
+                    if (node.element && node.element.style.display === 'none') {
+                        node.element.style.display = '';
+                    }
+                });
+                return;
+            }
 
-            // Запас 250px у світових одиницях, щоб картки з'являлись плавно без раптового виринання
-            const buffer = 250 / camera.zoom;
+            // Світові межі видимого екрану камери
+            const safeZoom = Math.max(0.1, camera.zoom);
+            const worldLeft = (0 - camera.x) / safeZoom + (width / 2);
+            const worldTop = (0 - camera.y) / safeZoom + (height / 2);
+            const worldRight = (width - camera.x) / safeZoom + (width / 2);
+            const worldBottom = (height - camera.y) / safeZoom + (height / 2);
+
+            // Великий запас у світових одиницях, щоб картки не зникали передчасно
+            const buffer = Math.max(800, 800 / safeZoom);
             const minX = Math.min(worldLeft, worldRight) - buffer;
             const maxX = Math.max(worldLeft, worldRight) + buffer;
             const minY = Math.min(worldTop, worldBottom) - buffer;
@@ -1207,7 +1301,7 @@ window.App = window.App || {};
         },
 
         cleanup() {
-            saveCurrentBoardCamera();
+            saveCurrentBoardCamera(true);
             if (marqueeEl) {
                 marqueeEl.remove();
                 marqueeEl = null;
@@ -1291,7 +1385,7 @@ window.App = window.App || {};
         },
 
         destroy() {
-            saveCurrentBoardCamera();
+            saveCurrentBoardCamera(true);
             this.cleanup();
             if (container && container.parentNode) {
                 container.parentNode.removeChild(container);
