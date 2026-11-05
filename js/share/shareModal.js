@@ -1,4 +1,4 @@
-// js/share/shareModal.js - Модальне вікно налаштувань шерингу, публічних посилань та Raw Markdown перегляду
+// js/share/shareModal.js - Модальне вікно налаштувань шерингу та Markdown-експорту для людей і ШІ
 window.App = window.App || {};
 
 (function() {
@@ -14,12 +14,13 @@ window.App = window.App || {};
         },
 
         /**
-         * Відображає оновлене модальне вікно шерингу з вкладками:
+         * Відображає оновлене модальне вікно шерингу:
          * 1. NothingNotes (спільне посилання для користувачів)
-         * 2. ШІ & Raw (посилання ?format=md для читання ChatGPT, Claude тощо)
-         * 3. Експорт в .md (копіювання або завантаження файлу)
+         * 2. Markdown (для ШІ) (копіювання тексту для вставки в ChatGPT/Claude або завантаження файлу)
          */
         showShareModal(boardId, noteIds = null, defaultTab = 'nothingnotes') {
+            if (defaultTab === 'ai') defaultTab = 'export';
+
             const state = window.App.state;
             const targetBoard = (state.boards || []).find(b => b.id === boardId) || { name: 'Блокнот', id: boardId };
 
@@ -59,22 +60,25 @@ window.App = window.App || {};
             const hasSubnotes = subnotes.length > 0;
             let includeSubnotes = hasSubnotes; // За замовчуванням увімкнено, якщо є піднотатки
 
-            const titleText = singleNote 
-                ? `Поділитись: ${singleNote.title || 'Нотатка'}` 
-                : (isSpecificNotes ? `Поділитись ${targetNotes.length} нотатками` : `Поділитись блокнотом "${targetBoard.name}"`);
-
-            const exportDocName = singleNote 
-                ? (singleNote.title || 'note') 
-                : (targetBoard.name || 'notes_export');
-
-            const docTitle = isSpecificNotes ? '' : targetBoard.name;
             const getEffectiveNotes = () => {
-                return (isSpecificNotes && includeSubnotes && hasSubnotes) 
-                    ? [...targetNotes, ...subnotes] 
-                    : [...targetNotes];
+                if (!isSpecificNotes) return targetNotes;
+                return includeSubnotes ? [...targetNotes, ...subnotes] : targetNotes;
             };
 
-            // Формуємо Markdown вміст для вкладки експорту
+            const docTitle = singleNote ? (singleNote.title || 'Нотатка') : (targetBoard ? targetBoard.name : 'Нотатки');
+            const exportDocName = docTitle.replace(/[/\\?%*:|"<>]/g, '-').trim();
+
+            let titleText = 'Спільний доступ';
+            if (isSpecificNotes) {
+                if (singleNote) {
+                    titleText = `Шеринг нотатки: «${singleNote.title || 'Без назви'}»`;
+                } else {
+                    titleText = `Шеринг виділених нотаток (${targetNotes.length})`;
+                }
+            } else {
+                titleText = `Шеринг блокнота: «${targetBoard.name}»`;
+            }
+
             let markdownContent = this.generateMarkdownForNotes(getEffectiveNotes(), docTitle);
 
             // Видаляємо старе вікно, якщо було відкрите
@@ -101,7 +105,7 @@ window.App = window.App || {};
                             <h3 class="share-modal-title">${titleText}</h3>
                         </div>
                         <button class="share-modal-close-btn" id="share-modal-close" title="Закрити (Esc)">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <line x1="18" y1="6" x2="6" y2="18"></line>
                                 <line x1="6" y1="6" x2="18" y2="18"></line>
                             </svg>
@@ -121,19 +125,7 @@ window.App = window.App || {};
                             </span>
                             <span class="share-tab-text">NothingNotes</span>
                         </button>
-                        <button type="button" class="share-modal-tab-btn ${defaultTab === 'ai' ? 'active' : ''}" data-tab="ai" title="ШІ & Raw">
-                            <span class="share-tab-icon">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <rect x="3" y="11" width="18" height="10" rx="2"></rect>
-                                    <circle cx="12" cy="5" r="2"></circle>
-                                    <path d="M12 7v4"></path>
-                                    <line x1="8" y1="16" x2="8.01" y2="16"></line>
-                                    <line x1="16" y1="16" x2="16.01" y2="16"></line>
-                                </svg>
-                            </span>
-                            <span class="share-tab-text">ШІ & Raw</span>
-                        </button>
-                        <button type="button" class="share-modal-tab-btn ${defaultTab === 'export' ? 'active' : ''}" data-tab="export" title="Експорт .md">
+                        <button type="button" class="share-modal-tab-btn ${defaultTab === 'export' ? 'active' : ''}" data-tab="export" title="Markdown (для ШІ)">
                             <span class="share-tab-icon">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -143,7 +135,7 @@ window.App = window.App || {};
                                     <polyline points="10 9 9 9 8 9"></polyline>
                                 </svg>
                             </span>
-                            <span class="share-tab-text">Експорт .md</span>
+                            <span class="share-tab-text">Markdown (для ШІ)</span>
                         </button>
                     </div>
 
@@ -194,54 +186,10 @@ window.App = window.App || {};
                             <div class="share-modal-status" id="share-nn-status"></div>
                         </div>
 
-                        <!-- Вкладка 2: Спеціальне посилання для ШІ-агентів (/api/share) -->
-                        <div class="share-tab-pane ${defaultTab === 'ai' ? 'active' : ''}" id="share-pane-ai">
-                            <p class="share-modal-desc">
-                                Пряме серверне API-посилання (Serverless) для <b>ChatGPT</b>, <b>Claude</b>, <b>Perplexity</b>, <b>Gemini</b> або скриптів: за цим URL сервер миттєво віддає чистий структурований Markdown (HTTP 200).
-                            </p>
-
-                            ${isSpecificNotes ? `
-                            <div class="share-modal-option-row share-subnotes-row">
-                                <div class="share-option-info">
-                                    <span class="share-option-title">Включати піднотатки</span>
-                                    <span class="share-option-hint">${hasSubnotes ? `ШІ отримає доступ також до вкладених піднотаток (${subnotes.length})` : 'У цієї нотатки немає вкладених піднотаток'}</span>
-                                </div>
-                                <label class="share-toggle-switch ${!hasSubnotes ? 'disabled' : ''}">
-                                    <input type="checkbox" class="share-subnotes-toggle" ${hasSubnotes ? 'checked' : 'disabled'}>
-                                    <span class="share-toggle-slider"></span>
-                                </label>
-                            </div>
-                            ` : ''}
-
-                            <div class="share-link-box">
-                                <input type="text" class="share-link-input" id="share-ai-link-input" readonly placeholder="Генерація посилання для ШІ...">
-                                <button class="share-copy-btn" id="share-ai-copy-btn">
-                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                    </svg>
-                                    <span>Скопіювати для ШІ</span>
-                                </button>
-                            </div>
-
-                            <div class="share-btn-group">
-                                <a href="#" target="_blank" class="share-secondary-btn" id="share-ai-preview-link" style="display: none;">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                                        <polyline points="15 3 21 3 21 9"></polyline>
-                                        <line x1="10" y1="14" x2="21" y2="3"></line>
-                                    </svg>
-                                    <span>Відкрити перегляд як бачить ШІ</span>
-                                </a>
-                            </div>
-
-                            <div class="share-modal-status" id="share-ai-status"></div>
-                        </div>
-
-                        <!-- Вкладка 3: Експорт у форматі Markdown (.md) -->
+                        <!-- Вкладка 2: Експорт у форматі Markdown (.md) для ШІ та резервних копій -->
                         <div class="share-tab-pane ${defaultTab === 'export' ? 'active' : ''}" id="share-pane-export">
                             <p class="share-modal-desc">
-                                Вміст нотатки у чистому <b>Markdown</b>-форматі. Можна скопіювати для швидкої вставки в чат з нейромережею або завантажити на пристрій у файлі <code>.md</code>.
+                                Вміст нотатки у чистому <b>Markdown</b>-форматі. Ідеально для швидкої вставки в діалог із <b>ChatGPT</b>, <b>Claude</b> чи іншими ШІ або збереження у файл <code>.md</code>.
                             </p>
 
                             ${isSpecificNotes ? `
@@ -267,7 +215,7 @@ window.App = window.App || {};
                                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                                     </svg>
-                                    <span>Скопіювати Markdown</span>
+                                    <span>Скопіювати для ШІ</span>
                                 </button>
 
                                 <button type="button" class="share-secondary-btn" id="share-md-download-btn">
@@ -324,16 +272,11 @@ window.App = window.App || {};
                 });
             });
 
-            // Логіка генерації посилань (Tabs 1 & 2)
+            // Логіка генерації посилання NothingNotes
             const cloneToggle = modalEl.querySelector('#share-allow-clone-toggle');
             const nnInput = modalEl.querySelector('#share-nn-link-input');
             const nnCopyBtn = modalEl.querySelector('#share-nn-copy-btn');
             const nnStatus = modalEl.querySelector('#share-nn-status');
-
-            const aiInput = modalEl.querySelector('#share-ai-link-input');
-            const aiCopyBtn = modalEl.querySelector('#share-ai-copy-btn');
-            const aiPreviewLink = modalEl.querySelector('#share-ai-preview-link');
-            const aiStatus = modalEl.querySelector('#share-ai-status');
 
             let baseShareUrl = '';
             let isGenerating = false;
@@ -346,27 +289,11 @@ window.App = window.App || {};
                 }
             };
 
-            let currentShareToken = '';
-
             const updateShareLinks = () => {
                 if (!baseShareUrl) return;
                 const subnotesSuffix = (isSpecificNotes && hasSubnotes && !includeSubnotes) ? '&subnotes=0' : '';
                 const nnUrl = `${baseShareUrl}${subnotesSuffix}`;
-
-                // Для ШІ генеруємо пряме серверне посилання /api/share?token=...
-                let token = currentShareToken;
-                if (!token && baseShareUrl) {
-                    try {
-                        const parsed = new URL(baseShareUrl, window.location.href);
-                        token = parsed.searchParams.get('share_board') || '';
-                    } catch (e) {}
-                }
-                const origin = window.location.origin;
-                const aiUrl = token ? `${origin}/api/share?token=${token}${subnotesSuffix}` : `${baseShareUrl}&format=md${subnotesSuffix}`;
-
                 if (nnInput) nnInput.value = nnUrl;
-                if (aiInput) aiInput.value = aiUrl;
-                if (aiPreviewLink) aiPreviewLink.href = aiUrl;
             };
 
             // Обробники чекбоксів включення піднотаток
@@ -387,30 +314,20 @@ window.App = window.App || {};
                 isGenerating = true;
 
                 nnInput.value = 'Створення безпечного посилання...';
-                aiInput.value = 'Створення безпечного посилання...';
                 nnCopyBtn.disabled = true;
-                aiCopyBtn.disabled = true;
                 setStatusMessage(nnStatus, '');
-                setStatusMessage(aiStatus, '');
-                aiPreviewLink.style.display = 'none';
 
                 try {
                     const allowClone = cloneToggle ? cloneToggle.checked : false;
                     const res = await this.createShareLink(boardId, noteIds, allowClone);
                     baseShareUrl = res.shareUrl;
-                    currentShareToken = res.shareToken || '';
 
                     updateShareLinks();
-
                     nnCopyBtn.disabled = false;
-                    aiCopyBtn.disabled = false;
-                    aiPreviewLink.style.display = 'inline-flex';
                 } catch (err) {
                     const errMsg = err.message || 'Не вдалося створити посилання. Перевірте авторизацію.';
                     nnInput.value = 'Потрібен вхід в акаунт';
-                    aiInput.value = 'Потрібен вхід в акаунт';
                     setStatusMessage(nnStatus, errMsg, true);
-                    setStatusMessage(aiStatus, errMsg, true);
                 } finally {
                     isGenerating = false;
                 }
@@ -446,19 +363,7 @@ window.App = window.App || {};
                 }
             });
 
-            // Копіювання посилання для ШІ
-            aiCopyBtn.addEventListener('click', async () => {
-                if (!aiInput.value || aiInput.value.startsWith('Створення')) return;
-                try {
-                    await navigator.clipboard.writeText(aiInput.value);
-                    setStatusMessage(aiStatus, 'AI / Raw посилання скопійовано! Надішліть його ChatGPT або Claude.');
-                } catch (e) {
-                    aiInput.select();
-                    document.execCommand('copy');
-                }
-            });
-
-            // Логіка вкладки 3: Експорт Markdown
+            // Логіка вкладки Markdown
             const mdCopyBtn = modalEl.querySelector('#share-md-copy-btn');
             const mdDownloadBtn = modalEl.querySelector('#share-md-download-btn');
             const mdStatus = modalEl.querySelector('#share-md-status');
@@ -472,7 +377,7 @@ window.App = window.App || {};
                         </svg>
                         <span>Скопійовано!</span>
                     `;
-                    setStatusMessage(mdStatus, 'Markdown тексту скопійовано в буфер обміну!');
+                    setStatusMessage(mdStatus, 'Markdown для ШІ скопійовано в буфер обміну! Вставте його в чат із ChatGPT або Claude.');
 
                     setTimeout(() => {
                         mdCopyBtn.innerHTML = `
@@ -480,7 +385,7 @@ window.App = window.App || {};
                                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                             </svg>
-                            <span>Скопіювати Markdown</span>
+                            <span>Скопіювати для ШІ</span>
                         `;
                     }, 2500);
                 } catch (e) {
@@ -495,104 +400,6 @@ window.App = window.App || {};
                 } catch (e) {
                     setStatusMessage(mdStatus, 'Помилка при збереженні файлу', true);
                 }
-            });
-        },
-
-        /**
-         * Відображає чистий AI / Raw Markdown екран, коли користувач або бот відкриває URL з ?format=md
-         */
-        renderRawMarkdownView(shareInfo) {
-            const notes = shareInfo.notes || [];
-            const boardName = shareInfo.board ? shareInfo.board.name : 'Нотатки';
-            const markdownContent = this.generateMarkdownForNotes(notes, boardName);
-
-            // Ховаємо інтерфейс робочого простору
-            const mainApp = document.getElementById('app-container') || document.body;
-            document.title = `${boardName} — Raw Markdown`;
-
-            let rawPage = document.getElementById('raw-markdown-page');
-            if (!rawPage) {
-                rawPage = document.createElement('div');
-                rawPage.id = 'raw-markdown-page';
-                rawPage.className = 'raw-markdown-page-wrap';
-                document.body.appendChild(rawPage);
-            }
-
-            const urlParams = new URLSearchParams(window.location.search);
-            const hasSubnotesParam = urlParams.get('subnotes') === '0';
-            const cleanNnUrl = window.location.origin + window.location.pathname + `?share_board=${shareInfo.share.share_token}` + (hasSubnotesParam ? '&subnotes=0' : '');
-
-            rawPage.innerHTML = `
-                <div class="raw-markdown-page-card">
-                    <div class="raw-markdown-top-bar">
-                        <div class="raw-markdown-logo-group">
-                            <img src="img/Logo.svg" alt="Logo" style="width: 24px; height: 24px;">
-                            <strong>NothingNotes</strong>
-                            <span class="raw-markdown-badge">AI / Raw View</span>
-                        </div>
-                        <div class="raw-markdown-actions">
-                            <button type="button" class="share-copy-btn" id="raw-copy-btn">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                </svg>
-                                <span>Скопіювати Markdown</span>
-                            </button>
-                            <button type="button" class="share-secondary-btn" id="raw-download-btn">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                    <polyline points="7 10 12 15 17 10"></polyline>
-                                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                                </svg>
-                                <span>Завантажити .md</span>
-                            </button>
-                            <a href="${cleanNnUrl}" class="share-secondary-btn raw-open-app-btn">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                                    <polyline points="15 3 21 3 21 9"></polyline>
-                                    <line x1="10" y1="14" x2="21" y2="3"></line>
-                                </svg>
-                                <span>Відкрити в NothingNotes</span>
-                            </a>
-                        </div>
-                    </div>
-                    <pre class="raw-markdown-content-box" id="raw-pre-content">${escapeHtml(markdownContent)}</pre>
-                </div>
-            `;
-
-            function escapeHtml(str) {
-                return String(str || '')
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;');
-            }
-
-            const rawCopyBtn = rawPage.querySelector('#raw-copy-btn');
-            const rawDownloadBtn = rawPage.querySelector('#raw-download-btn');
-
-            rawCopyBtn.addEventListener('click', async () => {
-                try {
-                    await navigator.clipboard.writeText(markdownContent);
-                    rawCopyBtn.innerHTML = `
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        <span>Скопійовано!</span>
-                    `;
-                    setTimeout(() => {
-                        rawCopyBtn.innerHTML = `
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                            </svg>
-                            <span>Скопіювати Markdown</span>
-                        `;
-                    }, 2000);
-                } catch(e) {}
-            });
-
-            rawDownloadBtn.addEventListener('click', () => {
-                this.downloadMarkdownFile(boardName, markdownContent);
             });
         }
     };

@@ -296,15 +296,9 @@ async function handleShareUrlParams() {
     const shareToken = urlParams.get('share_board');
     if (!shareToken) return;
 
-    const format = urlParams.get('format');
-    const view = urlParams.get('view');
-    const isAiRawMode = format === 'md' || format === 'raw' || view === 'raw' || view === 'md';
-
-    if (!isAiRawMode) {
-        // Очищаємо URL параметр, щоб не спамити модалкою при ручному оновленні F5
-        const cleanUrl = window.location.pathname + window.location.hash;
-        window.history.replaceState({}, document.title, cleanUrl);
-    }
+    // Очищаємо URL параметр, щоб не спамити модалкою при ручному оновленні F5
+    const cleanUrl = window.location.pathname + window.location.hash;
+    window.history.replaceState({}, document.title, cleanUrl);
 
     if (!window.App.shareManager) return;
 
@@ -321,12 +315,6 @@ async function handleShareUrlParams() {
                 type: 'danger',
                 onConfirm: () => {}
             });
-            return;
-        }
-
-        // Якщо це спеціальний режим перегляду для ШІ чи сирого тексту — показуємо чистий Markdown
-        if (isAiRawMode) {
-            window.App.shareManager.renderRawMarkdownView(info);
             return;
         }
 

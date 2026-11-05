@@ -1,9 +1,8 @@
-/* sidebar.css - Агрегатор модульних стилів бічної панелі, шерингу та raw перегляду */
+/* sidebar.css - Агрегатор модульних стилів бічної панелі та шерингу */
 @import './sidebar/sidebar-base.css';
 @import './sidebar/sidebar-tree.css';
 @import './sidebar/sidebar-drag-drop.css';
 @import './sidebar/sidebar-selection.css';
 @import './sidebar/sidebar-readonly.css';
 @import './sidebar/share-modal.css';
-@import './sidebar/raw-view.css';
 @import './sidebar/sidebar-resizer.css';

@@ -325,9 +325,6 @@ window.App = window.App || {};
         // Делегати до shareModal
         showShareModal(boardId, noteIds = null, defaultTab = "nothingnotes") {
             if (window.App.shareModal) return window.App.shareModal.showShareModal(boardId, noteIds, defaultTab);
-        },
-        renderRawMarkdownView(shareInfo) {
-            if (window.App.shareModal) return window.App.shareModal.renderRawMarkdownView(shareInfo);
         }
     };
 })();
