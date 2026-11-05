@@ -1096,7 +1096,7 @@ window.App = window.App || {};
                     onUpdate: () => this.draw(),
                     onComplete: () => {
                         nodes.forEach(n => this.saveNodePosition(n));
-                        this.centerCameraOnAllNodes();
+                        this.draw();
                     }
                 });
             }
