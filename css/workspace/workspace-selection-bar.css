@@ -102,6 +102,72 @@
     gap: 6px;
 }
 
+/* Групування споріднених дій (стиль, метадані, загальні) */
+.selection-action-group {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 3px;
+    gap: 3px;
+}
+
+.selection-action-group .selection-action-item {
+    display: inline-flex;
+    align-items: center;
+}
+
+.selection-action-group .selection-action-btn {
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    padding: 5px 11px;
+}
+
+.selection-action-group .selection-action-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.selection-action-group .selection-action-btn.active {
+    background: var(--emerald-gradient) !important;
+    border-color: transparent !important;
+    color: #062419 !important;
+}
+
+.selection-action-group .selection-action-delete-btn {
+    color: #ef4444;
+}
+
+.selection-action-group .selection-action-delete-btn:hover:not(:disabled) {
+    background: #ef4444 !important;
+    border-color: #ef4444 !important;
+    color: #ffffff !important;
+}
+
+.selection-group-separator {
+    width: 1px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.12);
+    margin: 0 4px;
+    flex-shrink: 0;
+}
+
+html[data-theme="light"] .selection-action-group {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="light"] .selection-action-group .selection-action-btn:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.07);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+html[data-theme="light"] .selection-group-separator {
+    background: rgba(0, 0, 0, 0.12);
+}
+
 .selection-action-item {
     position: relative;
 }
@@ -346,6 +412,37 @@
 
 .selection-font-dropdown {
     min-width: 220px;
+}
+
+.selection-more-action-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: inherit;
+    font-size: var(--font-xs);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-family: inherit;
+}
+
+.selection-more-action-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+html[data-theme="light"] .selection-more-action-btn {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="light"] .selection-more-action-btn:hover {
+    background: rgba(0, 0, 0, 0.08);
 }
 
 /* Візуальні ефекти перетягування групи виділених нотаток */

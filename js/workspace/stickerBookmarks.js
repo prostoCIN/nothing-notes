@@ -219,7 +219,13 @@ window.App = window.App || {};
                         window.App.storage.flushNotes();
                     }
                 }
-                this.refreshCardBookmarks(note, card, isReadOnly);
+                const targetCard = card || document.querySelector(`.note-sticker[data-note-id="${note.id}"]`);
+                if (targetCard) {
+                    this.refreshCardBookmarks(note, targetCard, isReadOnly);
+                }
+                if (window.App.boardView && window.App.state && window.App.state.viewMode === 'board') {
+                    window.App.boardView.buildBoardData({ preserveCamera: true });
+                }
             }
         },
 
@@ -247,29 +253,34 @@ window.App = window.App || {};
 
         /**
          * Відкриває оверлей вибору закладок виключно в межах поточного блокнота
-         * @param {Object} note - Поточна нотатка
-         * @param {HTMLElement} card - DOM-елемент картки
+         * @param {Object|Object[]} noteOrNotes - Поточна нотатка або масив виділених нотаток
+         * @param {HTMLElement} [card] - DOM-елемент картки (якщо відкривається для 1 нотатки)
          */
-        openBookmarkPicker(note, card) {
+        openBookmarkPicker(noteOrNotes, card) {
             this.closeBookmarkPicker();
 
             const state = window.App.state;
             const noteManager = window.App.noteManager;
             if (!state || !noteManager) return;
 
+            const notesArray = Array.isArray(noteOrNotes) ? noteOrNotes.filter(Boolean) : (noteOrNotes ? [noteOrNotes] : []);
+            if (notesArray.length === 0) return;
+            const primaryNote = notesArray[0];
+            const isMulti = notesArray.length > 1;
+
             const i18n = window.App.i18n;
             const t = (key) => i18n ? i18n.t(key) : '';
             const allNotes = state.notes || [];
 
             // Визначаємо ID поточного блокнота
-            const currentBoardId = note.boardId || state.activeBoardId;
+            const currentBoardId = primaryNote.boardId || state.activeBoardId;
             const ownBoards = Array.isArray(state.boards) ? state.boards : [];
             const primaryBoardId = ownBoards[0]?.id;
 
             // Доступні для закладки нотатки виключно з ЦЬОГО Ж блокнота
-            const currentLinked = new Set(Array.isArray(note.linkedNoteIds) ? note.linkedNoteIds : []);
+            const selectedIdsSet = new Set(notesArray.map(n => n.id));
             const availableNotes = allNotes.filter(n => {
-                if (n.id === note.id || currentLinked.has(n.id) || n.isDeleted) return false;
+                if (selectedIdsSet.has(n.id) || n.isDeleted) return false;
                 const noteBoard = n.boardId || primaryBoardId;
                 const currentBoard = currentBoardId || primaryBoardId;
                 return noteBoard === currentBoard;
@@ -293,12 +304,15 @@ window.App = window.App || {};
 
             const leftWrap = document.createElement('div');
             leftWrap.className = 'bookmark-picker-header-left';
+            const pickerTitle = isMulti
+                ? `${t('sticker.addBookmark') || 'Додати закладку'} (${notesArray.length})`
+                : (t('sticker.addBookmark') || 'Додати закладку');
             leftWrap.innerHTML = `
                 <div class="bookmark-picker-title-wrap">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
                         <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path>
                     </svg>
-                    <span>${t('sticker.addBookmark') || 'Додати закладку'}</span>
+                    <span>${pickerTitle}</span>
                 </div>
             `;
 
@@ -376,11 +390,22 @@ window.App = window.App || {};
                 `;
 
                 item.addEventListener('click', () => {
-                    this.addBookmark(note, targetNote.id, card, false);
-                    this.closeBookmarkPicker();
+                    onSelectTarget(targetNote);
                 });
 
                 listEl.appendChild(item);
+            };
+
+            const onSelectTarget = (targetNote) => {
+                if (!targetNote) return;
+                notesArray.forEach(n => {
+                    const targetCard = card || document.querySelector(`.note-sticker[data-note-id="${n.id}"]`);
+                    this.addBookmark(n, targetNote.id, targetCard, false);
+                });
+                this.closeBookmarkPicker();
+                if (isMulti && window.App.workspaceSelectionBar) {
+                    window.App.workspaceSelectionBar.updateUI();
+                }
             };
 
             const updateItemSelection = () => {
@@ -492,8 +517,7 @@ window.App = window.App || {};
                     e.preventDefault();
                     if (selectedIndex >= 0 && selectedIndex < currentFilteredItems.length) {
                         const targetNote = currentFilteredItems[selectedIndex];
-                        this.addBookmark(note, targetNote.id, card, false);
-                        this.closeBookmarkPicker();
+                        onSelectTarget(targetNote);
                     }
                 } else if (e.key === 'Escape') {
                     e.preventDefault();

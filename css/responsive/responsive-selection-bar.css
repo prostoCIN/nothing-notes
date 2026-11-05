@@ -74,6 +74,19 @@
         gap: 5px !important;
     }
 
+    .selection-action-group {
+        display: flex !important;
+        align-items: center !important;
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        gap: 5px !important;
+    }
+
+    .selection-group-separator {
+        display: none !important;
+    }
+
     .selection-action-btn {
         width: 34px !important;
         height: 34px !important;
