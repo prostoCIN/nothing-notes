@@ -12,13 +12,14 @@ window.App = window.App || {};
                 centerY = 300
             } = options;
 
-            const repulsionConstant = 1600;
-            const springConstant = 0.04;
-            const springLength = 100;
-            const centerGravity = 0.005;
-            const damping = 0.88;
+            // Більш простора симуляція з виразними відстанями між вершинами
+            const repulsionConstant = 18000;
+            const springConstant = 0.025;
+            const springLength = 190;
+            const centerGravity = 0.0018;
+            const damping = 0.86;
 
-            // Відштовхування (Кулон)
+            // Відштовхування (Кулон) + уникнення накладання кіл та підписів
             for (let i = 0; i < nodes.length; i++) {
                 const n1 = nodes[i];
                 for (let j = i + 1; j < nodes.length; j++) {
@@ -28,7 +29,7 @@ window.App = window.App || {};
                     const distSq = dx * dx + dy * dy + 1;
                     const dist = Math.sqrt(distSq);
 
-                    const force = repulsionConstant / (distSq + 25);
+                    const force = repulsionConstant / (distSq + 100);
                     const fx = (dx / dist) * force;
                     const fy = (dy / dist) * force;
 
@@ -39,6 +40,23 @@ window.App = window.App || {};
                     if (n2 !== draggedNode) {
                         n2.vx += fx;
                         n2.vy += fy;
+                    }
+
+                    // Додатковий буфер розведення вузлів проти злипання кіл і текстових підписів
+                    const minAllowedDist = (n1.isRoot || n2.isRoot) ? 125 : 100;
+                    if (dist < minAllowedDist && dist > 0.001) {
+                        const overlap = minAllowedDist - dist;
+                        const push = (overlap / minAllowedDist) * 1.5;
+                        const cx = (dx / dist) * push;
+                        const cy = (dy / dist) * push;
+                        if (n1 !== draggedNode) {
+                            n1.vx -= cx;
+                            n1.vy -= cy;
+                        }
+                        if (n2 !== draggedNode) {
+                            n2.vx += cx;
+                            n2.vy += cy;
+                        }
                     }
                 }
             }
