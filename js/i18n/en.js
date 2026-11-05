@@ -198,6 +198,7 @@ export const en = {
         emptyNotebook: 'No available notes in this notebook',
         noNotesFound: 'No notes found',
         removeBookmark: 'Remove bookmark',
+        bookmarkTapePreview: 'Bookmark tape color',
         allBookmarked: 'All available notes are already bookmarked',
         imgSizeS: 'Small size (S)',
         imgSizeM: 'Medium size (M)',

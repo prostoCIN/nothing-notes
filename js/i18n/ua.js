@@ -198,6 +198,7 @@ export const ua = {
         emptyNotebook: 'У цьому блокноті немає доступних нотаток',
         noNotesFound: 'Нотаток не знайдено',
         removeBookmark: 'Видалити закладку',
+        bookmarkTapePreview: 'Колір скотчу закладки',
         allBookmarked: 'Всі доступні нотатки вже додані',
         imgSizeS: 'Малий розмір (S)',
         imgSizeM: 'Середній розмір (M)',

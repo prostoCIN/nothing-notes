@@ -25,6 +25,26 @@ window.App.getTagColorIndex = function(tagText) {
     return Math.abs(hash) % 6;
 };
 
+// Єдиний хелпер генерації колірного індексу Washi-закладки (0..5)
+window.App.getBookmarkColorIndex = function(targetNoteId, fallbackTitle) {
+    const key = String(targetNoteId || fallbackTitle || '');
+    if (!key) return 0;
+    let hash = 0;
+    for (let i = 0; i < key.length; i++) {
+        hash = key.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return Math.abs(hash) % 6;
+};
+
+window.App.BOOKMARK_TAPE_HEX = [
+    '#3b82f6', // 0: Синій (Blue)
+    '#10b981', // 1: Смарагдовий (Emerald)
+    '#f59e0b', // 2: Бурштиновий (Amber)
+    '#ec4899', // 3: Рожевий (Pink)
+    '#8b5cf6', // 4: Фіолетовий (Purple)
+    '#ef4444'  // 5: Кораловий (Coral)
+];
+
 window.App.storage = {
     _notesSaveTimer: null,
     _pendingNotes: null,

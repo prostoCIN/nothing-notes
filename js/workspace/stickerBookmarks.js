@@ -105,9 +105,19 @@ window.App = window.App || {};
             const t = (key) => i18n ? i18n.t(key) : '';
             const untitledText = t('sticker.untitled') || 'Без назви';
 
-            validTargetNotes.forEach(targetNote => {
+            let prevColorIndex = -1;
+            validTargetNotes.forEach((targetNote, idx) => {
+                let colorIndex = window.App.getBookmarkColorIndex
+                    ? window.App.getBookmarkColorIndex(targetNote.id, targetNote.title)
+                    : (idx % 6);
+                // Запобігаємо однаковому кольору для двох сусідніх закладок на картці
+                if (colorIndex === prevColorIndex) {
+                    colorIndex = (colorIndex + 1) % 6;
+                }
+                prevColorIndex = colorIndex;
+
                 const ribbon = document.createElement('div');
-                ribbon.className = 'sticker-bookmark-ribbon';
+                ribbon.className = `sticker-bookmark-ribbon bookmark-tape-color-${colorIndex}`;
                 ribbon.dataset.targetNoteId = targetNote.id;
 
                 const displayTitle = (targetNote.title && targetNote.title.trim()) ? targetNote.title.trim() : untitledText;
@@ -339,6 +349,10 @@ window.App = window.App || {};
                 item.className = 'bookmark-picker-item';
                 item.dataset.index = index;
 
+                const colorIndex = window.App.getBookmarkColorIndex
+                    ? window.App.getBookmarkColorIndex(targetNote.id, targetNote.title)
+                    : (index % 6);
+
                 const defaultUntitled = t('sticker.untitled') || 'Без назви';
                 const rawTitle = (targetNote.title && targetNote.title.trim()) ? targetNote.title.trim() : defaultUntitled;
 
@@ -358,6 +372,7 @@ window.App = window.App || {};
                         <div class="bookmark-picker-item-title">${titleHtml}</div>
                         ${path ? `<div class="bookmark-picker-item-path">${path}</div>` : ''}
                     </div>
+                    <span class="bookmark-picker-tape-pill bookmark-tape-color-${colorIndex}" title="${t('sticker.bookmarkTapePreview') || 'Колір скотчу закладки'}"></span>
                 `;
 
                 item.addEventListener('click', () => {

@@ -376,12 +376,19 @@ window.App = window.App || {};
                                 const pairKey = `bm-${node.id}-${targetNode.id}`;
                                 if (!addedBookmarkPairs.has(pairKey)) {
                                     addedBookmarkPairs.add(pairKey);
+                                    const tapeColorIndex = window.App.getBookmarkColorIndex
+                                        ? window.App.getBookmarkColorIndex(targetNode.id, targetNode.title)
+                                        : 1;
+                                    const tapeColorHex = (window.App.BOOKMARK_TAPE_HEX && window.App.BOOKMARK_TAPE_HEX[tapeColorIndex])
+                                        ? window.App.BOOKMARK_TAPE_HEX[tapeColorIndex]
+                                        : '#10b981';
+
                                     edges.push({
                                         id: pairKey,
                                         source: node.id,
                                         target: targetNode.id,
                                         type: 'bookmark',
-                                        color: '#10b981',
+                                        color: tapeColorHex,
                                         sourceNode: node,
                                         targetNode: targetNode
                                     });
