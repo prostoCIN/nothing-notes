@@ -86,26 +86,65 @@ function generateMarkdownForNotes(notes, boardTitle = '') {
 }
 
 export default async function handler(req, res) {
-    // Дозволяємо CORS-запити від будь-яких сервісів та агентів
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    const isEdge = !res || typeof res.setHeader !== 'function';
+    const method = req.method || 'GET';
 
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
+    const respond = (status, body, contentType = 'text/plain; charset=utf-8') => {
+        if (!isEdge) {
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+            res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+            res.setHeader('Content-Type', contentType);
+            if (status === 200) {
+                res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=120, stale-while-revalidate=300');
+            }
+            if (contentType.includes('application/json') && typeof body === 'object') {
+                return res.status(status).json(body);
+            }
+            return res.status(status).send(body);
+        } else {
+            return new Response(typeof body === 'object' ? JSON.stringify(body) : body, {
+                status,
+                headers: {
+                    'Content-Type': contentType,
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type',
+                    ...(status === 200 ? { 'Cache-Control': 'public, max-age=60, s-maxage=120, stale-while-revalidate=300' } : {})
+                }
+            });
+        }
+    };
+
+    if (method === 'OPTIONS') {
+        if (!isEdge) return res.status(200).end();
+        return new Response(null, {
+            status: 200,
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type'
+            }
+        });
     }
 
-    if (req.method !== 'GET') {
-        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-        return res.status(405).send('Method Not Allowed');
+    if (method !== 'GET') {
+        return respond(405, 'Method Not Allowed');
     }
 
-    const { token, share_board, format, subnotes } = req.query || {};
-    const shareToken = token || share_board;
+    let url;
+    try {
+        url = new URL(req.url, 'http://localhost');
+    } catch (e) {
+        url = { searchParams: new URLSearchParams() };
+    }
+
+    const shareToken = url.searchParams.get('token') || url.searchParams.get('share_board') || (req.query && (req.query.token || req.query.share_board));
+    const format = url.searchParams.get('format') || (req.query && req.query.format);
+    const subnotes = url.searchParams.get('subnotes') || (req.query && req.query.subnotes);
 
     if (!shareToken) {
-        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-        return res.status(400).send('Помилка: відсутній параметр token. Приклад: /api/share?token=sh_123');
+        return respond(400, 'Помилка: відсутній параметр token. Приклад: /api/share?token=sh_123');
     }
 
     try {
@@ -120,8 +159,7 @@ export default async function handler(req, res) {
             .single();
 
         if (shareErr || !shareData) {
-            res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-            return res.status(404).send('NothingNotes: Спільне посилання не знайдено або воно було деактивовано автором.');
+            return respond(404, 'NothingNotes: Спільне посилання не знайдено або воно було деактивовано автором.');
         }
 
         // Отримуємо всі нотатки для цього блокнота
@@ -132,8 +170,7 @@ export default async function handler(req, res) {
 
         if (notesErr) {
             console.error('[api/share] Помилка завантаження нотаток:', notesErr);
-            res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-            return res.status(500).send('Помилка бази даних під час завантаження нотаток.');
+            return respond(500, 'Помилка бази даних під час завантаження нотаток.');
         }
 
         let finalNotes = notesData || [];
@@ -171,26 +208,20 @@ export default async function handler(req, res) {
         const boardTitle = shareData.board_name || 'Нотатки';
 
         if (format === 'json') {
-            res.setHeader('Content-Type', 'application/json; charset=utf-8');
-            res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=120, stale-while-revalidate=300');
-            return res.status(200).json({
+            return respond(200, {
                 board: {
                     id: shareData.board_id,
                     name: boardTitle,
                     icon: shareData.board_icon || null
                 },
                 notes: formattedNotes
-            });
+            }, 'application/json; charset=utf-8');
         }
 
         const markdown = generateMarkdownForNotes(formattedNotes, boardTitle);
-
-        res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
-        res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=120, stale-while-revalidate=300');
-        return res.status(200).send(markdown);
+        return respond(200, markdown, 'text/markdown; charset=utf-8');
     } catch (err) {
         console.error('[api/share] Неочікувана помилка сервера:', err);
-        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-        return res.status(500).send('Внутрішня помилка сервера при обробці спільного доступу.');
+        return respond(500, 'Внутрішня помилка сервера при обробці спільного доступу.');
     }
 }
