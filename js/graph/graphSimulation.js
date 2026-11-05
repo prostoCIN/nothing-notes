@@ -12,14 +12,14 @@ window.App = window.App || {};
                 centerY = 300
             } = options;
 
-            // Більш простора симуляція з виразними відстанями між вершинами
-            const repulsionConstant = 18000;
-            const springConstant = 0.025;
-            const springLength = 190;
-            const centerGravity = 0.0018;
-            const damping = 0.86;
+            // Збалансована симуляція: проміжкова між компактною та просторою
+            const repulsionConstant = 6800;
+            const springConstant = 0.032;
+            const springLength = 145;
+            const centerGravity = 0.0032;
+            const damping = 0.87;
 
-            // Відштовхування (Кулон) + уникнення накладання кіл та підписів
+            // Відштовхування (Кулон) + м'яке запобігання накладанню кіл
             for (let i = 0; i < nodes.length; i++) {
                 const n1 = nodes[i];
                 for (let j = i + 1; j < nodes.length; j++) {
@@ -29,7 +29,7 @@ window.App = window.App || {};
                     const distSq = dx * dx + dy * dy + 1;
                     const dist = Math.sqrt(distSq);
 
-                    const force = repulsionConstant / (distSq + 100);
+                    const force = repulsionConstant / (distSq + 64);
                     const fx = (dx / dist) * force;
                     const fy = (dy / dist) * force;
 
@@ -42,11 +42,11 @@ window.App = window.App || {};
                         n2.vy += fy;
                     }
 
-                    // Додатковий буфер розведення вузлів проти злипання кіл і текстових підписів
-                    const minAllowedDist = (n1.isRoot || n2.isRoot) ? 125 : 100;
+                    // М'який буфер проти прямого накладання кіл
+                    const minAllowedDist = (n1.isRoot || n2.isRoot) ? 85 : 68;
                     if (dist < minAllowedDist && dist > 0.001) {
                         const overlap = minAllowedDist - dist;
-                        const push = (overlap / minAllowedDist) * 1.5;
+                        const push = (overlap / minAllowedDist) * 0.9;
                         const cx = (dx / dist) * push;
                         const cy = (dy / dist) * push;
                         if (n1 !== draggedNode) {

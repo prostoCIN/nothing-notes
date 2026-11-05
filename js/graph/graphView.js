@@ -260,8 +260,8 @@ window.App = window.App || {};
 
             boardNotes.forEach((note, idx) => {
                 const angle = (idx / (total || 1)) * Math.PI * 2;
-                const baseDist = Math.max(120, Math.min(360, total * 22));
-                const dist = baseDist + (idx % 5) * 40;
+                const baseDist = Math.max(75, Math.min(240, total * 15));
+                const dist = baseDist + (idx % 4) * 35;
                 const isRoot = !note.parentId || !notesMap.has(note.parentId);
                 const hasChildren = boardNotes.some(child => child.parentId === note.id);
                 const hasBookmarks = (Array.isArray(note.linkedNoteIds) && note.linkedNoteIds.length > 0)
