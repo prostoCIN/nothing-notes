@@ -876,10 +876,31 @@ window.App = window.App || {};
             };
 
             boundWheel = (e) => {
-                e.preventDefault();
-                if (e.target.closest('input, textarea, button')) {
-                    if (!e.ctrlKey && !e.metaKey) return;
+                // Якщо курсор над будь-яким випадаючим вікном, пікером емодзі, меню, скрол-контейнером чи полем вводу —
+                // дозволяємо нативний скрол всередині цього елемента і не перехоплюємо зумом дошки
+                const scrollableEl = e.target.closest(
+                    '.sticker-emoji-picker-dropdown, ' +
+                    '.emoji-picker-scroll, ' +
+                    '.emoji-categories-bar, ' +
+                    '.sticker-tag-dropdown, ' +
+                    '.tag-options-list, ' +
+                    '.sticker-menu-dropdown, ' +
+                    '.board-help-popover, ' +
+                    '.bookmark-picker-modal, ' +
+                    '.sticker-content, ' +
+                    '.sticker-subnotes-container, ' +
+                    '.modal-container, ' +
+                    'input, textarea, select'
+                );
+
+                if (scrollableEl) {
+                    // Якщо затиснуто Ctrl/Meta — це навмисний зум користувача або pinch-to-zoom жестом
+                    if (!e.ctrlKey && !e.metaKey) {
+                        return; // Дозволяємо нативну прокрутку всередині меню / списку емодзі
+                    }
                 }
+
+                e.preventDefault();
                 const isTrackpadPinch = (e.ctrlKey || e.metaKey) && e.deltaMode === 0 && Math.abs(e.deltaY) < 50;
                 const delta = isTrackpadPinch
                     ? Math.exp(-e.deltaY * 0.005)

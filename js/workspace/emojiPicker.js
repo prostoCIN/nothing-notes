@@ -195,6 +195,15 @@ window.App = window.App || {};
             emojiDropdown.appendChild(scrollContainer);
             emojiDropdown.appendChild(categoriesBar);
 
+            // Зупиняємо спливання подій коліщатка миші та кліків,
+            // щоб полотно дошки чи графа не перехоплювали скрол та взаємодію з емодзі
+            emojiDropdown.addEventListener('wheel', (e) => {
+                e.stopPropagation();
+            }, { passive: true });
+            emojiDropdown.addEventListener('pointerdown', (e) => {
+                e.stopPropagation();
+            });
+
             emojiBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 // Закриваємо інші пікери та меню

@@ -665,10 +665,21 @@ window.App = window.App || {};
             };
 
             boundWheel = (e) => {
-                e.preventDefault();
-                if (e.target.closest('input, textarea, button')) {
-                    if (!e.ctrlKey && !e.metaKey) return;
+                const scrollableEl = e.target.closest(
+                    '.graph-help-popover, ' +
+                    '.graph-controls-panel, ' +
+                    '.graph-export-modal, ' +
+                    '.modal-container, ' +
+                    'input, textarea, select'
+                );
+
+                if (scrollableEl) {
+                    if (!e.ctrlKey && !e.metaKey) {
+                        return;
+                    }
                 }
+
+                e.preventDefault();
                 const isTrackpadPinch = (e.ctrlKey || e.metaKey) && e.deltaMode === 0 && Math.abs(e.deltaY) < 50;
                 const delta = isTrackpadPinch
                     ? Math.exp(-e.deltaY * 0.005)
