@@ -194,10 +194,10 @@ window.App = window.App || {};
                             <div class="share-modal-status" id="share-nn-status"></div>
                         </div>
 
-                        <!-- Вкладка 2: Спеціальне посилання для ШІ-агентів (?format=md) -->
+                        <!-- Вкладка 2: Спеціальне посилання для ШІ-агентів (/api/share) -->
                         <div class="share-tab-pane ${defaultTab === 'ai' ? 'active' : ''}" id="share-pane-ai">
                             <p class="share-modal-desc">
-                                Спеціальне посилання з параметром <code>?format=md</code>. Ідеально для <b>ChatGPT</b>, <b>Claude</b>, <b>Perplexity</b>, <b>Gemini</b> або скриптів: за цим URL віддається чистий структурований текст нотатки без важкого інтерфейсу SPA.
+                                Пряме серверне API-посилання (Serverless) для <b>ChatGPT</b>, <b>Claude</b>, <b>Perplexity</b>, <b>Gemini</b> або скриптів: за цим URL сервер миттєво віддає чистий структурований Markdown (HTTP 200).
                             </p>
 
                             ${isSpecificNotes ? `
@@ -346,11 +346,23 @@ window.App = window.App || {};
                 }
             };
 
+            let currentShareToken = '';
+
             const updateShareLinks = () => {
                 if (!baseShareUrl) return;
                 const subnotesSuffix = (isSpecificNotes && hasSubnotes && !includeSubnotes) ? '&subnotes=0' : '';
                 const nnUrl = `${baseShareUrl}${subnotesSuffix}`;
-                const aiUrl = `${baseShareUrl}&format=md${subnotesSuffix}`;
+
+                // Для ШІ генеруємо пряме серверне посилання /api/share?token=...
+                let token = currentShareToken;
+                if (!token && baseShareUrl) {
+                    try {
+                        const parsed = new URL(baseShareUrl, window.location.href);
+                        token = parsed.searchParams.get('share_board') || '';
+                    } catch (e) {}
+                }
+                const origin = window.location.origin;
+                const aiUrl = token ? `${origin}/api/share?token=${token}${subnotesSuffix}` : `${baseShareUrl}&format=md${subnotesSuffix}`;
 
                 if (nnInput) nnInput.value = nnUrl;
                 if (aiInput) aiInput.value = aiUrl;
@@ -386,6 +398,7 @@ window.App = window.App || {};
                     const allowClone = cloneToggle ? cloneToggle.checked : false;
                     const res = await this.createShareLink(boardId, noteIds, allowClone);
                     baseShareUrl = res.shareUrl;
+                    currentShareToken = res.shareToken || '';
 
                     updateShareLinks();
 
