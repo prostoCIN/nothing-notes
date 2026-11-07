@@ -18,13 +18,17 @@ export default defineConfig({
           if (id.includes('/js/board/') || id.includes('\\js\\board\\')) {
             return 'board';
           }
-          if (id.includes('/js/sync/') || id.includes('\\js\\sync\\') || id.includes('cloudSync.js')) {
-            return 'sync';
-          }
-          if (id.includes('/js/share/') || id.includes('\\js\\share\\') || id.includes('shareManager.js')) {
+          if (id.includes('/js/share/') || id.includes('\\js\\share\\')) {
             return 'share';
           }
-          if (id.includes('settingsModal.js') || id.includes('/js/settings/') || id.includes('\\js\\settings\\') || id.includes('authModal.js') || id.includes('accountManager.js')) {
+          if (
+            id.includes('authModal.js') ||
+            id.includes('settingsModal.js') ||
+            id.includes('settingsModalModule.js') ||
+            id.includes('settingsAppearanceTab.js') ||
+            id.includes('settingsAccountTab.js') ||
+            id.includes('settingsShortcutsTab.js')
+          ) {
             return 'modals';
           }
         }

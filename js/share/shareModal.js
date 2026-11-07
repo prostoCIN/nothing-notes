@@ -1,4 +1,6 @@
 // js/share/shareModal.js - Модальне вікно налаштувань шерингу та Markdown-експорту для людей і ШІ
+import './shareMarkdown.js';
+
 window.App = window.App || {};
 
 (function() {

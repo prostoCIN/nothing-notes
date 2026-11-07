@@ -312,18 +312,30 @@ window.App = window.App || {};
             return newBoard;
         },
         // Делегати до shareMarkdown
-        convertHtmlToMarkdown(html) {
+        async convertHtmlToMarkdown(html) {
+            if (!window.App.shareMarkdown) {
+                await import('./share/shareMarkdown.js');
+            }
             return window.App.shareMarkdown ? window.App.shareMarkdown.convertHtmlToMarkdown(html) : "";
         },
-        generateMarkdownForNotes(notes, boardTitle = "") {
+        async generateMarkdownForNotes(notes, boardTitle = "") {
+            if (!window.App.shareMarkdown) {
+                await import('./share/shareMarkdown.js');
+            }
             return window.App.shareMarkdown ? window.App.shareMarkdown.generateMarkdownForNotes(notes, boardTitle) : "";
         },
-        downloadMarkdownFile(filename, content) {
+        async downloadMarkdownFile(filename, content) {
+            if (!window.App.shareMarkdown) {
+                await import('./share/shareMarkdown.js');
+            }
             if (window.App.shareMarkdown) return window.App.shareMarkdown.downloadMarkdownFile(filename, content);
         },
 
         // Делегати до shareModal
-        showShareModal(boardId, noteIds = null, defaultTab = "nothingnotes") {
+        async showShareModal(boardId, noteIds = null, defaultTab = "nothingnotes") {
+            if (!window.App.shareModal) {
+                await import('./share/shareModal.js');
+            }
             if (window.App.shareModal) return window.App.shareModal.showShareModal(boardId, noteIds, defaultTab);
         }
     };

@@ -58,23 +58,7 @@ import './workspace/workspaceColumn.js';
 import './workspace/workspacePagination.js';
 import './workspaceView.js';
 
-// 4. Модулі інтерактивної дошки стікерів (Canvas Sticky Board)
-import './board/boardCables.js';
-import './board/boardLayout.js';
-import './board/boardContextMenu.js';
-import './board/boardInteraction.js';
-import './board/boardConnect.js';
-import './board/boardView.js';
-
-// 5. Модулі інтерактивного графа зв'язків (Obsidian Graph View)
-import './graph/graphSimulation.js';
-import './graph/graphPreview.js';
-import './graph/graphExport.js';
-import './graph/graphRenderer.js';
-import './graph/graphInteraction.js';
-import './graph/graphView.js';
-
-// 4. Модулі хмари, аутентифікації та налаштувань
+// 4. Модулі хмари, преференцій та легкі фасади
 import './supabaseClient.js';
 import './sync/offlineQueue.js';
 import './sync/syncStorage.js';
@@ -82,16 +66,10 @@ import './sync/syncRealtime.js';
 import './sync/syncNotes.js';
 import './sync/syncUI.js';
 import './cloudSync.js';
-import './share/shareMarkdown.js';
-import './share/shareModal.js';
 import './shareManager.js';
-import './authModal.js';
 import './settings/settingsPreferences.js';
-import './settings/settingsAppearanceTab.js';
-import './settings/settingsAccountTab.js';
-import './settings/settingsShortcutsTab.js';
-import './settingsModal.js';
 import './accountManager.js';
+import './modalsFacade.js';
 
 // 5. Головний оркестратор та ініціалізація додатку
 import './app.js';

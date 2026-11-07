@@ -117,6 +117,38 @@ window.App = window.App || {};
     }
 
     window.App.workspaceView = {
+        _boardLoadPromise: null,
+        _graphLoadPromise: null,
+
+        showCanvasLoading() {
+            const els = this.getElements();
+            if (!els.columnsContainer) return;
+            els.columnsContainer.classList.add('has-canvas-mode');
+            els.columnsContainer.innerHTML = `
+                <div class="canvas-lazy-loading" style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;min-height:350px;color:var(--text-muted);gap:12px;">
+                    <div class="canvas-lazy-spinner" style="width:28px;height:28px;border:2.5px solid rgba(255,255,255,0.1);border-top-color:var(--accent-color, #16b981);border-radius:50%;animation:lazy-spin 0.8s linear infinite;"></div>
+                    <span style="font-size:12px;letter-spacing:0.04em;">NothingNotes Engine</span>
+                    <style>@keyframes lazy-spin { to { transform: rotate(360deg); } }</style>
+                </div>
+            `;
+        },
+
+        ensureBoardLoaded() {
+            if (window.App.boardView) return Promise.resolve(window.App.boardView);
+            if (!this._boardLoadPromise) {
+                this._boardLoadPromise = import('./board/boardModule.js').then(() => window.App.boardView);
+            }
+            return this._boardLoadPromise;
+        },
+
+        ensureGraphLoaded() {
+            if (window.App.graphView) return Promise.resolve(window.App.graphView);
+            if (!this._graphLoadPromise) {
+                this._graphLoadPromise = import('./graph/graphModule.js').then(() => window.App.graphView);
+            }
+            return this._graphLoadPromise;
+        },
+
         init() {
             this.bindEvents();
         },
@@ -227,12 +259,34 @@ window.App = window.App || {};
             const viewGraphBtn = document.getElementById('island-view-graph-btn');
             const selectToggleBtn = document.getElementById('island-select-toggle-btn');
 
-            const switchView = (mode) => {
+            let isSwitchingMode = false;
+
+            const switchView = async (mode) => {
+                if (isSwitchingMode) return;
                 if (window.App.store) {
                     window.App.store.setViewMode(mode);
                 } else if (window.App.state) {
                     window.App.state.viewMode = mode;
                 }
+
+                if (mode === 'board' && !window.App.boardView) {
+                    isSwitchingMode = true;
+                    this.showCanvasLoading();
+                    try {
+                        await this.ensureBoardLoaded();
+                    } finally {
+                        isSwitchingMode = false;
+                    }
+                } else if (mode === 'graph' && !window.App.graphView) {
+                    isSwitchingMode = true;
+                    this.showCanvasLoading();
+                    try {
+                        await this.ensureGraphLoaded();
+                    } finally {
+                        isSwitchingMode = false;
+                    }
+                }
+
                 this.render();
             };
 
@@ -475,7 +529,12 @@ window.App = window.App || {};
             if (topHeader) topHeader.classList.toggle('is-board-readonly', isBoardReadOnly);
 
             // 1. Якщо увімкнено режим інтерактивної дошки стікерів (Canvas Sticky Board)
-            if (currentMode === 'board' && window.App.boardView) {
+            if (currentMode === 'board') {
+                if (!window.App.boardView) {
+                    this.showCanvasLoading();
+                    this.ensureBoardLoaded().then(() => this.render());
+                    return;
+                }
                 if (topHeader) topHeader.classList.add('graph-mode-active');
                 if (window.App.brushTool) window.App.brushTool.disable();
                 if (window.App.eraserTool) window.App.eraserTool.disable();
@@ -490,7 +549,12 @@ window.App = window.App || {};
             }
 
             // 2. Якщо увімкнено режим інтерактивного графа зв'язків (Obsidian Graph View)
-            if (currentMode === 'graph' && window.App.graphView) {
+            if (currentMode === 'graph') {
+                if (!window.App.graphView) {
+                    this.showCanvasLoading();
+                    this.ensureGraphLoaded().then(() => this.render());
+                    return;
+                }
                 if (topHeader) topHeader.classList.add('graph-mode-active');
                 if (window.App.brushTool) window.App.brushTool.disable();
                 if (window.App.eraserTool) window.App.eraserTool.disable();
