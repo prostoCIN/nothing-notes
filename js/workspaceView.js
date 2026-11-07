@@ -120,11 +120,16 @@ window.App = window.App || {};
         _boardLoadPromise: null,
         _graphLoadPromise: null,
 
+        getElements() {
+            return window.App.getElements ? window.App.getElements() : null;
+        },
+
         showCanvasLoading() {
-            const els = this.getElements();
-            if (!els.columnsContainer) return;
-            els.columnsContainer.classList.add('has-canvas-mode');
-            els.columnsContainer.innerHTML = `
+            const els = window.App.getElements ? window.App.getElements() : null;
+            const container = (els && els.columnsContainer) || document.getElementById('columns-container');
+            if (!container) return;
+            container.classList.add('has-canvas-mode');
+            container.innerHTML = `
                 <div class="canvas-lazy-loading" style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;min-height:350px;color:var(--text-muted);gap:12px;">
                     <div class="canvas-lazy-spinner" style="width:28px;height:28px;border:2.5px solid rgba(255,255,255,0.1);border-top-color:var(--accent-color, #16b981);border-radius:50%;animation:lazy-spin 0.8s linear infinite;"></div>
                     <span style="font-size:12px;letter-spacing:0.04em;">NothingNotes Engine</span>
