@@ -56,6 +56,51 @@ body {
     background: var(--scrollbar-thumb-hover, rgba(255, 255, 255, 0.2));
 }
 
+/* ==========================================================================
+   Універсальні семантичні правила поверхонь (Surface Tokens Integration)
+   ========================================================================== */
+
+/* 1. Усі бекдропи та затемнення оверлеїв автоматично наслідують токен теми */
+.modal-overlay,
+.auth-modal-backdrop,
+.settings-modal-backdrop,
+.share-modal-backdrop,
+.account-overlay-backdrop,
+.sidebar-overlay,
+.graph-mobile-sheet-backdrop {
+    background: var(--backdrop-bg, rgba(0, 0, 0, 0.65));
+}
+
+/* 2. Усі картки модальних вікон автоматично адаптуються під тему */
+.modal-card,
+[class$="-modal-card"],
+[class$="-modal-box"] {
+    background: var(--modal-bg, var(--bg-secondary));
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--modal-shadow);
+}
+
+/* 3. Усі випадаючі меню та тултіпи використовують токени поверхонь */
+.column-menu-dropdown,
+.column-filter-dropdown,
+.sticker-menu-dropdown,
+.sticker-tag-dropdown,
+.sticker-emoji-picker-dropdown,
+.header-brush-dropdown {
+    background-color: var(--surface-dropdown, var(--modal-bg));
+    border: 1px solid var(--dropdown-border, var(--border-color));
+    box-shadow: var(--dropdown-shadow, var(--modal-shadow));
+    color: var(--text-main);
+}
+
+.header-tooltip {
+    background: var(--tooltip-bg, var(--bg-secondary));
+    color: var(--tooltip-color, var(--text-main));
+    border: 1px solid var(--tooltip-border, var(--border-color));
+    box-shadow: var(--panel-shadow, 0 4px 14px rgba(0, 0, 0, 0.15));
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .sidebar {

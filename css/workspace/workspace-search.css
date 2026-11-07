@@ -15,11 +15,11 @@
     top: calc(100% + 10px);
     display: flex;
     align-items: center;
-    background: rgba(22, 22, 26, 0.98);
+    background: var(--search-bar-bg, rgba(22, 22, 26, 0.98));
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(16, 185, 129, 0.25);
+    border: 1px solid var(--search-bar-border, var(--border-color));
+    box-shadow: var(--dropdown-shadow, 0 16px 36px rgba(0, 0, 0, 0.7));
     border-radius: 12px;
     padding: 7px 10px 7px 14px;
     gap: 8px;
@@ -37,7 +37,7 @@
     right: 8px;
     border-width: 5px;
     border-style: solid;
-    border-color: transparent transparent rgba(255, 255, 255, 0.16) transparent;
+    border-color: transparent transparent var(--search-bar-border, var(--border-color)) transparent;
 }
 
 @keyframes searchBarDropdownAppear {
@@ -84,8 +84,8 @@
     display: inline-flex;
     align-items: center;
     gap: 2px;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--btn-secondary-bg, rgba(255, 255, 255, 0.06));
+    border: 1px solid var(--border-color);
     border-radius: 7px;
     padding: 1px;
 }
@@ -106,8 +106,8 @@
 }
 
 .header-search-nav-btn:hover {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.15);
+    color: var(--text-main);
+    background: var(--btn-secondary-hover, var(--hover-bg));
 }
 
 .header-search-close {

@@ -320,7 +320,7 @@
     line-height: 1;
     color: var(--text-muted);
     background: none;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--badge-border, var(--border-color));
     min-width: 26px;
     height: 26px;
     padding: 0 4px;
@@ -339,7 +339,8 @@
 
 .column-count-badge:hover {
     color: var(--text-main);
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: var(--badge-hover-border, var(--text-muted));
+    background: var(--hover-bg);
 }
 
 /* Кнопка фільтру тегів у правій частині title-wrap колонки */
@@ -355,7 +356,7 @@
 .column-expand-toggle-btn,
 .column-add-note-btn {
     background: none;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--badge-border, var(--border-color));
     color: var(--text-muted);
     cursor: pointer;
     font-size: var(--font-xs);
@@ -370,6 +371,15 @@
     flex-shrink: 0;
     user-select: none;
     font-family: inherit;
+}
+
+.column-filter-btn:hover,
+.column-layout-toggle-btn:hover,
+.column-expand-toggle-btn:hover,
+.column-add-note-btn:hover {
+    background: var(--hover-bg);
+    color: var(--text-main);
+    border-color: var(--badge-hover-border, var(--text-muted));
 }
 
 .column-layout-toggle-btn,
@@ -394,14 +404,9 @@
 .column-header-divider {
     width: 1px;
     height: 16px;
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--border-color);
     margin: 0 2px;
     flex-shrink: 0;
-}
-
-html[data-theme="light"] .column-header-divider,
-html[data-theme="ivory"] .column-header-divider {
-    background: rgba(0, 0, 0, 0.1);
 }
 
 .column-header-actions {

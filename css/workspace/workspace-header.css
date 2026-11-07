@@ -69,19 +69,19 @@
 .header-history-control {
     display: flex;
     align-items: center;
-    background: rgba(0, 0, 0, 0.35);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--tab-bg, rgba(0, 0, 0, 0.35));
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 3px;
     gap: 3px;
 }
 
 .header-action-icon-btn {
-    background: rgba(255, 255, 255, 0.055);
+    background: var(--btn-secondary-bg, rgba(255, 255, 255, 0.055));
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 2px 8px rgba(0, 0, 0, 0.12);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--panel-shadow);
     color: var(--text-muted);
     width: 28px;
     height: 28px;
@@ -107,8 +107,8 @@
 
 .header-action-icon-btn:hover {
     color: var(--text-main);
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.18);
+    background: var(--btn-secondary-hover, var(--hover-bg));
+    border-color: var(--border-color);
 }
 
 .header-tools-pill .header-action-icon-btn:hover {
@@ -144,11 +144,11 @@
     position: relative;
     display: inline-flex;
     align-items: center;
-    background: rgba(255, 255, 255, 0.055);
+    background: var(--btn-secondary-bg, rgba(255, 255, 255, 0.055));
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 2px 8px rgba(0, 0, 0, 0.12);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--panel-shadow);
     border-radius: 8px;
     padding: 0 3px 0 0;
     gap: 1px;
@@ -178,7 +178,7 @@
 }
 
 .header-brush-color-trigger:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--btn-secondary-hover, var(--hover-bg));
 }
 
 .brush-color-dot {
@@ -200,16 +200,16 @@
     position: absolute;
     top: calc(100% + 8px);
     left: 0;
-    background: rgba(26, 26, 30, 0.96);
+    background: var(--surface-dropdown, var(--modal-bg));
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid var(--dropdown-border, var(--border-color));
     border-radius: 8px;
     padding: 6px;
     display: none;
     align-items: center;
     gap: 6px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    box-shadow: var(--dropdown-shadow, var(--modal-shadow));
     z-index: 200;
 }
 
@@ -348,11 +348,11 @@
 .header-history-control {
     display: inline-flex;
     align-items: center;
-    background: rgba(255, 255, 255, 0.055);
+    background: var(--btn-secondary-bg, rgba(255, 255, 255, 0.055));
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--panel-shadow);
     border-radius: 9px;
     padding: 2px 4px;
     gap: 3px;
@@ -367,8 +367,8 @@
 .header-segment-control {
     display: flex;
     align-items: center;
-    background: rgba(0, 0, 0, 0.35);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--tab-bg, rgba(0, 0, 0, 0.35));
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 2px;
     gap: 2px;
@@ -392,7 +392,7 @@
 
 .header-segment-btn:hover {
     color: var(--text-main);
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--hover-bg);
 }
 
 .header-segment-btn.active {
@@ -409,13 +409,13 @@
 .header-divider {
     width: 1px;
     height: 18px;
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--border-color);
     margin: 0 2px;
 }
 
 .header-select-btn {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--btn-secondary-bg, rgba(255, 255, 255, 0.05));
+    border: 1px solid var(--border-color);
     color: var(--text-muted);
     font-size: var(--font-xs);
     font-weight: 600;
@@ -430,9 +430,9 @@
 }
 
 .header-select-btn:hover {
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--btn-secondary-hover, rgba(255, 255, 255, 0.12));
     color: var(--text-main);
-    border-color: rgba(255, 255, 255, 0.18);
+    border-color: var(--border-color);
 }
 
 .header-select-btn.active {

@@ -1,7 +1,3 @@
 /* css/themes.css - Головний агрегатор модульних стилів тем NothingNotes */
 @import './themes/theme-tokens.css';
-@import './themes/theme-light-base.css';
-@import './themes/theme-light-graph.css';
-@import './themes/theme-light-workspace.css';
-@import './themes/theme-light-components.css';
-@import './themes/theme-alt-themes.css';
+@import './themes/theme-overrides.css';

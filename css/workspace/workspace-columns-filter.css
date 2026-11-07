@@ -7,12 +7,13 @@
     position: absolute;
     top: calc(100% + 6px);
     right: 0;
-    background-color: var(--modal-bg, #242424);
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    background-color: var(--surface-dropdown, var(--modal-bg));
+    border: 1px solid var(--dropdown-border, var(--border-color));
     border-radius: 12px;
     padding: 8px;
     box-sizing: border-box;
-    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7);
+    box-shadow: var(--dropdown-shadow, var(--modal-shadow));
+    color: var(--text-main);
     z-index: 150;
     display: none;
     flex-direction: column;
@@ -32,7 +33,7 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
     padding: 4px 8px 6px 8px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid var(--dropdown-header-border, var(--border-color));
     display: flex;
     align-items: center;
     justify-content: space-between;

@@ -1,0 +1,79 @@
+/* css/themes/theme-overrides.css - Компактні семантичні правила специфічних станів для світлих тем */
+
+/* 1. Виділення активної нотатки та блокнота у бічній панелі (Sidebar) */
+html[data-theme="light"] .note-item.is-active-note,
+html[data-theme="ivory"] .note-item.is-active-note {
+    background-color: rgba(16, 185, 129, 0.12);
+    box-shadow: inset 3.5px 0 0 #10b981, 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+html[data-theme="light"] .note-item.is-active-note .note-item-title,
+html[data-theme="ivory"] .note-item.is-active-note .note-item-title {
+    color: #047857;
+    font-weight: 700;
+}
+
+html[data-theme="light"] .note-item.is-selected,
+html[data-theme="ivory"] .note-item.is-selected {
+    background-color: rgba(16, 185, 129, 0.15);
+    border-color: #10b981;
+    color: #047857;
+}
+
+html[data-theme="light"] .note-item.is-selected .note-item-title,
+html[data-theme="ivory"] .note-item.is-selected .note-item-title {
+    color: #047857;
+    font-weight: 600;
+}
+
+html[data-theme="light"] .board-item-sidebar.active,
+html[data-theme="ivory"] .board-item-sidebar.active {
+    background-color: rgba(16, 185, 129, 0.12);
+    color: #047857;
+}
+
+/* 2. Мульти-вибір стікерів на робочій області */
+html[data-theme="light"] .note-sticker.is-ws-selected,
+html[data-theme="ivory"] .note-sticker.is-ws-selected {
+    box-shadow: 0 0 0 3.5px #10b981, 0 8px 24px rgba(16, 185, 129, 0.35);
+}
+
+/* 3. Плаваючі панелі виділення та форматування тексту */
+html[data-theme="light"] .workspace-selection-bar,
+html[data-theme="light"] .text-selection-toolbar,
+html[data-theme="ivory"] .workspace-selection-bar,
+html[data-theme="ivory"] .text-selection-toolbar {
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* 4. Вузли інтерактивного графа (Obsidian Graph View) */
+html[data-theme="light"] .graph-html-node-label,
+html[data-theme="ivory"] .graph-html-node-label {
+    color: #0f172a;
+    font-weight: 700;
+    text-shadow: var(--graph-label-shadow);
+}
+
+html[data-theme="light"] .graph-html-node.is-root .graph-html-node-label,
+html[data-theme="ivory"] .graph-html-node.is-root .graph-html-node-label {
+    color: #0f172a;
+    font-weight: 800;
+    text-shadow: var(--graph-label-shadow);
+}
+
+html[data-theme="light"] .graph-html-node.is-match .graph-html-node-label,
+html[data-theme="ivory"] .graph-html-node.is-match .graph-html-node-label {
+    color: #b45309;
+    font-weight: 800;
+}
+
+html[data-theme="light"] .graph-html-node-circle,
+html[data-theme="ivory"] .graph-html-node-circle {
+    border-color: rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme="light"] .graph-html-node.is-root .graph-html-node-circle,
+html[data-theme="ivory"] .graph-html-node.is-root .graph-html-node-circle {
+    border-color: rgba(0, 0, 0, 0.85);
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.9), 0 0 0 6.5px var(--node-branch-color, rgba(0, 0, 0, 0.6)), 0 0 16px var(--node-branch-color, rgba(0, 0, 0, 0.25));
+}

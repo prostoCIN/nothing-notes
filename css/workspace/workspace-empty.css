@@ -19,11 +19,11 @@
 .workspace-empty-card {
     max-width: 460px;
     width: 100%;
-    background: rgba(26, 26, 30, 0.65);
+    background: var(--modal-bg, var(--bg-secondary));
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), var(--glass-specular);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--modal-shadow);
     border-radius: 20px;
     padding: 36px 32px;
     text-align: center;

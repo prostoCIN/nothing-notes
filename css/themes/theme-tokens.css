@@ -1,5 +1,5 @@
-/* css/themes.css - Кольорові теми сайту: Асфальт, Біла, Слонова кістка, Нічне небо, Темний ліс */
-/* Смарагдовий акцентний колір NothingNotes (#16b981) та нейтральні кольори тексту залишаються незмінними */
+/* css/themes/theme-tokens.css - Семантична система токенів для всіх тем NothingNotes */
+/* Підтримує: Асфальт (дефолт), Світла (White), Слонова кістка (Ivory), Нічне небо (Night Sky), Темний ліс (Forest) */
 
 /* 1. Асфальт (Поточна темна тема за замовчуванням) */
 :root,
@@ -55,6 +55,23 @@ html[data-theme="asphalt"] {
     --btn-secondary-border: rgba(255, 255, 255, 0.15);
     --btn-secondary-hover: rgba(255, 255, 255, 0.16);
 
+    /* Семантичні токени інструментів, меню, бекдропів та тіней */
+    --backdrop-bg: rgba(0, 0, 0, 0.65);
+    --surface-dropdown: #1e1e24;
+    --dropdown-border: rgba(255, 255, 255, 0.12);
+    --dropdown-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08);
+    --dropdown-header-border: rgba(255, 255, 255, 0.08);
+    --dropdown-item-hover: rgba(255, 255, 255, 0.08);
+    --panel-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    --tooltip-bg: #1e1e24;
+    --tooltip-color: #ffffff;
+    --tooltip-border: rgba(255, 255, 255, 0.14);
+    --search-bar-bg: #1e1e24;
+    --search-bar-border: rgba(255, 255, 255, 0.16);
+    --graph-label-shadow: 0 0 5px #000000, 0 0 8px #000000;
+    --badge-border: rgba(255, 255, 255, 0.1);
+    --badge-hover-border: rgba(255, 255, 255, 0.2);
+
     --body-bg-gradient: 
         radial-gradient(at 10% 15%, rgba(22, 185, 129, 0.055) 0px, transparent 55%),
         radial-gradient(at 85% 85%, rgba(0, 59, 39, 0.09) 0px, transparent 65%),
@@ -85,7 +102,7 @@ html[data-theme="light"] {
     --scrollbar-thumb-hover: rgba(0, 0, 0, 0.25);
     --sticker-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
 
-    /* Фірмовий смарагдовий градієнт та акцент NothingNotes (незмінний!) */
+    /* Фірмовий смарагдовий градієнт та акцент NothingNotes */
     --accent-color: #16b981;
     --emerald-gradient: linear-gradient(135deg, #B3CD9D 0%, #16B981 30%, #ACF9DF 65%, #16B981 85%, #B3CD9D 100%);
     --emerald-gradient-text: linear-gradient(120deg, #B3CD9D 0%, #16B981 35%, #ACF9DF 70%, #16B981 100%);
@@ -113,13 +130,30 @@ html[data-theme="light"] {
     --btn-secondary-border: rgba(0, 0, 0, 0.1);
     --btn-secondary-hover: rgba(0, 0, 0, 0.08);
 
+    /* Семантичні токени інструментів, меню, бекдропів та тіней */
+    --backdrop-bg: rgba(15, 23, 42, 0.25);
+    --surface-dropdown: #ffffff;
+    --dropdown-border: rgba(0, 0, 0, 0.1);
+    --dropdown-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+    --dropdown-header-border: rgba(0, 0, 0, 0.06);
+    --dropdown-item-hover: rgba(0, 0, 0, 0.05);
+    --panel-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+    --tooltip-bg: #ffffff;
+    --tooltip-color: #18181b;
+    --tooltip-border: rgba(0, 0, 0, 0.1);
+    --search-bar-bg: #ffffff;
+    --search-bar-border: rgba(0, 0, 0, 0.12);
+    --graph-label-shadow: 0 0 5px #ffffff, 0 0 8px #ffffff;
+    --badge-border: rgba(0, 0, 0, 0.1);
+    --badge-hover-border: rgba(0, 0, 0, 0.2);
+
     --body-bg-gradient: 
         radial-gradient(at 10% 15%, rgba(16, 185, 129, 0.06) 0px, transparent 55%),
         radial-gradient(at 85% 85%, rgba(14, 165, 233, 0.05) 0px, transparent 65%),
         radial-gradient(at 90% 10%, rgba(187, 247, 208, 0.1) 0px, transparent 50%);
 }
 
-/* 3. Слонова кістка (Тепла молочно-кремова світла тема з приємним теплим відтінком) */
+/* 3. Слонова кістка (Тепла молочно-кремова світла тема) */
 html[data-theme="ivory"] {
     --theme-name: 'ivory';
     --bg-color: #f9f5ea;
@@ -171,6 +205,23 @@ html[data-theme="ivory"] {
     --btn-secondary-border: rgba(90, 68, 30, 0.12);
     --btn-secondary-hover: rgba(90, 68, 30, 0.09);
 
+    /* Семантичні токени інструментів, меню, бекдропів та тіней */
+    --backdrop-bg: rgba(45, 35, 20, 0.35);
+    --surface-dropdown: #fffdf7;
+    --dropdown-border: rgba(90, 68, 30, 0.12);
+    --dropdown-shadow: 0 10px 30px rgba(90, 68, 30, 0.1), 0 1px 4px rgba(90, 68, 30, 0.05);
+    --dropdown-header-border: rgba(90, 68, 30, 0.08);
+    --dropdown-item-hover: rgba(90, 68, 30, 0.06);
+    --panel-shadow: 0 1px 3px rgba(90, 68, 30, 0.05), 0 1px 2px rgba(90, 68, 30, 0.03);
+    --tooltip-bg: #fffdf7;
+    --tooltip-color: #2b251f;
+    --tooltip-border: rgba(90, 68, 30, 0.12);
+    --search-bar-bg: #fffdf7;
+    --search-bar-border: rgba(90, 68, 30, 0.14);
+    --graph-label-shadow: 0 0 5px #f9f5ea, 0 0 8px #f9f5ea;
+    --badge-border: rgba(90, 68, 30, 0.12);
+    --badge-hover-border: rgba(90, 68, 30, 0.22);
+
     --body-bg-gradient: 
         radial-gradient(at 10% 15%, rgba(16, 185, 129, 0.06) 0px, transparent 55%),
         radial-gradient(at 85% 85%, rgba(224, 184, 122, 0.18) 0px, transparent 65%),
@@ -201,7 +252,7 @@ html[data-theme="night-sky"] {
     --scrollbar-thumb-hover: rgba(148, 163, 184, 0.35);
     --sticker-shadow: 0 4px 14px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.1);
 
-    /* Фірмовий смарагдовий градієнт та акцент NothingNotes (незмінний!) */
+    /* Фірмовий смарагдовий градієнт та акцент NothingNotes */
     --accent-color: #16b981;
     --emerald-gradient: linear-gradient(135deg, #B3CD9D 0%, #16B981 30%, #ACF9DF 65%, #16B981 85%, #B3CD9D 100%);
     --emerald-gradient-text: linear-gradient(120deg, #B3CD9D 0%, #16B981 35%, #ACF9DF 70%, #16B981 100%);
@@ -229,13 +280,30 @@ html[data-theme="night-sky"] {
     --btn-secondary-border: rgba(148, 163, 184, 0.2);
     --btn-secondary-hover: rgba(255, 255, 255, 0.15);
 
+    /* Семантичні токени інструментів, меню, бекдропів та тіней */
+    --backdrop-bg: rgba(5, 8, 16, 0.7);
+    --surface-dropdown: #131b2e;
+    --dropdown-border: rgba(148, 163, 184, 0.18);
+    --dropdown-shadow: 0 16px 40px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(148, 163, 184, 0.15);
+    --dropdown-header-border: rgba(148, 163, 184, 0.12);
+    --dropdown-item-hover: rgba(255, 255, 255, 0.08);
+    --panel-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --tooltip-bg: #131b2e;
+    --tooltip-color: #ffffff;
+    --tooltip-border: rgba(148, 163, 184, 0.2);
+    --search-bar-bg: #131b2e;
+    --search-bar-border: rgba(148, 163, 184, 0.2);
+    --graph-label-shadow: 0 0 5px #000000, 0 0 8px #000000;
+    --badge-border: rgba(148, 163, 184, 0.14);
+    --badge-hover-border: rgba(148, 163, 184, 0.28);
+
     --body-bg-gradient: 
         radial-gradient(at 10% 15%, rgba(22, 185, 129, 0.06) 0px, transparent 55%),
         radial-gradient(at 85% 85%, rgba(15, 23, 42, 0.3) 0px, transparent 65%),
         radial-gradient(at 90% 10%, rgba(30, 58, 138, 0.15) 0px, transparent 50%);
 }
 
-/* 4. Темний ліс (Приглушена жовто-зелена / Monokai стиль) */
+/* 5. Темний ліс (Приглушена жовто-зелена / Monokai стиль) */
 html[data-theme="forest"] {
     --theme-name: 'forest';
     --bg-color: #1d1e19;
@@ -259,7 +327,7 @@ html[data-theme="forest"] {
     --scrollbar-thumb-hover: rgba(255, 255, 255, 0.22);
     --sticker-shadow: 0 4px 14px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.1);
 
-    /* Фірмовий смарагдовий градієнт та акцент NothingNotes (незмінний!) */
+    /* Фірмовий смарагдовий градієнт та акцент NothingNotes */
     --accent-color: #16b981;
     --emerald-gradient: linear-gradient(135deg, #B3CD9D 0%, #16B981 30%, #ACF9DF 65%, #16B981 85%, #B3CD9D 100%);
     --emerald-gradient-text: linear-gradient(120deg, #B3CD9D 0%, #16B981 35%, #ACF9DF 70%, #16B981 100%);
@@ -287,9 +355,25 @@ html[data-theme="forest"] {
     --btn-secondary-border: rgba(255, 255, 255, 0.15);
     --btn-secondary-hover: rgba(255, 255, 255, 0.16);
 
+    /* Семантичні токени інструментів, меню, бекдропів та тіней */
+    --backdrop-bg: rgba(15, 16, 12, 0.7);
+    --surface-dropdown: #272822;
+    --dropdown-border: rgba(255, 255, 255, 0.1);
+    --dropdown-shadow: 0 16px 40px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.08);
+    --dropdown-header-border: rgba(255, 255, 255, 0.08);
+    --dropdown-item-hover: rgba(255, 255, 255, 0.08);
+    --panel-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --tooltip-bg: #272822;
+    --tooltip-color: #ffffff;
+    --tooltip-border: rgba(255, 255, 255, 0.14);
+    --search-bar-bg: #272822;
+    --search-bar-border: rgba(255, 255, 255, 0.14);
+    --graph-label-shadow: 0 0 5px #000000, 0 0 8px #000000;
+    --badge-border: rgba(255, 255, 255, 0.1);
+    --badge-hover-border: rgba(255, 255, 255, 0.2);
+
     --body-bg-gradient: 
         radial-gradient(at 10% 15%, rgba(166, 226, 46, 0.04) 0px, transparent 55%),
         radial-gradient(at 85% 85%, rgba(15, 16, 12, 0.4) 0px, transparent 65%),
         radial-gradient(at 90% 10%, rgba(230, 219, 116, 0.03) 0px, transparent 50%);
 }
-
