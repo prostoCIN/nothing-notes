@@ -342,6 +342,9 @@ body.is-sticker-dragging * {
     min-height: 28px;
     display: block !important;
     word-break: break-word;
+    overflow-wrap: anywhere;
+    box-sizing: border-box;
+    max-width: 100%;
     position: relative;
 }
 

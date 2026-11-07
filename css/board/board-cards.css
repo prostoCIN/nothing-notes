@@ -29,7 +29,13 @@
 
 .board-nodes-layer .note-sticker .sticker-content {
     max-height: none !important;
-    overflow: visible !important;
+    overflow: hidden !important;
+    overflow-x: hidden !important;
+    overflow-y: hidden !important;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    box-sizing: border-box;
+    max-width: 100%;
 }
 
 .board-nodes-layer .note-sticker .sticker-header,

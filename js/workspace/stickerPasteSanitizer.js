@@ -327,7 +327,16 @@ window.App = window.App || {};
             }
         }
 
-        const isBlock = ['p', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li'].includes(tagName);
+        if (tagName === 'td' || tagName === 'th') {
+            const cellFrag = document.createDocumentFragment();
+            cellFrag.appendChild(currentWrapper);
+            if (hasSubsequentContent(node)) {
+                cellFrag.appendChild(document.createTextNode(' | '));
+            }
+            return cellFrag;
+        }
+
+        const isBlock = ['p', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'tr'].includes(tagName);
 
         let currentWrapper = childFrag;
 
@@ -385,8 +394,8 @@ window.App = window.App || {};
             parent.removeChild(innerBold);
         });
 
-        // Видаляємо сторонні форматувальні теги (code, pre, kbd, samp, var, tt, i, em, u, s, strike, font, small, sub, sup, span без класу note-marker), залишаючи їх чистий текст
-        const foreignElements = container.querySelectorAll('code, pre, kbd, samp, var, tt, i, em, u, s, strike, font, small, sub, sup, span:not(.note-marker)');
+        // Видаляємо сторонні форматувальні теги (таблиці, code, pre, kbd, samp, var, tt, i, em, u, s, strike, font, small, sub, sup, span без класу note-marker), залишаючи їх чистий текст
+        const foreignElements = container.querySelectorAll('table, thead, tbody, tfoot, tr, td, th, code, pre, kbd, samp, var, tt, i, em, u, s, strike, font, small, sub, sup, span:not(.note-marker)');
         foreignElements.forEach(el => {
             const parent = el.parentNode;
             if (parent) {
@@ -396,6 +405,19 @@ window.App = window.App || {};
                 parent.removeChild(el);
             }
         });
+
+        // Нормалізуємо нерозривні пробіли, табуляції та надмірні проміжки у текстових вузлах
+        const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+        let textNode;
+        while ((textNode = walker.nextNode())) {
+            let val = textNode.nodeValue;
+            if (val.includes('\u00A0') || val.includes('\t') || /[ \t]{3,}/.test(val)) {
+                textNode.nodeValue = val
+                    .replace(/\u00A0/g, ' ')
+                    .replace(/\t/g, '  ')
+                    .replace(/[ \t]{3,}/g, '  ');
+            }
+        }
 
         // Видаляємо будь-які залишки інлайн-стилів на будь-яких елементах, крім коректних маркерів
         const elementsWithStyle = container.querySelectorAll('[style]');

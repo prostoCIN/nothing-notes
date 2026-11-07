@@ -165,6 +165,11 @@
     color: #292524;
     font-weight: 400;
     word-break: break-word;
+    overflow-wrap: anywhere;
+    box-sizing: border-box;
+    max-width: 100%;
+    tab-size: 2;
+    -moz-tab-size: 2;
     white-space: pre-wrap;
     position: relative;
     /* Чіткі тонкі горизонтальні лінії блокнота під кожним рядком тексту як у Moleskine */

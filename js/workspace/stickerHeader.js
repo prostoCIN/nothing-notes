@@ -193,7 +193,12 @@ window.App = window.App || {};
                     const text = (e.clipboardData || window.clipboardData)?.getData('text/plain') || '';
                     if (!text) return;
 
-                    const cleanText = text.replace(/\r?\n|\r/g, ' ');
+                    const cleanText = text
+                        .replace(/\u00A0/g, ' ')
+                        .replace(/\t/g, ' ')
+                        .replace(/\r?\n|\r/g, ' ')
+                        .replace(/[ ]{2,}/g, ' ')
+                        .trim();
 
                     if (document.queryCommandSupported && document.queryCommandSupported('insertText')) {
                         document.execCommand('insertText', false, cleanText);
@@ -222,7 +227,12 @@ window.App = window.App || {};
                     const text = e.dataTransfer?.getData('text/plain') || '';
                     if (!text) return;
 
-                    const cleanText = text.replace(/\r?\n|\r/g, ' ');
+                    const cleanText = text
+                        .replace(/\u00A0/g, ' ')
+                        .replace(/\t/g, ' ')
+                        .replace(/\r?\n|\r/g, ' ')
+                        .replace(/[ ]{2,}/g, ' ')
+                        .trim();
 
                     let range = null;
                     if (document.caretRangeFromPoint) {

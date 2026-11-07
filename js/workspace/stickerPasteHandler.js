@@ -338,15 +338,27 @@ window.App = window.App || {};
 
         range.deleteContents();
 
-        const cleanText = text.replace(/^[\r\n]+|[\r\n]+$/g, '');
+        const cleanText = text.replace(/\u00A0/g, ' ').replace(/^[\r\n]+|[\r\n]+$/g, '');
         const normalizedText = cleanText.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
         const lines = normalizedText.split('\n');
         const frag = document.createDocumentFragment();
         let lastNode = null;
 
         lines.forEach((line, idx) => {
-            if (line.length > 0) {
-                lastNode = frag.appendChild(document.createTextNode(line));
+            // Зберігаємо відступ на початку рядка, нормалізуючи табуляції
+            const indentMatch = line.match(/^([ \t]+)/);
+            let indent = '';
+            let rest = line;
+            if (indentMatch) {
+                indent = indentMatch[1].replace(/\t/g, '  ');
+                rest = line.slice(indentMatch[0].length);
+            }
+            // Видаляємо кінцеві пробіли/табуляції та стискаємо штучні широкі розриви з таблиць
+            rest = rest.replace(/\t/g, '  ').replace(/[ \t]+$/, '').replace(/[ \t]{3,}/g, '  ');
+            const processedLine = indent + rest;
+
+            if (processedLine.length > 0) {
+                lastNode = frag.appendChild(document.createTextNode(processedLine));
             }
             if (idx < lines.length - 1) {
                 lastNode = frag.appendChild(document.createElement('br'));
