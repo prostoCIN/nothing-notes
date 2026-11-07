@@ -515,9 +515,14 @@ window.App = window.App || {};
             return;
         }
 
-        const html = clipboardData.getData("text/html");
-        const plainText = clipboardData.getData("text/plain");
-        if (!html && !plainText) return;
+        const rawHtml = clipboardData.getData("text/html");
+        const rawPlainText = clipboardData.getData("text/plain");
+        if (!rawHtml && !rawPlainText) return;
+
+        // Захист від Clipboard Bombing (обмеження надмірного тексту)
+        const MAX_TEXT_LEN = 100000;
+        const plainText = rawPlainText ? rawPlainText.slice(0, MAX_TEXT_LEN) : '';
+        const html = rawHtml ? rawHtml.slice(0, MAX_TEXT_LEN * 2) : '';
 
         e.preventDefault();
         e.stopPropagation();

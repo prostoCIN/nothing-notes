@@ -142,7 +142,7 @@ window.App = window.App || {};
 
                 titleDiv.addEventListener('input', () => {
                     updateTitlePlaceholder();
-                    const text = titleDiv.innerText.replace(/\r?\n|\r/g, ' ').trim();
+                    const text = titleDiv.innerText.replace(/\r?\n|\r/g, ' ').slice(0, 500).trim();
                     if (noteManager && noteManager.updateNote) {
                         noteManager.updateNote(note.id, { title: text });
                     }

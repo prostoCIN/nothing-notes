@@ -53,7 +53,9 @@ window.App = window.App || {};
                 }
             }
 
-            contentDiv.innerHTML = initialContent;
+            const sanitizer = window.App.stickerPasteSanitizer;
+            const safeContent = (sanitizer && sanitizer.sanitizeNoteHtml) ? sanitizer.sanitizeNoteHtml(initialContent) : initialContent;
+            contentDiv.innerHTML = safeContent;
 
             function updateContentPlaceholder() {
                 if (isReadOnly) return;

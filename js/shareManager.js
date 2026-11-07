@@ -123,13 +123,16 @@ window.App = window.App || {};
                     finalNotes = finalNotes.filter(n => !hiddenSet.has(n.id));
                 }
 
-                // Форматуємо нотатки під структуру нашого додатку
+                // Форматуємо та безпечно санітизуємо спільні нотатки
+                const sanitizer = window.App.stickerPasteSanitizer;
+                const safeSanitize = (html) => (sanitizer && sanitizer.sanitizeNoteHtml ? sanitizer.sanitizeNoteHtml(html) : (html || ''));
+
                 const formattedNotes = finalNotes.map(n => ({
-                    id: n.id,
+                    id: String(n.id || ''),
                     boardId: 'shared_' + shareData.board_id,
                     parentId: n.parent_id || null,
-                    title: n.title || '',
-                    content: n.content || '',
+                    title: String(n.title || '').slice(0, 500),
+                    content: safeSanitize(n.content || ''),
                     color: n.color || 'yellow',
                     fontSize: n.font_size || 16,
                     icon: n.icon || '',

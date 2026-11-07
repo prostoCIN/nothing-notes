@@ -205,12 +205,15 @@ window.App = window.App || {};
                             ? localNote.boardY
                             : (typeof savedPos.boardY === 'number' ? savedPos.boardY : undefined);
 
+                        const sanitizer = window.App.stickerPasteSanitizer;
+                        const safeContent = (sanitizer && sanitizer.sanitizeNoteHtml) ? sanitizer.sanitizeNoteHtml(n.content || '') : (n.content || '');
+
                         return {
                             id: n.id,
                             boardId: resolvedBoardId,
                             parentId: n.parent_id || null,
-                            title: n.title || '',
-                            content: n.content || '',
+                            title: String(n.title || '').slice(0, 500),
+                            content: safeContent,
                             color: n.color || 'yellow',
                             fontSize: n.font_size || 16,
                             icon: n.icon || '',

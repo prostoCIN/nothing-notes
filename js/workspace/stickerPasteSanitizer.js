@@ -480,11 +480,112 @@ window.App = window.App || {};
     }
 
 
+    /**
+     * Сувора санітизація HTML нотатки перед рендерингом (захист від Stored XSS)
+     * Працює у браузерному DOMParser пісочниці без виконання скриптів.
+     * @param {string} rawHtml
+     * @returns {string} - безпечний очищений HTML
+     */
+    function sanitizeNoteHtml(rawHtml) {
+        if (!rawHtml || typeof rawHtml !== 'string') return '';
+        if (!rawHtml.includes('<')) return rawHtml;
+
+        try {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(rawHtml, 'text/html');
+            const body = doc.body;
+            if (!body) return '';
+
+            // 1. Негайне видалення будь-яких небезпечних активних елементів
+            const dangerousElements = body.querySelectorAll(
+                'script, iframe, object, embed, applet, form, input, button, select, textarea, svg, math, link, style, meta, base'
+            );
+            dangerousElements.forEach(el => el.remove());
+
+            // 2. Рекурсивне очищення та нормалізація дозволених тегів
+            function cleanElement(el) {
+                const tag = el.tagName.toLowerCase();
+
+                // Видаляємо всі атрибути подій (onerror, onload, onclick тощо) та шкідливі протоколи
+                Array.from(el.attributes).forEach(attr => {
+                    const attrName = attr.name.toLowerCase();
+                    const attrVal = attr.value.trim().toLowerCase();
+                    if (attrName.startsWith('on') || attrVal.startsWith('javascript:') || attrVal.startsWith('vbscript:') || attrVal.startsWith('data:text/html')) {
+                        el.removeAttribute(attr.name);
+                    }
+                });
+
+                const ALLOWED_TAGS = ['b', 'strong', 'mark', 'br', 'span'];
+
+                if (!ALLOWED_TAGS.includes(tag)) {
+                    // Якщо тег не в білому списку — розгортаємо його, зберігаючи лише внутрішній текст
+                    const parent = el.parentNode;
+                    if (parent) {
+                        while (el.firstChild) {
+                            parent.insertBefore(el.firstChild, el);
+                        }
+                        parent.removeChild(el);
+                    }
+                    return;
+                }
+
+                if (tag === 'mark' || tag === 'span') {
+                    // Залишаємо виключно валідні класи маркерів
+                    const validClasses = [];
+                    el.classList.forEach(cls => {
+                        if (cls === 'note-marker' || cls.startsWith('hl-')) {
+                            validClasses.push(cls);
+                        }
+                    });
+
+                    if (validClasses.length > 0) {
+                        el.className = validClasses.join(' ');
+                    } else if (tag === 'span') {
+                        // Якщо span не містить маркерів — розгортаємо його
+                        const parent = el.parentNode;
+                        if (parent) {
+                            while (el.firstChild) {
+                                parent.insertBefore(el.firstChild, el);
+                            }
+                            parent.removeChild(el);
+                        }
+                        return;
+                    } else {
+                        el.removeAttribute('class');
+                    }
+
+                    // Для стилів залишаємо тільки безпечні кольори маркера
+                    if (el.hasAttribute('style')) {
+                        const bg = el.style.backgroundColor;
+                        const col = el.style.color;
+                        el.removeAttribute('style');
+                        if (bg && (bg.startsWith('#') || bg.startsWith('rgb'))) el.style.backgroundColor = bg;
+                        if (col && (col.startsWith('#') || col.startsWith('rgb'))) el.style.color = col;
+                    }
+                } else if (tag === 'b' || tag === 'strong' || tag === 'br') {
+                    while (el.attributes.length > 0) {
+                        el.removeAttribute(el.attributes[0].name);
+                    }
+                }
+
+                Array.from(el.children).forEach(child => cleanElement(child));
+            }
+
+            Array.from(body.children).forEach(child => cleanElement(child));
+            return body.innerHTML;
+        } catch (e) {
+            console.warn('[stickerPasteSanitizer] Fallback санітизації HTML:', e);
+            return rawHtml.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+    }
+
+
     window.App.stickerPasteSanitizer = {
         resolveColorToRgb,
         matchColorToMarkerClass,
         getFormattedSelectionHtml,
         sanitizePastedNode,
-        normalizeSanitizedHtml
+        normalizeSanitizedHtml,
+        sanitizeNoteHtml
     };
 })();

@@ -10,8 +10,13 @@ window.App = window.App || {};
             if (!supabase || !currentUser || !base64Data) return null;
 
             try {
+                const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
                 const res = await fetch(base64Data);
                 const blob = await res.blob();
+                if (blob.size > MAX_IMAGE_SIZE) {
+                    console.warn('[CloudSync] Base64 image exceeds 10MB limit');
+                    return null;
+                }
                 const filePath = `${currentUser.id}/${imgId}.jpg`;
 
                 const { error } = await supabase.storage
@@ -41,7 +46,17 @@ window.App = window.App || {};
         async uploadImageFile(file, imgId) {
             const supabase = window.App.supabase;
             const currentUser = window.App.cloudSync ? window.App.cloudSync.getCurrentUser() : null;
-            if (!supabase || !currentUser) return null;
+            if (!supabase || !currentUser || !file) return null;
+
+            const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
+            if (file.size > MAX_IMAGE_SIZE) {
+                console.warn('[CloudSync] Image file exceeds 10MB limit');
+                return null;
+            }
+            if (file.type && !file.type.startsWith('image/')) {
+                console.warn('[CloudSync] Invalid file type, only images allowed');
+                return null;
+            }
 
             try {
                 const fileExt = file.name ? file.name.split('.').pop() : 'jpg';
