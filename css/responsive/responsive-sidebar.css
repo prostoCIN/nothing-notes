@@ -303,16 +303,49 @@
         color: #ffffff !important;
     }
 
-    /* Перейменувати (нейтральний графітовий/сірий) */
+    /* Перейменувати (колір контейнеру де текст та іконка при свайпі) */
     .board-item .sidebar-action-btn.edit-btn,
     .note-item .sidebar-action-btn.edit-btn {
-        background: #3b4252 !important;
-        color: #ffffff !important;
+        background: var(--hover-bg, rgba(255, 255, 255, 0.08)) !important;
+        color: var(--text-main, #ffffff) !important;
     }
 
+    .board-item .sidebar-action-btn.edit-btn svg,
+    .note-item .sidebar-action-btn.edit-btn svg {
+        stroke: var(--text-main, #ffffff) !important;
+    }
+
+    /* Якщо плашка активна — кнопка редагування наслідує її активний тон */
+    .board-item.active .board-actions .edit-btn {
+        background: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    .note-item.is-active-note .note-actions .edit-btn {
+        background: rgba(16, 185, 129, 0.16) !important;
+    }
+
+    .note-item.is-selected .note-actions .edit-btn {
+        background: rgba(16, 185, 129, 0.22) !important;
+    }
+
+    /* Підтримка світлої теми */
     html[data-theme="light"] .board-item .sidebar-action-btn.edit-btn,
     html[data-theme="light"] .note-item .sidebar-action-btn.edit-btn {
-        background: #4c566a !important;
+        background: rgba(0, 0, 0, 0.05) !important;
+        color: var(--text-main, #111827) !important;
+    }
+
+    html[data-theme="light"] .board-item .sidebar-action-btn.edit-btn svg,
+    html[data-theme="light"] .note-item .sidebar-action-btn.edit-btn svg {
+        stroke: var(--text-main, #111827) !important;
+    }
+
+    html[data-theme="light"] .board-item.active .board-actions .edit-btn {
+        background: rgba(0, 0, 0, 0.06) !important;
+    }
+
+    html[data-theme="light"] .note-item.is-active-note .note-actions .edit-btn {
+        background: rgba(16, 185, 129, 0.12) !important;
     }
 
     /* Видалити (чистий червоний iOS delete) */
