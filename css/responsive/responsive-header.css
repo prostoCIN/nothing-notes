@@ -197,7 +197,7 @@
     }
 
 
-    /* 3. Хедер робочої області (Компактний мобільний формат + Ідеальна адаптація під iOS Safari та PWA) */
+    /* 3. Хедер робочої області (Компактний мобільний формат) */
     .workspace-top-header {
         padding-top: calc(env(safe-area-inset-top, 0px) + 6px) !important;
         padding-left: max(14px, env(safe-area-inset-left, 0px)) !important;
@@ -206,13 +206,6 @@
         height: auto !important;
         min-height: auto !important;
         box-sizing: border-box !important;
-    }
-
-    /* Якщо сайт відкрито як PWA / Додано на екран «Додому» (Standalone Web App на iOS) */
-    @media all and (display-mode: standalone) {
-        .workspace-top-header {
-            padding-top: max(env(safe-area-inset-top, 44px), 44px) !important;
-        }
     }
 
     /* Приховуємо блок заголовка блокнота на мобільних, оскільки назва вже є в самій кореневій колонці */
