@@ -2,7 +2,7 @@
   "id": "/",
   "name": "NothingNotes",
   "short_name": "NothingNotes",
-  "description": "Мінімалістичний персональний простір для думок, ідей та нотаток у стилі Nothing OS з миттєвою синхронізацією.",
+  "description": "Мінімалістичний редактор нотаток",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
