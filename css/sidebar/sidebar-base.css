@@ -70,8 +70,22 @@
 
 .boards-section {
     max-height: 45%;
+    min-height: 78px;
     border-bottom: 1px solid var(--border-color);
     padding-bottom: 8px;
+}
+
+/* Мінімальний ліміт стискання секції блокнотів (гарантує видимість щонайменше 3 плашок при стисканні) */
+.boards-section:has(#sidebar-boards-list > :nth-child(3)) {
+    min-height: 148px;
+}
+
+.boards-section:has(#sidebar-boards-list > :nth-child(2)):not(:has(#sidebar-boards-list > :nth-child(3))) {
+    min-height: 114px;
+}
+
+.boards-section:has(#sidebar-boards-list > :only-child) {
+    min-height: 78px;
 }
 
 .notes-section {

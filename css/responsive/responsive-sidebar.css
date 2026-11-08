@@ -88,6 +88,19 @@
         padding-left: 3px !important;
     }
 
+    /* Ліміт стискання секції блокнотів на смартфонах (гарантує видимість до 3 великих плашок) */
+    .boards-section:has(#sidebar-boards-list > :nth-child(3)) {
+        min-height: 210px !important;
+    }
+
+    .boards-section:has(#sidebar-boards-list > :nth-child(2)):not(:has(#sidebar-boards-list > :nth-child(3))) {
+        min-height: 155px !important;
+    }
+
+    .boards-section:has(#sidebar-boards-list > :only-child) {
+        min-height: 102px !important;
+    }
+
     /* 4. Збільшення блоків блокнотів та нотаток у лівій панелі (в 1.5 - 1.8 рази) для зручного тапу та свайпу */
     .board-item,
     .note-item {
