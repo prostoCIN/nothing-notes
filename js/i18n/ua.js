@@ -142,6 +142,8 @@ export const ua = {
         createSubnote: 'Додати піднотатку',
         fullscreenStretch: 'Розтягнути на весь екран',
         fullscreenCollapse: 'Згорнути в звичайний розмір',
+        fullscreenLock: 'Зафіксувати скрол на колонці (поставити замок)',
+        fullscreenUnlock: 'Зняти замок та повернути звичайний розмір',
         filterByTags: 'Фільтр за тегами',
         clearFilter: 'Скинути фільтр',
         resetFilter: 'Скинути',

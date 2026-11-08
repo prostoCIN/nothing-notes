@@ -28,6 +28,8 @@ function bootstrapApp() {
             }
             if (window.App.state) {
                 window.App.state.stretchedColumnKey = null;
+                window.App.state.lockedColumnKey = null;
+                window.App.state.lockedScrollLeft = null;
             }
             welcomeView.hide();
             sidebarView.render();

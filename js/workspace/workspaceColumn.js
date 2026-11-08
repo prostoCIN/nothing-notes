@@ -459,35 +459,51 @@ window.App = window.App || {};
                 if (onLayoutChange) onLayoutChange();
             });
 
-            // Кнопка розтягування колонки на весь екран (Full width toggle у ПК версії)
+            // Кнопка розтягування колонки на весь екран та блокування скролу (3 стани: звичайний -> розтягнутий -> замочок)
             const isStretched = !!(state && state.stretchedColumnKey === parentKey);
+            const isLocked = isStretched && !!(state && state.lockedColumnKey === parentKey);
             if (isStretched) {
                 columnEl.classList.add('column-stretched-full');
             }
+            if (isLocked) {
+                columnEl.classList.add('column-locked');
+            }
 
             const expandColumnBtn = document.createElement('button');
-            expandColumnBtn.className = `column-expand-toggle-btn ${isStretched ? 'active' : ''}`;
-            expandColumnBtn.title = isStretched ? t('column.fullscreenCollapse') : t('column.fullscreenStretch');
+            expandColumnBtn.className = `column-expand-toggle-btn ${isStretched ? 'active' : ''} ${isLocked ? 'is-locked' : ''}`;
+            expandColumnBtn.title = isLocked
+                ? t('column.fullscreenUnlock')
+                : (isStretched ? t('column.fullscreenLock') : t('column.fullscreenStretch'));
 
-            const updateExpandIcon = (btn, stretched) => {
-                btn.innerHTML = stretched
-                    ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                         <polyline points="4 14 10 14 10 20"></polyline>
-                         <polyline points="20 10 14 10 14 4"></polyline>
-                         <line x1="14" y1="10" x2="21" y2="3"></line>
-                         <line x1="3" y1="21" x2="10" y2="14"></line>
-                       </svg>`
-                    : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                         <polyline points="15 3 21 3 21 9"></polyline>
-                         <polyline points="9 21 3 21 3 15"></polyline>
-                         <line x1="21" y1="3" x2="14" y2="10"></line>
-                         <line x1="3" y1="21" x2="10" y2="14"></line>
-                       </svg>`;
+            const updateExpandIcon = (btn, mode) => {
+                if (mode === 'locked') {
+                    // Іконка замка (блокування скролу на розтягнутій колонці)
+                    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>`;
+                } else if (mode === 'stretched') {
+                    // Іконка активного розтягування (стрілочки всередину)
+                    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="4 14 10 14 10 20"></polyline>
+                        <polyline points="20 10 14 10 14 4"></polyline>
+                        <line x1="14" y1="10" x2="21" y2="3"></line>
+                        <line x1="3" y1="21" x2="10" y2="14"></line>
+                    </svg>`;
+                } else {
+                    // Іконка звичайного неактивного стану (стрілочки назовні)
+                    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <polyline points="9 21 3 21 3 15"></polyline>
+                        <line x1="21" y1="3" x2="14" y2="10"></line>
+                        <line x1="3" y1="21" x2="10" y2="14"></line>
+                    </svg>`;
+                }
             };
-            updateExpandIcon(expandColumnBtn, isStretched);
+            updateExpandIcon(expandColumnBtn, isLocked ? 'locked' : (isStretched ? 'stretched' : 'normal'));
 
             // Плавне синхронне центрування скролу разом із 250мс CSS-анімацією розширення/звуження
-            const animateScrollToCenter = () => {
+            const animateScrollToCenter = (onComplete) => {
                 const container = columnEl.closest('.columns-container');
                 if (!container) return;
 
@@ -522,46 +538,80 @@ window.App = window.App || {};
                         const finalColLeft = (colRect.left - cRect.left) + container.scrollLeft;
                         const finalTarget = finalColLeft - Math.max(0, (cRect.width - colRect.width) / 2);
                         container.scrollLeft = Math.max(0, Math.round(finalTarget));
+                        if (typeof onComplete === 'function') onComplete();
                     }
                 };
 
                 window._columnStretchScrollRaf = requestAnimationFrame(step);
             };
 
+            // Ротація кнопки: неактивний стан -> активний стан розтягування -> замочок -> по колу репетативно
             expandColumnBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const container = columnEl.closest('.columns-container');
                 const currentlyStretched = !!(state && state.stretchedColumnKey === parentKey);
+                const currentlyLocked = currentlyStretched && !!(state && state.lockedColumnKey === parentKey);
 
-                if (currentlyStretched) {
-                    if (state) state.stretchedColumnKey = null;
-                    columnEl.classList.remove('column-stretched-full');
-                    expandColumnBtn.classList.remove('active');
-                    expandColumnBtn.title = t('column.fullscreenStretch');
-                    updateExpandIcon(expandColumnBtn, false);
-                    if (container) {
-                        container.classList.remove('has-stretched-column');
+                if (!currentlyStretched) {
+                    // Стан 0 -> Стан 1: Активний стан розтягування по всій ширині
+                    if (state) {
+                        state.stretchedColumnKey = parentKey;
+                        state.lockedColumnKey = null;
+                        state.lockedScrollLeft = null;
                     }
-                    animateScrollToCenter();
-                } else {
-                    if (state) state.stretchedColumnKey = parentKey;
                     if (container) {
                         container.querySelectorAll('.column-stretched-full').forEach(el => {
-                            el.classList.remove('column-stretched-full');
+                            el.classList.remove('column-stretched-full', 'column-locked');
                         });
                         container.querySelectorAll('.column-expand-toggle-btn.active').forEach(btn => {
-                            btn.classList.remove('active');
+                            btn.classList.remove('active', 'is-locked');
                             btn.title = t('column.fullscreenStretch');
-                            updateExpandIcon(btn, false);
+                            updateExpandIcon(btn, 'normal');
                         });
                         container.classList.add('has-stretched-column');
+                        container.classList.remove('has-locked-column');
                     }
                     columnEl.classList.add('column-stretched-full');
+                    columnEl.classList.remove('column-locked');
                     expandColumnBtn.classList.add('active');
-                    expandColumnBtn.title = t('column.fullscreenCollapse');
-                    updateExpandIcon(expandColumnBtn, true);
+                    expandColumnBtn.classList.remove('is-locked');
+                    expandColumnBtn.title = t('column.fullscreenLock');
+                    updateExpandIcon(expandColumnBtn, 'stretched');
 
-                    // Плавно розширюємо і центруємо розтягнуту колонку
+                    animateScrollToCenter();
+                } else if (!currentlyLocked) {
+                    // Стан 1 -> Стан 2: Стан замочок (фіксація скролу тільки по вертикалі в залоченій колонці)
+                    if (state) {
+                        state.lockedColumnKey = parentKey;
+                    }
+                    if (container) {
+                        container.classList.add('has-stretched-column', 'has-locked-column');
+                        state.lockedScrollLeft = container.scrollLeft;
+                    }
+                    columnEl.classList.add('column-stretched-full', 'column-locked');
+                    expandColumnBtn.classList.add('active', 'is-locked');
+                    expandColumnBtn.title = t('column.fullscreenUnlock');
+                    updateExpandIcon(expandColumnBtn, 'locked');
+
+                    animateScrollToCenter(() => {
+                        if (state && state.lockedColumnKey === parentKey && container) {
+                            state.lockedScrollLeft = container.scrollLeft;
+                        }
+                    });
+                } else {
+                    // Стан 2 -> Стан 0: Повернення до неактивного звичайного стану
+                    if (state) {
+                        state.stretchedColumnKey = null;
+                        state.lockedColumnKey = null;
+                        state.lockedScrollLeft = null;
+                    }
+                    columnEl.classList.remove('column-stretched-full', 'column-locked');
+                    expandColumnBtn.classList.remove('active', 'is-locked');
+                    expandColumnBtn.title = t('column.fullscreenStretch');
+                    updateExpandIcon(expandColumnBtn, 'normal');
+                    if (container) {
+                        container.classList.remove('has-stretched-column', 'has-locked-column');
+                    }
                     animateScrollToCenter();
                 }
             });

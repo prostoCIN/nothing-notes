@@ -317,6 +317,26 @@
     color: #34d399;
 }
 
+/* Стан "замочок" для кнопки розтягування колонки */
+.column-expand-toggle-btn.active.is-locked {
+    background-color: rgba(16, 185, 129, 0.22);
+    border-color: #10b981;
+    color: #10b981;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+}
+
+.column-expand-toggle-btn.active.is-locked:hover {
+    background-color: rgba(16, 185, 129, 0.32);
+    color: #34d399;
+}
+
+html[data-theme="light"] .column-expand-toggle-btn.active.is-locked {
+    background-color: rgba(16, 185, 129, 0.16);
+    border-color: #10b981;
+    color: #059669;
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.2);
+}
+
 .column-select-toggle-btn.active {
     background-color: #10b981;
     border-color: #10b981;

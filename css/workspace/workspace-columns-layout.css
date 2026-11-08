@@ -70,6 +70,15 @@
     max-width: calc((100% - 14px) / 2) !important;
 }
 
+/* Коли колонка залочена (стан замочок) — блокуємо горизонтальний скрол робочої області */
+.columns-container.has-locked-column {
+    overflow-x: hidden !important;
+}
+
+.board-column.column-stretched-full.column-locked {
+    border-color: rgba(16, 185, 129, 0.35);
+}
+
 .board-column.drag-column-target {
     border-color: #10b981 !important;
     background-color: rgba(16, 185, 129, 0.04) !important;

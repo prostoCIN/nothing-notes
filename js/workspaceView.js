@@ -338,6 +338,24 @@ window.App = window.App || {};
                         return;
                     }
 
+                    // Якщо активовано режим "замочок" — блокуємо будь-який горизонтальний скрол до інших колонок
+                    const state = window.App && window.App.state;
+                    if (state && state.lockedColumnKey) {
+                        const notesList = e.target.closest('.column-notes-list, .board-column-notes-list');
+                        if (notesList) {
+                            const canScrollDown = e.deltaY > 0 && notesList.scrollTop + notesList.clientHeight < notesList.scrollHeight - 1;
+                            const canScrollUp = e.deltaY < 0 && notesList.scrollTop > 1;
+
+                            if (canScrollDown || canScrollUp) {
+                                // Дозволяємо виключно вертикальний скрол усередині нотаток залоченої колонки
+                                return;
+                            }
+                        }
+                        // Досягнуто межі списку або курсор поза списком — блокуємо скрол, щоб поле не зміщувалось вліво/вправо
+                        e.preventDefault();
+                        return;
+                    }
+
                     const notesList = e.target.closest('.column-notes-list');
                     if (notesList) {
                         const canScrollDown = e.deltaY > 0 && notesList.scrollTop + notesList.clientHeight < notesList.scrollHeight - 1;
@@ -356,8 +374,14 @@ window.App = window.App || {};
                     }
                 }, { passive: false });
 
-                // Відстежуємо свайп між колонками на мобільних для оновлення індикатора крапок
+                // Відстежуємо свайп між колонками та блокуємо зсув залоченої колонки
                 columnsContainer.addEventListener('scroll', () => {
+                    const state = window.App && window.App.state;
+                    if (state && state.lockedColumnKey && typeof state.lockedScrollLeft === 'number') {
+                        if (Math.abs(columnsContainer.scrollLeft - state.lockedScrollLeft) > 1) {
+                            columnsContainer.scrollLeft = state.lockedScrollLeft;
+                        }
+                    }
                     if (window.innerWidth <= 768) {
                         this.updateMobilePagination();
                     }
@@ -595,18 +619,25 @@ window.App = window.App || {};
                 els.columnsContainer.classList.remove('has-many-columns');
             }
 
-            // Перевіряємо та застосовуємо стан розтягнутої на весь екран колонки
+            // Перевіряємо та застосовуємо стан розтягнутої на весь екран / залоченої колонки
             if (state && state.stretchedColumnKey) {
                 const chainKeys = (state.activeChain || []).map(id => id || 'root');
                 if (!chainKeys.includes(state.stretchedColumnKey)) {
                     state.stretchedColumnKey = null;
+                    state.lockedColumnKey = null;
+                    state.lockedScrollLeft = null;
                 }
             }
 
             if (state && state.stretchedColumnKey) {
                 els.columnsContainer.classList.add('has-stretched-column');
+                if (state.lockedColumnKey) {
+                    els.columnsContainer.classList.add('has-locked-column');
+                } else {
+                    els.columnsContainer.classList.remove('has-locked-column');
+                }
             } else {
-                els.columnsContainer.classList.remove('has-stretched-column');
+                els.columnsContainer.classList.remove('has-stretched-column', 'has-locked-column');
             }
 
             // Рендеримо кожну колонку ланцюжка
@@ -634,7 +665,9 @@ window.App = window.App || {};
             }
 
             // Відновлюємо горизонтальну позицію скролу
-            if (prevContainerScrollLeft > 0) {
+            if (state && state.lockedColumnKey && typeof state.lockedScrollLeft === 'number') {
+                els.columnsContainer.scrollLeft = state.lockedScrollLeft;
+            } else if (prevContainerScrollLeft > 0) {
                 els.columnsContainer.scrollLeft = prevContainerScrollLeft;
             }
 

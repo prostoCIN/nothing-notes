@@ -285,7 +285,9 @@ window.App.storage = {
         draggedNoteId: null, // ID поточної нотатки, що перетягується
         activeTagFilters: new Map(), // Карта фільтрів тегів для колонок: key: parentId || 'root' -> Set<tagText>
         columnLayouts: window.App.storage.getColumnLayouts(), // key: parentId || 'root' -> 'list' | 'grid'
-        stretchedColumnKey: null // parentKey ('root' або noteId) колонки, розтягнутої на весь екран у ПК версії
+        stretchedColumnKey: null, // parentKey ('root' або noteId) колонки, розтягнутої на весь екран у ПК версії
+        lockedColumnKey: null, // parentKey залоченої колонки (блокування горизонтального скролу)
+        lockedScrollLeft: null // зафіксована позиція scrollLeft залоченої колонки
     };
 
     // Proxy для безпечного доступу та автоматичної синхронізації при прямих мутаціях state.prop = val
@@ -479,8 +481,10 @@ window.App.storage = {
             this._notify('isDraggingNote', rawState.isDraggingNote);
         },
 
-        setStretchedColumn(key) {
+        setStretchedColumn(key, isLocked = false) {
             rawState.stretchedColumnKey = key;
+            rawState.lockedColumnKey = isLocked ? key : null;
+            if (!isLocked) rawState.lockedScrollLeft = null;
             this._notify('stretchedColumnKey', key);
         },
 
@@ -495,6 +499,8 @@ window.App.storage = {
             rawState.draggedNoteId = null;
             rawState.activeTagFilters.clear();
             rawState.stretchedColumnKey = null;
+            rawState.lockedColumnKey = null;
+            rawState.lockedScrollLeft = null;
             this._notify('state:reset', null);
         },
 
