@@ -119,6 +119,11 @@ window.App = window.App || {};
             } else {
                 focusAndScrollToMatch(card);
             }
+
+            // Якщо ми на інтерактивній дошці (Canvas Board) — плавно центруємо камеру на знайденій нотатці
+            if (window.App.state && window.App.state.viewMode === 'board' && window.App.boardView && typeof window.App.boardView.panToNote === 'function') {
+                window.App.boardView.panToNote(targetMatch.noteId);
+            }
         },
 
         applyHighlightsToDOM(target) {

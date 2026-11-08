@@ -343,6 +343,15 @@
     transition: opacity 0.2s ease, filter 0.2s ease;
 }
 
+/* На інтерактивній дошці стікерів (Board Canvas) блокуємо ЛИШЕ згортання піднотаток */
+.workspace-top-header.board-mode-active #workspace-collapse-wrap {
+    opacity: 0.22 !important;
+    pointer-events: none !important;
+    user-select: none !important;
+    filter: grayscale(0.85);
+    transition: opacity 0.2s ease, filter 0.2s ease;
+}
+
 .header-tools-pill,
 .header-tools-control,
 .header-history-control {

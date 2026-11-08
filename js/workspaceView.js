@@ -564,11 +564,10 @@ window.App = window.App || {};
                     this.ensureBoardLoaded().then(() => this.render());
                     return;
                 }
-                if (topHeader) topHeader.classList.add('graph-mode-active');
-                if (window.App.brushTool) window.App.brushTool.disable();
-                if (window.App.eraserTool) window.App.eraserTool.disable();
-                if (window.App.textSelectionToolbar) window.App.textSelectionToolbar.hide();
-                if (window.App.workspaceSearch) window.App.workspaceSearch.close();
+                if (topHeader) {
+                    topHeader.classList.remove('graph-mode-active');
+                    topHeader.classList.add('board-mode-active');
+                }
                 if (window.App.graphView) window.App.graphView.stopSimulation();
 
                 els.columnsContainer.classList.add('has-canvas-mode');
@@ -584,7 +583,10 @@ window.App = window.App || {};
                     this.ensureGraphLoaded().then(() => this.render());
                     return;
                 }
-                if (topHeader) topHeader.classList.add('graph-mode-active');
+                if (topHeader) {
+                    topHeader.classList.add('graph-mode-active');
+                    topHeader.classList.remove('board-mode-active');
+                }
                 if (window.App.brushTool) window.App.brushTool.disable();
                 if (window.App.eraserTool) window.App.eraserTool.disable();
                 if (window.App.textSelectionToolbar) window.App.textSelectionToolbar.hide();
@@ -607,7 +609,7 @@ window.App = window.App || {};
             });
 
             els.columnsContainer.innerHTML = '';
-            if (topHeader && !isBoardReadOnly) topHeader.classList.remove('graph-mode-active');
+            if (topHeader && !isBoardReadOnly) topHeader.classList.remove('graph-mode-active', 'board-mode-active');
             if (window.App.graphView) window.App.graphView.stopSimulation();
             if (window.App.boardView) window.App.boardView.cleanup();
 

@@ -58,6 +58,10 @@ window.App = window.App || {};
         if (a.icon !== b.icon) return false;
         if (a.isCollapsed !== b.isCollapsed) return false;
         if (a.gridCol !== b.gridCol) return false;
+        if (a.canvasX !== b.canvasX) return false;
+        if (a.canvasY !== b.canvasY) return false;
+        if (a.boardX !== b.boardX) return false;
+        if (a.boardY !== b.boardY) return false;
 
         // Порівняння масивів тегів
         const aTags = Array.isArray(a.tags) ? a.tags : [];

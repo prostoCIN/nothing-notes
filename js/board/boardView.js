@@ -671,6 +671,9 @@ window.App = window.App || {};
                         hasMoved = true;
                         isDraggingNode = true;
                         draggedNode = node;
+                        if (window.App.historyManager) {
+                            window.App.historyManager.recordState('move_board_nodes');
+                        }
                         dragNodes.forEach(n => {
                             if (n.element) n.element.classList.add('is-dragging');
                         });
@@ -1471,6 +1474,22 @@ window.App = window.App || {};
 
         getNodes() {
             return nodes;
+        },
+
+        panToNote(noteId) {
+            const node = nodes.find(n => n.id === noteId);
+            if (!node || !window.App.boardInteraction) return;
+            const interaction = window.App.boardInteraction;
+            const w = canvas ? canvas.width : window.innerWidth;
+            const h = canvas ? canvas.height : window.innerHeight;
+            const zoom = Math.max(0.65, Math.min(1.2, interaction.camera.zoom || 1));
+            const targetX = (w / 2) - (node.x - (w / 2)) * zoom;
+            const targetY = (h / 2) - (node.y - (h / 2)) * zoom;
+            interaction.camera.zoom = zoom;
+            interaction.camera.x = targetX;
+            interaction.camera.y = targetY;
+            saveCurrentBoardCamera(true);
+            this.draw();
         },
 
         destroy() {
