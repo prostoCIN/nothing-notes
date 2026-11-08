@@ -14,6 +14,11 @@ window.App = window.App || {};
             const state = window.App.state;
 
             els.notesList.addEventListener('pointerdown', (e) => {
+                // Вимикаємо виділення областю (Marquee Selection) у мобільному форматі сайту та при сенсорному вводі
+                if (window.innerWidth <= 768 || e.pointerType === 'touch') {
+                    return;
+                }
+
                 // Якщо клік на конкретний елемент нотатки або кнопку - виділення рамкою не запускаємо
                 if (e.target.closest('.note-item') || e.target.closest('.delete-btn') || e.target.closest('.note-toggle-arrow') || e.button !== 0) {
                     return;
