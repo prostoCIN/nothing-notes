@@ -25,6 +25,11 @@
     <meta name="twitter:title" content="NothingNotes — Мінімалістичний простір думок та нотаток">
     <meta name="twitter:description" content="Персональний простір для думок, ідей та стікерів у стилі Nothing OS.">
     <meta name="twitter:image" content="img/og-cover.png">
+
+    <!-- Progressive Web App (PWA) -->
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-title" content="NothingNotes">
     <link rel="icon" type="image/svg+xml" href="img/Logo.svg">
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -40,6 +45,12 @@
                 if (meta && colors[theme]) meta.setAttribute('content', colors[theme]);
             } catch(e) {}
         })();
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('./sw.js').catch(function() {});
+            });
+        }
     </script>
 </head>
 

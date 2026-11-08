@@ -1,0 +1,39 @@
+{
+  "id": "/",
+  "name": "NothingNotes",
+  "short_name": "NothingNotes",
+  "description": "Мінімалістичний персональний простір для думок, ідей та нотаток у стилі Nothing OS з миттєвою синхронізацією.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#141416",
+  "background_color": "#141416",
+  "categories": ["productivity", "utilities"],
+  "icons": [
+    {
+      "src": "img/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "img/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "img/pwa-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "img/Logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
