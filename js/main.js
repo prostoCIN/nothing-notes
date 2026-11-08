@@ -24,6 +24,7 @@ import './emojiData.js';
 
 // 2. Модулі лівої бічної панелі (Sidebar)
 import './sidebar/sidebarActions.js';
+import './sidebar/sidebarSwipe.js';
 import './sidebar/sidebarSelection.js';
 import './sidebar/sidebarDragDrop.js';
 import './sidebar/sidebarTree.js';

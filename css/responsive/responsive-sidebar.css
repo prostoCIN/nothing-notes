@@ -68,4 +68,141 @@
     body.is-sidebar-dragging .note-item {
         touch-action: none !important;
     }
+
+    /* 4. Збільшення блоків блокнотів та нотаток у лівій панелі (в 1.5 - 1.8 рази) для зручного тапу та свайпу */
+    .board-item,
+    .note-item {
+        min-height: 48px !important;
+        padding: 8px 12px !important;
+        margin-bottom: 5px !important;
+        border-radius: 10px !important;
+        font-size: 15px !important;
+        position: relative !important;
+        overflow: hidden !important;
+        touch-action: pan-y !important;
+        -webkit-user-select: none !important;
+        user-select: none !important;
+        transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.15s ease !important;
+    }
+
+    .board-item-icon,
+    .note-item-icon {
+        font-size: 20px !important;
+        min-width: 24px !important;
+        margin-right: 10px !important;
+    }
+
+    .board-item-text,
+    .note-item-title {
+        font-size: 15px !important;
+        line-height: 1.35 !important;
+        font-weight: 500 !important;
+    }
+
+    .note-toggle-arrow {
+        width: 32px !important;
+        height: 32px !important;
+        min-width: 32px !important;
+        margin-right: 4px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 6px !important;
+    }
+
+    .note-toggle-arrow svg {
+        width: 14px !important;
+        height: 14px !important;
+    }
+
+    .sidebar-child-count {
+        height: 22px !important;
+        min-width: 22px !important;
+        font-size: 12px !important;
+        border-radius: 11px !important;
+        padding: 0 7px !important;
+        font-weight: 600 !important;
+    }
+
+    /* 5. Кнопки дій при свайпі вліво (у стилі Telegram / iOS Swipe Tray) */
+    .board-actions,
+    .note-actions {
+        position: absolute !important;
+        right: 0 !important;
+        top: 0 !important;
+        bottom: 0 !important;
+        height: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        padding: 0 10px 0 18px !important;
+        gap: 6px !important;
+        background: linear-gradient(90deg, rgba(20, 20, 22, 0) 0%, rgba(20, 20, 22, 0.95) 20%, rgba(20, 20, 22, 1) 100%) !important;
+        transform: translateX(105%) !important;
+        transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease !important;
+        opacity: 0 !important;
+        max-width: none !important;
+        pointer-events: none !important;
+        z-index: 10 !important;
+    }
+
+    html[data-theme="light"] .board-actions,
+    html[data-theme="light"] .note-actions {
+        background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.95) 20%, rgba(255, 255, 255, 1) 100%) !important;
+    }
+
+    html[data-theme="ivory"] .board-actions,
+    html[data-theme="ivory"] .note-actions {
+        background: linear-gradient(90deg, rgba(249, 245, 234, 0) 0%, rgba(249, 245, 234, 0.95) 20%, rgba(249, 245, 234, 1) 100%) !important;
+    }
+
+    .board-item.is-swiped .board-actions,
+    .note-item.is-swiped .note-actions {
+        transform: translateX(0) !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+    }
+
+    .board-item.is-swiped,
+    .note-item.is-swiped {
+        background: var(--hover-bg, rgba(255, 255, 255, 0.08)) !important;
+    }
+
+    /* Великі зручні кнопки свайп-дій під палець */
+    .board-item .sidebar-action-btn,
+    .note-item .sidebar-action-btn {
+        width: 36px !important;
+        height: 36px !important;
+        min-width: 36px !important;
+        border-radius: 8px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        opacity: 1 !important;
+        background: var(--hover-bg, rgba(255, 255, 255, 0.1)) !important;
+        color: var(--text-main) !important;
+        transition: transform 0.12s ease, background 0.15s ease !important;
+    }
+
+    .board-item .sidebar-action-btn:active,
+    .note-item .sidebar-action-btn:active {
+        transform: scale(0.9) !important;
+    }
+
+    .board-item .sidebar-action-btn svg,
+    .note-item .sidebar-action-btn svg {
+        width: 16px !important;
+        height: 16px !important;
+    }
+
+    .board-item .sidebar-action-btn.share-btn,
+    .note-item .sidebar-action-btn.share-btn {
+        background: rgba(16, 185, 129, 0.2) !important;
+        color: #10b981 !important;
+    }
+
+    .board-item .sidebar-action-btn.delete-btn,
+    .note-item .sidebar-action-btn.delete-btn {
+        background: rgba(255, 99, 99, 0.2) !important;
+        color: #ff6363 !important;
+    }
 }

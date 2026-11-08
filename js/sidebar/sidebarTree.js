@@ -137,6 +137,9 @@ window.App = window.App || {};
                 // Логіка перетягування (Drag & Drop)
                 window.App.sidebarDragDrop.attachDrag(row, itemWrap, note, parentId);
 
+                // Логіка свайпу для мобільних пристроїв
+                if (window.App.sidebarSwipe) window.App.sidebarSwipe.attachSwipe(row);
+
                 const isSelected = state.selectedSidebarNoteIds.has(note.id);
                 const isActive = (state.activeNoteId === note.id);
                 if (isActive) {

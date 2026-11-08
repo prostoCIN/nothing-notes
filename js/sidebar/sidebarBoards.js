@@ -140,6 +140,7 @@ window.App = window.App || {};
                 li.appendChild(nameSpan);
                 if (countBadge) li.appendChild(countBadge);
                 li.appendChild(actionsDiv);
+                if (window.App.sidebarSwipe) window.App.sidebarSwipe.attachSwipe(li);
                 els.sidebarBoardsList.appendChild(li);
             });
 
@@ -286,6 +287,7 @@ window.App = window.App || {};
                 li.appendChild(nameSpan);
                 if (countBadge) li.appendChild(countBadge);
                 li.appendChild(actionsDiv);
+                if (window.App.sidebarSwipe) window.App.sidebarSwipe.attachSwipe(li);
                 els.sidebarSharedBoardsList.appendChild(li);
             });
         }

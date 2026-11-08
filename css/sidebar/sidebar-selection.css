@@ -267,26 +267,29 @@ html[data-theme="ivory"] .note-item.is-editing .note-item-title[contenteditable=
     transition: opacity 0.2s cubic-bezier(0.2, 0, 0, 1), max-width 0.2s cubic-bezier(0.2, 0, 0, 1);
 }
 
-.board-item:hover .board-actions,
-.board-item:hover .board-item-actions,
-.note-item:hover .note-actions,
-.note-item:hover .item-actions {
-    opacity: 1;
-    max-width: 90px;
-    pointer-events: auto;
-}
+/* Показ кнопок дій при наведенні мишкою (тільки на десктопі з курсором, щоб не блокувати одинарний тап на смартфонах) */
+@media (hover: hover) and (pointer: fine) {
+    .board-item:hover .board-actions,
+    .board-item:hover .board-item-actions,
+    .note-item:hover .note-actions,
+    .note-item:hover .item-actions {
+        opacity: 1;
+        max-width: 90px;
+        pointer-events: auto;
+    }
 
-/* При наведенні на рядок дошки чи нотатки лічильник плавно зникає */
-.board-item:hover .sidebar-child-count,
-.note-item:hover .sidebar-child-count {
-    opacity: 0 !important;
-    max-width: 0 !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-    margin-right: 0 !important;
-    border: none !important;
-    overflow: hidden;
-    pointer-events: none;
+    /* При наведенні на рядок дошки чи нотатки лічильник плавно зникає */
+    .board-item:hover .sidebar-child-count,
+    .note-item:hover .sidebar-child-count {
+        opacity: 0 !important;
+        max-width: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        margin-right: 0 !important;
+        border: none !important;
+        overflow: hidden;
+        pointer-events: none;
+    }
 }
 
 /* Кнопки дій у лівій панелі (спільні для блокнотів та нотаток) */
