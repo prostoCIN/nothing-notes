@@ -49,7 +49,7 @@ window.App = window.App || {};
                 if (el.classList.contains('is-editing') || el.querySelector('[contenteditable="true"]')) return;
 
                 // Якщо клікнули безпосередньо по кнопці дій або стрілочці розгортання — ігноруємо
-                if (e.target.closest('.sidebar-action-btn') || e.target.closest('.note-toggle-arrow')) {
+                if (e.target.closest('.board-actions, .note-actions') || e.target.closest('.note-toggle-arrow')) {
                     return;
                 }
 
@@ -147,7 +147,7 @@ window.App = window.App || {};
             // Якщо плашка була свайпнута, звичайний клік по її тілу просто закриває свайп
             el.addEventListener('click', (e) => {
                 if (el.classList.contains('is-swiped')) {
-                    if (!e.target.closest('.sidebar-action-btn')) {
+                    if (!e.target.closest('.board-actions, .note-actions')) {
                         e.preventDefault();
                         e.stopPropagation();
                         closeActiveSwipe();

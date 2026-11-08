@@ -82,7 +82,61 @@
         touch-action: pan-y !important;
         -webkit-user-select: none !important;
         user-select: none !important;
-        transition: padding-right 0.24s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.15s ease !important;
+        background: transparent !important;
+        background-color: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        transition: padding-right 0.24s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    /* Фонова карточка рядка (відокремлений контейнер тексту та іконки) */
+    .board-item::before,
+    .note-item::before {
+        content: '' !important;
+        position: absolute !important;
+        top: 0 !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        border-radius: 10px !important;
+        background: transparent !important;
+        pointer-events: none !important;
+        z-index: 0 !important;
+        transition: right 0.24s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease !important;
+    }
+
+    .board-item > *:not(.board-actions),
+    .note-item > *:not(.note-actions) {
+        position: relative !important;
+        z-index: 1 !important;
+    }
+
+    /* Стани виділення / активності фону картки */
+    .board-item.active::before {
+        background: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    html[data-theme="light"] .board-item.active::before {
+        background: rgba(0, 0, 0, 0.06) !important;
+    }
+
+    .note-item.is-active-note::before {
+        background: rgba(16, 185, 129, 0.16) !important;
+        box-shadow: inset 3.5px 0 0 var(--accent-color, #10b981), 0 1px 4px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    html[data-theme="light"] .note-item.is-active-note::before {
+        background: rgba(16, 185, 129, 0.12) !important;
+    }
+
+    .note-item.is-selected::before {
+        background: rgba(16, 185, 129, 0.22) !important;
+        border: 1px solid #10b981 !important;
+    }
+
+    .board-item.is-editing::before,
+    .note-item.is-editing::before {
+        display: none !important;
     }
 
     .board-item-icon,
@@ -124,7 +178,7 @@
         font-weight: 600 !important;
     }
 
-    /* 5. Кнопки дій при свайпі вліво (у стилі Telegram / iOS - на всю висоту картки, без градієнта та без падінгів) */
+    /* 5. Кнопки дій при свайпі вліво (у стилі Telegram / iOS - на всю висоту картки, з внутрішнім гепом та бордер радіусом) */
     .board-actions,
     .note-actions {
         position: absolute !important;
@@ -136,10 +190,10 @@
         align-items: stretch !important;
         padding: 0 !important;
         margin: 0 !important;
-        gap: 0 !important;
+        gap: 6px !important;
         background: transparent !important;
         background-color: transparent !important;
-        transform: translateX(100%) !important;
+        transform: translateX(calc(100% + 12px)) !important;
         transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease !important;
         opacity: 0 !important;
         max-width: none !important;
@@ -147,11 +201,45 @@
         z-index: 10 !important;
     }
 
-    /* При відкритому свайпі картка списку звужується під кнопки (без градієнту) */
+    /* При відкритому свайпі картка списку з текстом та іконкою зменшується, відокремлюючись від кнопок */
     .board-item.is-swiped,
     .note-item.is-swiped {
-        padding-right: 142px !important;
+        padding-right: 160px !important;
+    }
+
+    .board-item.is-swiped::before,
+    .note-item.is-swiped::before {
+        right: 152px !important;
+    }
+
+    /* Підсвічування картки з текстом при свайпі, якщо вона ще не була активною */
+    .board-item.is-swiped:not(.active)::before,
+    .note-item.is-swiped:not(.is-active-note):not(.is-selected)::before {
         background: var(--hover-bg, rgba(255, 255, 255, 0.08)) !important;
+    }
+
+    html[data-theme="light"] .board-item.is-swiped:not(.active)::before,
+    html[data-theme="light"] .note-item.is-swiped:not(.is-active-note):not(.is-selected)::before {
+        background: rgba(0, 0, 0, 0.05) !important;
+    }
+
+    /* Адаптація відступу при меншій кількості кнопок (наприклад, у спільних блокнотах) */
+    .board-item.is-swiped:has(.board-actions > :only-child)::before,
+    .note-item.is-swiped:has(.note-actions > :only-child)::before {
+        right: 52px !important;
+    }
+    .board-item.is-swiped:has(.board-actions > :only-child),
+    .note-item.is-swiped:has(.note-actions > :only-child) {
+        padding-right: 60px !important;
+    }
+
+    .board-item.is-swiped:has(.board-actions > :nth-child(2)):not(:has(.board-actions > :nth-child(3)))::before,
+    .note-item.is-swiped:has(.note-actions > :nth-child(2)):not(:has(.note-actions > :nth-child(3)))::before {
+        right: 102px !important;
+    }
+    .board-item.is-swiped:has(.board-actions > :nth-child(2)):not(:has(.board-actions > :nth-child(3))),
+    .note-item.is-swiped:has(.note-actions > :nth-child(2)):not(:has(.note-actions > :nth-child(3))) {
+        padding-right: 110px !important;
     }
 
     .board-item.is-swiped .sidebar-child-count,
@@ -167,14 +255,17 @@
         pointer-events: auto !important;
     }
 
-    /* 3 кнопки на всю висоту картки списку без падінгів від контейнера */
+    /* Окремі заокруглені кнопки дій на всю висоту плашки */
     .board-item .sidebar-action-btn,
-    .note-item .sidebar-action-btn {
-        width: 46px !important;
-        min-width: 46px !important;
+    .note-item .sidebar-action-btn,
+    .board-item .board-clone-btn,
+    .board-item .board-delete-btn,
+    .note-item .delete-btn {
+        width: 44px !important;
+        min-width: 44px !important;
         height: 100% !important;
         min-height: 100% !important;
-        border-radius: 0 !important;
+        border-radius: 9px !important;
         margin: 0 !important;
         padding: 0 !important;
         display: flex !important;
@@ -182,17 +273,24 @@
         justify-content: center !important;
         opacity: 1 !important;
         border: none !important;
-        transition: opacity 0.15s ease, filter 0.15s ease !important;
+        transition: opacity 0.15s ease, filter 0.15s ease, transform 0.12s ease !important;
         flex-shrink: 0 !important;
     }
 
     .board-item .sidebar-action-btn:active,
-    .note-item .sidebar-action-btn:active {
+    .note-item .sidebar-action-btn:active,
+    .board-item .board-clone-btn:active,
+    .board-item .board-delete-btn:active,
+    .note-item .delete-btn:active {
         filter: brightness(0.85) !important;
+        transform: scale(0.95) !important;
     }
 
     .board-item .sidebar-action-btn svg,
-    .note-item .sidebar-action-btn svg {
+    .note-item .sidebar-action-btn svg,
+    .board-item .board-clone-btn svg,
+    .board-item .board-delete-btn svg,
+    .note-item .delete-btn svg {
         width: 17px !important;
         height: 17px !important;
         stroke: #ffffff !important;
@@ -219,8 +317,16 @@
 
     /* Видалити (чистий червоний iOS delete) */
     .board-item .sidebar-action-btn.delete-btn,
-    .note-item .sidebar-action-btn.delete-btn {
+    .note-item .sidebar-action-btn.delete-btn,
+    .board-item .board-delete-btn,
+    .note-item .delete-btn {
         background: #ef4444 !important;
+        color: #ffffff !important;
+    }
+
+    /* Клонувати блокнот (синій) */
+    .board-item .board-clone-btn {
+        background: #3b82f6 !important;
         color: #ffffff !important;
     }
 }
