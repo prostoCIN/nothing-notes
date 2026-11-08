@@ -1,0 +1,28 @@
+name: Keep Supabase Alive
+
+on:
+  schedule:
+    # Запускається кожні 3 дні о 07:00 UTC, щоб база даних Supabase ніколи не ставала на паузу
+    - cron: '0 7 */3 * *'
+  workflow_dispatch: # Дозволяє запустити вручну з вкладки Actions у репозиторії
+
+jobs:
+  ping-supabase:
+    name: Ping Supabase REST API
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ping Supabase API
+        run: |
+          RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN5Y2VnZndsYWp4ZGFvYWhxemZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxMTAyMDUsImV4cCI6MjEwMzY4NjIwNX0.h4G6QzUpxZmnjo8F4DYNkelfAE4WKTR4Z3-JA68BFQc" \
+            -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN5Y2VnZndsYWp4ZGFvYWhxemZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxMTAyMDUsImV4cCI6MjEwMzY4NjIwNX0.h4G6QzUpxZmnjo8F4DYNkelfAE4WKTR4Z3-JA68BFQc" \
+            "https://sycegfwlajxdaoahqzfp.supabase.co/rest/v1/notes?select=id&limit=1")
+          
+          echo "Supabase response HTTP status: $RESPONSE_CODE"
+          
+          if [ "$RESPONSE_CODE" -ge 200 ] && [ "$RESPONSE_CODE" -lt 400 ]; then
+            echo "✅ Supabase is active and ping succeeded."
+          else
+            echo "⚠️ Ping received status $RESPONSE_CODE, but project was contacted."
+          fi
