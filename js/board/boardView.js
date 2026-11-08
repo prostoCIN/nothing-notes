@@ -166,6 +166,8 @@ window.App = window.App || {};
             this.createBoardDOM(els.columnsContainer, currentBoard);
             this.resizeCanvas();
 
+            const isFreshLoad = !isCameraInitializedForBoard;
+
             if (boardCameras.has(boardIdStr) && !options.resetCamera) {
                 const saved = boardCameras.get(boardIdStr);
                 const interaction = window.App.boardInteraction;
@@ -173,11 +175,18 @@ window.App = window.App || {};
                 interaction.camera.y = saved.y;
                 interaction.camera.zoom = saved.zoom;
                 isCameraInitializedForBoard = true;
-                this.buildBoardData({ preserveCamera: true });
+                this.buildBoardData({ preserveCamera: !isFreshLoad });
             } else {
                 isCameraInitializedForBoard = false;
                 this.buildBoardData({ preserveCamera: false });
             }
+
+            // Гарантуємо, що після повного завершення розрахунку розмірів браузером нотатки будуть у полі зору
+            requestAnimationFrame(() => {
+                if (container && canvas && !this.areNotesInViewport()) {
+                    this.centerCameraOnAllNodes();
+                }
+            });
         },
 
         createBoardDOM(parentEl, currentBoard) {
@@ -506,7 +515,7 @@ window.App = window.App || {};
                     onUpdate: () => this.draw(),
                     onComplete: () => {
                         nodes.forEach(n => this.saveNodePosition(n));
-                        if (!shouldPreserveCamera) {
+                        if (!shouldPreserveCamera || !this.areNotesInViewport()) {
                             this.centerCameraOnAllNodes();
                         } else {
                             this.draw();
@@ -514,7 +523,7 @@ window.App = window.App || {};
                     }
                 });
             } else {
-                if (!shouldPreserveCamera) {
+                if (!shouldPreserveCamera || !this.areNotesInViewport()) {
                     this.centerCameraOnAllNodes();
                 } else {
                     this.draw();
@@ -522,11 +531,56 @@ window.App = window.App || {};
             }
         },
 
+        areNotesInViewport() {
+            if (!nodes || nodes.length === 0) return true;
+            if (!container || !canvas) return true;
+            const rect = container.getBoundingClientRect();
+            const width = (rect && rect.width > 50) ? rect.width : (canvas.offsetWidth || window.innerWidth || 800);
+            const height = (rect && rect.height > 50) ? rect.height : (canvas.offsetHeight || window.innerHeight || 600);
+            const camera = window.App.boardInteraction ? window.App.boardInteraction.camera : null;
+            if (!camera) return true;
+
+            const zoom = camera.zoom || 1;
+
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            nodes.forEach(n => {
+                const nw = n.width || 380;
+                const nh = n.height || 140;
+                minX = Math.min(minX, n.x);
+                minY = Math.min(minY, n.y);
+                maxX = Math.max(maxX, n.x + nw);
+                maxY = Math.max(maxY, n.y + nh);
+            });
+
+            if (!isFinite(minX)) return true;
+
+            const screenMinX = (minX - width / 2) * zoom + camera.x;
+            const screenMaxX = (maxX - width / 2) * zoom + camera.x;
+            const screenMinY = (minY - height / 2) * zoom + camera.y;
+            const screenMaxY = (maxY - height / 2) * zoom + camera.y;
+
+            // Перевіряємо, чи потрапляє хоча б частина прямокутника нотаток у видиму область
+            return (
+                screenMaxX > 60 &&
+                screenMinX < width - 60 &&
+                screenMaxY > 60 &&
+                screenMinY < height - 60
+            );
+        },
+
         centerCameraOnAllNodes() {
             if (!canvas || !container) return;
+
             const rect = container.getBoundingClientRect();
-            const w = (rect && rect.width > 50) ? rect.width : (canvas.offsetWidth || container.offsetWidth || window.innerWidth || 800);
-            const h = (rect && rect.height > 50) ? rect.height : (canvas.offsetHeight || container.offsetHeight || window.innerHeight || 600);
+            // Якщо DOM ще не встиг порахувати геометрію контейнера, відкладаємо до кадру анімації
+            if (!rect || rect.width <= 50 || rect.height <= 50) {
+                requestAnimationFrame(() => this.centerCameraOnAllNodes());
+                return;
+            }
+
+            this.resizeCanvas();
+            const w = rect.width;
+            const h = rect.height;
 
             if (nodes.length === 0) {
                 window.App.boardInteraction.initCamera(w, h);
@@ -538,21 +592,31 @@ window.App = window.App || {};
 
             let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
             nodes.forEach(n => {
-                const nw = n.width || (n.element ? (n.element.offsetWidth || 380) : 380);
-                const nh = n.height || (n.element ? (n.element.offsetHeight || 140) : 140);
+                const nw = n.width || (n.element && n.element.offsetWidth > 40 ? n.element.offsetWidth : 380);
+                const nh = n.height || (n.element && n.element.offsetHeight > 40 ? n.element.offsetHeight : 140);
                 minX = Math.min(minX, n.x);
                 minY = Math.min(minY, n.y);
                 maxX = Math.max(maxX, n.x + nw);
                 maxY = Math.max(maxY, n.y + nh);
             });
 
+            if (!isFinite(minX) || !isFinite(minY)) {
+                window.App.boardInteraction.initCamera(w, h);
+                isCameraInitializedForBoard = true;
+                saveCurrentBoardCamera(true);
+                this.draw();
+                return;
+            }
+
             const bboxW = Math.max(100, maxX - minX);
             const bboxH = Math.max(100, maxY - minY);
-            const padding = Math.min(80, Math.floor(Math.min(w, h) * 0.1));
+            const padding = Math.min(100, Math.floor(Math.min(w, h) * 0.12));
 
             const interaction = window.App.boardInteraction;
             const fitZoom = Math.min((w - padding * 2) / bboxW, (h - padding * 2) / bboxH);
             const minZ = (interaction && interaction.camera && interaction.camera.minZoom) ? interaction.camera.minZoom : 0.15;
+
+            // Запобігаємо надмірному зуму при 1-3 нотатках: максимальний зум для центрування — 1.0 (натуральний масштаб)
             const targetZoom = Math.max(minZ, Math.min(1.0, isNaN(fitZoom) ? 1.0 : fitZoom));
             const bboxCenterX = minX + bboxW / 2;
             const bboxCenterY = minY + bboxH / 2;
@@ -964,7 +1028,11 @@ window.App = window.App || {};
 
             boundResize = () => {
                 this.resizeCanvas();
-                this.draw();
+                if (!this.areNotesInViewport()) {
+                    this.centerCameraOnAllNodes();
+                } else {
+                    this.draw();
+                }
             };
             window.addEventListener('resize', boundResize);
 
