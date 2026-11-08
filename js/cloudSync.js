@@ -72,16 +72,44 @@ window.App = window.App || {};
                 window.App.syncRealtime.initChannel(supabase, this);
             }
 
-            // Гарантуємо відправку незбережених змін перед закриттям вкладки
+            // Гарантуємо відправку незбережених змін перед закриттям або виходом у фон
             const flushOnExit = () => {
                 this.flushPendingNotes();
                 this.flushPendingReorders();
             };
 
+            // Автоматичне відновлення зв'язку та синхронізація при поверненні в додаток (iOS PWA / вкладка)
+            const handleResume = () => {
+                if (!this.isLoggedIn()) return;
+                console.log('[CloudSync] 📱 App resumed from background. Reconnecting & syncing with Supabase...');
+                const supabase = window.App.supabase;
+                if (supabase) {
+                    supabase.auth.getSession().then(({ data: { session } }) => {
+                        if (session && session.user) {
+                            currentUser = session.user;
+                            this.currentUser = session.user;
+                            this.updateAuthUI(session.user);
+                        }
+                        if (window.App.syncRealtime) {
+                            window.App.syncRealtime.initChannel(supabase, this);
+                        }
+                        this.flushOfflineQueue();
+                        this.pullFromCloud();
+                    }).catch(() => {
+                        this.pullFromCloud();
+                    });
+                }
+            };
+
             window.addEventListener('beforeunload', flushOnExit);
             window.addEventListener('pagehide', flushOnExit);
+            window.addEventListener('pageshow', handleResume);
+            window.addEventListener('focus', handleResume);
+
             document.addEventListener('visibilitychange', () => {
-                if (document.visibilityState === 'hidden') {
+                if (document.visibilityState === 'visible') {
+                    handleResume();
+                } else if (document.visibilityState === 'hidden') {
                     flushOnExit();
                 }
             });
@@ -125,6 +153,10 @@ window.App = window.App || {};
             if (user) {
                 if (isSameUser) return;
                 console.log('[CloudSync] Logged in as:', user.email);
+                const supabase = window.App.supabase;
+                if (supabase && window.App.syncRealtime) {
+                    window.App.syncRealtime.initChannel(supabase, this);
+                }
                 await this.pullFromCloud();
                 if (window.App.sidebarView) window.App.sidebarView.render();
                 if (window.App.workspaceView) window.App.workspaceView.render();
