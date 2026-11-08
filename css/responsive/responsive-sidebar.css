@@ -69,6 +69,25 @@
         touch-action: none !important;
     }
 
+    /* Компактний відступ ієрархії піднотаток на смартфонах (захист ширини для кнопок дій) */
+    .sidebar-subnotes-list {
+        margin-left: 8px !important;
+        padding-left: 6px !important;
+        border-left-width: 2px !important;
+    }
+
+    /* Рівні 4+: мінімізуємо зсув вправо, обмежуючи сумарне зміщення не більше ~48px */
+    .sidebar-subnotes-list .sidebar-subnotes-list .sidebar-subnotes-list .sidebar-subnotes-list {
+        margin-left: 2px !important;
+        padding-left: 4px !important;
+    }
+
+    /* Рівні 5+: фіксуємо крайню межу зміщення, залишаючи лінії ієрархії */
+    .sidebar-subnotes-list .sidebar-subnotes-list .sidebar-subnotes-list .sidebar-subnotes-list .sidebar-subnotes-list {
+        margin-left: 0 !important;
+        padding-left: 3px !important;
+    }
+
     /* 4. Збільшення блоків блокнотів та нотаток у лівій панелі (в 1.5 - 1.8 рази) для зручного тапу та свайпу */
     .board-item,
     .note-item {
