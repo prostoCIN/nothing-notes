@@ -1,34 +1,26 @@
 @media screen and (max-width: 768px) {
     /* Адаптив плаваючої нижньої панелі масового вибору (iOS Selection Bar) */
     .workspace-selection-bar {
-        width: calc(100vw - 16px) !important;
+        width: calc(100vw - 20px) !important;
         max-width: none !important;
         bottom: max(env(safe-area-inset-bottom, 0px), 12px) !important;
-        padding: 5px 8px !important;
+        padding: 6px 10px !important;
         gap: 6px !important;
         border-radius: 14px !important;
         justify-content: space-between !important;
         z-index: 1000 !important;
-        box-sizing: border-box !important;
     }
 
     .selection-bar-left {
-        gap: 5px !important;
+        gap: 6px !important;
         display: flex !important;
         align-items: center !important;
-        flex-shrink: 0 !important;
-    }
-
-    .selection-bar-close-btn {
-        width: 26px !important;
-        height: 26px !important;
-        min-width: 26px !important;
     }
 
     .selection-bar-info {
         display: flex !important;
         align-items: center !important;
-        gap: 5px !important;
+        gap: 6px !important;
     }
 
     .selection-bar-count-badge {
@@ -40,9 +32,9 @@
         color: #34d399 !important;
         font-size: 11px !important;
         font-weight: 700 !important;
-        width: 26px !important;
-        height: 26px !important;
-        min-width: 26px !important;
+        width: 28px !important;
+        height: 28px !important;
+        min-width: 28px !important;
         padding: 0 !important;
         border-radius: 8px !important;
         box-sizing: border-box !important;
@@ -55,9 +47,8 @@
     }
 
     .selection-bar-icon-btn {
-        width: 26px !important;
-        height: 26px !important;
-        min-width: 26px !important;
+        width: 28px !important;
+        height: 28px !important;
         background: rgba(255, 255, 255, 0.06) !important;
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
         color: var(--text-muted) !important;
@@ -80,8 +71,7 @@
     .selection-bar-actions {
         display: flex !important;
         align-items: center !important;
-        gap: 4px !important;
-        flex-shrink: 0 !important;
+        gap: 5px !important;
     }
 
     .selection-action-group {
@@ -90,7 +80,7 @@
         background: transparent !important;
         border: none !important;
         padding: 0 !important;
-        gap: 4px !important;
+        gap: 5px !important;
     }
 
     .selection-group-separator {
@@ -98,14 +88,14 @@
     }
 
     .selection-action-btn {
-        width: 31px !important;
-        height: 31px !important;
-        min-width: 31px !important;
+        width: 34px !important;
+        height: 34px !important;
+        min-width: 34px !important;
         padding: 0 !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
-        border-radius: 9px !important;
+        border-radius: 10px !important;
     }
 
     .selection-action-btn .selection-btn-label {
@@ -113,56 +103,53 @@
     }
 
     .selection-action-btn svg {
-        width: 15px !important;
-        height: 15px !important;
+        width: 16px !important;
+        height: 16px !important;
     }
 
-    /* Адаптив для випадаючих вікон (Стиль і Плюс) по центру екрана над панеллю */
-    .selection-submenu-dropdown {
+    .selection-submenu-dropdown.selection-more-dropdown {
         position: fixed !important;
         left: 50% !important;
         right: auto !important;
-        bottom: calc(max(env(safe-area-inset-bottom, 0px), 12px) + 52px) !important;
+        bottom: calc(max(env(safe-area-inset-bottom, 0px), 12px) + 54px) !important;
         transform: translateX(-50%) translateY(8px) !important;
         width: calc(100vw - 32px) !important;
-        max-width: 300px !important;
+        max-width: 320px !important;
         max-height: 55vh !important;
         overflow-y: auto !important;
-        padding: 12px 14px !important;
-        gap: 10px !important;
+        padding: 14px !important;
+        gap: 12px !important;
         border-radius: 16px !important;
         z-index: 1010 !important;
         box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
     }
 
-    .selection-submenu-dropdown.active {
+    .selection-submenu-dropdown.selection-more-dropdown.active {
         display: flex !important;
         opacity: 1 !important;
         pointer-events: auto !important;
         transform: translateX(-50%) translateY(0) !important;
     }
 
-    .selection-dropdown-section {
+    .selection-more-section {
         display: flex !important;
         flex-direction: column !important;
         gap: 6px !important;
     }
 
-    .selection-plus-nav {
-        gap: 2px !important;
-        padding: 2px !important;
-        margin-bottom: 6px !important;
+    .selection-more-sec-title {
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        color: var(--text-muted) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
     }
 
-    .selection-nav-tab {
-        padding: 5px 3px !important;
-        font-size: 10px !important;
-        gap: 3px !important;
-    }
-
-    .selection-nav-tab svg {
-        width: 12px !important;
-        height: 12px !important;
+    .selection-sec-title-left {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
     }
 
     .selection-color-swatches {
@@ -199,4 +186,5 @@
         padding: 24px 18px !important;
         border-radius: 16px !important;
     }
+
 }
