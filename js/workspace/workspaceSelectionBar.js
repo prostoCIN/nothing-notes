@@ -3,7 +3,7 @@ window.App = window.App || {};
 
 (function() {
     let barElement = null;
-    let activeSubMenu = null; // 'color' | 'tag' | 'font'
+    let activeSubMenu = null; // 'style' | 'plus'
 
     window.App.workspaceSelectionBar = {
         init() {
@@ -51,10 +51,11 @@ window.App = window.App || {};
                 </div>
 
                 <div class="selection-bar-actions">
-                    <!-- ДЕСКТОП ГРУПА: Стиль (Колір, Шрифт) -->
-                    <div class="selection-action-group selection-group-style desktop-only" id="ws-group-style">
-                        <div class="selection-action-item" id="ws-action-color-wrap">
-                            <button class="selection-action-btn" id="ws-action-color-btn" title="Змінити колір" data-i18n-title="selectionBar.colorTitle">
+                    <!-- ГРУПА 1: Оформлення та додавання (Стиль: колір + шрифт; Плюс: теги + закладка) -->
+                    <div class="selection-action-group selection-group-tools" id="ws-group-tools">
+                        <!-- 1. Стиль (Колір та Шрифт) -->
+                        <div class="selection-action-item" id="ws-action-style-wrap">
+                            <button class="selection-action-btn" id="ws-action-style-btn" title="Оформлення (колір та шрифт)" data-i18n-title="selectionBar.styleTitle">
                                 <span class="selection-btn-icon">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle>
@@ -64,156 +65,68 @@ window.App = window.App || {};
                                         <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
                                     </svg>
                                 </span>
-                                <span class="selection-btn-label" data-i18n="selectionBar.colorSelected">Колір</span>
+                                <span class="selection-btn-label desktop-only" data-i18n="selectionBar.styleTitle">Стиль</span>
                             </button>
-                            <div class="selection-submenu-dropdown selection-color-dropdown" id="ws-submenu-color">
-                                <div class="selection-submenu-title" data-i18n="selectionBar.selectColorTitle">Обрати колір для виділених:</div>
-                                <div class="selection-color-swatches" id="ws-desktop-colors"></div>
-                            </div>
-                        </div>
-
-                        <div class="selection-action-item" id="ws-action-font-wrap">
-                            <button class="selection-action-btn" id="ws-action-font-btn" title="Розмір шрифту" data-i18n-title="selectionBar.fontTitle">
-                                <span class="selection-btn-icon">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <polyline points="4 7 4 4 20 4 20 7"></polyline>
-                                        <line x1="9" y1="20" x2="15" y2="20"></line>
-                                        <line x1="12" y1="4" x2="12" y2="20"></line>
-                                    </svg>
-                                </span>
-                                <span class="selection-btn-label" data-i18n="selectionBar.fontSelected">Шрифт</span>
-                            </button>
-                            <div class="selection-submenu-dropdown selection-font-dropdown" id="ws-submenu-font">
-                                <div class="selection-submenu-title">
-                                    <span data-i18n="selectionBar.fontSizeTitle">Розмір тексту:</span>
-                                    <span class="font-size-value-badge" id="ws-sel-font-badge-desktop">M (16px)</span>
+                            <div class="selection-submenu-dropdown selection-style-dropdown" id="ws-submenu-style">
+                                <div class="selection-dropdown-section">
+                                    <div class="selection-submenu-title" data-i18n="selectionBar.selectColorTitle">Колір:</div>
+                                    <div class="selection-color-swatches" id="ws-style-colors"></div>
                                 </div>
-                                <div class="sticker-font-slider-container">
-                                    <span class="slider-min-icon">A</span>
-                                    <div class="note-font-slider-track-wrap">
-                                        <input type="range" class="sticker-font-slider" id="ws-sel-font-slider-desktop" min="0" max="3" step="1" value="1">
-                                        <div class="note-font-slider-ticks">
-                                            <span class="note-font-tick-line" data-step="0" title="S"></span>
-                                            <span class="note-font-tick-line active" data-step="1" title="M"></span>
-                                            <span class="note-font-tick-line" data-step="2" title="L"></span>
-                                            <span class="note-font-tick-line" data-step="3" title="XL"></span>
-                                        </div>
+                                <div class="selection-dropdown-divider"></div>
+                                <div class="selection-dropdown-section">
+                                    <div class="selection-submenu-title">
+                                        <span data-i18n="selectionBar.fontSizeTitle">Розмір тексту:</span>
+                                        <span class="font-size-value-badge" id="ws-sel-font-badge">M (16px)</span>
                                     </div>
-                                    <span class="slider-max-icon">A</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <span class="selection-group-separator desktop-only" id="ws-sep-style"></span>
-
-                    <!-- ДЕСКТОП ГРУПА: Метадані (Теги, Закладка) -->
-                    <div class="selection-action-group selection-group-meta desktop-only" id="ws-group-meta">
-                        <div class="selection-action-item" id="ws-action-tag-wrap">
-                            <button class="selection-action-btn" id="ws-action-tag-btn" title="Прикріпити теги" data-i18n-title="selectionBar.tagTitle">
-                                <span class="selection-btn-icon">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
-                                        <line x1="7" y1="7" x2="7.01" y2="7"></line>
-                                    </svg>
-                                </span>
-                                <span class="selection-btn-label" data-i18n="selectionBar.tagSelected">Теги</span>
-                            </button>
-                            <div class="selection-submenu-dropdown selection-tag-dropdown" id="ws-submenu-tag">
-                                <div class="selection-submenu-title" data-i18n="selectionBar.attachTagTitle">Прикріпити тег:</div>
-                                <div id="ws-desktop-tags"></div>
-                            </div>
-                        </div>
-
-                        <div class="selection-action-item" id="ws-action-bookmark-wrap">
-                            <button class="selection-action-btn" id="ws-action-bookmark-btn" title="Додати закладку" data-i18n-title="selectionBar.bookmarkTitle">
-                                <span class="selection-btn-icon">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-                                    </svg>
-                                </span>
-                                <span class="selection-btn-label" data-i18n="selectionBar.bookmarkSelected">Закладка</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <span class="selection-group-separator desktop-only" id="ws-sep-meta"></span>
-
-                    <!-- МОБІЛЬНИЙ: Єдине меню '...' (Колір, Розмір, Теги, Закладка) -->
-                    <div class="selection-action-item mobile-only" id="ws-action-more-wrap">
-                        <button class="selection-action-btn" id="ws-action-more-btn" title="Оформлення та теги" data-i18n-title="selectionBar.moreTitle">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                <circle cx="12" cy="12" r="2.2"></circle>
-                                <circle cx="19" cy="12" r="2.2"></circle>
-                                <circle cx="5" cy="12" r="2.2"></circle>
-                            </svg>
-                        </button>
-                        <div class="selection-submenu-dropdown selection-more-dropdown" id="ws-submenu-more">
-                            <div class="selection-more-section">
-                                <div class="selection-more-sec-title">
-                                    <span class="selection-sec-title-left">
-                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle>
-                                            <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle>
-                                            <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle>
-                                            <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle>
-                                            <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
-                                        </svg>
-                                        <span data-i18n="selectionBar.colorSelected">Колір</span>
-                                    </span>
-                                </div>
-                                <div class="selection-color-swatches" id="ws-more-colors"></div>
-                            </div>
-                            <div class="selection-more-section">
-                                <div class="selection-more-sec-title">
-                                    <span class="selection-sec-title-left">
-                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <polyline points="4 7 4 4 20 4 20 7"></polyline>
-                                            <line x1="9" y1="20" x2="15" y2="20"></line>
-                                            <line x1="12" y1="4" x2="12" y2="20"></line>
-                                        </svg>
-                                        <span data-i18n="selectionBar.fontSizeTitle">Розмір тексту</span>
-                                    </span>
-                                    <span class="font-size-value-badge" id="ws-sel-font-badge">M (16px)</span>
-                                </div>
-                                <div class="sticker-font-slider-container">
-                                    <span class="slider-min-icon">A</span>
-                                    <div class="note-font-slider-track-wrap">
-                                        <input type="range" class="sticker-font-slider" id="ws-sel-font-slider" min="0" max="3" step="1" value="1">
-                                        <div class="note-font-slider-ticks">
-                                            <span class="note-font-tick-line" data-step="0" title="S"></span>
-                                            <span class="note-font-tick-line active" data-step="1" title="M"></span>
-                                            <span class="note-font-tick-line" data-step="2" title="L"></span>
-                                            <span class="note-font-tick-line" data-step="3" title="XL"></span>
+                                    <div class="sticker-font-slider-container">
+                                        <span class="slider-min-icon">A</span>
+                                        <div class="note-font-slider-track-wrap">
+                                            <input type="range" class="sticker-font-slider" id="ws-sel-font-slider" min="0" max="3" step="1" value="1">
+                                            <div class="note-font-slider-ticks">
+                                                <span class="note-font-tick-line" data-step="0" title="S"></span>
+                                                <span class="note-font-tick-line active" data-step="1" title="M"></span>
+                                                <span class="note-font-tick-line" data-step="2" title="L"></span>
+                                                <span class="note-font-tick-line" data-step="3" title="XL"></span>
+                                            </div>
                                         </div>
+                                        <span class="slider-max-icon">A</span>
                                     </div>
-                                    <span class="slider-max-icon">A</span>
                                 </div>
                             </div>
-                            <div class="selection-more-section">
-                                <div class="selection-more-sec-title">
-                                    <span class="selection-sec-title-left">
-                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
-                                            <line x1="7" y1="7" x2="7.01" y2="7"></line>
-                                        </svg>
-                                        <span data-i18n="selectionBar.tagSelected">Теги</span>
-                                    </span>
-                                </div>
-                                <div id="ws-more-tags"></div>
-                            </div>
-                            <div class="selection-more-section">
-                                <button type="button" class="selection-more-action-btn" id="ws-more-bookmark-btn" style="width: 100%; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px 12px; color: inherit; font-size: 13px; cursor: pointer;">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                        </div>
+
+                        <!-- 2. Плюс: Закладка та Теги -->
+                        <div class="selection-action-item" id="ws-action-plus-wrap">
+                            <button class="selection-action-btn" id="ws-action-plus-btn" title="Додати теги та закладки" data-i18n-title="selectionBar.plusTitle">
+                                <span class="selection-btn-icon">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
                                     </svg>
-                                    <span data-i18n="selectionBar.bookmarkSelected">Закладка</span>
-                                </button>
+                                </span>
+                                <span class="selection-btn-label desktop-only" data-i18n="selectionBar.plusTitle">Додати</span>
+                            </button>
+                            <div class="selection-submenu-dropdown selection-plus-dropdown" id="ws-submenu-plus">
+                                <div class="selection-dropdown-section">
+                                    <button type="button" class="selection-bookmark-action-btn" id="ws-action-bookmark-btn">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                                        </svg>
+                                        <span data-i18n="selectionBar.bookmarkSelected">Закладка</span>
+                                    </button>
+                                </div>
+                                <div class="selection-dropdown-divider"></div>
+                                <div class="selection-dropdown-section">
+                                    <div class="selection-submenu-title" data-i18n="selectionBar.attachTagTitle">Прикріпити тег:</div>
+                                    <div id="ws-plus-tags"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- ГРУПА: Загальні дії (Поділитись, Дублювати, Видалити) -->
+                    <span class="selection-group-separator desktop-only" id="ws-sep-tools"></span>
+
+                    <!-- ГРУПА 2: Загальні дії (Поділитись, Дублювати, Видалити) -->
                     <div class="selection-action-group selection-group-actions" id="ws-group-actions">
                         <!-- 1.5. Поділитись виділеними -->
                         <button class="selection-action-btn" id="ws-action-share-btn" title="Поділитись виділеними нотатками" data-i18n-title="selectionBar.shareSelected">
@@ -245,6 +158,7 @@ window.App = window.App || {};
                             <span class="selection-btn-label desktop-only" data-i18n="selectionBar.deleteSelected">Видалити</span>
                         </button>
                     </div>
+                </div>
             `;
 
             if (window.App && window.App.i18n && window.App.i18n.updateDOM) {
@@ -303,11 +217,10 @@ window.App = window.App || {};
                 });
             };
 
-            // Заповнюємо кольори для Десктопу та Мобільного
-            populateColors(barElement.querySelector('#ws-desktop-colors'));
-            populateColors(barElement.querySelector('#ws-more-colors'));
+            // Заповнюємо кольори для групи Стиль
+            populateColors(barElement.querySelector('#ws-style-colors'));
 
-            // Налаштування слайдерів шрифту (Десктоп і Мобільний) зі стандартною шкалою S / M / L / XL
+            // Налаштування слайдера шрифту зі стандартною шкалою S / M / L / XL
             const FONT_SIZES = window.App.FONT_SIZES || [12, 16, 24, 32];
             const FONT_LABELS = window.App.FONT_LABELS || ['S (12px)', 'M (16px)', 'L (24px)', 'XL (32px)'];
 
@@ -359,11 +272,37 @@ window.App = window.App || {};
                 });
             };
 
-            setupFontSlider('#ws-sel-font-slider-desktop', '#ws-sel-font-badge-desktop');
             setupFontSlider('#ws-sel-font-slider', '#ws-sel-font-badge');
 
             // Теги
             this.refreshTagSubmenu();
+        },
+
+        syncStyleState() {
+            if (!barElement) return;
+            const state = window.App.state;
+            const noteManager = window.App.noteManager;
+            const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
+            if (selectedIds.length === 0) return;
+
+            const FONT_LABELS = window.App.FONT_LABELS || ['S (12px)', 'M (16px)', 'L (24px)', 'XL (32px)'];
+            const selectedNotes = selectedIds.map(id => noteManager ? noteManager.getNoteById(id) : null).filter(Boolean);
+            if (selectedNotes.length === 0) return;
+
+            const firstFontSize = selectedNotes[0].fontSize;
+            const allSameSize = selectedNotes.every(n => n.fontSize === firstFontSize);
+            const stepIdx = (allSameSize && typeof firstFontSize === 'number' && firstFontSize >= 0 && firstFontSize <= 3) 
+                ? firstFontSize 
+                : 1;
+
+            const slider = barElement.querySelector('#ws-sel-font-slider');
+            const badge = barElement.querySelector('#ws-sel-font-badge');
+            if (slider) slider.value = stepIdx;
+            if (badge) badge.textContent = FONT_LABELS[stepIdx];
+
+            const sliderContainer = slider ? slider.closest('.sticker-font-slider-container') : null;
+            const tickLines = sliderContainer ? sliderContainer.querySelectorAll('.note-font-tick-line') : [];
+            tickLines.forEach((t, i) => t.classList.toggle('active', i === stepIdx));
         },
 
         refreshTagSubmenu() {
@@ -517,18 +456,17 @@ window.App = window.App || {};
                 containerEl.appendChild(addRow);
             };
 
-            populateTagContainer(barElement.querySelector('#ws-desktop-tags'));
-            populateTagContainer(barElement.querySelector('#ws-more-tags'));
+            populateTagContainer(barElement.querySelector('#ws-plus-tags'));
 
-            // Переконуємось, що відкрите підменю тегів або загальне мобільне меню залишається активним
-            if (activeSubMenu === 'tag') {
-                const targetDropdown = barElement.querySelector('#ws-submenu-tag');
-                const targetBtn = barElement.querySelector('#ws-action-tag-btn');
+            // Переконуємось, що відкрите підменю залишається активним
+            if (activeSubMenu === 'plus') {
+                const targetDropdown = barElement.querySelector('#ws-submenu-plus');
+                const targetBtn = barElement.querySelector('#ws-action-plus-btn');
                 if (targetDropdown) targetDropdown.classList.add('active');
                 if (targetBtn) targetBtn.classList.add('active');
-            } else if (activeSubMenu === 'more') {
-                const targetDropdown = barElement.querySelector('#ws-submenu-more');
-                const targetBtn = barElement.querySelector('#ws-action-more-btn');
+            } else if (activeSubMenu === 'style') {
+                const targetDropdown = barElement.querySelector('#ws-submenu-style');
+                const targetBtn = barElement.querySelector('#ws-action-style-btn');
                 if (targetDropdown) targetDropdown.classList.add('active');
                 if (targetBtn) targetBtn.classList.add('active');
             }
@@ -573,33 +511,27 @@ window.App = window.App || {};
             if (clearAllDesktop) clearAllDesktop.addEventListener('click', clearAll);
             if (clearAllMobile) clearAllMobile.addEventListener('click', clearAll);
 
-            // Кнопки субменю Десктоп
-            const colorBtn = barElement.querySelector('#ws-action-color-btn');
-            if (colorBtn) {
-                colorBtn.addEventListener('click', (e) => {
+            // Кнопка Стиль (Колір + Шрифт)
+            const styleBtn = barElement.querySelector('#ws-action-style-btn');
+            if (styleBtn) {
+                styleBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    this.toggleSubmenu('color');
+                    this.syncStyleState();
+                    this.toggleSubmenu('style');
                 });
             }
 
-            const tagBtn = barElement.querySelector('#ws-action-tag-btn');
-            if (tagBtn) {
-                tagBtn.addEventListener('click', (e) => {
+            // Кнопка Плюс (Теги + Закладка)
+            const plusBtn = barElement.querySelector('#ws-action-plus-btn');
+            if (plusBtn) {
+                plusBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     this.refreshTagSubmenu();
-                    this.toggleSubmenu('tag');
+                    this.toggleSubmenu('plus');
                 });
             }
 
-            const fontBtn = barElement.querySelector('#ws-action-font-btn');
-            if (fontBtn) {
-                fontBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    this.toggleSubmenu('font');
-                });
-            }
-
-            // Додати закладку (Десктоп і Мобільний)
+            // Додати закладку
             const handleBookmarkSelected = (e) => {
                 e.stopPropagation();
                 this.closeSubmenus();
@@ -620,21 +552,6 @@ window.App = window.App || {};
             const bookmarkBtn = barElement.querySelector('#ws-action-bookmark-btn');
             if (bookmarkBtn) {
                 bookmarkBtn.addEventListener('click', handleBookmarkSelected);
-            }
-
-            const moreBookmarkBtn = barElement.querySelector('#ws-more-bookmark-btn');
-            if (moreBookmarkBtn) {
-                moreBookmarkBtn.addEventListener('click', handleBookmarkSelected);
-            }
-
-            // Кнопка відкриття меню "три крапки" (Мобільний)
-            const moreBtn = barElement.querySelector('#ws-action-more-btn');
-            if (moreBtn) {
-                moreBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    this.refreshTagSubmenu();
-                    this.toggleSubmenu('more');
-                });
             }
 
             // Поділитись виділеними
@@ -806,27 +723,18 @@ window.App = window.App || {};
 
                 const isReadOnlyContext = isCurrentBoardReadOnly || hasOnlyReadOnlyNotes;
 
-                // Елементи для редагування стилів та метаданих (колір, шрифт, тег, закладка)
-                const groupStyle = barElement.querySelector('#ws-group-style');
-                const sepStyle = barElement.querySelector('#ws-sep-style');
-                const groupMeta = barElement.querySelector('#ws-group-meta');
-                const sepMeta = barElement.querySelector('#ws-sep-meta');
-                const moreBtn = barElement.querySelector('#ws-action-more-btn');
+                // Елементи для редагування стилів та метаданих (стиль, плюс)
+                const groupTools = barElement.querySelector('#ws-group-tools');
+                const sepTools = barElement.querySelector('#ws-sep-tools');
                 const duplicateBtn = barElement.querySelector('#ws-action-duplicate-btn');
                 const deleteBtn = barElement.querySelector('#ws-action-delete-btn');
 
                 if (isReadOnlyContext) {
-                    if (groupStyle) groupStyle.style.display = 'none';
-                    if (sepStyle) sepStyle.style.display = 'none';
-                    if (groupMeta) groupMeta.style.display = 'none';
-                    if (sepMeta) sepMeta.style.display = 'none';
-                    if (moreBtn) moreBtn.style.display = 'none';
+                    if (groupTools) groupTools.style.display = 'none';
+                    if (sepTools) sepTools.style.display = 'none';
                 } else {
-                    if (groupStyle) groupStyle.style.display = '';
-                    if (sepStyle) sepStyle.style.display = '';
-                    if (groupMeta) groupMeta.style.display = '';
-                    if (sepMeta) sepMeta.style.display = '';
-                    if (moreBtn) moreBtn.style.display = '';
+                    if (groupTools) groupTools.style.display = '';
+                    if (sepTools) sepTools.style.display = '';
                 }
 
                 // Адаптація кнопки дублювання (клонування)
