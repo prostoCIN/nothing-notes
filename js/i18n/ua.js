@@ -247,6 +247,7 @@ export const ua = {
         fontSelected: 'Шрифт',
         bookmarkSelected: 'Закладка',
         moveToParent: 'Зробити піднотатками...',
+        moveToParentShort: 'Піднотатки',
         cancelSelection: 'Скасувати вибір',
         selectAll: 'Вибрати всі',
         clearAll: 'Зняти всі',

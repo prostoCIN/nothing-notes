@@ -247,6 +247,7 @@ export const en = {
         fontSelected: 'Font',
         bookmarkSelected: 'Bookmark',
         moveToParent: 'Make subnotes of...',
+        moveToParentShort: 'Subnotes',
         cancelSelection: 'Cancel selection',
         selectAll: 'Select all',
         clearAll: 'Clear all',

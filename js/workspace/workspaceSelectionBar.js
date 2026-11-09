@@ -4,6 +4,7 @@ window.App = window.App || {};
 (function() {
     let barElement = null;
     let activeSubMenu = null; // 'style' | 'plus'
+    let activePlusTab = 'tags'; // 'tags' | 'bookmarks' | 'subnotes'
 
     window.App.workspaceSelectionBar = {
         init() {
@@ -51,7 +52,7 @@ window.App = window.App || {};
                 </div>
 
                 <div class="selection-bar-actions">
-                    <!-- ГРУПА 1: Оформлення та додавання (Стиль: колір + шрифт; Плюс: теги + закладка) -->
+                    <!-- ГРУПА 1: Оформлення та додавання (Стиль: колір + шрифт; Плюс: теги + закладка + піднотатки) -->
                     <div class="selection-action-group selection-group-tools" id="ws-group-tools">
                         <!-- 1. Стиль (Колір та Шрифт) -->
                         <div class="selection-action-item" id="ws-action-style-wrap">
@@ -95,9 +96,9 @@ window.App = window.App || {};
                             </div>
                         </div>
 
-                        <!-- 2. Плюс: Закладка та Теги -->
+                        <!-- 2. Плюс: 3 окремі меню (Теги, Закладки, Піднотатки) -->
                         <div class="selection-action-item" id="ws-action-plus-wrap">
-                            <button class="selection-action-btn" id="ws-action-plus-btn" title="Додати теги та закладки" data-i18n-title="selectionBar.plusTitle">
+                            <button class="selection-action-btn" id="ws-action-plus-btn" title="Додати теги, закладки, піднотатки" data-i18n-title="selectionBar.plusTitle">
                                 <span class="selection-btn-icon">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
                                         <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -107,19 +108,40 @@ window.App = window.App || {};
                                 <span class="selection-btn-label desktop-only" data-i18n="selectionBar.plusTitle">Додати</span>
                             </button>
                             <div class="selection-submenu-dropdown selection-plus-dropdown" id="ws-submenu-plus">
-                                <div class="selection-dropdown-section">
-                                    <button type="button" class="selection-bookmark-action-btn" id="ws-action-bookmark-btn">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <!-- 3 навігаційні вкладки групи "Додати" -->
+                                <div class="selection-plus-nav">
+                                    <button type="button" class="selection-nav-tab active" data-tab="tags">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                                            <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                                        </svg>
+                                        <span data-i18n="selectionBar.tagSelected">Теги</span>
+                                    </button>
+                                    <button type="button" class="selection-nav-tab" data-tab="bookmarks">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                             <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
                                         </svg>
-                                        <span data-i18n="selectionBar.bookmarkSelected">Закладка</span>
+                                        <span data-i18n="selectionBar.bookmarkSelected">Закладки</span>
+                                    </button>
+                                    <button type="button" class="selection-nav-tab" data-tab="subnotes">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="9 10 4 15 9 20"></polyline>
+                                            <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
+                                        </svg>
+                                        <span data-i18n="selectionBar.moveToParentShort">Піднотатки</span>
                                     </button>
                                 </div>
-                                <div class="selection-dropdown-divider"></div>
-                                <div class="selection-dropdown-section">
-                                    <div class="selection-submenu-title" data-i18n="selectionBar.attachTagTitle">Прикріпити тег:</div>
+
+                                <!-- 1. Панель Теги -->
+                                <div class="selection-tab-pane" id="ws-pane-tags">
                                     <div id="ws-plus-tags"></div>
                                 </div>
+
+                                <!-- 2. Панель Закладки -->
+                                <div class="selection-tab-pane" id="ws-pane-bookmarks" style="display: none;"></div>
+
+                                <!-- 3. Панель Піднотатки -->
+                                <div class="selection-tab-pane" id="ws-pane-subnotes" style="display: none;"></div>
                             </div>
                         </div>
                     </div>
@@ -128,7 +150,7 @@ window.App = window.App || {};
 
                     <!-- ГРУПА 2: Загальні дії (Поділитись, Дублювати, Видалити) -->
                     <div class="selection-action-group selection-group-actions" id="ws-group-actions">
-                        <!-- 1.5. Поділитись виділеними -->
+                        <!-- Поділитись виділеними -->
                         <button class="selection-action-btn" id="ws-action-share-btn" title="Поділитись виділеними нотатками" data-i18n-title="selectionBar.shareSelected">
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <circle cx="18" cy="5" r="3"></circle>
@@ -140,7 +162,7 @@ window.App = window.App || {};
                             <span class="selection-btn-label desktop-only" data-i18n="common.share">Поділитись</span>
                         </button>
 
-                        <!-- 2. Дублювати -->
+                        <!-- Дублювати -->
                         <button class="selection-action-btn" id="ws-action-duplicate-btn" title="Дублювати виділені" data-i18n-title="selectionBar.duplicateSelected">
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -149,7 +171,7 @@ window.App = window.App || {};
                             <span class="selection-btn-label desktop-only" data-i18n="sticker.duplicate">Дублювати</span>
                         </button>
 
-                        <!-- 3. Видалити -->
+                        <!-- Видалити -->
                         <button class="selection-action-btn selection-action-delete-btn" id="ws-action-delete-btn" title="Видалити виділені" data-i18n-title="selectionBar.deleteSelected">
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M3 6h18"></path>
@@ -274,8 +296,48 @@ window.App = window.App || {};
 
             setupFontSlider('#ws-sel-font-slider', '#ws-sel-font-badge');
 
+            // Навігаційні вкладки в меню "Додати"
+            barElement.querySelectorAll('.selection-nav-tab').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const tab = btn.dataset.tab;
+                    this.switchPlusTab(tab);
+                });
+            });
+
             // Теги
             this.refreshTagSubmenu();
+        },
+
+        switchPlusTab(tabName) {
+            activePlusTab = tabName;
+            if (!barElement) return;
+
+            // Оновлюємо класи кнопок вкладок
+            barElement.querySelectorAll('.selection-nav-tab').forEach(b => {
+                b.classList.toggle('active', b.dataset.tab === tabName);
+            });
+
+            // Оновлюємо панелі вкладок
+            const panes = {
+                tags: barElement.querySelector('#ws-pane-tags'),
+                bookmarks: barElement.querySelector('#ws-pane-bookmarks'),
+                subnotes: barElement.querySelector('#ws-pane-subnotes')
+            };
+
+            Object.keys(panes).forEach(k => {
+                if (panes[k]) {
+                    panes[k].style.display = (k === tabName) ? 'flex' : 'none';
+                }
+            });
+
+            if (tabName === 'tags') {
+                this.refreshTagSubmenu();
+            } else if (tabName === 'bookmarks') {
+                this.refreshBookmarksSubmenu();
+            } else if (tabName === 'subnotes') {
+                this.refreshSubnotesSubmenu();
+            }
         },
 
         syncStyleState() {
@@ -472,6 +534,234 @@ window.App = window.App || {};
             }
         },
 
+        refreshBookmarksSubmenu() {
+            const pane = barElement.querySelector('#ws-pane-bookmarks');
+            if (!pane) return;
+            pane.innerHTML = '';
+            const state = window.App.state;
+            const noteManager = window.App.noteManager;
+            const stickerBookmarks = window.App.stickerBookmarks;
+            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
+
+            const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
+            const selectedNotes = selectedIds.map(id => noteManager ? noteManager.getNoteById(id) : null).filter(Boolean);
+
+            // Кнопка відкриття Bookmark Picker
+            const pickerBtn = document.createElement('button');
+            pickerBtn.type = 'button';
+            pickerBtn.className = 'selection-bookmark-action-btn';
+            pickerBtn.innerHTML = `
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <span>${t('selectionBar.bookmarkTitle') || 'Обрати закладку для виділених...'}</span>
+            `;
+            pickerBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.closeSubmenus();
+                if (stickerBookmarks && stickerBookmarks.openBookmarkPicker) {
+                    stickerBookmarks.openBookmarkPicker(selectedNotes);
+                }
+            });
+            pane.appendChild(pickerBtn);
+
+            // Список наявних закладок у виділених нотатках
+            const allLinkedIds = new Set();
+            selectedNotes.forEach(n => {
+                const ids = Array.isArray(n.linkedNoteIds) ? n.linkedNoteIds : (stickerBookmarks ? stickerBookmarks.getSavedBookmarks(n.id) : []);
+                ids.forEach(id => allLinkedIds.add(id));
+            });
+
+            if (allLinkedIds.size > 0) {
+                const linkedListTitle = document.createElement('div');
+                linkedListTitle.className = 'selection-submenu-title';
+                linkedListTitle.style.marginTop = '6px';
+                linkedListTitle.textContent = 'Прив\'язані закладки:';
+                pane.appendChild(linkedListTitle);
+
+                const listWrap = document.createElement('div');
+                listWrap.className = 'selection-tag-list';
+                listWrap.style.maxHeight = '140px';
+
+                allLinkedIds.forEach(targetId => {
+                    const targetNote = noteManager ? noteManager.getNoteById(targetId) : null;
+                    if (!targetNote) return;
+
+                    const item = document.createElement('div');
+                    item.className = 'selection-tag-item';
+                    const rawTitle = (targetNote.title && targetNote.title.trim()) ? targetNote.title.trim() : (t('common.untitled') || 'Без назви');
+                    const icon = targetNote.icon || '🔖';
+
+                    item.innerHTML = `
+                        <div class="selection-tag-main-action">
+                            <span>${icon}</span>
+                            <span class="selection-tag-text">${rawTitle}</span>
+                        </div>
+                        <button class="selection-tag-del-btn" title="Видалити закладку">×</button>
+                    `;
+
+                    // Видалити цю закладку з усіх виділених нотаток
+                    const delBtn = item.querySelector('.selection-tag-del-btn');
+                    delBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        selectedNotes.forEach(n => {
+                            if (stickerBookmarks && stickerBookmarks.removeBookmark) {
+                                stickerBookmarks.removeBookmark(n, targetId, null, false);
+                            }
+                        });
+                        this.refreshBookmarksSubmenu();
+                    });
+
+                    listWrap.appendChild(item);
+                });
+
+                pane.appendChild(listWrap);
+
+                // Очистити всі закладки
+                const clearBtn = document.createElement('button');
+                clearBtn.type = 'button';
+                clearBtn.className = 'selection-tag-clear-btn';
+                clearBtn.innerHTML = `
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                    <span>Очистити закладки</span>
+                `;
+                clearBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    allLinkedIds.forEach(targetId => {
+                        selectedNotes.forEach(n => {
+                            if (stickerBookmarks && stickerBookmarks.removeBookmark) {
+                                stickerBookmarks.removeBookmark(n, targetId, null, false);
+                            }
+                        });
+                    });
+                    this.refreshBookmarksSubmenu();
+                });
+                pane.appendChild(clearBtn);
+            }
+        },
+
+        refreshSubnotesSubmenu() {
+            const pane = barElement.querySelector('#ws-pane-subnotes');
+            if (!pane) return;
+            pane.innerHTML = '';
+            const state = window.App.state;
+            const noteManager = window.App.noteManager;
+            const actions = window.App.workspaceSelectionActions;
+            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
+
+            const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
+            if (selectedIds.length === 0) return;
+
+            const currentBoardId = state.activeBoardId;
+            const allNotes = (state.notes || []).filter(n => !n.isDeleted && (!currentBoardId || n.boardId === currentBoardId));
+
+            // Виключаємо самі виділені нотатки та їхніх нащадків
+            const excludedIds = new Set(selectedIds);
+            selectedIds.forEach(id => {
+                const descendants = noteManager && noteManager.getDescendantIds ? noteManager.getDescendantIds(id) : [];
+                descendants.forEach(dId => excludedIds.add(dId));
+            });
+
+            const eligibleParents = allNotes.filter(n => !excludedIds.has(n.id));
+
+            // Поле швидкого пошуку нотатки
+            const searchWrap = document.createElement('div');
+            searchWrap.className = 'tag-add-option-row';
+            searchWrap.style.marginBottom = '6px';
+            const searchInput = document.createElement('input');
+            searchInput.type = 'text';
+            searchInput.className = 'tag-add-input';
+            searchInput.placeholder = 'Пошук батьківської нотатки...';
+            searchWrap.appendChild(searchInput);
+            pane.appendChild(searchWrap);
+
+            const listWrap = document.createElement('div');
+            listWrap.className = 'selection-tag-list';
+            listWrap.style.maxHeight = '150px';
+
+            const renderList = (filterText = '') => {
+                listWrap.innerHTML = '';
+
+                // Опція зробити кореневими нотатками (зняти батька)
+                const rootOption = document.createElement('div');
+                rootOption.className = 'selection-tag-item';
+                rootOption.style.cursor = 'pointer';
+                rootOption.innerHTML = `
+                    <div class="selection-tag-main-action">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="19" x2="12" y2="5"></line>
+                            <polyline points="5 12 12 5 19 12"></polyline>
+                        </svg>
+                        <span class="selection-tag-text" style="font-weight: 700;">Головні нотатки (без батька)</span>
+                    </div>
+                `;
+                rootOption.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.closeSubmenus();
+                    if (actions && actions.moveNotesToParent) {
+                        actions.moveNotesToParent(selectedIds, null);
+                    }
+                    if (window.App.showNotification) {
+                        window.App.showNotification('Нотатки переміщено в корінь');
+                    }
+                });
+                listWrap.appendChild(rootOption);
+
+                const filtered = filterText
+                    ? eligibleParents.filter(n => (n.title || '').toLowerCase().includes(filterText.toLowerCase()) || (n.content || '').toLowerCase().includes(filterText.toLowerCase()))
+                    : eligibleParents;
+
+                if (filtered.length === 0) {
+                    const emptyMsg = document.createElement('div');
+                    emptyMsg.className = 'selection-submenu-empty';
+                    emptyMsg.textContent = 'Нотаток не знайдено';
+                    listWrap.appendChild(emptyMsg);
+                } else {
+                    filtered.forEach(parentNote => {
+                        const item = document.createElement('div');
+                        item.className = 'selection-tag-item';
+                        item.style.cursor = 'pointer';
+
+                        const rawTitle = (parentNote.title && parentNote.title.trim()) ? parentNote.title.trim() : (t('common.untitled') || 'Без назви');
+                        const icon = parentNote.icon || '📄';
+
+                        item.innerHTML = `
+                            <div class="selection-tag-main-action">
+                                <span>${icon}</span>
+                                <span class="selection-tag-text">${rawTitle}</span>
+                            </div>
+                        `;
+
+                        item.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            this.closeSubmenus();
+                            if (actions && actions.moveNotesToParent) {
+                                actions.moveNotesToParent(selectedIds, parentNote.id);
+                            }
+                            if (window.App.showNotification) {
+                                window.App.showNotification(`Зроблено піднотатками "${rawTitle}"`);
+                            }
+                        });
+
+                        listWrap.appendChild(item);
+                    });
+                }
+            };
+
+            renderList();
+
+            searchInput.addEventListener('input', (e) => {
+                e.stopPropagation();
+                renderList(e.target.value.trim());
+            });
+            searchInput.addEventListener('click', (e) => e.stopPropagation());
+
+            pane.appendChild(listWrap);
+        },
+
         bindBarEvents() {
             const state = window.App.state;
             const noteManager = window.App.noteManager;
@@ -521,37 +811,14 @@ window.App = window.App || {};
                 });
             }
 
-            // Кнопка Плюс (Теги + Закладка)
+            // Кнопка Плюс (Теги + Закладки + Піднотатки)
             const plusBtn = barElement.querySelector('#ws-action-plus-btn');
             if (plusBtn) {
                 plusBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    this.refreshTagSubmenu();
+                    this.switchPlusTab(activePlusTab);
                     this.toggleSubmenu('plus');
                 });
-            }
-
-            // Додати закладку
-            const handleBookmarkSelected = (e) => {
-                e.stopPropagation();
-                this.closeSubmenus();
-                const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
-                if (selectedIds.length === 0) return;
-
-                const selectedNotes = selectedIds
-                    .map(id => noteManager ? noteManager.getNoteById(id) : null)
-                    .filter(Boolean);
-
-                if (selectedNotes.length === 0) return;
-
-                if (window.App.stickerBookmarks && window.App.stickerBookmarks.openBookmarkPicker) {
-                    window.App.stickerBookmarks.openBookmarkPicker(selectedNotes);
-                }
-            };
-
-            const bookmarkBtn = barElement.querySelector('#ws-action-bookmark-btn');
-            if (bookmarkBtn) {
-                bookmarkBtn.addEventListener('click', handleBookmarkSelected);
             }
 
             // Поділитись виділеними

@@ -148,6 +148,23 @@
         gap: 6px !important;
     }
 
+    .selection-plus-nav {
+        gap: 2px !important;
+        padding: 2px !important;
+        margin-bottom: 6px !important;
+    }
+
+    .selection-nav-tab {
+        padding: 5px 3px !important;
+        font-size: 10px !important;
+        gap: 3px !important;
+    }
+
+    .selection-nav-tab svg {
+        width: 12px !important;
+        height: 12px !important;
+    }
+
     .selection-color-swatches {
         display: flex !important;
         flex-direction: row !important;
