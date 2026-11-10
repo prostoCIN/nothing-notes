@@ -32,14 +32,7 @@ window.App = window.App || {};
                         <span class="selection-bar-count-badge mobile-only" id="ws-sel-count-mobile">0</span>
                         
                         <span class="selection-bar-divider desktop-only">|</span>
-                        <button class="selection-bar-text-btn selection-bar-toggle-all-btn desktop-only" id="ws-sel-toggle-all-btn-desktop" title="Виділити всі нотатки в колонці" data-i18n-title="selectionBar.selectAllColumn" data-i18n="selectionBar.selectAll">Вибрати всі</button>
-
-                        <button class="selection-bar-toggle-all-btn mobile-only" id="ws-sel-toggle-all-btn-mobile" title="Виділити всі нотатки в колонці" data-i18n-title="selectionBar.selectAllColumn">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M9 11l3 3L22 4"></path>
-                                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-                            </svg>
-                        </button>
+                        <button class="selection-bar-text-btn selection-bar-toggle-all-btn" id="ws-sel-toggle-all-btn" title="Виділити всі нотатки в колонці" data-i18n-title="selectionBar.selectAllColumn" data-i18n="selectionBar.selectAll">Вибрати всі</button>
                     </div>
                 </div>
 
@@ -693,18 +686,10 @@ window.App = window.App || {};
                 });
             }
 
-            // Кнопка "Виділити всі / Зняти всі в колонці" (Десктоп та Мобільний)
-            const toggleAllDesktop = barElement.querySelector('#ws-sel-toggle-all-btn-desktop');
-            if (toggleAllDesktop) {
-                toggleAllDesktop.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    this.toggleSelectAllInColumn();
-                });
-            }
-
-            const toggleAllMobile = barElement.querySelector('#ws-sel-toggle-all-btn-mobile');
-            if (toggleAllMobile) {
-                toggleAllMobile.addEventListener('click', (e) => {
+            // Кнопка "Виділити всі / Зняти всі в колонці"
+            const toggleAllBtn = barElement.querySelector('#ws-sel-toggle-all-btn');
+            if (toggleAllBtn) {
+                toggleAllBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     this.toggleSelectAllInColumn();
                 });
@@ -893,18 +878,11 @@ window.App = window.App || {};
                 const colNoteIds = colStickers.map(s => s.dataset.noteId).filter(Boolean);
                 const allInColSelected = colNoteIds.length > 0 && colNoteIds.every(id => state.selectedWorkspaceNoteIds.has(id));
 
-                const toggleAllDesktop = barElement.querySelector('#ws-sel-toggle-all-btn-desktop');
-                const toggleAllMobile = barElement.querySelector('#ws-sel-toggle-all-btn-mobile');
-
-                if (toggleAllDesktop) {
-                    toggleAllDesktop.textContent = allInColSelected ? t('selectionBar.clearAll') : t('selectionBar.selectAll');
-                    toggleAllDesktop.title = allInColSelected ? t('selectionBar.clearAll') : (t('selectionBar.selectAllColumn') || 'Виділити всі');
-                    toggleAllDesktop.classList.toggle('active', allInColSelected);
-                }
-
-                if (toggleAllMobile) {
-                    toggleAllMobile.classList.toggle('active', allInColSelected);
-                    toggleAllMobile.title = allInColSelected ? t('selectionBar.clearAll') : (t('selectionBar.selectAllColumn') || 'Виділити всі');
+                const toggleAllBtn = barElement.querySelector('#ws-sel-toggle-all-btn');
+                if (toggleAllBtn) {
+                    toggleAllBtn.textContent = allInColSelected ? t('selectionBar.clearAll') : t('selectionBar.selectAll');
+                    toggleAllBtn.title = allInColSelected ? t('selectionBar.clearAll') : (t('selectionBar.selectAllColumn') || 'Виділити всі');
+                    toggleAllBtn.classList.toggle('active', allInColSelected);
                 }
 
                 // Визначаємо чи активний блокнот або всі вибрані нотатки є read-only
