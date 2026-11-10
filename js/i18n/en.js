@@ -271,6 +271,7 @@ export const en = {
         moreActions: 'Actions',
         tabTags: 'Tags',
         tabBookmarks: 'Bookmarks',
+        selectAllColumn: 'Select all in column',
         toggleSelectAll: 'Select all / Clear all'
     },
     textToolbar: {

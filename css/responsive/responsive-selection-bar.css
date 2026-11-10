@@ -44,13 +44,35 @@
         padding: 0 !important;
         border-radius: 9px !important;
         box-sizing: border-box !important;
-        cursor: pointer !important;
-        transition: transform var(--transition-fast), background var(--transition-fast) !important;
     }
 
-    .selection-bar-count-badge:active {
-        transform: scale(0.92) !important;
-        background: rgba(16, 185, 129, 0.25) !important;
+    .selection-bar-toggle-all-btn {
+        width: 30px !important;
+        height: 30px !important;
+        min-width: 30px !important;
+        padding: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 9px !important;
+        background: rgba(255, 255, 255, 0.06) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: var(--text-muted) !important;
+        cursor: pointer !important;
+        transition: all var(--transition-fast) !important;
+    }
+
+    .selection-bar-toggle-all-btn:hover,
+    .selection-bar-toggle-all-btn:active {
+        background: rgba(16, 185, 129, 0.15) !important;
+        border-color: #10b981 !important;
+        color: #34d399 !important;
+    }
+
+    .selection-bar-toggle-all-btn.active {
+        background: rgba(16, 185, 129, 0.22) !important;
+        border-color: #10b981 !important;
+        color: #34d399 !important;
     }
 
     .selection-bar-actions {

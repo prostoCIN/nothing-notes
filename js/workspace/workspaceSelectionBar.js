@@ -29,10 +29,17 @@ window.App = window.App || {};
                     </button>
                     <div class="selection-bar-info">
                         <span class="selection-bar-count-desktop desktop-only" id="ws-sel-count-desktop">Вибрано 0</span>
-                        <button class="selection-bar-count-badge mobile-only" id="ws-sel-count-mobile" title="Вибрати всі / Зняти всі" data-i18n-title="selectionBar.toggleSelectAll">0</button>
+                        <span class="selection-bar-count-badge mobile-only" id="ws-sel-count-mobile">0</span>
+                        
                         <span class="selection-bar-divider desktop-only">|</span>
-                        <button class="selection-bar-text-btn desktop-only" id="ws-sel-all-btn-desktop" data-i18n="selectionBar.selectAll">Вибрати всі</button>
-                        <button class="selection-bar-text-btn desktop-only" id="ws-sel-clear-btn-desktop" data-i18n="selectionBar.clearAll">Зняти всі</button>
+                        <button class="selection-bar-text-btn selection-bar-toggle-all-btn desktop-only" id="ws-sel-toggle-all-btn-desktop" title="Виділити всі нотатки в колонці" data-i18n-title="selectionBar.selectAllColumn" data-i18n="selectionBar.selectAll">Вибрати всі</button>
+
+                        <button class="selection-bar-toggle-all-btn mobile-only" id="ws-sel-toggle-all-btn-mobile" title="Виділити всі нотатки в колонці" data-i18n-title="selectionBar.selectAllColumn">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 11l3 3L22 4"></path>
+                                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                            </svg>
+                        </button>
                     </div>
                 </div>
 
@@ -604,6 +611,76 @@ window.App = window.App || {};
             }
         },
 
+        /**
+         * Визначає цільову колонку для масового вибору
+         * @returns {HTMLElement|null}
+         */
+        getTargetColumn() {
+            const state = window.App.state;
+
+            // 1. Якщо вже є вибрані нотатки — беремо колонку першої виділеної нотатки
+            if (state.selectedWorkspaceNoteIds && state.selectedWorkspaceNoteIds.size > 0) {
+                for (const id of state.selectedWorkspaceNoteIds) {
+                    const card = document.querySelector(`.note-sticker[data-note-id="${id}"]`);
+                    if (card) {
+                        const col = card.closest('.board-column');
+                        if (col) return col;
+                    }
+                }
+            }
+
+            // 2. Якщо вибраних немає — визначаємо активну колонку за скролом контейнера
+            const columns = Array.from(document.querySelectorAll('.board-column'));
+            if (columns.length === 0) return null;
+            if (columns.length === 1) return columns[0];
+
+            const columnsContainer = document.getElementById('columns-container');
+            if (columnsContainer) {
+                const containerRect = columnsContainer.getBoundingClientRect();
+                const containerCenter = containerRect.left + containerRect.width / 2;
+                let closestCol = columns[0];
+                let minDiff = Infinity;
+                columns.forEach(col => {
+                    const rect = col.getBoundingClientRect();
+                    const colCenter = rect.left + rect.width / 2;
+                    const diff = Math.abs(colCenter - containerCenter);
+                    if (diff < minDiff) {
+                        minDiff = diff;
+                        closestCol = col;
+                    }
+                });
+                return closestCol;
+            }
+
+            return columns[0];
+        },
+
+        /**
+         * Перемикає вибір усіх нотаток у поточній колонці (виділити всі ⇄ зняти всі)
+         */
+        toggleSelectAllInColumn() {
+            const state = window.App.state;
+            const targetCol = this.getTargetColumn();
+            const stickers = targetCol
+                ? Array.from(targetCol.querySelectorAll('.note-sticker[data-note-id]'))
+                : Array.from(document.querySelectorAll('.note-sticker[data-note-id]'));
+
+            const noteIds = stickers.map(s => s.dataset.noteId).filter(Boolean);
+            if (noteIds.length === 0) return;
+
+            const allSelected = noteIds.every(id => state.selectedWorkspaceNoteIds.has(id));
+
+            if (allSelected) {
+                // Якщо всі в колонці вже виділені — знімаємо виділення з них
+                noteIds.forEach(id => state.selectedWorkspaceNoteIds.delete(id));
+            } else {
+                // Якщо ні — виділяємо всі нотатки в колонці
+                noteIds.forEach(id => state.selectedWorkspaceNoteIds.add(id));
+            }
+
+            this.updateUI();
+        },
+
         bindBarEvents() {
             const state = window.App.state;
             const noteManager = window.App.noteManager;
@@ -616,42 +693,20 @@ window.App = window.App || {};
                 });
             }
 
-            // Вибрати всі
-            const selectAll = () => {
-                const allVisibleStickers = document.querySelectorAll('.note-sticker[data-note-id]');
-                allVisibleStickers.forEach(card => {
-                    if (card.dataset.noteId) {
-                        state.selectedWorkspaceNoteIds.add(card.dataset.noteId);
-                    }
-                });
-                this.updateUI();
-            };
-
-            const selAllDesktop = barElement.querySelector('#ws-sel-all-btn-desktop');
-            if (selAllDesktop) selAllDesktop.addEventListener('click', selectAll);
-
-            // Зняти всі
-            const clearAll = () => {
-                state.selectedWorkspaceNoteIds.clear();
-                this.updateUI();
-            };
-
-            const clearAllDesktop = barElement.querySelector('#ws-sel-clear-btn-desktop');
-            if (clearAllDesktop) clearAllDesktop.addEventListener('click', clearAll);
-
-            // Мобільний смарт-бейдж: перемикання "Вибрати всі" ⇄ "Зняти всі"
-            const countMobile = barElement.querySelector('#ws-sel-count-mobile');
-            if (countMobile) {
-                countMobile.addEventListener('click', (e) => {
+            // Кнопка "Виділити всі / Зняти всі в колонці" (Десктоп та Мобільний)
+            const toggleAllDesktop = barElement.querySelector('#ws-sel-toggle-all-btn-desktop');
+            if (toggleAllDesktop) {
+                toggleAllDesktop.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    const allVisibleStickers = document.querySelectorAll('.note-sticker[data-note-id]');
-                    const totalVisible = allVisibleStickers.length;
-                    if (totalVisible === 0) return;
-                    if (state.selectedWorkspaceNoteIds.size >= totalVisible) {
-                        clearAll();
-                    } else {
-                        selectAll();
-                    }
+                    this.toggleSelectAllInColumn();
+                });
+            }
+
+            const toggleAllMobile = barElement.querySelector('#ws-sel-toggle-all-btn-mobile');
+            if (toggleAllMobile) {
+                toggleAllMobile.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.toggleSelectAllInColumn();
                 });
             }
 
@@ -829,6 +884,28 @@ window.App = window.App || {};
                 const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
                 if (countDesktop) countDesktop.textContent = t('selectionBar.selectedCount', { count });
                 if (countMobile) countMobile.textContent = count;
+
+                // Оновлюємо стан кнопки "Виділити всі в колонці"
+                const targetCol = this.getTargetColumn();
+                const colStickers = targetCol
+                    ? Array.from(targetCol.querySelectorAll('.note-sticker[data-note-id]'))
+                    : Array.from(document.querySelectorAll('.note-sticker[data-note-id]'));
+                const colNoteIds = colStickers.map(s => s.dataset.noteId).filter(Boolean);
+                const allInColSelected = colNoteIds.length > 0 && colNoteIds.every(id => state.selectedWorkspaceNoteIds.has(id));
+
+                const toggleAllDesktop = barElement.querySelector('#ws-sel-toggle-all-btn-desktop');
+                const toggleAllMobile = barElement.querySelector('#ws-sel-toggle-all-btn-mobile');
+
+                if (toggleAllDesktop) {
+                    toggleAllDesktop.textContent = allInColSelected ? t('selectionBar.clearAll') : t('selectionBar.selectAll');
+                    toggleAllDesktop.title = allInColSelected ? t('selectionBar.clearAll') : (t('selectionBar.selectAllColumn') || 'Виділити всі');
+                    toggleAllDesktop.classList.toggle('active', allInColSelected);
+                }
+
+                if (toggleAllMobile) {
+                    toggleAllMobile.classList.toggle('active', allInColSelected);
+                    toggleAllMobile.title = allInColSelected ? t('selectionBar.clearAll') : (t('selectionBar.selectAllColumn') || 'Виділити всі');
+                }
 
                 // Визначаємо чи активний блокнот або всі вибрані нотатки є read-only
                 const currentBoard = window.App.boardManager ? window.App.boardManager.getActiveBoard() : null;

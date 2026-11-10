@@ -271,6 +271,7 @@ export const ua = {
         moreActions: 'Дії',
         tabTags: 'Теги',
         tabBookmarks: 'Закладки',
+        selectAllColumn: 'Виділити всі в колонці',
         toggleSelectAll: 'Вибрати всі / Зняти всі'
     },
     textToolbar: {
