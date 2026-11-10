@@ -47,28 +47,34 @@
     }
 
     .selection-bar-toggle-all-btn {
-        background: none !important;
-        border: none !important;
-        color: #34d399 !important;
+        background: rgba(255, 255, 255, 0.06) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: var(--text-main) !important;
         font-size: 11px !important;
         font-weight: 600 !important;
         cursor: pointer !important;
-        padding: 4px 6px !important;
-        border-radius: 6px !important;
+        padding: 4px 8px !important;
+        border-radius: 8px !important;
+        height: 28px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
         transition: all var(--transition-fast) !important;
         white-space: nowrap !important;
         font-family: inherit !important;
+        box-sizing: border-box !important;
     }
 
-    .selection-bar-toggle-all-btn:hover,
     .selection-bar-toggle-all-btn:active {
-        background: rgba(16, 185, 129, 0.15) !important;
-        color: #a7f3d0 !important;
+        transform: scale(0.95) !important;
     }
 
     .selection-bar-toggle-all-btn.active {
-        color: #6ee7b7 !important;
-        text-decoration: underline !important;
+        background: var(--emerald-gradient, linear-gradient(135deg, #10b981, #059669)) !important;
+        border-color: transparent !important;
+        color: #062419 !important;
+        font-weight: 700 !important;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35) !important;
     }
 
     .selection-bar-actions {

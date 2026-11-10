@@ -31,8 +31,7 @@ window.App = window.App || {};
                         <span class="selection-bar-count-desktop desktop-only" id="ws-sel-count-desktop">Вибрано 0</span>
                         <span class="selection-bar-count-badge mobile-only" id="ws-sel-count-mobile">0</span>
                         
-                        <span class="selection-bar-divider desktop-only">|</span>
-                        <button class="selection-bar-text-btn selection-bar-toggle-all-btn" id="ws-sel-toggle-all-btn" title="Виділити всі нотатки в колонці" data-i18n-title="selectionBar.selectAllColumn" data-i18n="selectionBar.selectAll">Вибрати всі</button>
+                        <button class="selection-bar-toggle-all-btn" id="ws-sel-toggle-all-btn" title="Виділити всі нотатки в колонці" data-i18n-title="selectionBar.selectAllColumn" data-i18n="selectionBar.selectAll">Вибрати всі</button>
                     </div>
                 </div>
 
@@ -880,8 +879,8 @@ window.App = window.App || {};
 
                 const toggleAllBtn = barElement.querySelector('#ws-sel-toggle-all-btn');
                 if (toggleAllBtn) {
-                    toggleAllBtn.textContent = allInColSelected ? t('selectionBar.clearAll') : t('selectionBar.selectAll');
-                    toggleAllBtn.title = allInColSelected ? t('selectionBar.clearAll') : (t('selectionBar.selectAllColumn') || 'Виділити всі');
+                    toggleAllBtn.textContent = t('selectionBar.selectAll');
+                    toggleAllBtn.title = t('selectionBar.selectAllColumn') || 'Виділити всі в колонці';
                     toggleAllBtn.classList.toggle('active', allInColSelected);
                 }
 
