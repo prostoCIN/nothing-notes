@@ -77,8 +77,16 @@ window.App.storage = {
             const bookmarksMap = JSON.parse(localStorage.getItem('minimal_note_bookmarks') || '{}');
             if (bookmarksMap && Object.keys(bookmarksMap).length > 0) {
                 raw.forEach(n => {
-                    if ((!Array.isArray(n.linkedNoteIds) || n.linkedNoteIds.length === 0) && bookmarksMap[n.id]) {
+                    if (n.linkedNoteIds === undefined && bookmarksMap[n.id]) {
                         n.linkedNoteIds = [...bookmarksMap[n.id]];
+                    } else if (!Array.isArray(n.linkedNoteIds)) {
+                        n.linkedNoteIds = [];
+                    }
+                });
+            } else {
+                raw.forEach(n => {
+                    if (!Array.isArray(n.linkedNoteIds)) {
+                        n.linkedNoteIds = [];
                     }
                 });
             }
@@ -134,6 +142,9 @@ window.App.storage = {
                         this._pendingNotes.forEach(n => {
                             if (Array.isArray(n.linkedNoteIds) && n.linkedNoteIds.length > 0) {
                                 map[n.id] = n.linkedNoteIds;
+                                mapChanged = true;
+                            } else if (map[n.id]) {
+                                delete map[n.id];
                                 mapChanged = true;
                             }
                         });

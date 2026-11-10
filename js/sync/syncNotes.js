@@ -182,11 +182,15 @@ window.App = window.App || {};
                         const savedBookmarks = (window.App.stickerBookmarks && window.App.stickerBookmarks.getSavedBookmarks)
                             ? window.App.stickerBookmarks.getSavedBookmarks(n.id)
                             : [];
-                        const resolvedLinkedIds = (Array.isArray(n.linked_note_ids) && n.linked_note_ids.length > 0)
+                        const resolvedLinkedIds = Array.isArray(n.linked_note_ids)
                             ? n.linked_note_ids
-                            : ((localNote && Array.isArray(localNote.linkedNoteIds) && localNote.linkedNoteIds.length > 0)
+                            : ((localNote && Array.isArray(localNote.linkedNoteIds))
                                 ? [...localNote.linkedNoteIds]
                                 : savedBookmarks);
+
+                        if (window.App.stickerBookmarks && window.App.stickerBookmarks.saveLocalBookmarks) {
+                            window.App.stickerBookmarks.saveLocalBookmarks(n.id, resolvedLinkedIds);
+                        }
 
                         const savedPosMap = (window.App.storage && window.App.storage.getBoardPositions)
                             ? window.App.storage.getBoardPositions()
@@ -441,6 +445,7 @@ window.App = window.App || {};
                     images: note.images || [],
                     is_collapsed: !!note.isCollapsed,
                     tags: Array.isArray(note.tags) ? note.tags : [],
+                    linked_note_ids: Array.isArray(note.linkedNoteIds) ? note.linkedNoteIds : [],
                     order_index: noteIndex !== -1 ? noteIndex : state.notes.length,
                     created_at: new Date(note.createdAt || Date.now()).toISOString(),
                     updated_at: new Date(note.updatedAt || Date.now()).toISOString()
@@ -448,9 +453,16 @@ window.App = window.App || {};
             });
 
             try {
-                const { error } = await supabase
+                let { error } = await supabase
                     .from('notes')
                     .upsert(payloads, { onConflict: 'id' });
+
+                if (error && error.message && error.message.toLowerCase().includes('linked_note_ids')) {
+                    console.warn('[CloudSync] linked_note_ids column may not exist in database, retrying without it:', error.message);
+                    const safePayloads = payloads.map(({ linked_note_ids, ...rest }) => rest);
+                    const retry = await supabase.from('notes').upsert(safePayloads, { onConflict: 'id' });
+                    error = retry.error;
+                }
 
                 if (error) {
                     console.warn('[CloudSync] Bulk note upsert error:', error.message);
@@ -506,15 +518,23 @@ window.App = window.App || {};
                 images: note.images || [],
                 is_collapsed: !!note.isCollapsed,
                 tags: Array.isArray(note.tags) ? note.tags : [],
+                linked_note_ids: Array.isArray(note.linkedNoteIds) ? note.linkedNoteIds : [],
                 order_index: noteIndex !== -1 ? noteIndex : state.notes.length,
                 created_at: new Date(note.createdAt || Date.now()).toISOString(),
                 updated_at: new Date(note.updatedAt || Date.now()).toISOString()
             };
 
             try {
-                const { error } = await supabase
+                let { error } = await supabase
                     .from('notes')
                     .upsert(payload, { onConflict: 'id' });
+
+                if (error && error.message && error.message.toLowerCase().includes('linked_note_ids')) {
+                    console.warn('[CloudSync] linked_note_ids column may not exist in database, retrying without it:', error.message);
+                    const { linked_note_ids, ...safePayload } = payload;
+                    const retry = await supabase.from('notes').upsert(safePayload, { onConflict: 'id' });
+                    error = retry.error;
+                }
 
                 if (error) {
                     console.warn('[CloudSync] Note upsert error:', error.message);
@@ -762,6 +782,7 @@ window.App = window.App || {};
                 images: note.images || [],
                 is_collapsed: !!note.isCollapsed,
                 tags: Array.isArray(note.tags) ? note.tags : [],
+                linked_note_ids: Array.isArray(note.linkedNoteIds) ? note.linkedNoteIds : [],
                 order_index: idx,
                 updated_at: new Date().toISOString()
             }));
@@ -774,7 +795,13 @@ window.App = window.App || {};
             }
 
             try {
-                const { error } = await supabase.from('notes').upsert(payloads, { onConflict: 'id' });
+                let { error } = await supabase.from('notes').upsert(payloads, { onConflict: 'id' });
+                if (error && error.message && error.message.toLowerCase().includes('linked_note_ids')) {
+                    console.warn('[CloudSync] linked_note_ids column may not exist in database, retrying without it:', error.message);
+                    const safePayloads = payloads.map(({ linked_note_ids, ...rest }) => rest);
+                    const retry = await supabase.from('notes').upsert(safePayloads, { onConflict: 'id' });
+                    error = retry.error;
+                }
                 if (error) console.warn('[CloudSync] Bulk push error:', error.message);
                 else {
                     console.log('[CloudSync] Synced all local notes & images to cloud');
