@@ -2,11 +2,11 @@
     /* Адаптив плаваючої нижньої панелі масового вибору (iOS Selection Bar) */
     .workspace-selection-bar {
         width: calc(100vw - 20px) !important;
-        max-width: none !important;
+        max-width: 480px !important;
         bottom: max(env(safe-area-inset-bottom, 0px), 12px) !important;
         padding: 6px 10px !important;
-        gap: 6px !important;
-        border-radius: 14px !important;
+        gap: 8px !important;
+        border-radius: 16px !important;
         justify-content: space-between !important;
         z-index: 1000 !important;
     }
@@ -23,55 +23,40 @@
         gap: 6px !important;
     }
 
+    .selection-bar-close-btn {
+        width: 30px !important;
+        height: 30px !important;
+        min-width: 30px !important;
+    }
+
     .selection-bar-count-badge {
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
-        background: transparent !important;
+        background: rgba(16, 185, 129, 0.12) !important;
         border: 1.5px solid #10b981 !important;
         color: #34d399 !important;
-        font-size: 11px !important;
+        font-size: 12px !important;
         font-weight: 700 !important;
-        width: 28px !important;
-        height: 28px !important;
-        min-width: 28px !important;
+        width: 30px !important;
+        height: 30px !important;
+        min-width: 30px !important;
         padding: 0 !important;
-        border-radius: 8px !important;
+        border-radius: 9px !important;
         box-sizing: border-box !important;
-    }
-
-    .selection-bar-quick-btns {
-        display: flex !important;
-        align-items: center !important;
-        gap: 4px !important;
-    }
-
-    .selection-bar-icon-btn {
-        width: 28px !important;
-        height: 28px !important;
-        background: rgba(255, 255, 255, 0.06) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        color: var(--text-muted) !important;
-        border-radius: 8px !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        padding: 0 !important;
         cursor: pointer !important;
-        transition: all var(--transition-fast) !important;
+        transition: transform var(--transition-fast), background var(--transition-fast) !important;
     }
 
-    .selection-bar-icon-btn:hover,
-    .selection-bar-icon-btn:active {
-        background: rgba(16, 185, 129, 0.2) !important;
-        border-color: #10b981 !important;
-        color: #34d399 !important;
+    .selection-bar-count-badge:active {
+        transform: scale(0.92) !important;
+        background: rgba(16, 185, 129, 0.25) !important;
     }
 
     .selection-bar-actions {
         display: flex !important;
         align-items: center !important;
-        gap: 5px !important;
+        gap: 6px !important;
     }
 
     .selection-action-group {
@@ -80,7 +65,7 @@
         background: transparent !important;
         border: none !important;
         padding: 0 !important;
-        gap: 5px !important;
+        gap: 6px !important;
     }
 
     .selection-group-separator {
@@ -107,7 +92,7 @@
         height: 16px !important;
     }
 
-    .selection-submenu-dropdown.selection-more-dropdown {
+    .selection-submenu-dropdown {
         position: fixed !important;
         left: 50% !important;
         right: auto !important;
@@ -117,39 +102,18 @@
         max-width: 320px !important;
         max-height: 55vh !important;
         overflow-y: auto !important;
-        padding: 14px !important;
-        gap: 12px !important;
+        padding: 12px !important;
+        gap: 10px !important;
         border-radius: 16px !important;
         z-index: 1010 !important;
         box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
     }
 
-    .selection-submenu-dropdown.selection-more-dropdown.active {
+    .selection-submenu-dropdown.active {
         display: flex !important;
         opacity: 1 !important;
         pointer-events: auto !important;
         transform: translateX(-50%) translateY(0) !important;
-    }
-
-    .selection-more-section {
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 6px !important;
-    }
-
-    .selection-more-sec-title {
-        font-size: 11px !important;
-        font-weight: 700 !important;
-        color: var(--text-muted) !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-    }
-
-    .selection-sec-title-left {
-        display: inline-flex !important;
-        align-items: center !important;
-        gap: 6px !important;
     }
 
     .selection-color-swatches {
@@ -162,9 +126,21 @@
     }
 
     .selection-color-swatches .color-swatch-btn {
-        width: 24px !important;
-        height: 24px !important;
+        width: 26px !important;
+        height: 26px !important;
         flex-shrink: 0 !important;
+    }
+
+    .selection-plus-nav {
+        display: flex !important;
+        gap: 3px !important;
+        margin-bottom: 6px !important;
+        padding: 3px !important;
+    }
+
+    .selection-nav-tab {
+        padding: 5px 4px !important;
+        font-size: 11px !important;
     }
 
     .selection-tag-list {

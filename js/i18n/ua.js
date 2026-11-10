@@ -262,7 +262,17 @@ export const ua = {
         done: 'Готово',
         select: 'Вибрати',
         selectModeTitle: 'Режим мульти-вибору нотаток (як в iOS Галереї)',
-        exitSelectMode: 'Вийти з режиму вибору'
+        exitSelectMode: 'Вийти з режиму вибору',
+        styleTitle: 'Стиль',
+        styleFullTitle: 'Оформлення (колір та шрифт)',
+        plusTitle: 'Додати (теги, закладки, піднотатки)',
+        addBtn: 'Додати',
+        moreActionsTitle: 'Дії з виділеними',
+        moreActions: 'Дії',
+        tabTags: 'Теги',
+        tabBookmarks: 'Закладки',
+        tabSubnotes: 'Піднотатки',
+        toggleSelectAll: 'Вибрати всі / Зняти всі'
     },
     textToolbar: {
         bold: 'Жирний (Ctrl+B)',

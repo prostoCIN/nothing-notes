@@ -262,7 +262,17 @@ export const en = {
         done: 'Done',
         select: 'Select',
         selectModeTitle: 'Multi-select mode (iOS Gallery style)',
-        exitSelectMode: 'Exit select mode'
+        exitSelectMode: 'Exit select mode',
+        styleTitle: 'Style',
+        styleFullTitle: 'Styling (color & font)',
+        plusTitle: 'Add (tags, bookmarks, subnotes)',
+        addBtn: 'Add',
+        moreActionsTitle: 'Actions for selected',
+        moreActions: 'Actions',
+        tabTags: 'Tags',
+        tabBookmarks: 'Bookmarks',
+        tabSubnotes: 'Subnotes',
+        toggleSelectAll: 'Select all / Clear all'
     },
     textToolbar: {
         bold: 'Bold (Ctrl+B)',
