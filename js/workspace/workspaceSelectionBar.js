@@ -81,9 +81,9 @@ window.App = window.App || {};
                             </div>
                         </div>
 
-                        <!-- 2. Додати (Теги, Закладки, Піднотатки) з сегментованими вкладками -->
+                        <!-- 2. Додати (Теги, Закладки) з сегментованими вкладками -->
                         <div class="selection-action-item" id="ws-action-plus-wrap">
-                            <button class="selection-action-btn" id="ws-action-plus-btn" title="Додати (теги, закладки, піднотатки)" data-i18n-title="selectionBar.plusTitle">
+                            <button class="selection-action-btn" id="ws-action-plus-btn" title="Додати (теги, закладки)" data-i18n-title="selectionBar.plusTitle">
                                 <span class="selection-btn-icon">
                                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                         <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -107,13 +107,6 @@ window.App = window.App || {};
                                         </svg>
                                         <span data-i18n="selectionBar.bookmarkSelected">Закладки</span>
                                     </button>
-                                    <button type="button" class="selection-nav-tab" data-tab="subnotes">
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <polyline points="9 10 4 15 9 20"></polyline>
-                                            <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
-                                        </svg>
-                                        <span data-i18n="selectionBar.tabSubnotes">Піднотатки</span>
-                                    </button>
                                 </div>
 
                                 <!-- 1. Панель Теги -->
@@ -123,9 +116,6 @@ window.App = window.App || {};
 
                                 <!-- 2. Панель Закладки -->
                                 <div class="selection-tab-pane" id="ws-pane-bookmarks" style="display: none;"></div>
-
-                                <!-- 3. Панель Піднотатки -->
-                                <div class="selection-tab-pane" id="ws-pane-subnotes" style="display: none;"></div>
                             </div>
                         </div>
                     </div>
@@ -313,8 +303,7 @@ window.App = window.App || {};
 
             const panes = {
                 tags: barElement.querySelector('#ws-pane-tags'),
-                bookmarks: barElement.querySelector('#ws-pane-bookmarks'),
-                subnotes: barElement.querySelector('#ws-pane-subnotes')
+                bookmarks: barElement.querySelector('#ws-pane-bookmarks')
             };
 
             Object.keys(panes).forEach(k => {
@@ -327,8 +316,6 @@ window.App = window.App || {};
                 this.refreshTagSubmenu();
             } else if (tabName === 'bookmarks') {
                 this.refreshBookmarksSubmenu();
-            } else if (tabName === 'subnotes') {
-                this.refreshSubnotesSubmenu();
             }
         },
 
@@ -615,124 +602,6 @@ window.App = window.App || {};
                 });
                 pane.appendChild(clearBtn);
             }
-        },
-
-        refreshSubnotesSubmenu() {
-            const pane = barElement.querySelector('#ws-pane-subnotes');
-            if (!pane) return;
-            pane.innerHTML = '';
-            const state = window.App.state;
-            const noteManager = window.App.noteManager;
-            const actions = window.App.workspaceSelectionActions;
-            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
-
-            const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
-            if (selectedIds.length === 0) return;
-
-            const currentBoardId = state.activeBoardId;
-            const allNotes = (state.notes || []).filter(n => !n.isDeleted && (!currentBoardId || n.boardId === currentBoardId));
-
-            // Виключаємо самі виділені нотатки та їхніх нащадків
-            const excludedIds = new Set(selectedIds);
-            selectedIds.forEach(id => {
-                const descendants = noteManager && noteManager.getDescendantIds ? noteManager.getDescendantIds(id) : [];
-                descendants.forEach(dId => excludedIds.add(dId));
-            });
-
-            const eligibleParents = allNotes.filter(n => !excludedIds.has(n.id));
-
-            // Поле швидкого пошуку нотатки
-            const searchWrap = document.createElement('div');
-            searchWrap.className = 'tag-add-option-row';
-            searchWrap.style.marginBottom = '6px';
-            const searchInput = document.createElement('input');
-            searchInput.type = 'text';
-            searchInput.className = 'tag-add-input';
-            searchInput.placeholder = t('selectionBar.searchParentNote') || 'Пошук батьківської нотатки...';
-            searchWrap.appendChild(searchInput);
-            pane.appendChild(searchWrap);
-
-            const listWrap = document.createElement('div');
-            listWrap.className = 'selection-tag-list';
-            listWrap.style.maxHeight = '150px';
-
-            const renderList = (filterText = '') => {
-                listWrap.innerHTML = '';
-
-                // Опція зробити кореневими нотатками (зняти батька)
-                const rootOption = document.createElement('div');
-                rootOption.className = 'selection-tag-item';
-                rootOption.style.cursor = 'pointer';
-                rootOption.innerHTML = `
-                    <div class="selection-tag-main-action">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="12" y1="19" x2="12" y2="5"></line>
-                            <polyline points="5 12 12 5 19 12"></polyline>
-                        </svg>
-                        <span class="selection-tag-text" style="font-weight: 700;">${t('selectionBar.detachSubnotes') || 'Головні нотатки (без батька)'}</span>
-                    </div>
-                `;
-                rootOption.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    this.closeSubmenus();
-                    if (actions && actions.moveNotesToParent) {
-                        actions.moveNotesToParent(selectedIds, null);
-                    }
-                    if (window.App.showNotification) {
-                        window.App.showNotification('Нотатки переміщено в корінь');
-                    }
-                });
-                listWrap.appendChild(rootOption);
-
-                const filtered = filterText
-                    ? eligibleParents.filter(n => (n.title || '').toLowerCase().includes(filterText.toLowerCase()) || (n.content || '').toLowerCase().includes(filterText.toLowerCase()))
-                    : eligibleParents;
-
-                if (filtered.length === 0) {
-                    const emptyMsg = document.createElement('div');
-                    emptyMsg.className = 'selection-submenu-empty';
-                    emptyMsg.textContent = 'Нотаток не знайдено';
-                    listWrap.appendChild(emptyMsg);
-                } else {
-                    filtered.forEach(parentNote => {
-                        const item = document.createElement('div');
-                        item.className = 'selection-tag-item';
-                        item.style.cursor = 'pointer';
-
-                        const rawTitle = (parentNote.title && parentNote.title.trim()) ? parentNote.title.trim() : (t('common.untitled') || 'Без назви');
-                        const icon = parentNote.icon || '📄';
-
-                        item.innerHTML = `
-                            <div class="selection-tag-main-action">
-                                <span>${icon}</span>
-                                <span class="selection-tag-text">${rawTitle}</span>
-                            </div>
-                        `;
-
-                        item.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            this.closeSubmenus();
-                            if (actions && actions.moveNotesToParent) {
-                                actions.moveNotesToParent(selectedIds, parentNote.id);
-                            }
-                            if (window.App.showNotification) {
-                                window.App.showNotification(`Зроблено піднотатками "${rawTitle}"`);
-                            }
-                        });
-
-                        listWrap.appendChild(item);
-                    });
-                }
-            };
-
-            renderList();
-
-            searchInput.addEventListener('input', (e) => {
-                renderList(e.target.value.trim());
-            });
-            searchInput.addEventListener('click', (e) => e.stopPropagation());
-
-            pane.appendChild(listWrap);
         },
 
         bindBarEvents() {

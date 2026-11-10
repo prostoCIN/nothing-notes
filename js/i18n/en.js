@@ -265,13 +265,12 @@ export const en = {
         exitSelectMode: 'Exit select mode',
         styleTitle: 'Style',
         styleFullTitle: 'Styling (color & font)',
-        plusTitle: 'Add (tags, bookmarks, subnotes)',
+        plusTitle: 'Add (tags, bookmarks)',
         addBtn: 'Add',
         moreActionsTitle: 'Actions for selected',
         moreActions: 'Actions',
         tabTags: 'Tags',
         tabBookmarks: 'Bookmarks',
-        tabSubnotes: 'Subnotes',
         toggleSelectAll: 'Select all / Clear all'
     },
     textToolbar: {

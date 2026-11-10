@@ -265,13 +265,12 @@ export const ua = {
         exitSelectMode: 'Вийти з режиму вибору',
         styleTitle: 'Стиль',
         styleFullTitle: 'Оформлення (колір та шрифт)',
-        plusTitle: 'Додати (теги, закладки, піднотатки)',
+        plusTitle: 'Додати (теги, закладки)',
         addBtn: 'Додати',
         moreActionsTitle: 'Дії з виділеними',
         moreActions: 'Дії',
         tabTags: 'Теги',
         tabBookmarks: 'Закладки',
-        tabSubnotes: 'Піднотатки',
         toggleSelectAll: 'Вибрати всі / Зняти всі'
     },
     textToolbar: {
