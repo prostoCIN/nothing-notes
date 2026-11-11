@@ -241,9 +241,7 @@ html[data-theme="light"] .sidebar-nest-pocket.active-hover .nest-pocket-icon {
 
 @media (hover: none), screen and (max-width: 768px) {
     .board-drag-handle {
-        opacity: 0.45;
-        width: 16px;
-        margin-right: 4px;
+        display: none !important;
     }
 }
 

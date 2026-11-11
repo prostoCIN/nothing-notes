@@ -76,6 +76,13 @@ window.App = window.App || {};
 
             const onTouchMove = (e) => {
                 if (!touchStarted) return;
+                if (
+                    document.body.classList.contains('is-sidebar-dragging') || 
+                    el.classList.contains('touch-drag-active') || 
+                    el.classList.contains('is-dragging')
+                ) {
+                    return;
+                }
                 const touch = e.touches[0];
                 if (!touch) return;
 

@@ -224,8 +224,7 @@ window.App = window.App || {};
                 let lastClientX = startX;
                 let lastClientY = startY;
 
-                const sidebarEl = document.getElementById('sidebar');
-                const boardsScroller = window.App.dragUtils.createAutoScroller(sidebarEl || boardsList, {
+                const boardsScroller = window.App.dragUtils.createAutoScroller(boardsList, {
                     edgeThreshold: 60,
                     maxSpeed: 18,
                     vertical: true,
@@ -327,26 +326,16 @@ window.App = window.App || {};
                 };
 
                 if (isTouch) {
-                    if (isHandle) {
+                    const LONG_PRESS_DELAY = 380; // мс утримання пальця на місці (як у нотатках)
+                    longPressTimer = setTimeout(() => {
                         touchDragReady = true;
                         li.classList.add('touch-drag-active');
                         if (boardsList) boardsList.style.touchAction = 'none';
                         if (navigator.vibrate) {
-                            try { navigator.vibrate(25); } catch (_) {}
+                            try { navigator.vibrate(40); } catch (_) {}
                         }
                         initDrag(lastClientX, lastClientY);
-                    } else {
-                        const LONG_PRESS_DELAY = 380; // мс утримання пальця на місці (як у нотатках)
-                        longPressTimer = setTimeout(() => {
-                            touchDragReady = true;
-                            li.classList.add('touch-drag-active');
-                            if (boardsList) boardsList.style.touchAction = 'none';
-                            if (navigator.vibrate) {
-                                try { navigator.vibrate(40); } catch (_) {}
-                            }
-                            initDrag(lastClientX, lastClientY);
-                        }, LONG_PRESS_DELAY);
-                    }
+                    }, LONG_PRESS_DELAY);
 
                     touchMoveListener = (touchEv) => {
                         const touch = touchEv.touches && touchEv.touches[0];
