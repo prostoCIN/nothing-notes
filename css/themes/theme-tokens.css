@@ -37,11 +37,11 @@ html[data-theme="forest"] {
     --scrollbar-thumb-hover: rgba(255, 255, 255, 0.22);
     --sticker-shadow: 0 4px 14px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.1);
 
-    /* Фірмовий смарагдовий градієнт та акцент NothingNotes */
+    /* Фірмовий смарагдовий акцент NothingNotes */
     --accent-color: #16b981;
-    --emerald-gradient: linear-gradient(135deg, #B3CD9D 0%, #16B981 30%, #ACF9DF 65%, #16B981 85%, #B3CD9D 100%);
-    --emerald-gradient-text: linear-gradient(120deg, #B3CD9D 0%, #16B981 35%, #ACF9DF 70%, #16B981 100%);
-    --emerald-glow: 0 8px 32px rgba(22, 185, 129, 0.22), 0 0 0 1px rgba(172, 249, 223, 0.15);
+    --emerald-gradient: var(--accent-color);
+    --emerald-gradient-text: var(--accent-color);
+    --emerald-glow: 0 4px 16px var(--accent-subtle);
 
     --glass-bg: rgba(39, 40, 34, 0.8);
     --glass-bg-subtle: rgba(255, 255, 255, 0.03);

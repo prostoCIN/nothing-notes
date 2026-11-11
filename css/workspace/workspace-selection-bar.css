@@ -122,7 +122,7 @@
 }
 
 .selection-bar-toggle-all-btn.active {
-    background: var(--emerald-gradient, linear-gradient(135deg, #10b981, #059669)) !important;
+    background: var(--accent-color) !important;
     border-color: transparent !important;
     color: #062419 !important;
     box-shadow: 0 2px 10px rgba(16, 185, 129, 0.35);
@@ -165,7 +165,7 @@
 }
 
 .selection-action-group .selection-action-btn.active {
-    background: var(--emerald-gradient) !important;
+    background: var(--accent-color) !important;
     border-color: transparent !important;
     color: #062419 !important;
 }
@@ -217,10 +217,10 @@
 }
 
 .selection-action-btn.active {
-    background: var(--emerald-gradient) !important;
+    background: var(--accent-color) !important;
     border-color: transparent !important;
     color: #062419 !important;
-    box-shadow: 0 4px 14px rgba(22, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    box-shadow: 0 3px 10px rgba(22, 185, 129, 0.35);
 }
 
 .selection-action-btn.active svg {

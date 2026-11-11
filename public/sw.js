@@ -1,5 +1,5 @@
 // Service Worker для NothingNotes PWA (Автономний режим та офлайн-робота)
-const CACHE_NAME = 'nothing-notes-v51';
+const CACHE_NAME = 'nothing-notes-v52';
 
 const STATIC_PRECACHE = [
     './',

@@ -31,10 +31,10 @@
     --sidebar-max-width: 600px;
     --sidebar-width: var(--sidebar-default-width);
 
-    /* Фірмовий смарагдовий градієнт з точками з палітри */
-    --emerald-gradient: linear-gradient(135deg, #B3CD9D 0%, #16B981 30%, #ACF9DF 65%, #16B981 85%, #B3CD9D 100%);
-    --emerald-gradient-text: linear-gradient(120deg, #B3CD9D 0%, #16B981 35%, #ACF9DF 70%, #16B981 100%);
-    --emerald-glow: 0 8px 32px rgba(22, 185, 129, 0.22), 0 0 0 1px rgba(172, 249, 223, 0.15);
+    /* Фірмовий смарагдовий акцент NothingNotes */
+    --emerald-gradient: var(--accent-color);
+    --emerald-gradient-text: var(--accent-color);
+    --emerald-glow: 0 4px 16px var(--accent-subtle);
 
     /* Apple Liquid Glass змінні */
     --glass-bg: rgba(24, 24, 28, 0.72);

@@ -70,7 +70,7 @@
     }
 
     .selection-bar-toggle-all-btn.active {
-        background: var(--emerald-gradient, linear-gradient(135deg, #10b981, #059669)) !important;
+        background: var(--accent-color) !important;
         border-color: transparent !important;
         color: #062419 !important;
         font-weight: 700 !important;

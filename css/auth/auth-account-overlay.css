@@ -144,7 +144,7 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: var(--emerald-gradient, linear-gradient(135deg, #10b981 0%, #059669 100%));
+    background: var(--accent-color);
     color: #062419;
     display: flex;
     align-items: center;

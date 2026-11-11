@@ -100,10 +100,10 @@
     }
 
     .header-select-btn.active {
-        background: var(--emerald-gradient) !important;
+        background: var(--accent-color) !important;
         border-color: transparent !important;
         color: #062419 !important;
-        box-shadow: 0 4px 14px rgba(22, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+        box-shadow: 0 3px 10px rgba(22, 185, 129, 0.35) !important;
     }
 
     .header-select-btn.active svg {
@@ -149,9 +149,9 @@
     }
 
     .header-segment-btn.active {
-        background: var(--emerald-gradient) !important;
+        background: var(--accent-color) !important;
         color: #062419 !important;
-        box-shadow: 0 4px 14px rgba(22, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+        box-shadow: 0 3px 10px rgba(22, 185, 129, 0.35) !important;
     }
 
     .header-segment-btn.active svg {

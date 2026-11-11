@@ -115,7 +115,7 @@
     width: 26px;
     height: 26px;
     border-radius: 50%;
-    background: var(--emerald-gradient);
+    background: var(--accent-color);
     box-shadow: 0 2px 8px rgba(22, 185, 129, 0.35);
     color: #062419;
     display: flex;

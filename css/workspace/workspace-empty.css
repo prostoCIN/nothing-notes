@@ -97,7 +97,7 @@
 
 .workspace-create-board-btn {
     width: 100%;
-    background: var(--emerald-gradient);
+    background: var(--accent-color);
     border: none;
     border-radius: 12px;
     padding: 12px 20px;
@@ -110,13 +110,14 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    box-shadow: 0 6px 20px rgba(22, 185, 129, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    box-shadow: 0 4px 14px rgba(22, 185, 129, 0.35);
     transition: all 0.2s ease;
 }
 
 .workspace-create-board-btn:hover {
     transform: translateY(-1px);
-    box-shadow: 0 8px 26px rgba(22, 185, 129, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    box-shadow: 0 6px 20px rgba(22, 185, 129, 0.45);
+    filter: brightness(1.05);
 }
 
 .workspace-create-board-btn:active {
