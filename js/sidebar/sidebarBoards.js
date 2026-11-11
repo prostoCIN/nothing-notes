@@ -53,12 +53,32 @@ window.App = window.App || {};
             if (!els.sidebarBoardsList) return;
             els.sidebarBoardsList.innerHTML = '';
 
-            const boards = state && state.boards ? state.boards : [];
+            const rawBoards = state && state.boards ? state.boards : [];
+            const boards = [...rawBoards].sort((a, b) => {
+                const orderA = typeof a.orderIndex === 'number' ? a.orderIndex : 0;
+                const orderB = typeof b.orderIndex === 'number' ? b.orderIndex : 0;
+                return orderA - orderB;
+            });
 
             boards.forEach(board => {
                 const li = document.createElement('li');
                 li.className = `board-item ${board.id === state.activeBoardId ? 'active' : ''}`;
                 li.dataset.boardId = board.id;
+
+                // Ручка перетягування (Drag Handle) для зміни порядку блокнотів
+                const dragHandle = document.createElement('span');
+                dragHandle.className = 'board-drag-handle';
+                dragHandle.title = (window.App && window.App.i18n) ? window.App.i18n.t('sidebar.dragToReorder') || 'Перетягніть для зміни порядку' : 'Перетягніть для зміни порядку';
+                dragHandle.innerHTML = `
+                    <svg width="8" height="12" viewBox="0 0 10 16" fill="currentColor">
+                        <circle cx="2" cy="2" r="1.5" />
+                        <circle cx="8" cy="2" r="1.5" />
+                        <circle cx="2" cy="8" r="1.5" />
+                        <circle cx="8" cy="8" r="1.5" />
+                        <circle cx="2" cy="14" r="1.5" />
+                        <circle cx="8" cy="14" r="1.5" />
+                    </svg>
+                `;
 
                 const nameSpan = document.createElement('span');
                 nameSpan.className = 'board-item-name';
@@ -129,6 +149,7 @@ window.App = window.App || {};
 
                 li.addEventListener('click', (e) => {
                     if (e.target.closest('.board-actions') || textSpan.contentEditable === 'true') return;
+                    if (li.dataset.dragged === 'true') return;
                     if (state.activeBoardId !== board.id && window.App.boardManager) {
                         window.App.boardManager.switchBoard(board.id);
                     }
@@ -137,14 +158,206 @@ window.App = window.App || {};
                     }
                 });
 
+                li.appendChild(dragHandle);
                 li.appendChild(nameSpan);
                 if (countBadge) li.appendChild(countBadge);
                 li.appendChild(actionsDiv);
                 if (window.App.sidebarSwipe) window.App.sidebarSwipe.attachSwipe(li);
+                this.attachBoardDrag(li, board, els.sidebarBoardsList);
                 els.sidebarBoardsList.appendChild(li);
             });
 
             this.renderSharedBoardsList();
+        },
+
+        /**
+         * Прикріплює перетягування блокнотів для ручної зміни порядку
+         */
+        attachBoardDrag(li, board, boardsList) {
+            let startX = 0;
+            let startY = 0;
+            let initialRect = null;
+            let shiftX = 0;
+            let shiftY = 0;
+            let isDragging = false;
+            let placeholder = null;
+            let longPressTimer = null;
+            let touchDragReady = false;
+            let autoScroller = null;
+
+            const onPointerDown = (e) => {
+                if (e.button !== 0 && e.pointerType === 'mouse') return;
+                if (
+                    e.target.closest('.board-actions') || 
+                    e.target.closest('.sidebar-action-btn') || 
+                    li.classList.contains('is-editing') || 
+                    li.querySelector('[contenteditable="true"]')
+                ) {
+                    return;
+                }
+
+                if (li.classList.contains('shared-board-item')) return;
+
+                const ownItems = boardsList.querySelectorAll('.board-item:not(.shared-board-item)');
+                if (ownItems.length <= 1) return;
+
+                startX = e.clientX;
+                startY = e.clientY;
+                isDragging = false;
+                touchDragReady = false;
+                li.dataset.dragged = 'false';
+
+                const isTouch = e.pointerType === 'touch' || (window.innerWidth <= 768 && e.pointerType !== 'mouse');
+                const isHandle = !!e.target.closest('.board-drag-handle');
+
+                if (isTouch) {
+                    if (isHandle) {
+                        touchDragReady = true;
+                        if (navigator.vibrate) navigator.vibrate(20);
+                        li.classList.add('touch-drag-active');
+                    } else {
+                        longPressTimer = setTimeout(() => {
+                            touchDragReady = true;
+                            if (navigator.vibrate) navigator.vibrate(25);
+                            li.classList.add('touch-drag-active');
+                        }, 220);
+                    }
+                }
+
+                const onPointerMove = (moveEv) => {
+                    const deltaX = Math.abs(moveEv.clientX - startX);
+                    const deltaY = Math.abs(moveEv.clientY - startY);
+
+                    if (isTouch && !touchDragReady) {
+                        if (deltaX > 6 || deltaY > 6) {
+                            clearTimeout(longPressTimer);
+                            longPressTimer = null;
+                        }
+                        return;
+                    }
+
+                    if (!isDragging) {
+                        if (deltaY >= 4 || deltaX >= 4 || touchDragReady) {
+                            isDragging = true;
+                            li.dataset.dragged = 'true';
+                            clearTimeout(longPressTimer);
+                            longPressTimer = null;
+
+                            initialRect = li.getBoundingClientRect();
+                            shiftX = moveEv.clientX - initialRect.left;
+                            shiftY = moveEv.clientY - initialRect.top;
+
+                            placeholder = document.createElement('li');
+                            placeholder.className = 'board-item board-item-placeholder';
+                            placeholder.style.height = `${initialRect.height}px`;
+                            boardsList.insertBefore(placeholder, li);
+
+                            document.body.classList.add('is-board-reordering');
+                            li.classList.add('is-board-dragging');
+                            li.style.width = `${initialRect.width}px`;
+                            li.style.position = 'fixed';
+                            li.style.left = `${initialRect.left}px`;
+                            li.style.top = `${initialRect.top}px`;
+                            li.style.zIndex = '100000';
+                            li.style.pointerEvents = 'none';
+
+                            try {
+                                li.setPointerCapture(moveEv.pointerId);
+                            } catch {}
+
+                            const sidebarEl = document.getElementById('sidebar');
+                            if (window.App.dragUtils && window.App.dragUtils.createAutoScroller && sidebarEl) {
+                                autoScroller = window.App.dragUtils.createAutoScroller(sidebarEl, {
+                                    edgeThreshold: 50,
+                                    maxSpeed: 16,
+                                    vertical: true,
+                                    horizontal: false
+                                });
+                            }
+                        } else {
+                            return;
+                        }
+                    }
+
+                    li.style.top = `${moveEv.clientY - shiftY}px`;
+
+                    if (autoScroller) {
+                        autoScroller.update(moveEv.clientX, moveEv.clientY);
+                    }
+
+                    const siblings = Array.from(boardsList.querySelectorAll('.board-item:not(.is-board-dragging):not(.board-item-placeholder):not(.shared-board-item)'));
+                    let placed = false;
+                    for (const sib of siblings) {
+                        const rect = sib.getBoundingClientRect();
+                        const midY = rect.top + rect.height / 2;
+                        if (moveEv.clientY < midY) {
+                            boardsList.insertBefore(placeholder, sib);
+                            placed = true;
+                            break;
+                        }
+                    }
+                    if (!placed && siblings.length > 0) {
+                        boardsList.appendChild(placeholder);
+                    }
+                };
+
+                const onPointerUp = (upEv) => {
+                    clearTimeout(longPressTimer);
+                    longPressTimer = null;
+
+                    window.removeEventListener('pointermove', onPointerMove);
+                    window.removeEventListener('pointerup', onPointerUp);
+                    window.removeEventListener('pointercancel', onPointerUp);
+
+                    li.classList.remove('touch-drag-active');
+
+                    if (autoScroller) {
+                        autoScroller.destroy();
+                        autoScroller = null;
+                    }
+
+                    if (isDragging) {
+                        try {
+                            li.releasePointerCapture(upEv.pointerId);
+                        } catch {}
+
+                        document.body.classList.remove('is-board-reordering');
+
+                        if (placeholder && placeholder.parentNode) {
+                            placeholder.parentNode.insertBefore(li, placeholder);
+                            placeholder.remove();
+                        }
+
+                        li.classList.remove('is-board-dragging');
+                        li.style.position = '';
+                        li.style.left = '';
+                        li.style.top = '';
+                        li.style.width = '';
+                        li.style.zIndex = '';
+                        li.style.pointerEvents = '';
+
+                        const newOrderIds = Array.from(boardsList.querySelectorAll('.board-item:not(.shared-board-item)'))
+                            .map(item => item.dataset.boardId)
+                            .filter(Boolean);
+
+                        if (window.App.boardManager && window.App.boardManager.reorderBoards) {
+                            window.App.boardManager.reorderBoards(newOrderIds);
+                        }
+
+                        if (navigator.vibrate) navigator.vibrate(15);
+
+                        setTimeout(() => {
+                            li.dataset.dragged = 'false';
+                        }, 80);
+                    }
+                };
+
+                window.addEventListener('pointermove', onPointerMove, { passive: false });
+                window.addEventListener('pointerup', onPointerUp);
+                window.addEventListener('pointercancel', onPointerUp);
+            };
+
+            li.addEventListener('pointerdown', onPointerDown);
         },
 
         /**

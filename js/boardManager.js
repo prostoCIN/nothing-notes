@@ -48,7 +48,8 @@ window.App = window.App || {};
             const newBoard = {
                 id: 'board_' + Date.now().toString(),
                 name: trimmedName,
-                createdAt: Date.now()
+                createdAt: Date.now(),
+                orderIndex: state.boards.length
             };
             state.boards.push(newBoard);
             storage.saveBoards(state.boards);
@@ -119,6 +120,41 @@ window.App = window.App || {};
             state.expandedSidebarNoteIds.clear();
 
             this.notifyBoardChanged(id);
+        },
+
+        reorderBoards(orderedBoardIds) {
+            const state = window.App.state;
+            const storage = window.App.storage;
+            if (!state.boards || state.boards.length <= 1 || !Array.isArray(orderedBoardIds)) return;
+
+            const boardMap = new Map(state.boards.map(b => [b.id, b]));
+            const newBoards = [];
+
+            orderedBoardIds.forEach((id, idx) => {
+                const b = boardMap.get(id);
+                if (b) {
+                    b.orderIndex = idx;
+                    newBoards.push(b);
+                    boardMap.delete(id);
+                }
+            });
+
+            // Додаємо блокноти, яких раптом не було у списку
+            boardMap.forEach((b) => {
+                b.orderIndex = newBoards.length;
+                newBoards.push(b);
+            });
+
+            state.boards = newBoards;
+            storage.saveBoards(state.boards);
+
+            if (window.App.cloudSync) {
+                window.App.cloudSync.syncBoards();
+            }
+
+            if (window.App.events) {
+                window.App.events.emit('boards:reordered', state.boards);
+            }
         },
 
         deleteBoard(id, event) {

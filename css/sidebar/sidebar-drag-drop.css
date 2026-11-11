@@ -189,3 +189,104 @@ html[data-theme="light"] .sidebar-nest-pocket.active-hover .nest-pocket-icon {
     color: var(--text-main);
     font-weight: 500;
 }
+
+/* ==========================================================================
+   Перетягування блокнотів у сайдбарі (Board Drag & Drop Reordering)
+   ========================================================================== */
+
+.board-item {
+    cursor: grab;
+    touch-action: pan-y;
+    position: relative;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.board-item.is-editing {
+    cursor: default !important;
+}
+
+.board-item:active {
+    cursor: grabbing;
+}
+
+/* Іконка-гріп перетягування блокнота (ліворуч від назви блокнота) */
+.board-drag-handle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 18px;
+    margin-right: 4px;
+    margin-left: -2px;
+    color: var(--text-muted);
+    opacity: 0;
+    cursor: grab;
+    flex-shrink: 0;
+    transition: opacity 0.15s ease, color 0.15s ease;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.board-item:hover .board-drag-handle {
+    opacity: 0.55;
+}
+
+.board-item:hover .board-drag-handle:hover {
+    opacity: 1 !important;
+    color: var(--text-main);
+}
+
+@media (hover: none), screen and (max-width: 768px) {
+    .board-drag-handle {
+        opacity: 0.45;
+        width: 16px;
+        margin-right: 4px;
+    }
+}
+
+/* Стан готовності до перетягування після затискання на мобільному */
+.board-item.touch-drag-active {
+    transform: scale(1.02);
+    background: rgba(16, 185, 129, 0.18) !important;
+    border: 1px solid rgba(16, 185, 129, 0.45) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    transition: transform 0.15s ease, background-color 0.15s ease;
+    touch-action: none !important;
+}
+
+/* Активний стан перетягуваного блокнота */
+.board-item.is-board-dragging {
+    background-color: var(--sidebar-bg, #1e1e1e) !important;
+    border: 1.5px solid #10b981 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.55), 0 0 12px rgba(16, 185, 129, 0.35) !important;
+    opacity: 0.94 !important;
+    cursor: grabbing !important;
+    pointer-events: none !important;
+    z-index: 100000 !important;
+    transform: scale(1.02);
+}
+
+/* Плейсхолдер куди приземлиться блокнот */
+.board-item-placeholder {
+    height: 32px;
+    min-height: 32px;
+    border: 1.5px dashed #10b981 !important;
+    background-color: rgba(16, 185, 129, 0.12) !important;
+    border-radius: 6px !important;
+    margin-bottom: 2px !important;
+    box-sizing: border-box !important;
+    list-style: none !important;
+    pointer-events: none !important;
+}
+
+body.is-board-reordering {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+}
+
+body.is-board-reordering .board-actions,
+body.is-board-reordering .sidebar-child-count {
+    display: none !important;
+}
