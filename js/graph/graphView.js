@@ -296,9 +296,10 @@ window.App = window.App || {};
                     nodeEl.style.setProperty('--node-branch-color', branchColor);
 
                     const icon = note.icon || '📄';
+                    const iconHtml = window.App.renderAppleEmoji ? window.App.renderAppleEmoji(icon, 18) : icon;
                     nodeEl.innerHTML = `
                         <div class="graph-html-node-circle" style="border-color: ${branchColor}; background: ${branchColor}22;">
-                            ${icon}
+                            ${iconHtml}
                         </div>
                         <div class="graph-html-node-label">${nodeObj.title}</div>
                     `;

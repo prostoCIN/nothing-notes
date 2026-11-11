@@ -24,6 +24,7 @@ window.App = window.App || {};
 
             const title = node.title || 'Без назви';
             const icon = node.note.icon || '📄';
+            const iconHtml = window.App.renderAppleEmoji ? window.App.renderAppleEmoji(icon, 20) : icon;
             const plainContent = (node.content || '').replace(/<[^>]*>/g, '').trim() || 'Порожня нотатка';
 
             let tagsHtml = '';
@@ -36,7 +37,7 @@ window.App = window.App || {};
 
             previewEl.innerHTML = `
                 <div class="graph-preview-header">
-                    <span class="graph-preview-emoji">${icon}</span>
+                    <span class="graph-preview-emoji">${iconHtml}</span>
                     <span class="graph-preview-title">${title}</span>
                 </div>
                 <div class="graph-preview-body">${plainContent}</div>

@@ -57,9 +57,11 @@ window.App = window.App || {};
             childNotes.slice(0, maxPreview).forEach(child => {
                 const item = document.createElement('div');
                 item.className = 'subnotes-preview-item';
+                const childIcon = child.icon || '📄';
+                const childIconHtml = window.App.renderAppleEmoji ? window.App.renderAppleEmoji(childIcon, 14) : childIcon;
                 item.innerHTML = `
                     <span class="subnotes-preview-bullet">•</span>
-                    <span class="subnotes-preview-icon">${child.icon || '📄'}</span>
+                    <span class="subnotes-preview-icon">${childIconHtml}</span>
                     <span class="subnotes-preview-title">${child.title ? child.title.trim() : defaultUntitled}</span>
                 `;
                 previewList.appendChild(item);

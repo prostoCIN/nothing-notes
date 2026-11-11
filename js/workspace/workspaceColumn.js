@@ -471,7 +471,11 @@ window.App = window.App || {};
 
                             const iconSpan = document.createElement('span');
                             iconSpan.className = 'column-breadcrumb-icon';
-                            iconSpan.textContent = item.icon;
+                            if (window.App.setEmojiContent) {
+                                window.App.setEmojiContent(iconSpan, item.icon, null, 16);
+                            } else {
+                                iconSpan.textContent = item.icon;
+                            }
 
                             const textSpan = document.createElement('span');
                             textSpan.className = 'column-breadcrumb-text';

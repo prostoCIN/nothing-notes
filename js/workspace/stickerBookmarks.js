@@ -124,8 +124,9 @@ window.App = window.App || {};
                 ribbon.title = displayTitle;
 
                 const icon = targetNote.icon || '📄';
+                const iconHtml = window.App.renderAppleEmoji ? window.App.renderAppleEmoji(icon, 16) : icon;
                 ribbon.innerHTML = `
-                    <span class="sticker-bookmark-icon">${icon}</span>
+                    <span class="sticker-bookmark-icon">${iconHtml}</span>
                     <span class="sticker-bookmark-title">${displayTitle}</span>
                 `;
 
@@ -394,8 +395,10 @@ window.App = window.App || {};
 
                 const path = getBreadcrumbPath(targetNote);
 
+                const targetIcon = targetNote.icon || '📄';
+                const targetIconHtml = window.App.renderAppleEmoji ? window.App.renderAppleEmoji(targetIcon, 16) : targetIcon;
                 item.innerHTML = `
-                    <div class="bookmark-picker-item-icon">${targetNote.icon || '📄'}</div>
+                    <div class="bookmark-picker-item-icon">${targetIconHtml}</div>
                     <div class="bookmark-picker-item-info">
                         <div class="bookmark-picker-item-title">${titleHtml}</div>
                         ${path ? `<div class="bookmark-picker-item-path">${path}</div>` : ''}

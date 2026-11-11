@@ -625,10 +625,11 @@ window.App = window.App || {};
                             ? targetNote.title.trim()
                             : (t('sticker.untitled') || 'Без назви');
                         const icon = targetNote.icon || '📄';
+                        const iconHtml = window.App.renderAppleEmoji ? window.App.renderAppleEmoji(icon, 16) : icon;
 
                         item.innerHTML = `
                             <div class="selection-tag-main-action">
-                                <span>${icon}</span>
+                                <span>${iconHtml}</span>
                                 <span class="selection-tag-text">${rawTitle}</span>
                                 <span class="bookmark-picker-tape-pill bookmark-tape-color-${colorIndex}" title="${t('sticker.bookmarkTapePreview') || 'Колір закладки'}"></span>
                                 <span class="selection-tag-status-icon">${allHaveBookmark ? '✓' : (someHaveBookmark ? '–' : '')}</span>
