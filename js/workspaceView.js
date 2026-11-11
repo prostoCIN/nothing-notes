@@ -141,7 +141,22 @@ window.App = window.App || {};
         ensureBoardLoaded() {
             if (window.App.boardView) return Promise.resolve(window.App.boardView);
             if (!this._boardLoadPromise) {
-                this._boardLoadPromise = import('./board/boardModule.js').then(() => window.App.boardView);
+                this._boardLoadPromise = import('./board/boardModule.js')
+                    .then(() => window.App.boardView)
+                    .catch((err) => {
+                        this._boardLoadPromise = null;
+                        const msg = (err && (err.message || String(err))) || '';
+                        if (msg.includes('dynamically imported module') || msg.includes('Expected a JavaScript-or-Wasm module script')) {
+                            var reloadKey = 'nothingnotes_chunk_reload';
+                            var lastReload = sessionStorage.getItem(reloadKey);
+                            var now = Date.now();
+                            if (!lastReload || now - parseInt(lastReload, 10) > 8000) {
+                                sessionStorage.setItem(reloadKey, now.toString());
+                                window.location.reload();
+                            }
+                        }
+                        throw err;
+                    });
             }
             return this._boardLoadPromise;
         },
@@ -149,7 +164,22 @@ window.App = window.App || {};
         ensureGraphLoaded() {
             if (window.App.graphView) return Promise.resolve(window.App.graphView);
             if (!this._graphLoadPromise) {
-                this._graphLoadPromise = import('./graph/graphModule.js').then(() => window.App.graphView);
+                this._graphLoadPromise = import('./graph/graphModule.js')
+                    .then(() => window.App.graphView)
+                    .catch((err) => {
+                        this._graphLoadPromise = null;
+                        const msg = (err && (err.message || String(err))) || '';
+                        if (msg.includes('dynamically imported module') || msg.includes('Expected a JavaScript-or-Wasm module script')) {
+                            var reloadKey = 'nothingnotes_chunk_reload';
+                            var lastReload = sessionStorage.getItem(reloadKey);
+                            var now = Date.now();
+                            if (!lastReload || now - parseInt(lastReload, 10) > 8000) {
+                                sessionStorage.setItem(reloadKey, now.toString());
+                                window.location.reload();
+                            }
+                        }
+                        throw err;
+                    });
             }
             return this._graphLoadPromise;
         },

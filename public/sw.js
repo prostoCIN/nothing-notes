@@ -1,5 +1,5 @@
 // Service Worker для NothingNotes PWA (Автономний режим та офлайн-робота)
-const CACHE_NAME = 'nothing-notes-v41';
+const CACHE_NAME = 'nothing-notes-v42';
 
 const STATIC_PRECACHE = [
     './',
@@ -49,6 +49,14 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
         fetch(request)
             .then((networkResponse) => {
+                // Захист від повернення fallback HTML замість відсутніх чанків JS/CSS (при оновленні версії сайту)
+                if (url.pathname.includes('/assets/')) {
+                    const contentType = networkResponse.headers.get('content-type') || '';
+                    if (contentType.includes('text/html') || networkResponse.status === 404) {
+                        return new Response('Asset not found', { status: 404, statusText: 'Not Found' });
+                    }
+                }
+
                 // Якщо отримано валідну відповідь, оновлюємо кеш у фоні
                 if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
                     const responseToCache = networkResponse.clone();

@@ -51,6 +51,32 @@
                 navigator.serviceWorker.register('./sw.js').catch(function() {});
             });
         }
+
+        // Автоматичне відновлення та перезавантаження при оновленні версії сайту / застарілих чанках Vite
+        function handleChunkReload() {
+            var reloadKey = 'nothingnotes_chunk_reload';
+            var lastReload = sessionStorage.getItem(reloadKey);
+            var now = Date.now();
+            if (!lastReload || now - parseInt(lastReload, 10) > 8000) {
+                sessionStorage.setItem(reloadKey, now.toString());
+                window.location.reload();
+            }
+        }
+
+        window.addEventListener('vite:preloadError', function(event) {
+            if (event) event.preventDefault();
+            handleChunkReload();
+        });
+
+        window.addEventListener('unhandledrejection', function(event) {
+            var msg = (event.reason && (event.reason.message || String(event.reason))) || '';
+            if (msg.indexOf('dynamically imported module') !== -1 ||
+                msg.indexOf('Expected a JavaScript-or-Wasm module script') !== -1 ||
+                msg.indexOf('error loading dynamically imported module') !== -1) {
+                if (event) event.preventDefault();
+                handleChunkReload();
+            }
+        });
     </script>
 </head>
 
