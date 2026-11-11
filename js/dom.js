@@ -69,7 +69,7 @@ window.App.dragUtils = {
      * @returns {Object} { update(x, y), start(onScroll), stop() }
      */
     createAutoScroller(target, options = {}) {
-        if (!target) return { update() {}, start() {}, stop() {} };
+        if (!target) return { update() {}, start() {}, stop() {}, destroy() {} };
 
         const getContainer = typeof target === 'function' ? target : () => target;
         const edgeThreshold = options.edgeThreshold || 70;
@@ -160,6 +160,9 @@ window.App.dragUtils = {
                     cancelAnimationFrame(rafId);
                     rafId = null;
                 }
+            },
+            destroy() {
+                this.stop();
             }
         };
     }

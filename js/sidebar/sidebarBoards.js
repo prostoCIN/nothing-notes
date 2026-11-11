@@ -273,9 +273,18 @@ window.App = window.App || {};
                                     vertical: true,
                                     horizontal: false
                                 });
+                                if (autoScroller && typeof autoScroller.start === 'function') {
+                                    autoScroller.start();
+                                }
                             }
                         } else {
                             return;
+                        }
+                    }
+
+                    if (isDragging) {
+                        if (moveEv.cancelable) {
+                            moveEv.preventDefault();
                         }
                     }
 
@@ -312,7 +321,12 @@ window.App = window.App || {};
                     li.classList.remove('touch-drag-active');
 
                     if (autoScroller) {
-                        autoScroller.destroy();
+                        try {
+                            if (typeof autoScroller.stop === 'function') autoScroller.stop();
+                            if (typeof autoScroller.destroy === 'function') autoScroller.destroy();
+                        } catch (err) {
+                            console.warn('[sidebarBoards] autoScroller cleanup error:', err);
+                        }
                         autoScroller = null;
                     }
 

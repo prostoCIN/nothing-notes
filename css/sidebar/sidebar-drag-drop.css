@@ -226,6 +226,7 @@ html[data-theme="light"] .sidebar-nest-pocket.active-hover .nest-pocket-icon {
     transition: opacity 0.15s ease, color 0.15s ease;
     user-select: none;
     -webkit-user-select: none;
+    touch-action: none;
 }
 
 .board-item:hover .board-drag-handle {
