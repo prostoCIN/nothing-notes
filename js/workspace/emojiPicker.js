@@ -104,7 +104,6 @@ window.App = window.App || {};
                 itemBtn.type = 'button';
                 itemBtn.className = 'emoji-grid-item';
                 itemBtn.textContent = emoji;
-                itemBtn.title = emoji;
                 const kw = (window.App.emojiKeywords && window.App.emojiKeywords[emoji]) || '';
                 itemBtn.dataset.keywords = kw;
                 itemBtn.addEventListener('click', (e) => {
