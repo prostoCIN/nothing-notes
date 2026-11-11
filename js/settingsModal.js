@@ -216,10 +216,12 @@ window.App = window.App || {};
             });
 
             const generalEl = modalOverlayEl.querySelector('#settings-tab-general');
+            const themeEl = modalOverlayEl.querySelector('#settings-tab-theme');
             const accountEl = modalOverlayEl.querySelector('#settings-tab-account');
             const shortcutsEl = modalOverlayEl.querySelector('#settings-tab-shortcuts');
 
             if (generalEl) generalEl.style.display = tabKey === 'general' ? 'flex' : 'none';
+            if (themeEl) themeEl.style.display = tabKey === 'theme' ? 'flex' : 'none';
             if (accountEl) accountEl.style.display = tabKey === 'account' ? 'flex' : 'none';
             if (shortcutsEl) shortcutsEl.style.display = tabKey === 'shortcuts' ? 'flex' : 'none';
 

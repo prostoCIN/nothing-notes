@@ -296,6 +296,20 @@ window.App = window.App || {};
             if (!modalOverlayEl) return;
 
             // 1. Color Picker inputs (real-time live update)
+            const swatchWraps = modalOverlayEl.querySelectorAll('.theme-color-swatch-wrap');
+            swatchWraps.forEach(wrap => {
+                wrap.addEventListener('click', (e) => {
+                    const picker = wrap.querySelector('.theme-native-color-picker');
+                    if (picker && e.target !== picker) {
+                        if (typeof picker.showPicker === 'function') {
+                            try { picker.showPicker(); } catch (err) { picker.click(); }
+                        } else {
+                            picker.click();
+                        }
+                    }
+                });
+            });
+
             const colorPickers = modalOverlayEl.querySelectorAll('.theme-native-color-picker');
             colorPickers.forEach(picker => {
                 picker.addEventListener('input', (e) => {
