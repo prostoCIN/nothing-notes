@@ -49,7 +49,15 @@ window.App = window.App || {};
                 if (el.classList.contains('is-editing') || el.querySelector('[contenteditable="true"]')) return;
 
                 // Якщо клікнули безпосередньо по кнопці дій, ручці перетягування чи стрілочці розгортання — ігноруємо
-                if (e.target.closest('.board-actions, .note-actions') || e.target.closest('.note-toggle-arrow') || e.target.closest('.board-drag-handle') || el.classList.contains('touch-drag-active') || el.classList.contains('is-board-dragging')) {
+                if (
+                    e.target.closest('.board-actions, .note-actions') || 
+                    e.target.closest('.note-toggle-arrow') || 
+                    e.target.closest('.board-drag-handle') || 
+                    el.classList.contains('touch-drag-active') || 
+                    el.classList.contains('is-board-dragging') || 
+                    el.classList.contains('is-dragging') || 
+                    document.body.classList.contains('is-sidebar-dragging')
+                ) {
                     return;
                 }
 

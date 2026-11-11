@@ -39,8 +39,9 @@ body.is-sidebar-pocket-open .sidebar-drag-placeholder {
     display: none !important;
 }
 
-/* Плавне збільшення висоти плашок нотаток під час режиму перетягування для максимальної зручності */
-body.is-sidebar-dragging .note-item:not(.is-dragging) {
+/* Плавне збільшення висоти плашок нотаток і блокнотів під час режиму перетягування для максимальної зручності */
+body.is-sidebar-dragging .note-item:not(.is-dragging),
+body.is-sidebar-dragging .board-item:not(.is-dragging) {
     padding-top: 9px;
     padding-bottom: 9px;
     margin-bottom: 3px;
@@ -256,16 +257,17 @@ html[data-theme="light"] .sidebar-nest-pocket.active-hover .nest-pocket-icon {
     touch-action: none !important;
 }
 
-/* Активний стан перетягуваного блокнота */
+/* Активний стан перетягуваного блокнота (як у нотатках) */
+.board-item.is-dragging,
 .board-item.is-board-dragging {
     background-color: var(--sidebar-bg, #1e1e1e) !important;
     border: 1.5px solid #10b981 !important;
     border-radius: 8px !important;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.55), 0 0 12px rgba(16, 185, 129, 0.35) !important;
-    opacity: 0.94 !important;
+    opacity: 0.96 !important;
     cursor: grabbing !important;
     pointer-events: none !important;
-    z-index: 100000 !important;
+    z-index: 10000 !important;
     transform: scale(1.02);
 }
 

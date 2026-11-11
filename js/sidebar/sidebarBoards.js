@@ -149,7 +149,7 @@ window.App = window.App || {};
 
                 li.addEventListener('click', (e) => {
                     if (e.target.closest('.board-actions') || textSpan.contentEditable === 'true') return;
-                    if (li.dataset.dragged === 'true') return;
+                    if (li.dataset.dragged === 'true' || document.body.classList.contains('is-sidebar-dragging')) return;
                     if (state.activeBoardId !== board.id && window.App.boardManager) {
                         window.App.boardManager.switchBoard(board.id);
                     }
@@ -171,207 +171,339 @@ window.App = window.App || {};
         },
 
         /**
-         * Прикріплює перетягування блокнотів для ручної зміни порядку
+         * Прикріплює обробник перетягування до рядка блокнота (перенесено з перевіреної логіки нотаток у лівій панелі)
+         * @param {HTMLElement} li - DOM елемент .board-item
+         * @param {Object} board - Об'єкт блокнота
+         * @param {HTMLElement} boardsList - Контейнер #sidebar-boards-list
          */
         attachBoardDrag(li, board, boardsList) {
-            let startX = 0;
-            let startY = 0;
-            let initialRect = null;
-            let shiftX = 0;
-            let shiftY = 0;
-            let isDragging = false;
-            let placeholder = null;
-            let longPressTimer = null;
-            let touchDragReady = false;
-            let autoScroller = null;
+            li.addEventListener('dragstart', (e) => e.preventDefault());
 
-            const onPointerDown = (e) => {
-                if (e.button !== 0 && e.pointerType === 'mouse') return;
+            li.addEventListener('pointerdown', (e) => {
+                // Не перетягуємо при редагуванні, кліку на кнопки дій або нелівій кнопці миші
                 if (
+                    li.classList.contains('is-editing') || 
                     e.target.closest('.board-actions') || 
                     e.target.closest('.sidebar-action-btn') || 
-                    li.classList.contains('is-editing') || 
-                    li.querySelector('[contenteditable="true"]')
+                    e.target.closest('.delete-btn') || 
+                    li.querySelector('[contenteditable="true"]') || 
+                    e.button !== 0
                 ) {
                     return;
                 }
 
+                // Спільні блокноти (read-only) не перетягуються
                 if (li.classList.contains('shared-board-item')) return;
 
-                const ownItems = boardsList.querySelectorAll('.board-item:not(.shared-board-item)');
-                if (ownItems.length <= 1) return;
+                const ownBoards = boardsList.querySelectorAll('.board-item:not(.shared-board-item)');
+                if (ownBoards.length <= 1) return;
 
-                startX = e.clientX;
-                startY = e.clientY;
-                isDragging = false;
-                touchDragReady = false;
-                li.dataset.dragged = 'false';
-
+                const pointerId = e.pointerId;
                 const isTouch = e.pointerType === 'touch' || (window.innerWidth <= 768 && e.pointerType !== 'mouse');
                 const isHandle = !!e.target.closest('.board-drag-handle');
+                let longPressTimer = null;
+                let touchDragReady = false;
+
+                // Для мишки захоплюємо вказівник, для тачу НЕ захоплюємо одразу, щоб працював нативний скрол списку
+                if (!isTouch) {
+                    try {
+                        li.setPointerCapture(pointerId);
+                    } catch (err) {}
+                }
+
+                const startY = e.clientY;
+                const startX = e.clientX;
+                let isDragging = false;
+                let placeholder = null;
+                const parentContainer = boardsList;
+                if (!parentContainer) return;
+
+                let initialRect = null;
+                let shiftX = 0;
+                let shiftY = 0;
+                let lastClientX = startX;
+                let lastClientY = startY;
+
+                const sidebarEl = document.getElementById('sidebar');
+                const boardsScroller = window.App.dragUtils.createAutoScroller(sidebarEl || boardsList, {
+                    edgeThreshold: 60,
+                    maxSpeed: 18,
+                    vertical: true,
+                    horizontal: false
+                });
+
+                const updatePositions = (clientX, clientY) => {
+                    li.style.left = `${clientX - shiftX}px`;
+                    li.style.top = `${clientY - shiftY}px`;
+
+                    const siblings = [...parentContainer.children].filter(el => {
+                        return el !== li && 
+                               el !== placeholder && 
+                               el.classList && 
+                               el.classList.contains('board-item') && 
+                               !el.classList.contains('shared-board-item');
+                    });
+
+                    const oldPositions = new Map();
+                    siblings.forEach(s => oldPositions.set(s, s.getBoundingClientRect()));
+
+                    let targetSibling = null;
+                    for (const sibling of siblings) {
+                        const rect = sibling.getBoundingClientRect();
+                        const middleY = rect.top + rect.height / 2;
+                        if (clientY < middleY) {
+                            targetSibling = sibling;
+                            break;
+                        }
+                    }
+
+                    let positionChanged = false;
+                    if (targetSibling) {
+                        if (placeholder.nextElementSibling !== targetSibling || placeholder.parentNode !== parentContainer) {
+                            parentContainer.insertBefore(placeholder, targetSibling);
+                            positionChanged = true;
+                        }
+                    } else {
+                        if (placeholder !== parentContainer.lastElementChild || placeholder.parentNode !== parentContainer) {
+                            parentContainer.appendChild(placeholder);
+                            positionChanged = true;
+                        }
+                    }
+
+                    // Плавна анімація розсування сусідніх блокнотів через FLIP (як у нотатках)
+                    if (positionChanged && window.App.dragUtils && window.App.dragUtils.animateFLIP) {
+                        window.App.dragUtils.animateFLIP(siblings, oldPositions, 200);
+                    }
+                };
+
+                const initDrag = (currentX, currentY) => {
+                    if (isDragging) return;
+                    isDragging = true;
+
+                    document.body.classList.add('is-sidebar-dragging');
+                    if (boardsList) {
+                        boardsList.style.touchAction = 'none';
+                    }
+
+                    initialRect = li.getBoundingClientRect();
+                    shiftX = startX - initialRect.left;
+                    shiftY = startY - initialRect.top;
+
+                    try {
+                        li.setPointerCapture(pointerId);
+                    } catch (err) {}
+
+                    // Створюємо пунктирну область передперегляду на вихідному місці (як у нотатках)
+                    placeholder = document.createElement('li');
+                    placeholder.className = 'sidebar-drag-placeholder';
+                    placeholder.style.height = `${initialRect.height || 36}px`;
+                    parentContainer.insertBefore(placeholder, li);
+
+                    li.style.width = `${initialRect.width}px`;
+                    li.style.left = `${currentX - shiftX}px`;
+                    li.style.top = `${currentY - shiftY}px`;
+                    li.style.zIndex = '10000';
+                    li.style.position = 'fixed';
+                    li.classList.add('is-dragging');
+
+                    boardsScroller.update(currentX, currentY);
+                    boardsScroller.start((x, y) => updatePositions(x, y));
+                };
+
+                // На мобільних пристроях перетягування активується через гріп-ручку або після затискання (Long Press)
+                let touchMoveListener = null;
+                let touchEndListener = null;
+
+                const removeTouchListeners = () => {
+                    if (touchMoveListener) {
+                        window.removeEventListener('touchmove', touchMoveListener, { passive: false });
+                        touchMoveListener = null;
+                    }
+                    if (touchEndListener) {
+                        window.removeEventListener('touchend', touchEndListener);
+                        window.removeEventListener('touchcancel', touchEndListener);
+                        touchEndListener = null;
+                    }
+                };
 
                 if (isTouch) {
                     if (isHandle) {
                         touchDragReady = true;
-                        if (navigator.vibrate) navigator.vibrate(20);
                         li.classList.add('touch-drag-active');
+                        if (boardsList) boardsList.style.touchAction = 'none';
+                        if (navigator.vibrate) {
+                            try { navigator.vibrate(25); } catch (_) {}
+                        }
+                        initDrag(lastClientX, lastClientY);
                     } else {
+                        const LONG_PRESS_DELAY = 380; // мс утримання пальця на місці (як у нотатках)
                         longPressTimer = setTimeout(() => {
                             touchDragReady = true;
-                            if (navigator.vibrate) navigator.vibrate(25);
                             li.classList.add('touch-drag-active');
-                        }, 220);
+                            if (boardsList) boardsList.style.touchAction = 'none';
+                            if (navigator.vibrate) {
+                                try { navigator.vibrate(40); } catch (_) {}
+                            }
+                            initDrag(lastClientX, lastClientY);
+                        }, LONG_PRESS_DELAY);
                     }
+
+                    touchMoveListener = (touchEv) => {
+                        const touch = touchEv.touches && touchEv.touches[0];
+                        if (!touch) return;
+
+                        lastClientX = touch.clientX;
+                        lastClientY = touch.clientY;
+
+                        if (!touchDragReady && !isDragging) {
+                            // Якщо палець зсунувся більше ніж на 8px до завершення таймера — користувач скролить ліву панель
+                            const moveDist = Math.hypot(touch.clientX - startX, touch.clientY - startY);
+                            if (moveDist > 8) {
+                                if (longPressTimer) {
+                                    clearTimeout(longPressTimer);
+                                    longPressTimer = null;
+                                }
+                                removeTouchListeners();
+                                return;
+                            }
+                            return;
+                        }
+
+                        // Блокуємо нативний скрол сайдбару коли триває драг
+                        if (touchEv.cancelable) {
+                            touchEv.preventDefault();
+                        }
+
+                        if (isDragging) {
+                            boardsScroller.update(lastClientX, lastClientY);
+                            updatePositions(lastClientX, lastClientY);
+                        }
+                    };
+
+                    touchEndListener = () => {
+                        removeTouchListeners();
+                        onPointerUp();
+                    };
+
+                    window.addEventListener('touchmove', touchMoveListener, { passive: false });
+                    window.addEventListener('touchend', touchEndListener, { passive: true });
+                    window.addEventListener('touchcancel', touchEndListener, { passive: true });
                 }
 
-                const onPointerMove = (moveEv) => {
-                    const deltaX = Math.abs(moveEv.clientX - startX);
-                    const deltaY = Math.abs(moveEv.clientY - startY);
+                const onPointerMove = (moveEvent) => {
+                    lastClientX = moveEvent.clientX;
+                    lastClientY = moveEvent.clientY;
 
-                    if (isTouch && !touchDragReady) {
-                        if (deltaX > 6 || deltaY > 6) {
-                            clearTimeout(longPressTimer);
-                            longPressTimer = null;
-                        }
-                        return;
-                    }
-
-                    if (!isDragging) {
-                        if (deltaY >= 4 || deltaX >= 4 || touchDragReady) {
-                            isDragging = true;
-                            li.dataset.dragged = 'true';
-                            clearTimeout(longPressTimer);
-                            longPressTimer = null;
-
-                            initialRect = li.getBoundingClientRect();
-                            shiftX = moveEv.clientX - initialRect.left;
-                            shiftY = moveEv.clientY - initialRect.top;
-
-                            placeholder = document.createElement('li');
-                            placeholder.className = 'board-item board-item-placeholder';
-                            placeholder.style.height = `${initialRect.height}px`;
-                            boardsList.insertBefore(placeholder, li);
-
-                            document.body.classList.add('is-board-reordering');
-                            li.classList.add('is-board-dragging');
-                            li.style.width = `${initialRect.width}px`;
-                            li.style.position = 'fixed';
-                            li.style.left = `${initialRect.left}px`;
-                            li.style.top = `${initialRect.top}px`;
-                            li.style.zIndex = '100000';
-                            li.style.pointerEvents = 'none';
-
-                            try {
-                                li.setPointerCapture(moveEv.pointerId);
-                            } catch {}
-
-                            const sidebarEl = document.getElementById('sidebar');
-                            if (window.App.dragUtils && window.App.dragUtils.createAutoScroller && sidebarEl) {
-                                autoScroller = window.App.dragUtils.createAutoScroller(sidebarEl, {
-                                    edgeThreshold: 50,
-                                    maxSpeed: 16,
-                                    vertical: true,
-                                    horizontal: false
-                                });
-                                if (autoScroller && typeof autoScroller.start === 'function') {
-                                    autoScroller.start();
+                    if (isTouch) {
+                        if (!touchDragReady && !isDragging) {
+                            const moveDist = Math.hypot(moveEvent.clientX - startX, moveEvent.clientY - startY);
+                            if (moveDist > 8) {
+                                if (longPressTimer) {
+                                    clearTimeout(longPressTimer);
+                                    longPressTimer = null;
                                 }
+                                removeTouchListeners();
+                                return;
                             }
-                        } else {
                             return;
+                        }
+                    } else {
+                        // На десктопі (миша) починаємо перетягування при зміщенні > 5px (як у нотатках)
+                        if (!isDragging) {
+                            if (Math.hypot(moveEvent.clientX - startX, moveEvent.clientY - startY) > 5) {
+                                initDrag(moveEvent.clientX, moveEvent.clientY);
+                            }
                         }
                     }
 
                     if (isDragging) {
-                        if (moveEv.cancelable) {
-                            moveEv.preventDefault();
-                        }
-                    }
-
-                    li.style.top = `${moveEv.clientY - shiftY}px`;
-
-                    if (autoScroller) {
-                        autoScroller.update(moveEv.clientX, moveEv.clientY);
-                    }
-
-                    const siblings = Array.from(boardsList.querySelectorAll('.board-item:not(.is-board-dragging):not(.board-item-placeholder):not(.shared-board-item)'));
-                    let placed = false;
-                    for (const sib of siblings) {
-                        const rect = sib.getBoundingClientRect();
-                        const midY = rect.top + rect.height / 2;
-                        if (moveEv.clientY < midY) {
-                            boardsList.insertBefore(placeholder, sib);
-                            placed = true;
-                            break;
-                        }
-                    }
-                    if (!placed && siblings.length > 0) {
-                        boardsList.appendChild(placeholder);
+                        boardsScroller.update(lastClientX, lastClientY);
+                        updatePositions(lastClientX, lastClientY);
                     }
                 };
 
-                const onPointerUp = (upEv) => {
-                    clearTimeout(longPressTimer);
-                    longPressTimer = null;
+                const onPointerUp = () => {
+                    if (longPressTimer) {
+                        clearTimeout(longPressTimer);
+                        longPressTimer = null;
+                    }
+                    li.classList.remove('touch-drag-active');
+                    if (boardsList) {
+                        boardsList.style.touchAction = '';
+                    }
+                    removeTouchListeners();
+
+                    try {
+                        if (li.hasPointerCapture && li.hasPointerCapture(pointerId)) {
+                            li.releasePointerCapture(pointerId);
+                        }
+                    } catch (err) {}
+
+                    boardsScroller.stop();
 
                     window.removeEventListener('pointermove', onPointerMove);
                     window.removeEventListener('pointerup', onPointerUp);
                     window.removeEventListener('pointercancel', onPointerUp);
+                    window.removeEventListener('blur', onPointerUp);
+                    window.removeEventListener('contextmenu', onContextMenu);
+                    document.body.classList.remove('is-sidebar-dragging');
 
-                    li.classList.remove('touch-drag-active');
+                    const wasDragging = isDragging;
 
-                    if (autoScroller) {
-                        try {
-                            if (typeof autoScroller.stop === 'function') autoScroller.stop();
-                            if (typeof autoScroller.destroy === 'function') autoScroller.destroy();
-                        } catch (err) {
-                            console.warn('[sidebarBoards] autoScroller cleanup error:', err);
-                        }
-                        autoScroller = null;
+                    if (wasDragging) {
+                        // Запобігаємо випадковому відкриттю/вибору блокнота після завершення перетягування
+                        const blockClick = (clickEv) => {
+                            clickEv.stopPropagation();
+                            clickEv.preventDefault();
+                            window.removeEventListener('click', blockClick, true);
+                        };
+                        window.addEventListener('click', blockClick, true);
                     }
 
-                    if (isDragging) {
-                        try {
-                            li.releasePointerCapture(upEv.pointerId);
-                        } catch {}
+                    if (isDragging && placeholder) {
+                        parentContainer.insertBefore(li, placeholder);
+                        placeholder.remove();
 
-                        document.body.classList.remove('is-board-reordering');
-
-                        if (placeholder && placeholder.parentNode) {
-                            placeholder.parentNode.insertBefore(li, placeholder);
-                            placeholder.remove();
-                        }
-
-                        li.classList.remove('is-board-dragging');
+                        li.classList.remove('is-dragging');
                         li.style.position = '';
+                        li.style.width = '';
                         li.style.left = '';
                         li.style.top = '';
-                        li.style.width = '';
                         li.style.zIndex = '';
-                        li.style.pointerEvents = '';
 
-                        const newOrderIds = Array.from(boardsList.querySelectorAll('.board-item:not(.shared-board-item)'))
-                            .map(item => item.dataset.boardId)
-                            .filter(Boolean);
+                        const orderedNodes = [...parentContainer.children].filter(el => {
+                            return el.classList && 
+                                   el.classList.contains('board-item') && 
+                                   !el.classList.contains('shared-board-item');
+                        });
+                        const newOrderIds = orderedNodes.map(node => node.dataset.boardId).filter(Boolean);
 
                         if (window.App.boardManager && window.App.boardManager.reorderBoards) {
                             window.App.boardManager.reorderBoards(newOrderIds);
                         }
 
-                        if (navigator.vibrate) navigator.vibrate(15);
-
-                        setTimeout(() => {
-                            li.dataset.dragged = 'false';
-                        }, 80);
+                        if (navigator.vibrate) {
+                            try { navigator.vibrate(15); } catch (_) {}
+                        }
                     }
                 };
 
-                window.addEventListener('pointermove', onPointerMove, { passive: false });
+                const onContextMenu = (menuEv) => {
+                    if (isTouch || touchDragReady || isDragging) {
+                        menuEv.preventDefault();
+                    }
+                    if (!isTouch && longPressTimer) {
+                        clearTimeout(longPressTimer);
+                        longPressTimer = null;
+                    }
+                };
+
+                window.addEventListener('pointermove', onPointerMove);
                 window.addEventListener('pointerup', onPointerUp);
                 window.addEventListener('pointercancel', onPointerUp);
-            };
-
-            li.addEventListener('pointerdown', onPointerDown);
+                window.addEventListener('blur', onPointerUp);
+                window.addEventListener('contextmenu', onContextMenu);
+            });
         },
 
         /**
