@@ -134,6 +134,10 @@ window.App = window.App || {};
                     const removeBtn = document.createElement('button');
                     removeBtn.type = 'button';
                     removeBtn.className = 'sticker-bookmark-remove';
+                    const isTouchDevice = ('ontouchstart' in window) || navigator.maxTouchPoints > 0 || window.innerWidth <= 768;
+                    if (isTouchDevice) {
+                        removeBtn.classList.add('touch-visible');
+                    }
                     removeBtn.title = t('sticker.removeBookmark') || 'Видалити закладку';
                     removeBtn.setAttribute('aria-label', t('sticker.removeBookmark') || 'Видалити закладку');
                     removeBtn.innerHTML = `

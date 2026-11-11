@@ -9,9 +9,9 @@
     align-items: stretch;
     gap: 8px;
     margin-top: 14px;
-    margin-right: -24px; /* Доходить рівно до правої межі картки на десктопі */
-    width: calc(100% + 24px);
-    max-width: calc(100% + 24px);
+    margin-right: -20px; /* Доходить упритул до правої межі картки без виходу за її край */
+    width: calc(100% + 20px);
+    max-width: calc(100% + 20px);
     box-sizing: border-box;
     position: relative;
     z-index: 2;
@@ -80,9 +80,30 @@
     max-width: 100%;
     box-sizing: border-box;
     padding: 0 14px 0 24px; /* Зліва 24px, щоб контент не перетинав 14px виріз */
+    -webkit-clip-path: polygon(
+        calc(100% - 6px) 0%,
+        100% 6px,
+        100% calc(100% - 6px),
+        calc(100% - 6px) 100%,
+        4px 100%,
+        2px calc(100% - 0.5px),
+        0.8px calc(100% - 1.5px),
+        0.6px calc(100% - 2.8px),
+        1.8px calc(100% - 4.4px),
+        12.8px calc(50% + 2px),
+        14px 50%,
+        12.8px calc(50% - 2px),
+        1.8px 4.4px,
+        0.6px 2.8px,
+        0.8px 1.5px,
+        2px 0.5px,
+        4px 0%
+    );
     clip-path: polygon(
-        100% 0%,
-        100% 100%,
+        calc(100% - 6px) 0%,
+        100% 6px,
+        100% calc(100% - 6px),
+        calc(100% - 6px) 100%,
         4px 100%,
         2px calc(100% - 0.5px),
         0.8px calc(100% - 1.5px),
@@ -100,7 +121,7 @@
     background-color: var(--bookmark-tape-bg, rgba(0, 0, 0, 0.04));
     border: 1px solid var(--bookmark-tape-border, rgba(0, 0, 0, 0.08));
     border-right: none;
-    border-radius: 0;
+    border-radius: 0 4px 4px 0;
     color: var(--bookmark-tape-text, #292524);
     font-size: 13px;
     font-weight: 600;
@@ -128,27 +149,28 @@
 }
 
 .sticker-bookmark-title {
-    min-width: 0;
-    flex: 1 1 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    min-width: 0 !important;
+    flex: 1 1 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
     letter-spacing: -0.15px;
     color: inherit;
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
-/* Кнопка видалення закладки (з'являється при наведенні або завжди на тач-екранах) */
+/* Кнопка видалення закладки: на ПК ховається до ховеру, на телефонах і тач-екранах видна ЗАВЖДИ */
 .sticker-bookmark-remove {
     background: transparent;
     border: none;
     color: inherit;
     opacity: 0;
+    visibility: hidden;
     font-size: 12px;
-    width: 22px;
-    height: 22px;
-    min-width: 22px;
-    min-height: 22px;
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    min-height: 24px;
     border-radius: 50%;
     display: inline-flex;
     align-items: center;
@@ -161,29 +183,34 @@
     line-height: 1;
 }
 
-.sticker-bookmark-ribbon:hover .sticker-bookmark-remove {
-    opacity: 0.7;
-}
+/* Десктоп з курсором миші: плавна поява при наведенні */
+@media (hover: hover) and (pointer: fine) {
+    .sticker-bookmark-ribbon:hover .sticker-bookmark-remove {
+        opacity: 0.8;
+        visibility: visible;
+    }
 
-.sticker-bookmark-remove:hover {
-    opacity: 1 !important;
-    background-color: rgba(0, 0, 0, 0.12);
-    color: #dc2626 !important;
-    transform: scale(1.15);
-}
-
-/* Тач-пристрої та мобільні телефони: адаптивне вирівнювання закладок та постійна видимість кнопки видалення */
-@media (hover: none) {
-    .sticker-bookmark-remove {
-        opacity: 0.8 !important;
+    .sticker-bookmark-remove:hover {
+        opacity: 1 !important;
+        background-color: rgba(0, 0, 0, 0.15);
+        color: #dc2626 !important;
+        transform: scale(1.15);
     }
 }
 
-@media screen and (max-width: 768px) {
+/* Мобільні та сенсорні пристрої, а також явний клас: хрестик ВИДНИЙ ЗАВЖДИ */
+.sticker-bookmark-remove.touch-visible {
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: inline-flex !important;
+    background-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+@media screen and (max-width: 768px), (hover: none), (pointer: coarse) {
     .sticker-bookmarks-container {
-        margin-right: -16px !important; /* На мобільному паддінг картки 16px замість 24px */
-        width: calc(100% + 16px) !important;
-        max-width: calc(100% + 16px) !important;
+        margin-right: -12px !important; /* На мобільному паддінг картки 16px — залишає 4px запас без виходу за межі */
+        width: calc(100% + 12px) !important;
+        max-width: calc(100% + 12px) !important;
     }
 
     .sticker-bookmark-ribbon {
@@ -199,22 +226,26 @@
     }
 
     .sticker-bookmark-remove {
-        opacity: 0.85 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        display: inline-flex !important;
         width: 26px !important;
         height: 26px !important;
         min-width: 26px !important;
         min-height: 26px !important;
         margin-left: 4px !important;
         margin-right: 2px !important;
-        background-color: rgba(0, 0, 0, 0.08) !important;
+        background-color: rgba(0, 0, 0, 0.12) !important;
+        color: inherit !important;
+        border-radius: 50% !important;
         touch-action: manipulation !important;
     }
 
     .sticker-bookmark-remove:active {
         opacity: 1 !important;
-        background-color: rgba(0, 0, 0, 0.2) !important;
+        background-color: rgba(220, 38, 38, 0.25) !important;
         color: #dc2626 !important;
-        transform: scale(1.1) !important;
+        transform: scale(1.12) !important;
     }
 }
 
