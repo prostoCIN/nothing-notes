@@ -1,4 +1,5 @@
 // js/settings/settingsModalModule.js - Асинхронний агрегатор модального вікна налаштувань та вкладок
+import './colorPickerPopover.js';
 import './settingsAppearanceTab.js';
 import './settingsThemeTab.js';
 import './settingsAccountTab.js';

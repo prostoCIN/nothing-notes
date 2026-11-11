@@ -250,9 +250,8 @@ window.App = window.App || {};
                                 <span class="theme-token-desc">${tokenDesc}</span>
                             </div>
                             <div class="theme-token-controls">
-                                <div class="theme-color-swatch-wrap" title="${isUa ? 'Відкрити палітру' : 'Open color picker'}">
+                                <div class="theme-color-swatch-wrap" data-token-key="${token.key}" title="${isUa ? 'Відкрити палітру кольорів' : 'Open color picker'}" tabindex="0" role="button" aria-label="${tokenName}">
                                     <div class="theme-color-swatch-preview" style="background-color: ${currentColor};"></div>
-                                    <input type="color" class="theme-native-color-picker" value="${currentColor.startsWith('#') && currentColor.length === 7 ? currentColor : token.default}" data-token-key="${token.key}">
                                 </div>
                                 <input type="text" class="theme-hex-input" value="${currentColor}" maxlength="7" spellcheck="false" data-token-key="${token.key}">
                                 ${isCustom ? `
@@ -295,45 +294,47 @@ window.App = window.App || {};
         bindEvents(modalOverlayEl, onUpdate) {
             if (!modalOverlayEl) return;
 
-            // 1. Color Picker inputs (real-time live update)
+            // 1. Відкриття кастомного NothingNotes калорпікера по кліку на свотч
             const swatchWraps = modalOverlayEl.querySelectorAll('.theme-color-swatch-wrap');
             swatchWraps.forEach(wrap => {
-                wrap.addEventListener('click', (e) => {
-                    const picker = wrap.querySelector('.theme-native-color-picker');
-                    if (picker && e.target !== picker) {
-                        if (typeof picker.showPicker === 'function') {
-                            try { picker.showPicker(); } catch (err) { picker.click(); }
-                        } else {
-                            picker.click();
-                        }
+                const handleOpenPicker = (e) => {
+                    e.stopPropagation();
+                    const key = wrap.getAttribute('data-token-key');
+                    const row = wrap.closest('.theme-token-row');
+                    const hexInput = row ? row.querySelector('.theme-hex-input') : null;
+                    const preview = wrap.querySelector('.theme-color-swatch-preview');
+                    const currentHex = hexInput && isValidHex(hexInput.value) ? hexInput.value : '#16b981';
+
+                    if (window.App.colorPickerPopover) {
+                        window.App.colorPickerPopover.open({
+                            anchorEl: wrap,
+                            initialColor: currentHex,
+                            onChange: (newHex) => {
+                                if (preview) preview.style.backgroundColor = newHex;
+                                if (hexInput) hexInput.value = newHex.toUpperCase();
+                                this.setCustomColor(key, newHex);
+                            },
+                            onClose: (finalHex) => {
+                                this.setCustomColor(key, finalHex);
+                                if (typeof onUpdate === 'function') onUpdate();
+                            }
+                        });
+                    }
+                };
+
+                wrap.addEventListener('click', handleOpenPicker);
+                wrap.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleOpenPicker(e);
                     }
                 });
             });
 
-            const colorPickers = modalOverlayEl.querySelectorAll('.theme-native-color-picker');
-            colorPickers.forEach(picker => {
-                picker.addEventListener('input', (e) => {
-                    const key = picker.getAttribute('data-token-key');
-                    const hex = e.target.value;
-                    const row = picker.closest('.theme-token-row');
-                    if (row) {
-                        const preview = row.querySelector('.theme-color-swatch-preview');
-                        const hexInput = row.querySelector('.theme-hex-input');
-                        if (preview) preview.style.backgroundColor = hex;
-                        if (hexInput) hexInput.value = hex.toUpperCase();
-                    }
-                    this.setCustomColor(key, hex);
-                });
-
-                picker.addEventListener('change', () => {
-                    if (typeof onUpdate === 'function') onUpdate();
-                });
-            });
-
-            // 2. HEX text inputs
+            // 2. Редагування кольору через поле введення HEX
             const hexInputs = modalOverlayEl.querySelectorAll('.theme-hex-input');
             hexInputs.forEach(input => {
-                input.addEventListener('change', (e) => {
+                input.addEventListener('input', (e) => {
                     let hex = e.target.value.trim();
                     if (!hex.startsWith('#')) hex = '#' + hex;
                     if (isValidHex(hex)) {
@@ -341,29 +342,38 @@ window.App = window.App || {};
                         const row = input.closest('.theme-token-row');
                         if (row) {
                             const preview = row.querySelector('.theme-color-swatch-preview');
-                            const nativePicker = row.querySelector('.theme-native-color-picker');
                             if (preview) preview.style.backgroundColor = hex;
-                            if (nativePicker && hex.length === 7) nativePicker.value = hex;
                         }
+                        this.setCustomColor(key, hex);
+                    }
+                });
+
+                input.addEventListener('change', (e) => {
+                    let hex = e.target.value.trim();
+                    if (!hex.startsWith('#')) hex = '#' + hex;
+                    if (isValidHex(hex)) {
+                        const key = input.getAttribute('data-token-key');
                         this.setCustomColor(key, hex);
                         if (typeof onUpdate === 'function') onUpdate();
                     }
                 });
             });
 
-            // 3. Reset All Button
+            // 3. Скинути всі кольори до стандартних
             const resetAllBtn = modalOverlayEl.querySelector('#theme-reset-all-btn');
             if (resetAllBtn) {
                 resetAllBtn.addEventListener('click', () => {
+                    if (window.App.colorPickerPopover) window.App.colorPickerPopover.close();
                     this.resetAll();
                     if (typeof onUpdate === 'function') onUpdate();
                 });
             }
 
-            // 4. Individual Token Reset Buttons
+            // 4. Скинути окремий колір
             const resetTokenBtns = modalOverlayEl.querySelectorAll('.theme-token-reset-btn');
             resetTokenBtns.forEach(btn => {
                 btn.addEventListener('click', () => {
+                    if (window.App.colorPickerPopover) window.App.colorPickerPopover.close();
                     const key = btn.getAttribute('data-reset-key');
                     const colors = this.getCustomColors();
                     delete colors[key];

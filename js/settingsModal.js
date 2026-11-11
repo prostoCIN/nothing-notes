@@ -258,6 +258,9 @@ window.App = window.App || {};
 
         close() {
             this.isOpen = false;
+            if (window.App.colorPickerPopover) {
+                window.App.colorPickerPopover.close();
+            }
             if (!modalOverlayEl) return;
             modalOverlayEl.classList.remove('active');
             setTimeout(() => {
