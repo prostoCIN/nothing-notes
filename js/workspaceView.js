@@ -555,7 +555,13 @@ window.App = window.App || {};
             const boardTitleEl = document.getElementById('workspace-header-board-title');
             const boardIconEl = document.getElementById('workspace-header-board-icon');
             if (boardTitleEl) boardTitleEl.textContent = currentBoard.name || '';
-            if (boardIconEl) boardIconEl.textContent = currentBoard.icon || '';
+            if (boardIconEl) {
+                if (window.App.setEmojiContent) {
+                    window.App.setEmojiContent(boardIconEl, currentBoard.icon, '', 16);
+                } else {
+                    boardIconEl.textContent = currentBoard.icon || '';
+                }
+            }
 
             const viewColumnsBtn = document.getElementById('island-view-columns-btn');
             const viewBoardBtn = document.getElementById('island-view-board-btn');

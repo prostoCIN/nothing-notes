@@ -59,6 +59,7 @@ body {
 
 .note-item-icon .apple-emoji-img,
 .board-item-icon .apple-emoji-img,
+.workspace-header-board-icon .apple-emoji-img,
 .column-header-icon .apple-emoji-img,
 .column-breadcrumb-icon .apple-emoji-img {
     width: 16px;
