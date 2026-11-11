@@ -57,7 +57,11 @@ window.App = window.App || {};
                 // Notion емодзі іконка в сайдбарі
                 const emojiSpan = document.createElement('span');
                 emojiSpan.className = 'note-item-icon';
-                emojiSpan.textContent = note.icon || '📄';
+                if (window.App.setEmojiContent) {
+                    window.App.setEmojiContent(emojiSpan, note.icon, '📄', 16);
+                } else {
+                    emojiSpan.textContent = note.icon || '📄';
+                }
 
                 const titleSpan = document.createElement('span');
                 titleSpan.className = 'note-item-title';

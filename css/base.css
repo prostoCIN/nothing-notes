@@ -20,7 +20,7 @@ html, body {
 }
 
 body {
-    font-family: 'JetBrains Mono', monospace, -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple Color Emoji", "Noto Color Emoji", "Segoe UI Emoji", sans-serif;
+    font-family: 'JetBrains Mono', monospace, -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
     background-color: var(--bg-color);
     background-image: var(--body-bg-gradient);
     background-attachment: fixed;
@@ -31,14 +31,47 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-/* Підтримка повноколірних емодзі та прапорів на Windows через Noto Color Emoji */
+/* Стилізація Apple Emoji (зображення з Apple Emoji CDN на Windows / не-Apple пристроях) */
+.apple-emoji-img {
+    display: inline-block;
+    vertical-align: middle;
+    object-fit: contain;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    flex-shrink: 0;
+}
+
+.sticker-emoji-btn .apple-emoji-img {
+    width: 24px;
+    height: 24px;
+}
+
+.emoji-grid-item .apple-emoji-img {
+    width: 24px;
+    height: 24px;
+}
+
+.emoji-cat-tab-btn .apple-emoji-img {
+    width: 18px;
+    height: 18px;
+}
+
+.note-item-icon .apple-emoji-img,
+.board-item-icon .apple-emoji-img,
+.column-header-icon .apple-emoji-img {
+    width: 16px;
+    height: 16px;
+    vertical-align: -2px;
+}
+
 .emoji-grid-item,
 .emoji-cat-tab-btn,
 .sticker-emoji-btn,
 .note-item-icon,
 .board-item-icon,
 .column-header-emoji-picker .sticker-emoji-btn {
-    font-family: "Apple Color Emoji", "Noto Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif !important;
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
 }
 
 .app-container {

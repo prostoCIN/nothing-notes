@@ -124,7 +124,11 @@ window.App = window.App || {};
                 } else {
                     boardIconPicker = document.createElement('span');
                     boardIconPicker.className = 'column-header-icon';
-                    boardIconPicker.textContent = currentBoard.icon || '📋';
+                    if (window.App.setEmojiContent) {
+                        window.App.setEmojiContent(boardIconPicker, currentBoard.icon, '📋', 22);
+                    } else {
+                        boardIconPicker.textContent = currentBoard.icon || '📋';
+                    }
                 }
 
                 titleH2.textContent = currentBoard.name || '';
@@ -194,7 +198,11 @@ window.App = window.App || {};
                 } else {
                     noteIconPicker = document.createElement('span');
                     noteIconPicker.className = 'column-header-icon';
-                    noteIconPicker.textContent = (parentNote && parentNote.icon) || '📄';
+                    if (window.App.setEmojiContent) {
+                        window.App.setEmojiContent(noteIconPicker, (parentNote && parentNote.icon), '📄', 22);
+                    } else {
+                        noteIconPicker.textContent = (parentNote && parentNote.icon) || '📄';
+                    }
                 }
                 noteIconPicker.classList.add('column-header-emoji-picker');
 

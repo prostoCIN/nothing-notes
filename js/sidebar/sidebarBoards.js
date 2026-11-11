@@ -103,7 +103,11 @@ window.App = window.App || {};
                 if (board.icon) {
                     const iconSpan = document.createElement('span');
                     iconSpan.className = 'board-item-icon';
-                    iconSpan.textContent = board.icon;
+                    if (window.App.setEmojiContent) {
+                        window.App.setEmojiContent(iconSpan, board.icon, null, 16);
+                    } else {
+                        iconSpan.textContent = board.icon;
+                    }
                     nameSpan.appendChild(iconSpan);
                 }
 
@@ -548,7 +552,11 @@ window.App = window.App || {};
                 if (board.icon) {
                     const iconSpan = document.createElement('span');
                     iconSpan.className = 'board-item-icon';
-                    iconSpan.textContent = board.icon;
+                    if (window.App.setEmojiContent) {
+                        window.App.setEmojiContent(iconSpan, board.icon, null, 16);
+                    } else {
+                        iconSpan.textContent = board.icon;
+                    }
                     nameSpan.appendChild(iconSpan);
                 }
 

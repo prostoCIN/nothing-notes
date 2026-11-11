@@ -2,6 +2,36 @@
 window.App = window.App || {};
 
 (function() {
+    const isApple = typeof navigator !== 'undefined' && /Macintosh|Mac OS X|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    window.App.isAppleDevice = isApple;
+
+    window.App.getAppleEmojiUrl = function(emoji) {
+        if (!emoji) return '';
+        return `https://emojicdn.elk.sh/${encodeURIComponent(emoji)}?style=apple`;
+    };
+
+    window.App.renderAppleEmoji = function(emoji, size = 20, className = '') {
+        if (!emoji) return '';
+        if (isApple) return emoji;
+        const src = window.App.getAppleEmojiUrl(emoji);
+        return `<img src="${src}" class="apple-emoji-img ${className}" width="${size}" height="${size}" alt="${emoji}" loading="lazy" onerror="this.outerHTML='${emoji}'" draggable="false" />`;
+    };
+
+    window.App.setEmojiContent = function(el, emoji, fallbackIcon = '📄', size = 22) {
+        if (!el) return;
+        const target = emoji || fallbackIcon;
+        if (!target) {
+            el.innerHTML = '';
+            return;
+        }
+        if (isApple) {
+            el.textContent = target;
+        } else {
+            const src = window.App.getAppleEmojiUrl(target);
+            el.innerHTML = `<img src="${src}" class="apple-emoji-img" width="${size}" height="${size}" alt="${target}" loading="lazy" onerror="this.outerHTML='${target}'" draggable="false" />`;
+        }
+    };
+
     window.App.emojiCategories = [
     {
             "id": "smileys",

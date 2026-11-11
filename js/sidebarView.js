@@ -141,7 +141,13 @@ window.App = window.App || {};
                 const titleSpan = row.querySelector('.note-item-title');
                 if (titleSpan) titleSpan.textContent = title || 'Без назви';
                 const iconSpan = row.querySelector('.note-item-icon');
-                if (iconSpan) iconSpan.textContent = icon || '📄';
+                if (iconSpan) {
+                    if (window.App.setEmojiContent) {
+                        window.App.setEmojiContent(iconSpan, icon, '📄', 16);
+                    } else {
+                        iconSpan.textContent = icon || '📄';
+                    }
+                }
             }
         },
 

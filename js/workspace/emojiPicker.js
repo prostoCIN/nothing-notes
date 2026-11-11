@@ -36,7 +36,11 @@ window.App = window.App || {};
             const emojiBtn = document.createElement('button');
             emojiBtn.className = `sticker-emoji-btn ${!currentIcon ? 'empty-icon' : ''}`;
             emojiBtn.title = currentIcon ? (t('emoji.changeIcon') || 'Змінити емодзі') : (t('emoji.addIcon') || 'Додати емодзі');
-            emojiBtn.textContent = currentIcon || defaultEmptyIcon;
+            if (window.App.setEmojiContent) {
+                window.App.setEmojiContent(emojiBtn, currentIcon, defaultEmptyIcon, 24);
+            } else {
+                emojiBtn.textContent = currentIcon || defaultEmptyIcon;
+            }
 
             // Випадаюче вікно вибору Notion-емодзі з повною клавіатурою категорій
             const emojiDropdown = document.createElement('div');
@@ -87,7 +91,11 @@ window.App = window.App || {};
                     window.App.noteManager.updateNote(targetItem.id, { icon: emoji });
                     targetItem.icon = emoji;
                 }
-                emojiBtn.textContent = emoji;
+                if (window.App.setEmojiContent) {
+                    window.App.setEmojiContent(emojiBtn, emoji, defaultEmptyIcon, 24);
+                } else {
+                    emojiBtn.textContent = emoji;
+                }
                 emojiBtn.classList.remove('empty-icon');
                 emojiBtn.title = t('emoji.changeIcon') || 'Змінити емодзі';
                 removeBtn.style.display = 'block';
@@ -103,9 +111,29 @@ window.App = window.App || {};
                 const itemBtn = document.createElement('button');
                 itemBtn.type = 'button';
                 itemBtn.className = 'emoji-grid-item';
-                itemBtn.textContent = emoji;
+                itemBtn.dataset.emoji = emoji;
                 const kw = (window.App.emojiKeywords && window.App.emojiKeywords[emoji]) || '';
                 itemBtn.dataset.keywords = kw;
+
+                if (window.App.isAppleDevice) {
+                    itemBtn.textContent = emoji;
+                } else if (window.App.getAppleEmojiUrl) {
+                    const img = document.createElement('img');
+                    img.src = window.App.getAppleEmojiUrl(emoji);
+                    img.className = 'apple-emoji-img';
+                    img.width = 24;
+                    img.height = 24;
+                    img.loading = 'lazy';
+                    img.alt = emoji;
+                    img.draggable = false;
+                    img.onerror = () => {
+                        itemBtn.textContent = emoji;
+                    };
+                    itemBtn.appendChild(img);
+                } else {
+                    itemBtn.textContent = emoji;
+                }
+
                 itemBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     handleSelectEmoji(emoji);
@@ -119,7 +147,11 @@ window.App = window.App || {};
                     window.App.noteManager.updateNote(targetItem.id, { icon: null });
                     targetItem.icon = null;
                 }
-                emojiBtn.textContent = defaultEmptyIcon;
+                if (window.App.setEmojiContent) {
+                    window.App.setEmojiContent(emojiBtn, null, defaultEmptyIcon, 24);
+                } else {
+                    emojiBtn.textContent = defaultEmptyIcon;
+                }
                 emojiBtn.classList.add('empty-icon');
                 emojiBtn.title = t('emoji.addIcon') || 'Додати емодзі';
                 removeBtn.style.display = 'none';
@@ -174,7 +206,11 @@ window.App = window.App || {};
             recentCatBtn.type = 'button';
             recentCatBtn.className = 'emoji-cat-tab-btn';
             recentCatBtn.title = recentTitle.textContent;
-            recentCatBtn.textContent = '🕒';
+            if (window.App.setEmojiContent) {
+                window.App.setEmojiContent(recentCatBtn, '🕒', null, 18);
+            } else {
+                recentCatBtn.textContent = '🕒';
+            }
             catButtonsMap.set('recent', recentCatBtn);
             recentCatBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -230,7 +266,11 @@ window.App = window.App || {};
                 const isInitialActive = (idx === 0 && getRecentEmojis().length === 0);
                 catBtn.className = `emoji-cat-tab-btn ${isInitialActive ? 'active' : ''}`;
                 catBtn.title = catTitle.textContent;
-                catBtn.textContent = cat.icon;
+                if (window.App.setEmojiContent) {
+                    window.App.setEmojiContent(catBtn, cat.icon, null, 18);
+                } else {
+                    catBtn.textContent = cat.icon;
+                }
                 catButtonsMap.set(cat.id, catBtn);
 
                 catBtn.addEventListener('click', (e) => {
@@ -303,7 +343,7 @@ window.App = window.App || {};
 
                     items.forEach(item => {
                         const kw = item.dataset.keywords || '';
-                        const glyph = item.textContent || '';
+                        const glyph = item.dataset.emoji || item.textContent || '';
                         if (glyph.includes(query) || kw.includes(query) || titleMatches) {
                             item.style.display = 'flex';
                             hasVisible = true;
