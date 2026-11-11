@@ -193,16 +193,16 @@ window.App = window.App || {};
     window.App.confirmModal = {
         /**
          * Показує універсальне модальне вікно підтвердження із затисканням
-         * @param {Object} options { title, message, confirmText, type, onConfirm, onCancel }
+         * @param {Object} options { title, message, confirmText, cancelText, type, onConfirm, onCancel }
          */
-        show({ title, message, confirmText, type = 'danger', onConfirm, onCancel }) {
+        show({ title, message, confirmText, cancelText, type = 'danger', onConfirm, onCancel }) {
             createModalDOM();
 
             const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
 
             titleEl.textContent = title || t('common.confirm');
             descEl.innerHTML = message || '';
-            cancelBtn.textContent = t('common.cancel');
+            cancelBtn.textContent = cancelText || t('common.cancel');
             holdBtnText.textContent = confirmText || (type === 'danger' ? t('common.holdToConfirm') : t('common.confirm'));
 
             onConfirmCallback = onConfirm;

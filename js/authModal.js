@@ -229,15 +229,17 @@ window.App = window.App || {};
                 successMsg.style.display = 'none';
                 successMsg.textContent = '';
 
+                const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
+
                 const supabase = window.App && window.App.supabase;
                 if (!supabase) {
-                    errorMsg.textContent = 'Помилка: клієнт Supabase не ініціалізовано.';
+                    errorMsg.textContent = t('auth.errors.clientNotInit') || 'Помилка: клієнт Supabase не ініціалізовано.';
                     errorMsg.style.display = 'block';
                     return;
                 }
 
                 submitBtn.disabled = true;
-                btnText.textContent = 'Обробка...';
+                btnText.textContent = t('auth.processing') || 'Обробка...';
 
                 try {
                     if (isSignUpMode) {
@@ -247,25 +249,25 @@ window.App = window.App || {};
                         const confirmPass = regConfirmInput.value;
 
                         if (!username) {
-                            throw new Error('Будь ласка, введіть логін.');
+                            throw new Error(t('auth.errors.enterLogin') || 'Будь ласка, введіть логін.');
                         }
                         if (username.length < 3 || username.length > 30) {
-                            throw new Error('Логін має містити від 3 до 30 символів.');
+                            throw new Error(t('auth.errors.usernameLength') || 'Логін має містити від 3 до 30 символів.');
                         }
                         if (!/^[a-zA-Z0-9_.\-]+$/.test(username)) {
-                            throw new Error('Логін може містити лише латинські букви, цифри, _, - або .');
+                            throw new Error(t('auth.errors.usernameChars') || 'Логін може містити лише латинські букви, цифри, _, - або .');
                         }
                         if (username.includes('@')) {
-                            throw new Error('Логін не може містити символ "@".');
+                            throw new Error(t('auth.errors.usernameChars') || 'Логін не може містити символ "@".');
                         }
                         if (!email || !email.includes('@') || !email.includes('.')) {
-                            throw new Error('Будь ласка, введіть коректну адресу email.');
+                            throw new Error(t('auth.errors.enterEmail') || 'Будь ласка, введіть коректну адресу email.');
                         }
                         if (!password || password.length < 6) {
-                            throw new Error('Пароль повинен містити щонайменше 6 символів.');
+                            throw new Error(t('auth.errors.passwordLength') || 'Пароль повинен містити щонайменше 6 символів.');
                         }
                         if (password !== confirmPass) {
-                            throw new Error('Введені паролі не співпадають.');
+                            throw new Error(t('auth.errors.passwordsMismatch') || 'Введені паролі не співпадають.');
                         }
 
                         // Перевірка чи логін вже зайнятий у таблиці profiles
@@ -298,7 +300,7 @@ window.App = window.App || {};
 
                         if (error) {
                             if (error.message.toLowerCase().includes('already registered')) {
-                                throw new Error('Користувач з таким email вже зареєстрований.');
+                                throw new Error(t('auth.errors.userExists') || 'Користувач з таким email вже зареєстрований.');
                             }
                             throw error;
                         }
@@ -318,7 +320,7 @@ window.App = window.App || {};
                         }
 
                         if (data.user && !data.session) {
-                            successMsg.textContent = 'Акаунт успішно створено! Перевірте свою пошту для підтвердження або увійдіть.';
+                            successMsg.textContent = t('auth.successRegister') || 'Акаунт успішно створено! Перевірте свою пошту для підтвердження або увійдіть.';
                             successMsg.style.display = 'block';
                         } else {
                             this.close();
@@ -329,10 +331,10 @@ window.App = window.App || {};
                         const password = loginPassInput.value;
 
                         if (!identifier) {
-                            throw new Error('Введіть логін або Email.');
+                            throw new Error(t('auth.errors.enterIdentifier') || 'Введіть логін або Email.');
                         }
                         if (!password) {
-                            throw new Error('Введіть пароль.');
+                            throw new Error(t('auth.errors.enterPassword') || 'Введіть пароль.');
                         }
 
                         let loginEmail = identifier;
@@ -392,7 +394,7 @@ window.App = window.App || {};
                     errorMsg.style.display = 'block';
                 } finally {
                     submitBtn.disabled = false;
-                    btnText.textContent = isSignUpMode ? 'Створити акаунт' : 'Увійти';
+                    btnText.textContent = isSignUpMode ? (t('auth.submitRegister') || 'Створити акаунт') : (t('auth.submitLogin') || 'Увійти');
                 }
             });
 

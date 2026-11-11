@@ -512,11 +512,13 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                             countPhrase = `${count} виділені нотатки`;
                         }
 
+                        const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
+
                         if (confirmModal) {
                             confirmModal.show({
-                                title: 'Зробити піднотатками?',
-                                message: `Ви дійсно хочете зробити з ${countPhrase} піднотатки для <span class="confirm-modal-highlight">"${escapeHtml(parentTitle)}"</span>?`,
-                                confirmText: 'Перемістити',
+                                title: t('confirm.makeSubnotesTitle') || 'Зробити піднотатками?',
+                                message: t('confirm.makeSubnotesMsg', { count: countPhrase, parent: escapeHtml(parentTitle) }) || `Ви дійсно хочете зробити з ${countPhrase} піднотатки для <span class="confirm-modal-highlight">"${escapeHtml(parentTitle)}"</span>?`,
+                                confirmText: t('common.move') || 'Перемістити',
                                 type: 'info',
                                 onConfirm: () => {
                                     if (window.App.workspaceSelectionActions && window.App.workspaceSelectionActions.moveNotesToParent) {
@@ -544,10 +546,11 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                     const draggedTitle = (draggedNote && draggedNote.title.trim()) ? draggedNote.title.trim() : 'Без назви';
 
                     if (confirmModal) {
+                        const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
                         confirmModal.show({
-                            title: 'Зробити піднотаткою?',
-                            message: `Ви дійсно хочете зробити нотатку <span class="confirm-modal-highlight">"${escapeHtml(draggedTitle)}"</span> піднотаткою для <span class="confirm-modal-highlight">"${escapeHtml(parentTitle)}"</span>?`,
-                            confirmText: 'Перемістити',
+                            title: t('confirm.makeSubnoteTitle') || 'Зробити піднотаткою?',
+                            message: t('confirm.makeSubnoteMsg', { title: escapeHtml(draggedTitle), parent: escapeHtml(parentTitle) }) || `Ви дійсно хочете зробити нотатку <span class="confirm-modal-highlight">"${escapeHtml(draggedTitle)}"</span> піднотаткою для <span class="confirm-modal-highlight">"${escapeHtml(parentTitle)}"</span>?`,
+                            confirmText: t('common.move') || 'Перемістити',
                             type: 'info',
                             onConfirm: () => {
                                 if (state && state.selectedWorkspaceNoteIds && state.selectedWorkspaceNoteIds.has(draggedNoteId)) {
@@ -614,10 +617,11 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                             }
 
                             if (confirmModal) {
+                                const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
                                 confirmModal.show({
-                                    title: newParentId === null ? 'Перемістити в головні нотатки?' : 'Перемістити в іншу колонку?',
-                                    message: `Ви дійсно хочете перемістити ${countPhrase} в ${targetName}?`,
-                                    confirmText: 'Перемістити',
+                                    title: newParentId === null ? (t('confirm.moveToRootTitle') || 'Перемістити в головні нотатки?') : (t('confirm.moveToColumnTitle') || 'Перемістити в іншу колонку?'),
+                                    message: t('confirm.moveMultipleToTargetMsg', { count: countPhrase, target: targetName }) || `Ви дійсно хочете перемістити ${countPhrase} в ${targetName}?`,
+                                    confirmText: t('common.move') || 'Перемістити',
                                     type: 'info',
                                     onConfirm: () => {
                                         if (window.App.workspaceSelectionActions && window.App.workspaceSelectionActions.moveNotesToParent) {
@@ -646,10 +650,13 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                         const draggedTitle = (draggedNote && draggedNote.title.trim()) ? draggedNote.title.trim() : 'Без назви';
 
                         if (confirmModal) {
+                            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
                             confirmModal.show({
-                                title: newParentId === null ? 'Перемістити в головні нотатки?' : 'Перемістити в іншу колонку?',
-                                message: `Ви дійсно хочете перемістити <span class="confirm-modal-highlight">"${escapeHtml(draggedTitle)}"</span> в ${targetName}?`,
-                                confirmText: 'Перемістити',
+                                title: newParentId === null ? (t('confirm.moveToRootTitle') || 'Перемістити в головні нотатки?') : (t('confirm.moveToColumnTitle') || 'Перемістити в іншу колонку?'),
+                                message: newParentId === null 
+                                    ? (t('confirm.moveToRootMsg', { title: escapeHtml(draggedTitle) }) || `Ви дійсно хочете перемістити <span class="confirm-modal-highlight">"${escapeHtml(draggedTitle)}"</span> в головні нотатки?`)
+                                    : (t('confirm.moveToColumnMsg', { title: escapeHtml(draggedTitle), target: targetName }) || `Ви дійсно хочете перемістити <span class="confirm-modal-highlight">"${escapeHtml(draggedTitle)}"</span> в ${targetName}?`),
+                                confirmText: t('common.move') || 'Перемістити',
                                 type: 'info',
                                 onConfirm: () => {
                                     if (state && state.selectedWorkspaceNoteIds && state.selectedWorkspaceNoteIds.has(draggedNoteId)) {

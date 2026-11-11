@@ -8,12 +8,14 @@ window.App = window.App || {};
             const currentIcon = isNote ? targetItem.icon : (targetItem ? targetItem.icon : null);
             const defaultEmptyIcon = isNote ? '📄' : '📁';
 
+            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
+
             const emojiWrap = document.createElement('div');
             emojiWrap.className = 'sticker-emoji-wrap';
 
             const emojiBtn = document.createElement('button');
             emojiBtn.className = `sticker-emoji-btn ${!currentIcon ? 'empty-icon' : ''}`;
-            emojiBtn.title = currentIcon ? 'Змінити емодзі' : 'Додати емодзі';
+            emojiBtn.title = currentIcon ? (t('emoji.changeIcon') || 'Змінити емодзі') : (t('emoji.addIcon') || 'Додати емодзі');
             emojiBtn.textContent = currentIcon || defaultEmptyIcon;
 
             // Випадаюче вікно вибору Notion-емодзі з повною клавіатурою категорій
@@ -27,12 +29,12 @@ window.App = window.App || {};
             const searchInput = document.createElement('input');
             searchInput.type = 'text';
             searchInput.className = 'emoji-search-input';
-            searchInput.placeholder = 'Пошук емодзі...';
+            searchInput.placeholder = t('emoji.searchPlaceholder') || 'Пошук емодзі...';
 
             const removeBtn = document.createElement('button');
             removeBtn.className = 'emoji-remove-btn';
-            removeBtn.textContent = 'Видалити';
-            removeBtn.title = 'Прибрати іконку';
+            removeBtn.textContent = t('common.delete') || 'Видалити';
+            removeBtn.title = t('emoji.removeIcon') || 'Прибрати іконку';
             removeBtn.style.display = currentIcon ? 'block' : 'none';
 
             const setPickerActiveState = (active) => {
@@ -53,7 +55,7 @@ window.App = window.App || {};
                 }
                 emojiBtn.textContent = defaultEmptyIcon;
                 emojiBtn.classList.add('empty-icon');
-                emojiBtn.title = 'Додати емодзі';
+                emojiBtn.title = t('emoji.addIcon') || 'Додати емодзі';
                 removeBtn.style.display = 'none';
                 emojiDropdown.classList.remove('active');
                 setPickerActiveState(false);
@@ -101,7 +103,7 @@ window.App = window.App || {};
                         }
                         emojiBtn.textContent = emoji;
                         emojiBtn.classList.remove('empty-icon');
-                        emojiBtn.title = 'Змінити емодзі';
+                        emojiBtn.title = t('emoji.changeIcon') || 'Змінити емодзі';
                         removeBtn.style.display = 'block';
                         emojiDropdown.classList.remove('active');
                         setPickerActiveState(false);

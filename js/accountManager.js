@@ -142,12 +142,13 @@ window.App = window.App || {};
         renderOverlayContent() {
             if (!overlayEl) return;
 
+            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
             const currentUser = window.App.cloudSync ? window.App.cloudSync.getCurrentUser() : null;
             const accounts = getSavedAccounts();
 
             const currentNickname = currentUser 
                 ? ((currentUser.user_metadata && (currentUser.user_metadata.username || currentUser.user_metadata.nickname || currentUser.user_metadata.display_name)) || currentUser.email.split('@')[0])
-                : 'Користувач';
+                : (t('common.user') || 'Користувач');
             const currentInitial = currentNickname.charAt(0).toUpperCase();
 
             // Відфільтровуємо інші акаунти (окрім активного)
@@ -156,7 +157,7 @@ window.App = window.App || {};
             let otherAccountsHtml = '';
             if (otherAccounts.length > 0) {
                 otherAccountsHtml = `
-                    <div class="account-switcher-section-title">Інші збережені акаунти</div>
+                    <div class="account-switcher-section-title">${t('auth.otherAccounts') || 'Інші збережені акаунти'}</div>
                     ${otherAccounts.map(acc => `
                         <div class="account-item account-other-item" data-account-id="${acc.id}">
                             <div class="account-avatar">${acc.initial || 'U'}</div>
@@ -164,7 +165,7 @@ window.App = window.App || {};
                                 <div class="account-name" title="${acc.nickname}">${acc.nickname}</div>
                                 <div class="account-email" title="${acc.email}">${acc.email}</div>
                             </div>
-                            <button class="account-item-logout-btn" data-account-id="${acc.id}" title="Вийти з цього акаунта (${acc.email})">
+                            <button class="account-item-logout-btn" data-account-id="${acc.id}" title="${t('auth.signOutThisAccount', { email: acc.email }) || `Вийти з цього акаунта (${acc.email})`}">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                                     <polyline points="16 17 21 12 16 7"></polyline>
@@ -183,14 +184,14 @@ window.App = window.App || {};
                             <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
                             <circle cx="12" cy="7" r="4"></circle>
                         </svg>
-                        <span>Облікові записи</span>
+                        <span>${t('auth.accountsTitle') || 'Облікові записи'}</span>
                     </div>
-                    <button class="account-switcher-close" id="account-switcher-close" title="Закрити">×</button>
+                    <button class="account-switcher-close" id="account-switcher-close" title="${t('common.close') || 'Закрити'}">×</button>
                 </div>
 
                 <div class="account-switcher-list">
                     ${currentUser ? `
-                        <div class="account-switcher-section-title">Поточний акаунт</div>
+                        <div class="account-switcher-section-title">${t('auth.currentAccount') || 'Поточний акаунт'}</div>
                         <div class="account-item is-current">
                             <div class="account-avatar">${currentInitial}</div>
                             <div class="account-details">
@@ -201,11 +202,11 @@ window.App = window.App || {};
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                     <polyline points="20 6 9 17 4 12"></polyline>
                                 </svg>
-                                <span>Активний</span>
+                                <span>${t('auth.activeBadge') || 'Активний'}</span>
                             </div>
                         </div>
                     ` : `
-                        <div class="account-guest-notice">Ви не увійшли в акаунт</div>
+                        <div class="account-guest-notice">${t('auth.notSignedIn') || 'Ви не увійшли в акаунт'}</div>
                     `}
 
                     ${otherAccountsHtml}
@@ -217,7 +218,7 @@ window.App = window.App || {};
                             <line x1="12" y1="6" x2="12" y2="18"></line>
                             <line x1="6" y1="12" x2="18" y2="12"></line>
                         </svg>
-                        <span>Додати акаунт</span>
+                        <span>${t('auth.addAccount') || 'Додати акаунт'}</span>
                     </button>
 
                     ${currentUser ? `
@@ -227,7 +228,7 @@ window.App = window.App || {};
                                 <polyline points="16 17 21 12 16 7"></polyline>
                                 <line x1="21" y1="12" x2="9" y2="12"></line>
                             </svg>
-                            <span>Вийти з акаунта</span>
+                            <span>${t('auth.logoutAccount') || 'Вийти з акаунта'}</span>
                         </button>
                     ` : ''}
                 </div>
@@ -291,10 +292,12 @@ window.App = window.App || {};
             const supabase = window.App.supabase;
             if (!supabase) return;
 
+            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
+
             if (rowEl) {
                 rowEl.classList.add('is-switching');
                 const nameEl = rowEl.querySelector('.account-name');
-                if (nameEl) nameEl.textContent = 'Перемикання...';
+                if (nameEl) nameEl.textContent = t('common.switching') || 'Перемикання...';
             }
 
             try {
@@ -307,10 +310,10 @@ window.App = window.App || {};
                     console.warn('[AccountManager] setSession error:', error);
                     if (window.App.confirmModal) {
                         window.App.confirmModal.show({
-                            title: 'Сесія закінчилася',
-                            message: `Термін дії сесії для акаунта <b>${target.email}</b> минув.<br><br>Увійдіть у нього повторно.`,
-                            confirmText: 'Увійти знову',
-                            cancelText: 'Видалити зі списку',
+                            title: t('auth.sessionExpiredTitle') || 'Сесія закінчилася',
+                            message: t('auth.sessionExpiredMsg', { email: target.email }) || `Термін дії сесії для акаунта <b>${target.email}</b> минув.<br><br>Увійдіть у нього повторно.`,
+                            confirmText: t('auth.relogin') || 'Увійти знову',
+                            cancelText: t('auth.removeFromList') || 'Видалити зі списку',
                             type: 'warning',
                             onConfirm: () => {
                                 this.closeOverlay();

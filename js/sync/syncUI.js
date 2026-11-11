@@ -24,6 +24,7 @@ window.App = window.App || {};
                 const i18n = window.App?.i18n;
                 const inCloudTitle = i18n ? i18n.t('auth.inCloud') : 'У хмарі';
                 const manageAccountsTitle = i18n ? i18n.t('auth.accountManagement') : 'Керування акаунтами';
+                const settingsTitle = i18n ? i18n.t('sidebar.settings') : 'Налаштування сайту';
 
                 profileCard.innerHTML = `
                     <div class="user-profile-clickable" id="user-profile-info-click" title="${manageAccountsTitle}">
@@ -44,7 +45,7 @@ window.App = window.App || {};
                             </svg>
                         </div>
                     </div>
-                    <button class="sidebar-settings-btn" id="sidebar-settings-btn" title="Налаштування сайту">
+                    <button class="sidebar-settings-btn" id="sidebar-settings-btn" title="${settingsTitle}" data-i18n-title="sidebar.settings">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
                             <circle cx="12" cy="12" r="3"></circle>
@@ -71,6 +72,10 @@ window.App = window.App || {};
                     });
                 }
             } else {
+                const i18n = window.App?.i18n;
+                const settingsTitle = i18n ? i18n.t('sidebar.settings') : 'Налаштування сайту';
+                const loginText = i18n ? i18n.t('welcome.loginBtn') : 'Увійти / Реєстрація';
+
                 profileCard.innerHTML = `
                     <button class="sidebar-login-btn" id="sidebar-login-btn">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -78,9 +83,9 @@ window.App = window.App || {};
                             <polyline points="10 17 15 12 10 7"></polyline>
                             <line x1="15" y1="12" x2="3" y2="12"></line>
                         </svg>
-                        <span>Увійти / Реєстрація</span>
+                        <span data-i18n="welcome.loginBtn">${loginText}</span>
                     </button>
-                    <button class="sidebar-settings-btn sidebar-settings-guest-btn" id="sidebar-settings-btn" title="Налаштування сайту">
+                    <button class="sidebar-settings-btn sidebar-settings-guest-btn" id="sidebar-settings-btn" title="${settingsTitle}" data-i18n-title="sidebar.settings">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
                             <circle cx="12" cy="12" r="3"></circle>

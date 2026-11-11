@@ -224,14 +224,18 @@ window.App = window.App || {};
                 }
             };
 
+            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
+
             if (window.App.confirmModal) {
                 window.App.confirmModal.show({
-                    title: 'Видалити блокнот?',
-                    message: `Ви дійсно хочете видалити блокнот <span class="confirm-modal-highlight">"${boardName}"</span>?${notesInBoardCount > 0 ? ` Всі нотатки в ньому (${notesInBoardCount} шт.) будуть назавжди стерті.` : ''}`,
+                    title: t('confirm.deleteBoardTitle', { name: boardName }) || `Видалити блокнот "${boardName}"?`,
+                    message: t('confirm.deleteBoardMsg', { name: boardName, count: notesInBoardCount }) || `Ви дійсно хочете видалити блокнот <span class="confirm-modal-highlight">"${boardName}"</span>?${notesInBoardCount > 0 ? ` Всі нотатки в ньому (${notesInBoardCount} шт.) будуть назавжди стерті.` : ''}`,
+                    confirmText: t('common.holdToConfirm') || 'Затисніть для видалення',
+                    type: 'danger',
                     onConfirm: performDelete
                 });
             } else {
-                if (confirm(`Ви впевнені, що хочете видалити блокнот "${boardName}"?`)) {
+                if (confirm(t('confirm.deleteBoardTitle', { name: boardName }) || `Ви впевнені, що хочете видалити блокнот "${boardName}"?`)) {
                     performDelete();
                 }
             }

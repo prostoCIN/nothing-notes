@@ -307,16 +307,20 @@ window.DOMPurify = window.DOMPurify || DOMPurify;
             if (window.App.confirmModal) {
                 if (targetIds.length > 1) {
                     const extraSubnotesCount = toDeleteIds.size - targetIds.length;
-                    const subInfo = extraSubnotesCount > 0 ? (isAllReadOnly ? ` Усі їхні прив'язані піднотатки (${extraSubnotesCount} шт.) також будуть приховані.` : ` Усі їхні прив'язані піднотатки (${extraSubnotesCount} шт.) також будуть видалені.`) : '';
+                    const subInfo = extraSubnotesCount > 0 
+                        ? (isAllReadOnly 
+                            ? (t('confirm.subnotesHideWarning', { count: extraSubnotesCount }) || ` Усі їхні прив'язані піднотатки (${extraSubnotesCount} шт.) також будуть приховані.`)
+                            : (t('confirm.subnotesWarning', { count: extraSubnotesCount }) || ` Усі їхні прив'язані піднотатки (${extraSubnotesCount} шт.) також будуть видалені.`))
+                        : '';
                     
                     window.App.confirmModal.show({
                         title: isAllReadOnly 
-                            ? `Прибрати ${targetIds.length} спільні нотатки?` 
-                            : `Видалити ${targetIds.length} виділені нотатки?`,
+                            ? (t('confirm.hideMultipleTitle', { count: targetIds.length }) || `Прибрати ${targetIds.length} спільні нотатки?`)
+                            : (t('confirm.deleteMultipleTitle', { count: targetIds.length }) || `Видалити ${targetIds.length} виділені нотатки?`),
                         message: isAllReadOnly
-                            ? `Прибрати <span class="confirm-modal-highlight">${targetIds.length} спільні нотатки</span> зі списку читання? (Оригінал автора не постраждає).${subInfo}`
-                            : `Ви дійсно хочете видалити <span class="confirm-modal-highlight">${targetIds.length} виділені нотатки</span>?${subInfo}`,
-                        confirmText: isAllReadOnly ? 'Затисніть для видалення' : 'Затисніть для видалення',
+                            ? (t('confirm.hideMultipleMsg', { count: targetIds.length, subnotesInfo: subInfo }) || `Прибрати <span class="confirm-modal-highlight">${targetIds.length} спільні нотатки</span> зі списку читання? (Оригінал автора не постраждає).${subInfo}`)
+                            : (t('confirm.deleteMultipleMsg', { count: targetIds.length, subnotesInfo: subInfo }) || `Ви дійсно хочете видалити <span class="confirm-modal-highlight">${targetIds.length} виділені нотатки</span>?${subInfo}`),
+                        confirmText: isAllReadOnly ? (t('confirm.holdToHide') || 'Затисніть щоб прибрати') : (t('common.holdToConfirm') || 'Затисніть для видалення'),
                         type: 'danger',
                         onConfirm: performDelete
                     });
@@ -324,19 +328,25 @@ window.DOMPurify = window.DOMPurify || DOMPurify;
                     const id = targetIds[0];
                     const targetNote = this.getNoteById(id);
                     const noteTitle = (targetNote && targetNote.title.trim()) ? targetNote.title.trim() : (t('common.untitled') || 'Без назви');
-                    const isSubnote = targetNote && targetNote.parentId;
+                    const isSubnote = !!(targetNote && targetNote.parentId);
                     const descendantCount = this.getDescendantIds(id).length;
                     const isReadOnlyNote = readOnlyIdSet.has(id);
-                    const subInfo = descendantCount > 0 ? (isReadOnlyNote ? ` Усі зв'язані піднотатки (${descendantCount} шт.) також будуть приховані.` : ` Усі зв'язані піднотатки (${descendantCount} шт.) також будуть видалені.`) : '';
+                    const subInfo = descendantCount > 0 
+                        ? (isReadOnlyNote 
+                            ? (t('confirm.subnotesHideWarning', { count: descendantCount }) || ` Усі зв'язані піднотатки (${descendantCount} шт.) також будуть приховані.`)
+                            : (t('confirm.subnotesWarning', { count: descendantCount }) || ` Усі зв'язані піднотатки (${descendantCount} шт.) також будуть видалені.`))
+                        : '';
+
+                    const typeWord = isSubnote ? (t('confirm.subnoteWord') || 'піднотатку') : (t('confirm.noteWord') || 'нотатку');
 
                     window.App.confirmModal.show({
                         title: isReadOnlyNote
-                            ? (isSubnote ? 'Прибрати спільну піднотатку?' : 'Прибрати спільну нотатку?')
-                            : (isSubnote ? 'Видалити піднотатку?' : 'Видалити нотатку?'),
+                            ? (isSubnote ? (t('confirm.hideSubnoteTitle') || 'Прибрати спільну піднотатку?') : (t('confirm.hideNoteTitle') || 'Прибрати спільну нотатку?'))
+                            : (isSubnote ? (t('confirm.deleteSubnoteTitle') || 'Видалити піднотатку?') : (t('confirm.deleteNoteTitle') || 'Видалити нотатку?')),
                         message: isReadOnlyNote
-                            ? `Прибрати ${isSubnote ? 'піднотатку' : 'нотатку'} <span class="confirm-modal-highlight">"${noteTitle}"</span> зі списку читання? (Оригінал автора не постраждає).${subInfo}`
-                            : `Ви дійсно хочете видалити ${isSubnote ? 'піднотатку' : 'нотатку'} <span class="confirm-modal-highlight">"${noteTitle}"</span>?${subInfo}`,
-                        confirmText: 'Затисніть для видалення',
+                            ? (t('confirm.hideNoteMsg', { type: typeWord, title: noteTitle, subnotesInfo: subInfo }) || `Прибрати ${typeWord} <span class="confirm-modal-highlight">"${noteTitle}"</span> зі списку читання? (Оригінал автора не постраждає).${subInfo}`)
+                            : (t('confirm.deleteNoteMsg', { type: typeWord, title: noteTitle, subnotesInfo: subInfo }) || `Ви дійсно хочете видалити ${typeWord} <span class="confirm-modal-highlight">"${noteTitle}"</span>?${subInfo}`),
+                        confirmText: isReadOnlyNote ? (t('confirm.holdToHide') || 'Затисніть щоб прибрати') : (t('common.holdToConfirm') || 'Затисніть для видалення'),
                         type: 'danger',
                         onConfirm: performDelete
                     });

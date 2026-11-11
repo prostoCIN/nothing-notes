@@ -69,7 +69,8 @@ window.App = window.App || {};
             const swatch = document.createElement('button');
             swatch.className = `color-swatch-btn ${c.id === activeColor ? 'active' : ''}`;
             swatch.style.backgroundColor = c.hex;
-            swatch.title = c.name;
+            swatch.title = t('sticker.colors.' + c.id) || c.name;
+            swatch.setAttribute('data-i18n-title', 'sticker.colors.' + c.id);
 
             swatch.addEventListener('click', (e) => {
                 e.stopPropagation();

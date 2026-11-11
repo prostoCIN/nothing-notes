@@ -148,7 +148,7 @@ window.App = window.App || {};
                             titleH2.blur();
                         } else if (e.key === 'Escape') {
                             e.preventDefault();
-                            titleH2.textContent = originalBoardName || currentBoard.name || 'Мій блокнот';
+                            titleH2.textContent = originalBoardName || currentBoard.name || t('common.defaultBoard') || 'Мій блокнот';
                             titleH2.blur();
                         }
                     });
@@ -172,7 +172,7 @@ window.App = window.App || {};
                                 window.App.boardManager.renameBoard(currentBoard.id, newName);
                             }
                         } else if (!newName) {
-                            titleH2.textContent = originalBoardName || currentBoard.name || 'Мій блокнот';
+                            titleH2.textContent = originalBoardName || currentBoard.name || t('common.defaultBoard') || 'Мій блокнот';
                         }
                     });
                 }
@@ -181,7 +181,7 @@ window.App = window.App || {};
                 titleWrap.appendChild(titleH2);
             } else {
                 const parentNote = noteManager ? noteManager.getNoteById(parentNoteId) : null;
-                const parentTitle = parentNote ? parentNote.title.trim() : 'Без назви';
+                const parentTitle = (parentNote && parentNote.title && parentNote.title.trim()) ? parentNote.title.trim() : (t('common.untitled') || 'Без назви');
 
                 let noteIconPicker;
                 if (parentNote && window.App.emojiPicker) {

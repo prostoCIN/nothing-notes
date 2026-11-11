@@ -307,13 +307,14 @@ async function handleShareUrlParams() {
     const subnotesParam = urlParams.get('subnotes');
     const includeSubnotes = subnotesParam !== '0';
 
+    const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
     try {
         const info = await window.App.shareManager.fetchShareInfo(shareToken, includeSubnotes);
         if (!info || !info.board || !info.share) {
             window.App.confirmModal.show({
-                title: 'Посилання недійсне',
-                message: 'Це посилання на спільний блокнот застаріло або було вимкнено власником.',
-                confirmText: 'Зрозуміло',
+                title: t('share.invalidLinkTitle') || 'Посилання недійсне',
+                message: t('share.invalidLinkMsg') || 'Це посилання на спільний блокнот застаріло або було вимкнено власником.',
+                confirmText: t('common.gotIt') || 'Зрозуміло',
                 type: 'danger',
                 onConfirm: () => {}
             });
@@ -329,9 +330,9 @@ async function handleShareUrlParams() {
 
         if (isOwnBoard || isCurrentUserOwner) {
             window.App.confirmModal.show({
-                title: 'Ваш власний блокнот',
-                message: `Ви є власником блокнота <span class="confirm-modal-highlight">"${info.board.name}"</span>. Він уже є у списку ваших блокнотів із повними правами редагування.`,
-                confirmText: 'Перейти до блокнота',
+                title: t('share.ownBoardTitle') || 'Ваш власний блокнот',
+                message: t('share.ownBoardMsg', { name: info.board.name }) || `Ви є власником блокнота <span class="confirm-modal-highlight">"${info.board.name}"</span>. Він уже є у списку ваших блокнотів із повними правами редагування.`,
+                confirmText: t('share.goToBoard') || 'Перейти до блокнота',
                 type: 'info',
                 onConfirm: () => {
                     // Просто перемикаємо на власний блокнот
@@ -344,17 +345,17 @@ async function handleShareUrlParams() {
         }
 
         const isSpecificNotes = Array.isArray(info.share.note_ids) && info.share.note_ids.length > 0;
-        const ownerTitle = info.share.owner_email ? `<b>${info.share.owner_email}</b>` : 'інший користувач';
+        const ownerTitle = info.share.owner_email ? `<b>${info.share.owner_email}</b>` : (t('share.otherUser') || 'інший користувач');
         const notesCountText = info.notes.length === 1 ? '1 нотаткою' : `${info.notes.length} нотатками`;
 
         const messageHtml = isSpecificNotes 
-            ? `Користувач ${ownerTitle} поділився з вами ${notesCountText} із блокнота <span class="confirm-modal-highlight">"${info.board.name}"</span> у режимі читання.<br><br>Додати цей блокнот до списку ваших блокнотів для читання?`
-            : `Користувач ${ownerTitle} поділився з вами блокнотом <span class="confirm-modal-highlight">"${info.board.name}"</span> (${info.notes.length} нотаток) у режимі читання.<br><br>Додати його до списку ваших блокнотів для читання?`;
+            ? (t('share.sharedBoardSpecificMsg', { owner: ownerTitle, countText: notesCountText, name: info.board.name }) || `Користувач ${ownerTitle} поділився з вами ${notesCountText} із блокнота <span class="confirm-modal-highlight">"${info.board.name}"</span> у режимі читання.<br><br>Додати цей блокнот до списку ваших блокнотів для читання?`)
+            : (t('share.sharedBoardFullMsg', { owner: ownerTitle, count: info.notes.length, name: info.board.name }) || `Користувач ${ownerTitle} поділився з вами блокнотом <span class="confirm-modal-highlight">"${info.board.name}"</span> (${info.notes.length} нотаток) у режимі читання.<br><br>Додати його до списку ваших блокнотів для читання?`);
 
         window.App.confirmModal.show({
-            title: '📖 Спільний блокнот',
+            title: t('share.sharedBoardTitle') || '📖 Спільний блокнот',
             message: messageHtml,
-            confirmText: 'Додати для читання',
+            confirmText: t('share.addForReading') || 'Додати для читання',
             type: 'info',
             onConfirm: () => {
                 window.App.shareManager.addSharedBoardToState(info.board, info.notes);

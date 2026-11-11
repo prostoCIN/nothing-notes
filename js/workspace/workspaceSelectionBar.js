@@ -210,11 +210,13 @@ window.App = window.App || {};
             const populateColors = (containerEl) => {
                 if (!containerEl) return;
                 containerEl.innerHTML = '';
+                const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
                 colors.forEach(c => {
                     const swatch = document.createElement('button');
                     swatch.className = 'color-swatch-btn';
                     swatch.style.backgroundColor = c.hex;
-                    swatch.title = c.name;
+                    swatch.title = t('sticker.colors.' + c.id) || c.name;
+                    swatch.setAttribute('data-i18n-title', 'sticker.colors.' + c.id);
 
                     swatch.addEventListener('click', (e) => {
                         e.stopPropagation();
@@ -592,7 +594,7 @@ window.App = window.App || {};
                 if (filteredNotes.length === 0) {
                     const emptyMsg = document.createElement('div');
                     emptyMsg.className = 'selection-submenu-empty';
-                    emptyMsg.textContent = 'Нотаток не знайдено';
+                    emptyMsg.textContent = t('sticker.noNotesFound') || 'Нотаток не знайдено';
                     listWrap.appendChild(emptyMsg);
                 } else {
                     filteredNotes.forEach(targetNote => {
@@ -631,7 +633,7 @@ window.App = window.App || {};
                                 <span class="bookmark-picker-tape-pill bookmark-tape-color-${colorIndex}" title="${t('sticker.bookmarkTapePreview') || 'Колір закладки'}"></span>
                                 <span class="selection-tag-status-icon">${allHaveBookmark ? '✓' : (someHaveBookmark ? '–' : '')}</span>
                             </div>
-                            ${(allHaveBookmark || someHaveBookmark) ? `<button class="selection-tag-del-btn" title="Видалити закладку">×</button>` : ''}
+                            ${(allHaveBookmark || someHaveBookmark) ? `<button class="selection-tag-del-btn" title="${t('sticker.removeBookmark') || 'Видалити закладку'}">×</button>` : ''}
                         `;
 
                         // Клік по самому елементу — додати або зняти закладку з виділених нотаток

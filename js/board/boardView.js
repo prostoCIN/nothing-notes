@@ -193,6 +193,8 @@ window.App = window.App || {};
             container = document.createElement('div');
             container.className = 'board-view-wrapper';
 
+            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
+
             container.innerHTML = `
                 <div class="board-toolbar">
                     <div class="board-toolbar-left">
@@ -206,11 +208,11 @@ window.App = window.App || {};
                                 </svg>
                             </span>
                             <span class="board-title-text">${currentBoard.name}</span>
-                            <span class="board-nodes-count" id="board-nodes-counter" title="Кількість стікерів">0</span>
+                            <span class="board-nodes-count" id="board-nodes-counter" title="${t('board.nodesCount') || 'Кількість стікерів'}" data-i18n-title="board.nodesCount">0</span>
                         </div>
 
                         <div class="board-toolbar-filters">
-                            <button class="board-toolbar-filter-btn" id="board-auto-layout-btn" title="Впорядкувати стікери на дошці">
+                            <button class="board-toolbar-filter-btn" id="board-auto-layout-btn" title="${t('graph.autoLayoutTitle') || 'Впорядкувати стікери на дошці'}" data-i18n-title="graph.autoLayoutTitle">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                     <rect x="3" y="3" width="7" height="7"></rect>
                                     <rect x="14" y="3" width="7" height="7"></rect>
@@ -218,14 +220,14 @@ window.App = window.App || {};
                                     <rect x="3" y="14" width="7" height="7"></rect>
                                 </svg>
                             </button>
-                            <button class="board-toolbar-filter-btn is-orphans-btn" id="board-filter-orphans" title="Показати лише ізольовані нотатки (острови)">
+                            <button class="board-toolbar-filter-btn is-orphans-btn" id="board-filter-orphans" title="${t('graph.orphansTitle') || 'Показати лише ізольовані нотатки (острови)'}" data-i18n-title="graph.orphansTitle">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                     <circle cx="12" cy="12" r="3.5" fill="currentColor"></circle>
                                     <circle cx="12" cy="12" r="8" stroke-dasharray="2 3"></circle>
                                 </svg>
                                 <span class="board-nodes-count" id="board-orphans-counter" style="border:none;padding:0;font-size:10.5px;font-weight:600;">0</span>
                             </button>
-                            <button class="board-toolbar-filter-btn is-active" id="board-toggle-tag-links" title="Зв'язки спільних тегів (увімк/вимк)">
+                            <button class="board-toolbar-filter-btn is-active" id="board-toggle-tag-links" title="${t('graph.tagLinksTitle') || "Зв'язки спільних тегів (увімк/вимк)"}" data-i18n-title="graph.tagLinksTitle">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
                                     <line x1="7" y1="7" x2="7.01" y2="7"></line>
@@ -236,7 +238,7 @@ window.App = window.App || {};
 
                     <div class="board-top-actions">
                         <div class="board-search-box">
-                            <input type="text" class="board-search-input" id="board-search-input" placeholder="Пошук..." autocomplete="off">
+                            <input type="text" class="board-search-input" id="board-search-input" placeholder="${t('common.search') || 'Пошук'}..." data-i18n-placeholder="common.search" autocomplete="off">
                             <span class="board-search-icon-right" id="board-search-icon-right">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                     <circle cx="11" cy="11" r="8"></circle>
@@ -252,24 +254,24 @@ window.App = window.App || {};
                 <div class="board-nodes-layer"></div>
 
                 <div class="board-controls-panel">
-                    <button class="board-ctrl-btn" id="board-select-mode-btn" title="Виділення області (Shift + перетягування)">
+                    <button class="board-ctrl-btn" id="board-select-mode-btn" title="${t('board.selectModeTitle') || 'Виділення області (Shift + перетягування)'}" data-i18n-title="board.selectModeTitle">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M5 3h4M15 3h4a2 2 0 0 1 2 2v4M21 15v4a2 2 0 0 1-2 2h-4M9 21H5a2 2 0 0 1-2-2v-4M3 9V5a2 2 0 0 1 2-2"></path>
                         </svg>
                     </button>
                     <div class="board-ctrl-divider"></div>
-                    <button class="board-ctrl-btn" id="board-zoom-in" title="Збільшити масштаб (+)">
+                    <button class="board-ctrl-btn" id="board-zoom-in" title="${t('board.zoomIn') || 'Збільшити масштаб (+)'}" data-i18n-title="board.zoomIn">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="12" y1="5" x2="12" y2="19"></line>
                             <line x1="5" y1="12" x2="19" y2="12"></line>
                         </svg>
                     </button>
-                    <button class="board-ctrl-btn" id="board-zoom-out" title="Зменшити масштаб (-)">
+                    <button class="board-ctrl-btn" id="board-zoom-out" title="${t('board.zoomOut') || 'Зменшити масштаб (-)'}" data-i18n-title="board.zoomOut">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="5" y1="12" x2="19" y2="12"></line>
                         </svg>
                     </button>
-                    <button class="board-ctrl-btn" id="board-zoom-reset" title="Вирівняти та центрувати">
+                    <button class="board-ctrl-btn" id="board-zoom-reset" title="${t('board.zoomReset') || 'Вирівняти та центрувати'}" data-i18n-title="board.zoomReset">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="10"></circle>
                             <circle cx="12" cy="12" r="3"></circle>
@@ -278,48 +280,52 @@ window.App = window.App || {};
                 </div>
 
                 <div class="board-help-pill">
-                    <button class="board-help-btn" id="board-help-btn" title="Підказки дій та клавіш">
+                    <button class="board-help-btn" id="board-help-btn" title="${t('board.hintsTitle') || 'Підказки дій та клавіш'}" data-i18n-title="board.hintsTitle">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="10"></circle>
                             <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
                             <line x1="12" y1="17" x2="12.01" y2="17"></line>
                         </svg>
-                        <span>Підказки</span>
+                        <span data-i18n="board.hints">Підказки</span>
                     </button>
                     <div class="board-help-popover" id="board-help-popover">
                         <div class="board-help-header">
-                            <span class="board-help-title">Підказки дошки</span>
-                            <button class="board-help-close-btn" id="board-help-close-btn" title="Закрити">✕</button>
+                            <span class="board-help-title" data-i18n="board.hintsHeader">Підказки дошки</span>
+                            <button class="board-help-close-btn" id="board-help-close-btn" title="${t('common.close') || 'Закрити'}" data-i18n-title="common.close">✕</button>
                         </div>
                         <div class="board-help-list">
                             <div class="board-help-item">
-                                <span class="board-help-badge">Перетягування</span>
-                                <span class="board-help-text">Рух полотна</span>
+                                <span class="board-help-badge" data-i18n="board.hintDrag">Перетягування</span>
+                                <span class="board-help-text" data-i18n="board.hintPan">Рух полотна</span>
                             </div>
                             <div class="board-help-item">
-                                <span class="board-help-badge">Коліщатко</span>
-                                <span class="board-help-text">Масштаб (зум)</span>
+                                <span class="board-help-badge" data-i18n="board.hintWheel">Коліщатко</span>
+                                <span class="board-help-text" data-i18n="board.hintZoom">Масштаб (зум)</span>
                             </div>
                             <div class="board-help-item">
-                                <span class="board-help-badge">Шапка картки</span>
-                                <span class="board-help-text">Переміщення</span>
+                                <span class="board-help-badge" data-i18n="board.hintHeader">Шапка картки</span>
+                                <span class="board-help-text" data-i18n="board.hintMove">Переміщення</span>
                             </div>
                             <div class="board-help-item">
-                                <span class="board-help-badge">Shift + ЛКМ</span>
-                                <span class="board-help-text">Виділення області</span>
+                                <span class="board-help-badge" data-i18n="board.hintShiftLMB">Shift + ЛКМ</span>
+                                <span class="board-help-text" data-i18n="board.hintAreaSelect">Виділення області</span>
                             </div>
                             <div class="board-help-item">
-                                <span class="board-help-badge">Правий клік</span>
-                                <span class="board-help-text">Нова нотатка / Меню</span>
+                                <span class="board-help-badge" data-i18n="board.hintRightClick">Правий клік</span>
+                                <span class="board-help-text" data-i18n="board.hintMenu">Нова нотатка / Меню</span>
                             </div>
                             <div class="board-help-item">
-                                <span class="board-help-badge">Конектор справа</span>
-                                <span class="board-help-text">З'єднання нотаток</span>
+                                <span class="board-help-badge" data-i18n="board.hintConnector">Конектор справа</span>
+                                <span class="board-help-text" data-i18n="board.hintConnect">З'єднання нотаток</span>
                             </div>
                         </div>
                     </div>
                 </div>
             `;
+
+            if (window.App && window.App.i18n && window.App.i18n.updateDOM) {
+                window.App.i18n.updateDOM(container);
+            }
 
             parentEl.appendChild(container);
 

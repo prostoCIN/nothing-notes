@@ -28,12 +28,14 @@ window.App = window.App || {};
         },
 
         attachConnectionHandles(cardEl, node, boardView) {
+            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
             const sides = ['top', 'bottom', 'left', 'right'];
             sides.forEach(side => {
                 const handle = document.createElement('div');
                 handle.className = `board-connect-handle board-connect-handle-${side}`;
                 handle.dataset.side = side;
-                handle.title = "Провести зв'язок (зробити піднотаткою)";
+                handle.title = t('board.connectHandleTitle') || "Провести зв'язок (зробити піднотаткою)";
+                handle.setAttribute('data-i18n-title', 'board.connectHandleTitle');
                 handle.innerHTML = `
                     <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor">
                         <path d="M8 2a.75.75 0 0 1 .75.75v4.5h4.5a.75.75 0 0 1 0 1.5h-4.5v4.5a.75.75 0 0 1-1.5 0v-4.5h-4.5a.75.75 0 0 1 0-1.5h4.5v-4.5A.75.75 0 0 1 8 2z"/>
@@ -131,16 +133,19 @@ window.App = window.App || {};
                     candidateNode.element.classList.toggle('is-connect-target-valid', connectingIsValid);
                     candidateNode.element.classList.toggle('is-connect-target-invalid', !connectingIsValid);
 
+                    const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
                     if (connectingIsValid) {
                         const currentParentId = candidateNode.parentId || (candidateNode.note ? candidateNode.note.parentId : null);
-                        candidateNode.element.dataset.connectBadge = currentParentId ? "Змінити зв'язок" : "Зробити піднотаткою";
+                        candidateNode.element.dataset.connectBadge = currentParentId 
+                            ? (t('board.connectBadgeChange') || "Змінити зв'язок")
+                            : (t('board.connectBadgeMakeSubnote') || "Зробити піднотаткою");
                     } else {
                         if (candidateNode.id === connectingSourceNode.id) {
-                            candidateNode.element.dataset.connectBadge = "Неможливо (сама до себе)";
+                            candidateNode.element.dataset.connectBadge = t('board.connectBadgeSelf') || "Неможливо (сама до себе)";
                         } else if (candidateNode.parentId === connectingSourceNode.id || (candidateNode.note && candidateNode.note.parentId === connectingSourceNode.id)) {
-                            candidateNode.element.dataset.connectBadge = "Вже є піднотаткою";
+                            candidateNode.element.dataset.connectBadge = t('board.connectBadgeAlreadySubnote') || "Вже є піднотаткою";
                         } else {
-                            candidateNode.element.dataset.connectBadge = "Неможливо (цикл)";
+                            candidateNode.element.dataset.connectBadge = t('board.connectBadgeCycle') || "Неможливо (цикл)";
                         }
                     }
                 }

@@ -67,18 +67,20 @@ window.App = window.App || {};
                 return includeSubnotes ? [...targetNotes, ...subnotes] : targetNotes;
             };
 
-            const docTitle = singleNote ? (singleNote.title || 'Нотатка') : (targetBoard ? targetBoard.name : 'Нотатки');
+            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
+
+            const docTitle = singleNote ? (singleNote.title || t('common.untitled')) : (targetBoard ? targetBoard.name : t('common.defaultBoard'));
             const exportDocName = docTitle.replace(/[/\\?%*:|"<>]/g, '-').trim();
 
-            let titleText = 'Спільний доступ';
+            let titleText = t('share.shareTitle') || 'Спільний доступ';
             if (isSpecificNotes) {
                 if (singleNote) {
-                    titleText = `Шеринг нотатки: «${singleNote.title || 'Без назви'}»`;
+                    titleText = t('share.shareNoteTitle', { title: singleNote.title || t('common.untitled') }) || `Шеринг нотатки: «${singleNote.title || 'Без назви'}»`;
                 } else {
-                    titleText = `Шеринг виділених нотаток (${targetNotes.length})`;
+                    titleText = t('share.shareNotesTitle', { count: targetNotes.length }) || `Шеринг виділених нотаток (${targetNotes.length})`;
                 }
             } else {
-                titleText = `Шеринг блокнота: «${targetBoard.name}»`;
+                titleText = t('share.shareBoardTitle', { name: targetBoard.name }) || `Шеринг блокнота: «${targetBoard.name}»`;
             }
 
             let markdownContent = this.generateMarkdownForNotes(getEffectiveNotes(), docTitle);
@@ -106,7 +108,7 @@ window.App = window.App || {};
                             </span>
                             <h3 class="share-modal-title">${titleText}</h3>
                         </div>
-                        <button class="share-modal-close-btn" id="share-modal-close" title="Закрити (Esc)">
+                        <button class="share-modal-close-btn" id="share-modal-close" title="${t('settings.closeTitle') || 'Закрити (Esc)'}" data-i18n-title="settings.closeTitle">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <line x1="18" y1="6" x2="6" y2="18"></line>
                                 <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -125,9 +127,9 @@ window.App = window.App || {};
                                     <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                                 </svg>
                             </span>
-                            <span class="share-tab-text">NothingNotes</span>
+                            <span class="share-tab-text" data-i18n="share.tabNothingNotes">NothingNotes</span>
                         </button>
-                        <button type="button" class="share-modal-tab-btn ${defaultTab === 'export' ? 'active' : ''}" data-tab="export" title="Markdown (для ШІ)">
+                        <button type="button" class="share-modal-tab-btn ${defaultTab === 'export' ? 'active' : ''}" data-tab="export" title="${t('share.tabMarkdownAI') || 'Markdown (для ШІ)'}" data-i18n-title="share.tabMarkdownAI">
                             <span class="share-tab-icon">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -137,7 +139,7 @@ window.App = window.App || {};
                                     <polyline points="10 9 9 9 8 9"></polyline>
                                 </svg>
                             </span>
-                            <span class="share-tab-text">Markdown (для ШІ)</span>
+                            <span class="share-tab-text" data-i18n="share.tabMarkdownAI">Markdown (для ШІ)</span>
                         </button>
                     </div>
 
@@ -146,15 +148,15 @@ window.App = window.App || {};
                         <div class="share-tab-pane ${defaultTab === 'nothingnotes' ? 'active' : ''}" id="share-pane-nothingnotes">
                             <p class="share-modal-desc">
                                 ${isSpecificNotes 
-                                    ? 'Створіть спільне посилання для користувачів NothingNotes. Нотатка відкриється у повноцінному веб-інтерфейсі блокнота.' 
-                                    : 'Будь-хто з цим посиланням зможе додати ваш блокнот для перегляду у NothingNotes.'}
+                                    ? (t('share.descNothingNotesSingle') || 'Створіть спільне посилання для користувачів NothingNotes. Нотатка відкриється у повноцінному веб-інтерфейсі блокнота.') 
+                                    : (t('share.descNothingNotesBoard') || 'Будь-хто з цим посиланням зможе додати ваш блокнот для перегляду у NothingNotes.')}
                             </p>
 
                             ${isSpecificNotes ? `
                             <div class="share-modal-option-row share-subnotes-row">
                                 <div class="share-option-info">
-                                    <span class="share-option-title">Включати піднотатки</span>
-                                    <span class="share-option-hint">${hasSubnotes ? `Поділитися також усіма вкладеними піднотатками (${subnotes.length})` : 'У цієї нотатки немає вкладених піднотаток'}</span>
+                                    <span class="share-option-title" data-i18n="share.includeSubnotes">Включати піднотатки</span>
+                                    <span class="share-option-hint">${hasSubnotes ? (t('share.includeSubnotesHint', { count: subnotes.length }) || `Поділитися також усіма вкладеними піднотатками (${subnotes.length})`) : (t('share.noSubnotesHint') || 'У цієї нотатки немає вкладених піднотаток')}</span>
                                 </div>
                                 <label class="share-toggle-switch ${!hasSubnotes ? 'disabled' : ''}">
                                     <input type="checkbox" class="share-subnotes-toggle" ${hasSubnotes ? 'checked' : 'disabled'}>
@@ -165,8 +167,8 @@ window.App = window.App || {};
 
                             <div class="share-modal-option-row">
                                 <div class="share-option-info">
-                                    <span class="share-option-title">Дозволити копіювання</span>
-                                    <span class="share-option-hint">Дозволити іншим зберегти копію у свої блокноти</span>
+                                    <span class="share-option-title" data-i18n="share.allowClone">Дозволити копіювання</span>
+                                    <span class="share-option-hint" data-i18n="share.allowCloneHint">Дозволити іншим зберегти копію у свої блокноти</span>
                                 </div>
                                 <label class="share-toggle-switch">
                                     <input type="checkbox" id="share-allow-clone-toggle">
@@ -175,13 +177,13 @@ window.App = window.App || {};
                             </div>
 
                             <div class="share-link-box">
-                                <input type="text" class="share-link-input" id="share-nn-link-input" readonly placeholder="Генерація посилання...">
+                                <input type="text" class="share-link-input" id="share-nn-link-input" readonly placeholder="${t('share.generatingLink') || 'Генерація посилання...'}" data-i18n-placeholder="share.generatingLink">
                                 <button class="share-copy-btn" id="share-nn-copy-btn">
                                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                                     </svg>
-                                    <span>Скопіювати</span>
+                                    <span data-i18n="common.copy">Скопіювати</span>
                                 </button>
                             </div>
 
@@ -191,14 +193,14 @@ window.App = window.App || {};
                         <!-- Вкладка 2: Експорт у форматі Markdown (.md) для ШІ та резервних копій -->
                         <div class="share-tab-pane ${defaultTab === 'export' ? 'active' : ''}" id="share-pane-export">
                             <p class="share-modal-desc">
-                                Вміст нотатки у чистому <b>Markdown</b>-форматі. Ідеально для швидкої вставки в діалог із <b>ChatGPT</b>, <b>Claude</b> чи іншими ШІ або збереження у файл <code>.md</code>.
+                                ${t('share.descMarkdown') || 'Вміст нотатки у чистому <b>Markdown</b>-форматі. Ідеально для швидкої вставки в діалог із <b>ChatGPT</b>, <b>Claude</b> чи іншими ШІ або збереження у файл <code>.md</code>.'}
                             </p>
 
                             ${isSpecificNotes ? `
                             <div class="share-modal-option-row share-subnotes-row" style="margin-bottom: 12px;">
                                 <div class="share-option-info">
-                                    <span class="share-option-title">Включати піднотатки</span>
-                                    <span class="share-option-hint">${hasSubnotes ? `Експортувати разом з усіма вкладеними піднотатками (${subnotes.length})` : 'У цієї нотатки немає вкладених піднотаток'}</span>
+                                    <span class="share-option-title" data-i18n="share.includeSubnotes">Включати піднотатки</span>
+                                    <span class="share-option-hint">${hasSubnotes ? (t('share.includeSubnotesExportHint', { count: subnotes.length }) || `Експортувати разом з усіма вкладеними піднотатками (${subnotes.length})`) : (t('share.noSubnotesHint') || 'У цієї нотатки немає вкладених піднотаток')}</span>
                                 </div>
                                 <label class="share-toggle-switch ${!hasSubnotes ? 'disabled' : ''}">
                                     <input type="checkbox" class="share-subnotes-toggle" ${hasSubnotes ? 'checked' : 'disabled'}>
@@ -217,7 +219,7 @@ window.App = window.App || {};
                                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                                     </svg>
-                                    <span>Скопіювати для ШІ</span>
+                                    <span data-i18n="share.copyForAI">Скопіювати для ШІ</span>
                                 </button>
 
                                 <button type="button" class="share-secondary-btn" id="share-md-download-btn">
@@ -226,7 +228,7 @@ window.App = window.App || {};
                                         <polyline points="7 10 12 15 17 10"></polyline>
                                         <line x1="12" y1="15" x2="12" y2="3"></line>
                                     </svg>
-                                    <span>Завантажити .md</span>
+                                    <span data-i18n="share.downloadMd">Завантажити .md</span>
                                 </button>
                             </div>
 
@@ -235,6 +237,10 @@ window.App = window.App || {};
                     </div>
                 </div>
             `;
+
+            if (window.App && window.App.i18n && window.App.i18n.updateDOM) {
+                window.App.i18n.updateDOM(modalEl);
+            }
 
             document.body.appendChild(modalEl);
 

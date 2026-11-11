@@ -530,10 +530,11 @@ window.App = window.App || {};
                                 : `Ви дійсно хочете зробити <span class="confirm-modal-highlight">"${(noteManager.getNoteById(draggedNoteId) || {}).title || 'Без назви'}"</span> головною нотаткою блокнота "${boardName}"?`;
 
                             const confirmModal = window.App.confirmModal;
+                            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
                             confirmModal.show({
                                 title: confirmTitle,
                                 message: confirmMsg,
-                                confirmText: 'Перемістити',
+                                confirmText: t('common.move') || 'Перемістити',
                                 type: 'info',
                                 onConfirm: () => {
                                     draggedNoteIds.forEach(id => noteManager.moveNoteToParent(id, null, false));
@@ -565,10 +566,11 @@ window.App = window.App || {};
                                 : `Ви дійсно хочете зробити нотатку <span class="confirm-modal-highlight">"${(noteManager.getNoteById(draggedNoteId) || {}).title || 'Без назви'}"</span> піднотаткою для <span class="confirm-modal-highlight">"${parentTitle}"</span>?`;
 
                             const confirmModal = window.App.confirmModal;
+                            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
                             confirmModal.show({
                                 title: confirmTitle,
                                 message: confirmMsg,
-                                confirmText: 'Перемістити',
+                                confirmText: t('common.move') || 'Перемістити',
                                 type: 'info',
                                 onConfirm: () => {
                                     state.expandedSidebarNoteIds.add(targetParentId);
@@ -634,10 +636,11 @@ window.App = window.App || {};
                                 : `Ви дійсно хочете перемістити <span class="confirm-modal-highlight">"${(noteManager.getNoteById(draggedNoteId) || {}).title || 'Без назви'}"</span> в ${targetTitle}?`;
 
                             const confirmModal = window.App.confirmModal;
+                            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
                             confirmModal.show({
                                 title: confirmTitle,
                                 message: confirmMsg,
-                                confirmText: 'Перемістити',
+                                confirmText: t('common.move') || 'Перемістити',
                                 type: 'info',
                                 onConfirm: () => {
                                     if (finalParentId) state.expandedSidebarNoteIds.add(finalParentId);
