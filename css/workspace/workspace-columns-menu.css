@@ -230,7 +230,7 @@
 }
 
 .column-menu-tag-item.active {
-    background-color: rgba(16, 185, 129, 0.15);
+    background-color: var(--accent-subtle);
     color: var(--accent-color, #10b981);
     font-weight: 600;
 }
@@ -261,8 +261,8 @@
     height: 26px;
     padding: 0;
     margin-left: 4px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-subtle);
     color: var(--text-muted);
     border-radius: 8px;
     display: inline-flex;
@@ -275,8 +275,8 @@
 
 /* Кнопка "Вибрати" у стилі iOS Галереї */
 .column-select-toggle-btn {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-subtle);
     color: var(--text-muted);
     font-size: var(--font-xs);
     font-weight: 600;
@@ -312,7 +312,7 @@
 
 .column-layout-toggle-btn.active,
 .column-expand-toggle-btn.active {
-    background-color: rgba(16, 185, 129, 0.15);
+    background-color: var(--accent-subtle);
     border-color: #10b981;
     color: #34d399;
 }
@@ -346,7 +346,7 @@ html[data-theme="light"] .column-expand-toggle-btn.active.is-locked {
 }
 
 .column-filter-btn.has-filter {
-    background-color: rgba(16, 185, 129, 0.15);
+    background-color: var(--accent-subtle);
     border-color: #10b981;
     color: #34d399;
     font-weight: 600;

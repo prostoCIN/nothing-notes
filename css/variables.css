@@ -1,15 +1,29 @@
 :root {
-    /* Кольорова палітра Notion у темній темі */
-    --bg-color: #141416;
-    --sidebar-bg: #1a1a1d;
-    --modal-bg: rgba(26, 26, 30, 0.85);
+    /* Кольорова палітра Notion у темній темі (дефолтні фолбеки) */
+    --bg-base: #141416;
+    --bg-surface: #1a1a1d;
+    --bg-elevated: #222227;
+    --bg-subtle: rgba(255, 255, 255, 0.05);
+
+    --bg-color: var(--bg-base);
+    --sidebar-bg: var(--bg-surface);
+    --modal-bg: rgba(26, 26, 30, 0.88);
+
     --text-main: rgba(255, 255, 255, 0.94);
     --text-muted: rgba(255, 255, 255, 0.55);
-    --border-color: rgba(255, 255, 255, 0.08);
+    --text-faint: rgba(255, 255, 255, 0.32);
+
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.16);
+    --border-color: var(--border-subtle);
+
     --hover-bg: rgba(255, 255, 255, 0.06);
     --active-bg: rgba(255, 255, 255, 0.12);
+
     --accent-color: #16b981;
+    --accent-subtle: rgba(16, 185, 129, 0.14);
     --danger-color: #ff6b6b;
+    --danger-subtle: rgba(239, 68, 68, 0.14);
 
     /* Розміри сайдбара */
     --sidebar-default-width: 260px;

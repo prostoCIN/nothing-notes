@@ -54,14 +54,14 @@ mark.note-marker.hl-purple { background-color: rgba(233, 213, 255, 0.9); }
 .text-sel-divider {
     width: 1px;
     height: 22px;
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--border-subtle);
 }
 
 /* Перемикач Regular / Bold */
 .text-sel-weight-wrap {
     display: flex;
     align-items: center;
-    background: rgba(0, 0, 0, 0.35);
+    background: var(--bg-subtle);
     border-radius: 8px;
     padding: 3px;
     gap: 3px;
@@ -86,7 +86,7 @@ mark.note-marker.hl-purple { background-color: rgba(233, 213, 255, 0.9); }
 
 .text-sel-weight-btn:hover {
     color: var(--text-main);
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--hover-bg);
 }
 
 .text-sel-weight-btn.active {
@@ -161,8 +161,8 @@ mark.note-marker.hl-purple { background-color: rgba(233, 213, 255, 0.9); }
 }
 
 .text-sel-scope-btn {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-subtle);
     color: var(--text-muted);
     font-size: 13px;
     font-weight: 700;
@@ -179,7 +179,7 @@ mark.note-marker.hl-purple { background-color: rgba(233, 213, 255, 0.9); }
 
 .text-sel-scope-btn:hover {
     color: var(--text-main);
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--hover-bg);
 }
 
 .text-sel-scope-btn.active {
@@ -195,10 +195,10 @@ mark.note-marker.hl-purple { background-color: rgba(233, 213, 255, 0.9); }
     top: calc(100% + 8px);
     left: 50%;
     transform: translateX(-50%) translateY(-4px);
-    background: rgba(18, 18, 22, 0.98);
+    background: var(--tooltip-bg);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid var(--tooltip-border);
     border-radius: 8px;
     padding: 6px 10px;
     font-size: 11px;
@@ -262,13 +262,13 @@ body.highlighter-brush-active .sticker-content {
 }
 
 .text-sel-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--hover-bg);
     color: var(--text-main);
 }
 
 .text-sel-reset-all-btn:hover {
-    background: rgba(239, 68, 68, 0.2) !important;
-    color: #ef4444 !important;
+    background: var(--danger-subtle) !important;
+    color: var(--danger-color) !important;
 }
 
 

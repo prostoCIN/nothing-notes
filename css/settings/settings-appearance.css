@@ -29,8 +29,8 @@
     align-items: center;
     gap: 10px;
     padding: 10px 12px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1.5px solid rgba(255, 255, 255, 0.08);
+    background: var(--bg-subtle);
+    border: 1.5px solid var(--border-subtle);
     border-radius: 12px;
     cursor: pointer;
     text-align: left;
@@ -40,13 +40,13 @@
 }
 
 .settings-theme-card:hover {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.18);
+    background: var(--hover-bg);
+    border-color: var(--border-strong);
     transform: translateY(-1px);
 }
 
 .settings-theme-card.active {
-    background: rgba(16, 185, 129, 0.08);
+    background: var(--accent-subtle);
     border-color: var(--accent-color, #10b981);
     box-shadow: 0 0 0 1px var(--accent-color, #10b981), 0 4px 14px rgba(0, 0, 0, 0.25);
 }
@@ -179,7 +179,7 @@
 }
 
 .settings-lang-option.selected {
-    background: rgba(16, 185, 129, 0.12);
+    background: var(--accent-subtle);
     color: var(--accent-color, #10b981);
     font-weight: 600;
 }

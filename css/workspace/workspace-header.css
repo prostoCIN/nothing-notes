@@ -234,17 +234,17 @@
     top: calc(100% + 8px);
     left: 50%;
     transform: translateX(-50%) translateY(-4px);
-    background: rgba(18, 18, 22, 0.98);
+    background: var(--tooltip-bg);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid var(--tooltip-border);
     border-radius: 8px;
     padding: 5px 9px;
     font-size: 11px;
     line-height: 1.4;
-    color: var(--text-main);
+    color: var(--tooltip-color, var(--text-main));
     white-space: nowrap;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+    box-shadow: var(--dropdown-shadow);
     pointer-events: none;
     opacity: 0;
     visibility: hidden;
@@ -265,7 +265,7 @@
     transform: translateX(-50%);
     border-width: 4px;
     border-style: solid;
-    border-color: transparent transparent rgba(255, 255, 255, 0.15) transparent;
+    border-color: transparent transparent var(--tooltip-border) transparent;
 }
 
 /* Специфічне вирівнювання для підказки пензля (прив'язка до правого краю) */

@@ -113,7 +113,7 @@
     justify-content: space-between;
     padding: 4px 6px 6px 6px;
     margin-bottom: 3px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid var(--border-subtle);
 }
 
 .sticker-menu-back-btn {
@@ -259,7 +259,7 @@
 
 .sticker-menu-divider {
     height: 1px;
-    background-color: rgba(255, 255, 255, 0.08);
+    background-color: var(--border-subtle);
     margin: 3px 0;
 }
 
@@ -283,8 +283,8 @@
 .font-size-value-badge {
     font-size: 10px;
     font-weight: 700;
-    color: #34d399;
-    background: rgba(16, 185, 129, 0.15);
+    color: var(--accent-color);
+    background: var(--accent-subtle);
     padding: 1px 6px;
     border-radius: 8px;
     font-family: inherit;

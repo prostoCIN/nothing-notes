@@ -2,11 +2,11 @@
 .sidebar-user-profile {
     margin-top: auto;
     padding: 10px;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid var(--border-subtle);
     display: flex;
     align-items: center;
     gap: 8px;
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--bg-subtle);
     border-radius: 8px;
     margin-left: 8px;
     margin-right: 8px;
@@ -21,8 +21,8 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-subtle);
     color: var(--text-main);
     padding: 0 10px;
     border-radius: 8px;
@@ -38,8 +38,8 @@
 }
 
 .sidebar-login-btn:hover {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.2);
+    background: var(--hover-bg);
+    border-color: var(--border-strong);
 }
 
 .sidebar-settings-btn,
@@ -49,8 +49,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-subtle);
     border-radius: 8px;
     color: var(--text-muted);
     cursor: pointer;
@@ -61,9 +61,9 @@
 
 .sidebar-settings-btn:hover,
 .sidebar-settings-guest-btn:hover {
-    color: var(--accent-color, #10b981);
-    background: rgba(16, 185, 129, 0.12);
-    border-color: rgba(16, 185, 129, 0.25);
+    color: var(--accent-color);
+    background: var(--accent-subtle);
+    border-color: var(--accent-color);
 }
 
 .user-profile-clickable {
@@ -75,20 +75,20 @@
     height: 38px;
     cursor: pointer;
     padding: 0 8px 0 6px;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-subtle);
     border-radius: 8px;
     transition: background 0.15s ease, border-color 0.15s ease;
     box-sizing: border-box;
 }
 
 .user-profile-clickable:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.18);
+    background: var(--hover-bg);
+    border-color: var(--border-strong);
 }
 
 .user-profile-clickable.is-open {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--active-bg);
     border-color: var(--accent-color, #10b981);
 }
 
@@ -197,13 +197,13 @@
 }
 
 .user-settings-btn:hover {
-    color: var(--accent-color, #10b981);
-    background: rgba(16, 185, 129, 0.15);
+    color: var(--accent-color);
+    background: var(--accent-subtle);
 }
 
 .user-logout-btn:hover {
-    color: #ef4444;
-    background: rgba(239, 68, 68, 0.15);
+    color: var(--danger-color);
+    background: var(--danger-subtle);
 }
 
 

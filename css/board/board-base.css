@@ -126,8 +126,8 @@
 .board-help-btn:hover,
 .board-help-pill:hover .board-help-btn {
     color: var(--text-main);
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.22);
+    background: var(--hover-bg);
+    border-color: var(--border-strong);
 }
 
 /* Випадаюче вікно підказок */
@@ -163,7 +163,7 @@
     justify-content: space-between;
     margin-bottom: 10px;
     padding-bottom: 6px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid var(--border-subtle);
 }
 
 .board-help-title {
@@ -206,8 +206,8 @@
 }
 
 .board-help-badge {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-subtle);
     color: var(--text-main);
     font-family: inherit;
     font-size: 10px;
@@ -224,30 +224,4 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-}
-
-html[data-theme="light"] .board-help-btn,
-html[data-theme="ivory"] .board-help-btn {
-    background: rgba(255, 255, 255, 0.95);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-    border-color: rgba(0, 0, 0, 0.1);
-}
-
-html[data-theme="light"] .board-help-popover,
-html[data-theme="ivory"] .board-help-popover {
-    background: rgba(255, 255, 255, 0.98);
-    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.06);
-    border-color: rgba(0, 0, 0, 0.1);
-}
-
-html[data-theme="light"] .board-help-badge,
-html[data-theme="ivory"] .board-help-badge {
-    background: rgba(0, 0, 0, 0.06);
-    border-color: rgba(0, 0, 0, 0.08);
-    color: #18181b;
-}
-
-html[data-theme="light"] .board-help-header,
-html[data-theme="ivory"] .board-help-header {
-    border-bottom-color: rgba(0, 0, 0, 0.06);
 }

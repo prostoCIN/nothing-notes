@@ -5,6 +5,18 @@
 :root,
 html[data-theme="asphalt"] {
     --theme-name: 'asphalt';
+
+    /* Уніфікована строга палітра (Strict Design Tokens) */
+    --bg-base: #141416;
+    --bg-surface: #1a1a1d;
+    --bg-elevated: #222227;
+    --bg-subtle: rgba(255, 255, 255, 0.05);
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.16);
+    --text-faint: rgba(255, 255, 255, 0.32);
+    --accent-subtle: rgba(16, 185, 129, 0.14);
+    --danger-subtle: rgba(239, 68, 68, 0.14);
+
     --bg-color: #141416;
     --sidebar-bg: #1a1a1d;
     --modal-bg: rgba(26, 26, 30, 0.88);
@@ -81,6 +93,18 @@ html[data-theme="asphalt"] {
 /* 2. Біла (Світла тема) */
 html[data-theme="light"] {
     --theme-name: 'light';
+
+    /* Уніфікована строга палітра (Strict Design Tokens) */
+    --bg-base: #f7f7fa;
+    --bg-surface: #ffffff;
+    --bg-elevated: #ffffff;
+    --bg-subtle: rgba(0, 0, 0, 0.04);
+    --border-subtle: rgba(0, 0, 0, 0.08);
+    --border-strong: rgba(0, 0, 0, 0.16);
+    --text-faint: rgba(0, 0, 0, 0.35);
+    --accent-subtle: rgba(16, 185, 129, 0.12);
+    --danger-subtle: rgba(225, 29, 72, 0.12);
+
     --bg-color: #f7f7fa;
     --sidebar-bg: rgba(255, 255, 255, 0.78);
     --modal-bg: rgba(255, 255, 255, 0.94);
@@ -156,6 +180,18 @@ html[data-theme="light"] {
 /* 3. Слонова кістка (Тепла молочно-кремова світла тема) */
 html[data-theme="ivory"] {
     --theme-name: 'ivory';
+
+    /* Уніфікована строга палітра (Strict Design Tokens) */
+    --bg-base: #f9f5ea;
+    --bg-surface: #fffdf7;
+    --bg-elevated: #fffdf7;
+    --bg-subtle: rgba(90, 68, 30, 0.05);
+    --border-subtle: rgba(90, 68, 30, 0.09);
+    --border-strong: rgba(90, 68, 30, 0.18);
+    --text-faint: rgba(43, 37, 31, 0.35);
+    --accent-subtle: rgba(16, 185, 129, 0.12);
+    --danger-subtle: rgba(225, 29, 72, 0.12);
+
     --bg-color: #f9f5ea;
     --sidebar-bg: rgba(255, 252, 243, 0.85);
     --modal-bg: rgba(255, 253, 246, 0.97);
@@ -231,6 +267,18 @@ html[data-theme="ivory"] {
 /* 4. Нічне небо (Темно-синя тема) */
 html[data-theme="night-sky"] {
     --theme-name: 'night-sky';
+
+    /* Уніфікована строга палітра (Strict Design Tokens) */
+    --bg-base: #0b0f19;
+    --bg-surface: #0f172a;
+    --bg-elevated: #162038;
+    --bg-subtle: rgba(148, 163, 184, 0.08);
+    --border-subtle: rgba(148, 163, 184, 0.12);
+    --border-strong: rgba(148, 163, 184, 0.22);
+    --text-faint: rgba(255, 255, 255, 0.32);
+    --accent-subtle: rgba(16, 185, 129, 0.14);
+    --danger-subtle: rgba(244, 63, 94, 0.14);
+
     --bg-color: #0b0f19;
     --sidebar-bg: #0f172a;
     --modal-bg: rgba(15, 23, 42, 0.92);
@@ -306,6 +354,18 @@ html[data-theme="night-sky"] {
 /* 5. Темний ліс (Приглушена жовто-зелена / Monokai стиль) */
 html[data-theme="forest"] {
     --theme-name: 'forest';
+
+    /* Уніфікована строга палітра (Strict Design Tokens) */
+    --bg-base: #1d1e19;
+    --bg-surface: #272822;
+    --bg-elevated: #32332c;
+    --bg-subtle: rgba(255, 255, 255, 0.05);
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.16);
+    --text-faint: rgba(255, 255, 255, 0.32);
+    --accent-subtle: rgba(16, 185, 129, 0.14);
+    --danger-subtle: rgba(249, 38, 114, 0.14);
+
     --bg-color: #1d1e19;
     --sidebar-bg: #272822;
     --modal-bg: rgba(39, 40, 34, 0.95);

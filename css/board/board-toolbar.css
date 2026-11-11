@@ -44,7 +44,7 @@
 .board-title-icon {
     display: flex;
     align-items: center;
-    color: #10b981;
+    color: var(--accent-color);
 }
 
 .board-title-text {
@@ -59,7 +59,7 @@
     font-size: 11px;
     font-weight: 600;
     padding-left: 6px;
-    border-left: 1px solid rgba(255, 255, 255, 0.12);
+    border-left: 1px solid var(--border-subtle);
 }
 
 .board-toolbar-filters {
@@ -99,12 +99,12 @@
 
 .board-toolbar-filter-btn:hover {
     color: var(--text-main);
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--hover-bg);
 }
 
 .board-toolbar-filter-btn.is-active {
-    background: rgba(16, 185, 129, 0.2);
-    color: #10b981;
+    background: var(--accent-subtle);
+    color: var(--accent-color);
     font-weight: 600;
 }
 
@@ -204,7 +204,7 @@
     background: var(--toolbar-bg, rgba(26, 26, 30, 0.88));
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid var(--border-subtle);
     border-radius: 20px;
     padding: 3px 9px;
     color: var(--text-muted);
@@ -219,32 +219,8 @@
 }
 
 .board-tag-chip.is-active {
-    background: rgba(16, 185, 129, 0.25);
-    border-color: #10b981;
-    color: #10b981;
+    background: var(--accent-subtle);
+    border-color: var(--accent-color);
+    color: var(--accent-color);
     font-weight: 700;
-}
-
-/* Light / Ivory theme overrides */
-html[data-theme="light"] .board-title-pill,
-html[data-theme="ivory"] .board-title-pill,
-html[data-theme="light"] .board-toolbar-filters,
-html[data-theme="ivory"] .board-toolbar-filters,
-html[data-theme="light"] .board-search-input,
-html[data-theme="ivory"] .board-search-input,
-html[data-theme="light"] .board-tag-chip,
-html[data-theme="ivory"] .board-tag-chip {
-    background: rgba(255, 255, 255, 0.95);
-    border-color: rgba(0, 0, 0, 0.1);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-}
-
-html[data-theme="light"] .board-toolbar-filter-btn:hover,
-html[data-theme="ivory"] .board-toolbar-filter-btn:hover {
-    background: rgba(0, 0, 0, 0.05);
-}
-
-html[data-theme="light"] .board-nodes-count,
-html[data-theme="ivory"] .board-nodes-count {
-    border-left-color: rgba(0, 0, 0, 0.1);
 }

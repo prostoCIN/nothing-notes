@@ -20,7 +20,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 20px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 0 0 1px rgba(255, 255, 255, 0.04);
+    box-shadow: var(--dropdown-shadow);
     z-index: 1000;
     opacity: 0;
     pointer-events: none;
@@ -42,7 +42,7 @@
 }
 
 .selection-bar-close-btn {
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--bg-subtle);
     border: none;
     color: var(--text-muted);
     width: 28px;
@@ -56,7 +56,7 @@
 }
 
 .selection-bar-close-btn:hover {
-    background: rgba(255, 255, 255, 0.18);
+    background: var(--hover-bg);
     color: var(--text-main);
     transform: scale(0.95);
 }
@@ -70,18 +70,18 @@
 
 .selection-bar-count-desktop {
     font-weight: 700;
-    color: #ffffff;
+    color: var(--text-main);
     letter-spacing: -0.2px;
 }
 
 .selection-bar-divider {
-    color: rgba(255, 255, 255, 0.2);
+    color: var(--border-subtle);
 }
 
 .selection-bar-text-btn {
     background: none;
     border: none;
-    color: #34d399;
+    color: var(--accent-color);
     font-size: var(--font-xs);
     font-weight: 600;
     cursor: pointer;
@@ -92,14 +92,14 @@
 }
 
 .selection-bar-text-btn:hover {
-    background: rgba(16, 185, 129, 0.15);
-    color: #a7f3d0;
+    background: var(--accent-subtle);
+    color: var(--accent-color);
 }
 
 /* Оформлення кнопки "Вибрати всі" (Toggle All Button) */
 .selection-bar-toggle-all-btn {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-subtle);
     color: var(--text-main);
     font-size: var(--font-xs);
     font-weight: 600;
@@ -116,9 +116,9 @@
 }
 
 .selection-bar-toggle-all-btn:hover {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.18);
-    color: #ffffff;
+    background: var(--hover-bg);
+    border-color: var(--border-strong);
+    color: var(--text-main);
 }
 
 .selection-bar-toggle-all-btn.active {
@@ -129,21 +129,6 @@
     font-weight: 700 !important;
 }
 
-html[data-theme="light"] .selection-bar-toggle-all-btn {
-    background: rgba(0, 0, 0, 0.05);
-    border-color: rgba(0, 0, 0, 0.08);
-    color: var(--text-main);
-}
-
-html[data-theme="light"] .selection-bar-toggle-all-btn:hover {
-    background: rgba(0, 0, 0, 0.09);
-    border-color: rgba(0, 0, 0, 0.12);
-}
-
-html[data-theme="light"] .selection-bar-toggle-all-btn.active {
-    background: var(--emerald-gradient, linear-gradient(135deg, #10b981, #059669)) !important;
-    color: #062419 !important;
-}
 
 .selection-bar-actions {
     display: flex;
@@ -155,8 +140,8 @@ html[data-theme="light"] .selection-bar-toggle-all-btn.active {
 .selection-action-group {
     display: inline-flex;
     align-items: center;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-subtle);
     border-radius: 14px;
     padding: 3px;
     gap: 3px;
@@ -175,8 +160,8 @@ html[data-theme="light"] .selection-bar-toggle-all-btn.active {
 }
 
 .selection-action-group .selection-action-btn:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.15);
+    background: var(--hover-bg);
+    border-color: var(--border-strong);
 }
 
 .selection-action-group .selection-action-btn.active {
@@ -198,32 +183,19 @@ html[data-theme="light"] .selection-bar-toggle-all-btn.active {
 .selection-group-separator {
     width: 1px;
     height: 20px;
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--border-subtle);
     margin: 0 4px;
     flex-shrink: 0;
 }
 
-html[data-theme="light"] .selection-action-group {
-    background: rgba(0, 0, 0, 0.04);
-    border-color: rgba(0, 0, 0, 0.08);
-}
-
-html[data-theme="light"] .selection-action-group .selection-action-btn:hover:not(:disabled) {
-    background: rgba(0, 0, 0, 0.07);
-    border-color: rgba(0, 0, 0, 0.1);
-}
-
-html[data-theme="light"] .selection-group-separator {
-    background: rgba(0, 0, 0, 0.12);
-}
 
 .selection-action-item {
     position: relative;
 }
 
 .selection-action-btn {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-subtle);
     color: var(--text-main);
     padding: 6px 12px;
     border-radius: 12px;
@@ -239,8 +211,8 @@ html[data-theme="light"] .selection-group-separator {
 }
 
 .selection-action-btn:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.14);
-    border-color: rgba(255, 255, 255, 0.2);
+    background: var(--hover-bg);
+    border-color: var(--border-strong);
     transform: translateY(-1px);
 }
 
@@ -256,9 +228,9 @@ html[data-theme="light"] .selection-group-separator {
 }
 
 .selection-action-delete-btn {
-    background: rgba(239, 68, 68, 0.12);
-    border-color: rgba(239, 68, 68, 0.25);
-    color: #ef4444;
+    background: var(--danger-subtle);
+    border-color: var(--danger-color);
+    color: var(--danger-color);
 }
 
 .selection-action-delete-btn:hover:not(:disabled) {
@@ -353,8 +325,8 @@ html[data-theme="light"] .selection-group-separator {
     align-items: center;
     justify-content: space-between;
     gap: 6px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-subtle);
     color: var(--text-main);
     padding: 3px 6px 3px 8px;
     border-radius: 8px;
@@ -377,20 +349,20 @@ html[data-theme="light"] .selection-group-separator {
 }
 
 .selection-tag-item:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.15);
+    background: var(--hover-bg);
+    border-color: var(--border-strong);
 }
 
 .selection-tag-item.active {
-    background: rgba(16, 185, 129, 0.2);
-    border-color: #10b981;
-    color: #a7f3d0;
+    background: var(--accent-subtle);
+    border-color: var(--accent-color);
+    color: var(--accent-color);
 }
 
 .selection-tag-item.partial {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.15);
-    color: #d1d5db;
+    background: var(--bg-subtle);
+    border-color: var(--border-strong);
+    color: var(--text-muted);
 }
 
 .selection-tag-del-btn {
@@ -417,8 +389,8 @@ html[data-theme="light"] .selection-group-separator {
 }
 
 .selection-tag-del-btn:hover {
-    background: rgba(239, 68, 68, 0.2);
-    color: #f87171;
+    background: var(--danger-subtle);
+    color: var(--danger-color);
     opacity: 1 !important;
 }
 
@@ -426,7 +398,7 @@ html[data-theme="light"] .selection-group-separator {
     font-size: 11px;
     font-weight: 700;
     margin-left: auto;
-    color: #34d399;
+    color: var(--accent-color);
 }
 
 .selection-tag-color-dot {
@@ -453,8 +425,8 @@ html[data-theme="light"] .selection-group-separator {
 
 .selection-tag-clear-btn {
     background: none;
-    border: 1px dashed rgba(239, 68, 68, 0.4);
-    color: #ef4444;
+    border: 1px dashed var(--danger-color);
+    color: var(--danger-color);
     padding: 6px 10px;
     border-radius: 8px;
     font-size: var(--font-xs);
@@ -470,8 +442,8 @@ html[data-theme="light"] .selection-group-separator {
 }
 
 .selection-tag-clear-btn:hover {
-    background: rgba(239, 68, 68, 0.15);
-    border-color: #ef4444;
+    background: var(--danger-subtle);
+    border-color: var(--danger-color);
 }
 
 .selection-font-dropdown {
@@ -490,8 +462,8 @@ html[data-theme="light"] .selection-group-separator {
 .selection-plus-nav {
     display: flex;
     align-items: center;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-subtle);
     border-radius: 10px;
     padding: 3px;
     gap: 3px;
@@ -499,10 +471,6 @@ html[data-theme="light"] .selection-group-separator {
     box-sizing: border-box;
 }
 
-html[data-theme="light"] .selection-plus-nav {
-    background: rgba(0, 0, 0, 0.05);
-    border-color: rgba(0, 0, 0, 0.08);
-}
 
 .selection-nav-tab {
     flex: 1;
@@ -526,24 +494,16 @@ html[data-theme="light"] .selection-plus-nav {
 
 .selection-nav-tab:hover {
     color: var(--text-main);
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--hover-bg);
 }
 
 .selection-nav-tab.active {
-    background: rgba(255, 255, 255, 0.16) !important;
-    color: #ffffff !important;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    background: var(--bg-elevated) !important;
+    color: var(--text-main) !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--border-strong);
 }
 
-html[data-theme="light"] .selection-nav-tab:hover {
-    background: rgba(0, 0, 0, 0.06);
-}
-
-html[data-theme="light"] .selection-nav-tab.active {
-    background: #ffffff !important;
-    color: #111827 !important;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
-}
 
 .selection-tab-pane {
     display: flex;
@@ -578,14 +538,10 @@ html[data-theme="light"] .selection-nav-tab.active {
 }
 
 .selection-menu-action-row:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: #ffffff;
+    background: var(--hover-bg);
+    color: var(--text-main);
 }
 
-html[data-theme="light"] .selection-menu-action-row:hover {
-    background: rgba(0, 0, 0, 0.06);
-    color: #111827;
-}
 
 .selection-menu-action-row svg {
     color: var(--text-muted);
@@ -601,8 +557,8 @@ html[data-theme="light"] .selection-menu-action-row:hover {
     display: flex;
     align-items: center;
     gap: 8px;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-subtle);
     border-radius: 9px;
     padding: 8px 12px;
     color: var(--text-main);
@@ -615,19 +571,11 @@ html[data-theme="light"] .selection-menu-action-row:hover {
 }
 
 .selection-bookmark-action-btn:hover {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.2);
-    color: #ffffff;
+    background: var(--hover-bg);
+    border-color: var(--border-strong);
+    color: var(--text-main);
 }
 
-html[data-theme="light"] .selection-bookmark-action-btn {
-    background: rgba(0, 0, 0, 0.04);
-    border-color: rgba(0, 0, 0, 0.08);
-}
-
-html[data-theme="light"] .selection-bookmark-action-btn:hover {
-    background: rgba(0, 0, 0, 0.08);
-}
 
 .selection-dropdown-section {
     display: flex;
@@ -638,21 +586,18 @@ html[data-theme="light"] .selection-bookmark-action-btn:hover {
 .selection-dropdown-divider {
     width: 100%;
     height: 1px;
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--border-subtle);
     margin: 2px 0;
 }
 
-html[data-theme="light"] .selection-dropdown-divider {
-    background: rgba(0, 0, 0, 0.08);
-}
 
 .selection-more-action-btn {
     width: 100%;
     display: flex;
     align-items: center;
     gap: 8px;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-subtle);
     border-radius: 8px;
     padding: 8px 12px;
     color: inherit;
@@ -664,18 +609,10 @@ html[data-theme="light"] .selection-dropdown-divider {
 }
 
 .selection-more-action-btn:hover {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.2);
+    background: var(--hover-bg);
+    border-color: var(--border-strong);
 }
 
-html[data-theme="light"] .selection-more-action-btn {
-    background: rgba(0, 0, 0, 0.04);
-    border-color: rgba(0, 0, 0, 0.08);
-}
-
-html[data-theme="light"] .selection-more-action-btn:hover {
-    background: rgba(0, 0, 0, 0.08);
-}
 
 /* Візуальні ефекти перетягування групи виділених нотаток */
 .note-sticker.is-group-drag-partner {
@@ -716,17 +653,13 @@ html[data-theme="light"] .selection-more-action-btn:hover {
    ========================================================================== */
 .workspace-marquee-selection {
     position: fixed;
-    border: 2px dashed #10b981;
-    background-color: rgba(16, 185, 129, 0.18);
+    border: 2px dashed var(--accent-color);
+    background-color: var(--accent-subtle);
     pointer-events: none;
     z-index: 99999;
     border-radius: 4px;
     box-sizing: border-box;
 }
 
-html[data-theme="light"] .workspace-marquee-selection {
-    border-color: #059669;
-    background-color: rgba(16, 185, 129, 0.22);
-}
 
 
