@@ -60,7 +60,7 @@ window.App.settingsModal = {
         return window.App.settingsPreferences ? window.App.settingsPreferences.applyPreferences() : null;
     },
     getTheme() {
-        return window.App.settingsPreferences ? window.App.settingsPreferences.getTheme() : 'asphalt';
+        return window.App.settingsPreferences ? window.App.settingsPreferences.getTheme() : 'forest';
     },
     setTheme(themeKey, save = true) {
         return window.App.settingsPreferences ? window.App.settingsPreferences.setTheme(themeKey, save) : null;

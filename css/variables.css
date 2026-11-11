@@ -1,13 +1,13 @@
 :root {
-    /* Кольорова палітра Notion у темній темі (дефолтні фолбеки) */
-    --bg-base: #141416;
-    --bg-surface: #1a1a1d;
-    --bg-elevated: #222227;
+    /* Базова колірна палітра NothingNotes (Темний ліс / Forest) */
+    --bg-base: #1d1e19;
+    --bg-surface: #272822;
+    --bg-elevated: #32332c;
     --bg-subtle: rgba(255, 255, 255, 0.05);
 
     --bg-color: var(--bg-base);
     --sidebar-bg: var(--bg-surface);
-    --modal-bg: rgba(26, 26, 30, 0.88);
+    --modal-bg: rgba(39, 40, 34, 0.95);
 
     --text-main: rgba(255, 255, 255, 0.94);
     --text-muted: rgba(255, 255, 255, 0.55);
@@ -22,8 +22,8 @@
 
     --accent-color: #16b981;
     --accent-subtle: rgba(16, 185, 129, 0.14);
-    --danger-color: #ff6b6b;
-    --danger-subtle: rgba(239, 68, 68, 0.14);
+    --danger-color: #f92672;
+    --danger-subtle: rgba(249, 38, 114, 0.14);
 
     /* Розміри сайдбара */
     --sidebar-default-width: 260px;

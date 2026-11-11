@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#141416">
+    <meta name="theme-color" content="#1d1e19">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -38,11 +38,9 @@
     <script>
         (function() {
             try {
-                var theme = localStorage.getItem('nothing_notes_theme') || 'asphalt';
-                document.documentElement.setAttribute('data-theme', theme);
-                var colors = { 'asphalt': '#141416', 'light': '#f7f7fa', 'ivory': '#f9f5ea', 'night-sky': '#0b0f19', 'forest': '#1d1e19' };
+                document.documentElement.setAttribute('data-theme', 'forest');
                 var meta = document.querySelector('meta[name="theme-color"]');
-                if (meta && colors[theme]) meta.setAttribute('content', colors[theme]);
+                if (meta) meta.setAttribute('content', '#1d1e19');
             } catch(e) {}
         })();
 

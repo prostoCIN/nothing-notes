@@ -222,38 +222,6 @@
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
 }
 
-.settings-theme-preview.asphalt-preview {
-    background: #1a1a1d;
-    border-color: #3f3f46;
-}
-.settings-theme-preview.asphalt-preview .theme-preview-dot {
-    background: #10b981;
-}
-
-.settings-theme-preview.light-preview {
-    background: #ffffff;
-    border-color: #d1d5db;
-}
-.settings-theme-preview.light-preview .theme-preview-dot {
-    background: #059669;
-}
-
-.settings-theme-preview.ivory-preview {
-    background: #fbf7ee;
-    border-color: #dfd4bf;
-}
-.settings-theme-preview.ivory-preview .theme-preview-dot {
-    background: #10b981;
-}
-
-.settings-theme-preview.night-sky-preview {
-    background: #0f172a;
-    border-color: #38bdf8;
-}
-.settings-theme-preview.night-sky-preview .theme-preview-dot {
-    background: #38bdf8;
-}
-
 .settings-theme-preview.forest-preview {
     background: #272822;
     border-color: #5a5b4c;

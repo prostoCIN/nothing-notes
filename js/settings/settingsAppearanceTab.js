@@ -55,52 +55,8 @@ window.App = window.App || {};
 
                     <!-- Блок 1: Вибір теми оформлення сайту -->
                     <div class="settings-section-title" style="margin-top: 10px;" data-i18n="settings.theme.title">${t('settings.theme.title')}</div>
-                    <div class="settings-theme-grid" id="settings-theme-grid">
-                        <button type="button" class="settings-theme-card ${currentTheme === 'asphalt' ? 'active' : ''}" data-theme="asphalt">
-                            <div class="settings-theme-preview asphalt-preview">
-                                <div class="theme-preview-dot"></div>
-                            </div>
-                            <div class="settings-theme-label">
-                                <span class="settings-theme-name" data-i18n="settings.theme.asphalt.name">${t('settings.theme.asphalt.name')}</span>
-                                <span class="settings-theme-sub" data-i18n="settings.theme.asphalt.desc">${t('settings.theme.asphalt.desc')}</span>
-                            </div>
-                            <div class="settings-theme-check">✓</div>
-                        </button>
-
-                        <button type="button" class="settings-theme-card ${currentTheme === 'light' ? 'active' : ''}" data-theme="light">
-                            <div class="settings-theme-preview light-preview">
-                                <div class="theme-preview-dot"></div>
-                            </div>
-                            <div class="settings-theme-label">
-                                <span class="settings-theme-name" data-i18n="settings.theme.light.name">${t('settings.theme.light.name')}</span>
-                                <span class="settings-theme-sub" data-i18n="settings.theme.light.desc">${t('settings.theme.light.desc')}</span>
-                            </div>
-                            <div class="settings-theme-check">✓</div>
-                        </button>
-
-                        <button type="button" class="settings-theme-card ${currentTheme === 'ivory' ? 'active' : ''}" data-theme="ivory">
-                            <div class="settings-theme-preview ivory-preview">
-                                <div class="theme-preview-dot"></div>
-                            </div>
-                            <div class="settings-theme-label">
-                                <span class="settings-theme-name" data-i18n="settings.theme.ivory.name">${t('settings.theme.ivory.name')}</span>
-                                <span class="settings-theme-sub" data-i18n="settings.theme.ivory.desc">${t('settings.theme.ivory.desc')}</span>
-                            </div>
-                            <div class="settings-theme-check">✓</div>
-                        </button>
-
-                        <button type="button" class="settings-theme-card ${currentTheme === 'night-sky' ? 'active' : ''}" data-theme="night-sky">
-                            <div class="settings-theme-preview night-sky-preview">
-                                <div class="theme-preview-dot"></div>
-                            </div>
-                            <div class="settings-theme-label">
-                                <span class="settings-theme-name" data-i18n="settings.theme.nightSky.name">${t('settings.theme.nightSky.name')}</span>
-                                <span class="settings-theme-sub" data-i18n="settings.theme.nightSky.desc">${t('settings.theme.nightSky.desc')}</span>
-                            </div>
-                            <div class="settings-theme-check">✓</div>
-                        </button>
-
-                        <button type="button" class="settings-theme-card ${currentTheme === 'forest' ? 'active' : ''}" data-theme="forest">
+                    <div class="settings-theme-grid" id="settings-theme-grid" style="grid-template-columns: 1fr;">
+                        <button type="button" class="settings-theme-card active" data-theme="forest">
                             <div class="settings-theme-preview forest-preview">
                                 <div class="theme-preview-dot"></div>
                             </div>

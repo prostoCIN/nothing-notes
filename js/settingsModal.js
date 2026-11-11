@@ -32,7 +32,7 @@ window.App = window.App || {};
         },
 
         getTheme() {
-            return window.App.settingsPreferences ? window.App.settingsPreferences.getTheme() : 'asphalt';
+            return window.App.settingsPreferences ? window.App.settingsPreferences.getTheme() : 'forest';
         },
 
         setTheme(themeKey, save = true) {

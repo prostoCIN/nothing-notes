@@ -7,16 +7,12 @@ window.App = window.App || {};
     const STORAGE_KEY_THEME = 'nothing_notes_theme';
 
     const THEMES = [
-        { key: 'asphalt', nameKey: 'settings.theme.asphalt.name', descKey: 'settings.theme.asphalt.desc', metaColor: '#141416' },
-        { key: 'light', nameKey: 'settings.theme.light.name', descKey: 'settings.theme.light.desc', metaColor: '#f7f7fa' },
-        { key: 'ivory', nameKey: 'settings.theme.ivory.name', descKey: 'settings.theme.ivory.desc', metaColor: '#f9f5ea' },
-        { key: 'night-sky', nameKey: 'settings.theme.nightSky.name', descKey: 'settings.theme.nightSky.desc', metaColor: '#0b0f19' },
         { key: 'forest', nameKey: 'settings.theme.forest.name', descKey: 'settings.theme.forest.desc', metaColor: '#1d1e19' }
     ];
 
     let autoCapitalize = true;
     let compactView = false;
-    let currentTheme = 'asphalt';
+    let currentTheme = 'forest';
 
     const settingsPreferences = {
         THEMES,
@@ -42,12 +38,10 @@ window.App = window.App || {};
                     compactView = false;
                 }
 
-                const savedTheme = localStorage.getItem(STORAGE_KEY_THEME);
-                if (savedTheme && THEMES.some(t => t.key === savedTheme)) {
-                    currentTheme = savedTheme;
-                } else {
-                    currentTheme = 'asphalt';
-                }
+                currentTheme = 'forest';
+                try {
+                    localStorage.setItem(STORAGE_KEY_THEME, 'forest');
+                } catch (e) {}
             } catch (err) {
                 console.warn('[SettingsPreferences] Помилка зчитування preferences:', err);
             }
@@ -66,11 +60,9 @@ window.App = window.App || {};
             return currentTheme;
         },
 
-        setTheme(themeKey, save = true) {
-            if (!THEMES.some(t => t.key === themeKey)) {
-                themeKey = 'asphalt';
-            }
-            currentTheme = themeKey;
+        setTheme(themeKey = 'forest', save = true) {
+            currentTheme = 'forest';
+            themeKey = 'forest';
 
             document.documentElement.setAttribute('data-theme', themeKey);
 
