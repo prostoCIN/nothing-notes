@@ -65,7 +65,7 @@ window.App = window.App || {};
                         currentTags.push(tagText);
                     }
                 }
-                note.tags = currentTags;
+                note.tags = currentTags.filter(t => typeof t === 'string' && t.trim().length > 0).map(t => t.trim());
                 note.updatedAt = Date.now();
                 delete note.tag;
                 if (window.App.cloudSync) {
@@ -95,8 +95,9 @@ window.App = window.App || {};
 
             state.notes.forEach(n => {
                 if (Array.isArray(n.tags) && n.tags.includes(tagText)) {
-                    n.tags = n.tags.filter(t => t !== tagText);
+                    n.tags = n.tags.filter(t => t !== tagText && typeof t === 'string' && t.trim().length > 0).map(t => t.trim());
                     n.updatedAt = Date.now();
+                    delete n.tag;
                     if (window.App.cloudSync) window.App.cloudSync.syncNote(n);
                 }
             });
@@ -187,7 +188,7 @@ window.App = window.App || {};
                         let currentTags = Array.isArray(note.tags) ? [...note.tags] : (note.tag ? [note.tag.text || note.tag] : []);
                         if (!currentTags.includes(tag)) {
                             currentTags.push(tag);
-                            note.tags = currentTags;
+                            note.tags = currentTags.filter(t => typeof t === 'string' && t.trim().length > 0).map(t => t.trim());
                             note.updatedAt = Date.now();
                             delete note.tag;
                             if (window.App.cloudSync) window.App.cloudSync.syncNote(note);

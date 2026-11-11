@@ -7,6 +7,31 @@ window.App = window.App || {};
     let pullDebounceTimer = null;
 
     window.App.syncNotes = {
+        hasLinkedNoteIdsColumn: (function() {
+            try {
+                return localStorage.getItem('minimal_has_linked_note_ids_col') === '1';
+            } catch {
+                return false;
+            }
+        })(),
+
+        _shouldIncludeBookmarks() {
+            if (typeof this.hasLinkedNoteIdsColumn === 'boolean') {
+                return this.hasLinkedNoteIdsColumn;
+            }
+            try {
+                return localStorage.getItem('minimal_has_linked_note_ids_col') === '1';
+            } catch {
+                return false;
+            }
+        },
+
+        _isLinkedColumnError(error) {
+            if (!error) return false;
+            const fullErrStr = `${error.message || ''} ${error.details || ''} ${error.hint || ''}`.toLowerCase();
+            return fullErrStr.includes('linked_note_ids');
+        },
+
         // 1. Завантаження нотаток та блокнотів з Supabase у локальний стан
         async pullFromCloud(cloudSync) {
             const cs = cloudSync || window.App.cloudSync;
@@ -145,6 +170,14 @@ window.App = window.App || {};
                 }
 
                 if (cloudNotes) {
+                    if (cloudNotes.length > 0) {
+                        const hasLinkedCol = 'linked_note_ids' in cloudNotes[0];
+                        this.hasLinkedNoteIdsColumn = hasLinkedCol;
+                        try {
+                            localStorage.setItem('minimal_has_linked_note_ids_col', hasLinkedCol ? '1' : '0');
+                        } catch {}
+                    }
+
                     const firstBoardId = (state.boards && state.boards[0]) ? state.boards[0].id : null;
                     const localMap = new Map(state.notes.map(n => [n.id, n]));
                     const currentQueue = offlineQueue ? offlineQueue.getOfflineQueue() : [];
@@ -427,12 +460,13 @@ window.App = window.App || {};
                 validNotes.forEach(n => cs.lastLocalEditTimestamps.set(n.id, now));
             }
 
+            const includeBookmarks = this._shouldIncludeBookmarks();
             const payloads = validNotes.map(note => {
                 const noteIndex = typeof note.orderIndex === 'number'
                     ? note.orderIndex
                     : state.notes.findIndex(n => n.id === note.id);
 
-                return {
+                const p = {
                     id: note.id,
                     user_id: currentUser.id,
                     board_id: note.boardId || state.activeBoardId || null,
@@ -442,14 +476,19 @@ window.App = window.App || {};
                     color: note.color || 'yellow',
                     font_size: typeof note.fontSize === 'number' ? note.fontSize : 16,
                     icon: note.icon || '',
-                    images: note.images || [],
+                    images: Array.isArray(note.images) ? note.images : [],
                     is_collapsed: !!note.isCollapsed,
-                    tags: Array.isArray(note.tags) ? note.tags : [],
-                    linked_note_ids: Array.isArray(note.linkedNoteIds) ? note.linkedNoteIds : [],
+                    tags: Array.isArray(note.tags) ? note.tags.filter(t => typeof t === 'string' && t.trim().length > 0).map(t => t.trim()) : [],
                     order_index: noteIndex !== -1 ? noteIndex : state.notes.length,
                     created_at: new Date(note.createdAt || Date.now()).toISOString(),
                     updated_at: new Date(note.updatedAt || Date.now()).toISOString()
                 };
+
+                if (includeBookmarks) {
+                    p.linked_note_ids = Array.isArray(note.linkedNoteIds) ? note.linkedNoteIds : [];
+                }
+
+                return p;
             });
 
             try {
@@ -457,8 +496,10 @@ window.App = window.App || {};
                     .from('notes')
                     .upsert(payloads, { onConflict: 'id' });
 
-                if (error && error.message && error.message.toLowerCase().includes('linked_note_ids')) {
-                    console.warn('[CloudSync] linked_note_ids column may not exist in database, retrying without it:', error.message);
+                if (error && this._isLinkedColumnError(error)) {
+                    console.warn('[CloudSync] linked_note_ids column may not exist in database, disabling for future requests and retrying:', error.message);
+                    this.hasLinkedNoteIdsColumn = false;
+                    try { localStorage.setItem('minimal_has_linked_note_ids_col', '0'); } catch {}
                     const safePayloads = payloads.map(({ linked_note_ids, ...rest }) => rest);
                     const retry = await supabase.from('notes').upsert(safePayloads, { onConflict: 'id' });
                     error = retry.error;
@@ -501,6 +542,7 @@ window.App = window.App || {};
                 cs.lastLocalEditTimestamps.set(note.id, Date.now());
             }
 
+            const includeBookmarks = this._shouldIncludeBookmarks();
             const noteIndex = typeof note.orderIndex === 'number'
                 ? note.orderIndex
                 : state.notes.findIndex(n => n.id === note.id);
@@ -515,22 +557,27 @@ window.App = window.App || {};
                 color: note.color || 'yellow',
                 font_size: typeof note.fontSize === 'number' ? note.fontSize : 16,
                 icon: note.icon || '',
-                images: note.images || [],
+                images: Array.isArray(note.images) ? note.images : [],
                 is_collapsed: !!note.isCollapsed,
-                tags: Array.isArray(note.tags) ? note.tags : [],
-                linked_note_ids: Array.isArray(note.linkedNoteIds) ? note.linkedNoteIds : [],
+                tags: Array.isArray(note.tags) ? note.tags.filter(t => typeof t === 'string' && t.trim().length > 0).map(t => t.trim()) : [],
                 order_index: noteIndex !== -1 ? noteIndex : state.notes.length,
                 created_at: new Date(note.createdAt || Date.now()).toISOString(),
                 updated_at: new Date(note.updatedAt || Date.now()).toISOString()
             };
+
+            if (includeBookmarks) {
+                payload.linked_note_ids = Array.isArray(note.linkedNoteIds) ? note.linkedNoteIds : [];
+            }
 
             try {
                 let { error } = await supabase
                     .from('notes')
                     .upsert(payload, { onConflict: 'id' });
 
-                if (error && error.message && error.message.toLowerCase().includes('linked_note_ids')) {
-                    console.warn('[CloudSync] linked_note_ids column may not exist in database, retrying without it:', error.message);
+                if (error && this._isLinkedColumnError(error)) {
+                    console.warn('[CloudSync] linked_note_ids column may not exist in database, disabling for future requests and retrying:', error.message);
+                    this.hasLinkedNoteIdsColumn = false;
+                    try { localStorage.setItem('minimal_has_linked_note_ids_col', '0'); } catch {}
                     const { linked_note_ids, ...safePayload } = payload;
                     const retry = await supabase.from('notes').upsert(safePayload, { onConflict: 'id' });
                     error = retry.error;
@@ -769,23 +816,29 @@ window.App = window.App || {};
                 await window.App.syncStorage.uploadMissingLocalImages();
             }
 
-            const payloads = state.notes.map((note, idx) => ({
-                id: note.id,
-                user_id: currentUser.id,
-                board_id: note.boardId || state.activeBoardId || null,
-                parent_id: note.parentId || null,
-                title: note.title || '',
-                content: note.content || '',
-                color: note.color || 'yellow',
-                font_size: typeof note.fontSize === 'number' ? note.fontSize : 16,
-                icon: note.icon || '',
-                images: note.images || [],
-                is_collapsed: !!note.isCollapsed,
-                tags: Array.isArray(note.tags) ? note.tags : [],
-                linked_note_ids: Array.isArray(note.linkedNoteIds) ? note.linkedNoteIds : [],
-                order_index: idx,
-                updated_at: new Date().toISOString()
-            }));
+            const includeBookmarks = this._shouldIncludeBookmarks();
+            const payloads = state.notes.map((note, idx) => {
+                const p = {
+                    id: note.id,
+                    user_id: currentUser.id,
+                    board_id: note.boardId || state.activeBoardId || null,
+                    parent_id: note.parentId || null,
+                    title: note.title || '',
+                    content: note.content || '',
+                    color: note.color || 'yellow',
+                    font_size: typeof note.fontSize === 'number' ? note.fontSize : 16,
+                    icon: note.icon || '',
+                    images: Array.isArray(note.images) ? note.images : [],
+                    is_collapsed: !!note.isCollapsed,
+                    tags: Array.isArray(note.tags) ? note.tags.filter(t => typeof t === 'string' && t.trim().length > 0).map(t => t.trim()) : [],
+                    order_index: idx,
+                    updated_at: new Date().toISOString()
+                };
+                if (includeBookmarks) {
+                    p.linked_note_ids = Array.isArray(note.linkedNoteIds) ? note.linkedNoteIds : [];
+                }
+                return p;
+            });
 
             if (payloads.length === 0) return;
 
@@ -796,8 +849,10 @@ window.App = window.App || {};
 
             try {
                 let { error } = await supabase.from('notes').upsert(payloads, { onConflict: 'id' });
-                if (error && error.message && error.message.toLowerCase().includes('linked_note_ids')) {
-                    console.warn('[CloudSync] linked_note_ids column may not exist in database, retrying without it:', error.message);
+                if (error && this._isLinkedColumnError(error)) {
+                    console.warn('[CloudSync] linked_note_ids column may not exist in database, disabling for future requests and retrying:', error.message);
+                    this.hasLinkedNoteIdsColumn = false;
+                    try { localStorage.setItem('minimal_has_linked_note_ids_col', '0'); } catch {}
                     const safePayloads = payloads.map(({ linked_note_ids, ...rest }) => rest);
                     const retry = await supabase.from('notes').upsert(safePayloads, { onConflict: 'id' });
                     error = retry.error;

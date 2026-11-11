@@ -152,8 +152,9 @@ window.App = window.App || {};
                             // 2. Видаляємо цей тег з усіх нотаток у пам'яті
                             state.notes.forEach(n => {
                                 if (Array.isArray(n.tags) && n.tags.includes(opt)) {
-                                    n.tags = n.tags.filter(t => t !== opt);
+                                    n.tags = n.tags.filter(t => t !== opt && typeof t === 'string' && t.trim().length > 0).map(t => t.trim());
                                     n.updatedAt = Date.now();
+                                    delete n.tag;
                                     if (window.App.cloudSync) window.App.cloudSync.syncNote(n);
                                 }
                             });
