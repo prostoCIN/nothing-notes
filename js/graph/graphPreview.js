@@ -49,6 +49,24 @@ window.App = window.App || {};
             previewEl.style.left = Math.min(window.innerWidth - 310, screenX + 16) + 'px';
             previewEl.style.top = Math.min(window.innerHeight - 200, screenY + 16) + 'px';
             previewEl.classList.add('active');
+
+            previewEl.onclick = (e) => {
+                e.stopPropagation();
+                if (!node || !node.id) return;
+                this.hide();
+                if (window.App.store) {
+                    window.App.store.setViewMode('columns');
+                } else if (window.App.state) {
+                    window.App.state.viewMode = 'columns';
+                }
+                if (window.App.workspaceView) {
+                    if (window.App.workspaceView.scrollToNote) {
+                        window.App.workspaceView.scrollToNote(node.id);
+                    } else {
+                        window.App.workspaceView.render();
+                    }
+                }
+            };
         },
 
         hide() {

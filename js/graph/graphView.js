@@ -33,6 +33,7 @@ window.App = window.App || {};
     let boundTouchStart = null;
     let boundTouchMove = null;
     let boundTouchEnd = null;
+    let boundContainerClick = null;
     let isPinching = false;
     let touchPinchDist = 0;
     let touchPinchCenter = null;
@@ -496,13 +497,11 @@ window.App = window.App || {};
                 }
             });
 
-            nodeEl.addEventListener('pointerleave', () => {
+            nodeEl.addEventListener('pointerleave', (e) => {
                 if (isDraggingNode || hasDragged) return;
-                hoveredNode = null;
-                cachedSubtreeIds = null;
-                if (window.App.graphPreview) {
-                    window.App.graphPreview.hide();
-                }
+                // На мобільних та сенсорних екранах не знімаємо фокус автоматично при відриві пальця (тільки по тапу на фон)
+                if (window.innerWidth <= 768 || (e && e.pointerType === 'touch')) return;
+                this.clearNodeFocus();
             });
 
             nodeEl.addEventListener('click', (e) => {
@@ -512,9 +511,20 @@ window.App = window.App || {};
                     return;
                 }
 
-                if (window.App.graphPreview) {
-                    window.App.graphPreview.hide();
+                const isMobile = window.innerWidth <= 768 || (e && e.pointerType === 'touch');
+                if (isMobile && hoveredNode !== node) {
+                    // На телефоні перший клік/тап фокусує вершину графу (підсвічує зв'язки та відкриває прев'ю)
+                    e.stopPropagation();
+                    hoveredNode = node;
+                    cachedSubtreeIds = this.getSubtreeIds(node.id);
+                    if (window.App.graphPreview) {
+                        window.App.graphPreview.show(node, e.clientX, e.clientY);
+                    }
+                    return;
                 }
+
+                // Другий клік на ту саму вершину (або клік на ПК) відкриває нотатку в робочому просторі
+                this.clearNodeFocus();
 
                 if (window.App.store) {
                     window.App.store.setViewMode('columns');
@@ -530,6 +540,19 @@ window.App = window.App || {};
                     }
                 }
             });
+        },
+
+        /**
+         * Знімає фокус/виділення з активної вершини графа та ховає картку прев'ю
+         */
+        clearNodeFocus() {
+            if (hoveredNode || cachedSubtreeIds) {
+                hoveredNode = null;
+                cachedSubtreeIds = null;
+                if (window.App.graphPreview) {
+                    window.App.graphPreview.hide();
+                }
+            }
         },
 
         getSubtreeIds(nodeId) {
@@ -568,6 +591,10 @@ window.App = window.App || {};
 
         bindEvents() {
             const interaction = window.App.graphInteraction;
+            let bgPointerStart = null;
+            let bgHasMoved = false;
+            let touch1Start = null;
+            let touch1Moved = false;
 
             // 1. Жест масштабування двома пальцями (Pinch-to-zoom) на смартфонах і сенсорних екранах
             boundTouchStart = (e) => {
@@ -577,6 +604,7 @@ window.App = window.App || {};
                     isDraggingCanvas = false;
                     isDraggingNode = false;
                     draggedNode = null;
+                    touch1Start = null;
 
                     const t1 = e.touches[0];
                     const t2 = e.touches[1];
@@ -585,10 +613,33 @@ window.App = window.App || {};
                         x: (t1.clientX + t2.clientX) / 2,
                         y: (t1.clientY + t2.clientY) / 2
                     };
+                } else if (e.touches.length === 1) {
+                    const t = e.touches[0];
+                    if (
+                        !t.target.closest('.graph-html-node') &&
+                        !t.target.closest('.graph-preview-card') &&
+                        !t.target.closest('.graph-controls-panel') &&
+                        !t.target.closest('.graph-top-bar') &&
+                        !t.target.closest('.graph-help-pill') &&
+                        !t.target.closest('.graph-help-popover') &&
+                        !t.target.closest('.modal-container')
+                    ) {
+                        touch1Start = { x: t.clientX, y: t.clientY };
+                        touch1Moved = false;
+                    } else {
+                        touch1Start = null;
+                    }
                 }
             };
 
             boundTouchMove = (e) => {
+                if (touch1Start && e.touches.length === 1) {
+                    const t = e.touches[0];
+                    if (Math.hypot(t.clientX - touch1Start.x, t.clientY - touch1Start.y) > 8) {
+                        touch1Moved = true;
+                    }
+                }
+
                 if (e.touches.length >= 2 && touchPinchDist > 0) {
                     e.preventDefault();
                     isPinching = true;
@@ -633,6 +684,12 @@ window.App = window.App || {};
                     } else {
                         isPinching = false;
                         isDraggingCanvas = false;
+                        // Тап одним пальцем на порожній фон у мобільному режимі — знімаємо фокус із вершини
+                        if (touch1Start && !touch1Moved) {
+                            this.clearNodeFocus();
+                        }
+                        touch1Start = null;
+                        touch1Moved = false;
                     }
                 }
             };
@@ -646,6 +703,8 @@ window.App = window.App || {};
                 if (isPinching) return;
                 isDraggingCanvas = true;
                 lastMousePos = { x: e.clientX, y: e.clientY };
+                bgPointerStart = { x: e.clientX, y: e.clientY };
+                bgHasMoved = false;
             });
 
             boundPointerMove = (e) => {
@@ -653,6 +712,9 @@ window.App = window.App || {};
                 if (isDraggingCanvas) {
                     const dx = e.clientX - lastMousePos.x;
                     const dy = e.clientY - lastMousePos.y;
+                    if (bgPointerStart && Math.hypot(e.clientX - bgPointerStart.x, e.clientY - bgPointerStart.y) > 8) {
+                        bgHasMoved = true;
+                    }
                     interaction.camera.x += dx;
                     interaction.camera.y += dy;
                     lastMousePos = { x: e.clientX, y: e.clientY };
@@ -663,7 +725,32 @@ window.App = window.App || {};
                 if (!isPinching) {
                     isDraggingCanvas = false;
                 }
+                if (!bgHasMoved && bgPointerStart) {
+                    // Короткий тап або клік на порожнє полотно — знімаємо фокус із вершини
+                    this.clearNodeFocus();
+                }
+                bgPointerStart = null;
+                bgHasMoved = false;
             };
+
+            canvas.addEventListener('click', () => {
+                this.clearNodeFocus();
+            });
+
+            boundContainerClick = (e) => {
+                if (
+                    !e.target.closest('.graph-html-node') &&
+                    !e.target.closest('.graph-preview-card') &&
+                    !e.target.closest('.graph-controls-panel') &&
+                    !e.target.closest('.graph-top-bar') &&
+                    !e.target.closest('.graph-help-pill') &&
+                    !e.target.closest('.graph-help-popover') &&
+                    !e.target.closest('.modal-container')
+                ) {
+                    this.clearNodeFocus();
+                }
+            };
+            container.addEventListener('click', boundContainerClick);
 
             boundWheel = (e) => {
                 const scrollableEl = e.target.closest(
@@ -899,9 +986,11 @@ window.App = window.App || {};
                 document.removeEventListener('pointerdown', boundHelpDocPointerDown);
                 boundHelpDocPointerDown = null;
             }
-            if (window.App.graphPreview) {
-                window.App.graphPreview.hide();
+            if (boundContainerClick && container) {
+                container.removeEventListener('click', boundContainerClick);
+                boundContainerClick = null;
             }
+            this.clearNodeFocus();
             if (window.App.graphExport) {
                 window.App.graphExport.close();
             }
