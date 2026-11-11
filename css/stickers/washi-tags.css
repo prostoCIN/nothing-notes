@@ -9,7 +9,14 @@
     align-items: center;
     gap: 6px;
     user-select: none;
-    z-index: 5;
+    z-index: 10;
+}
+
+/* Підняття контейнера тегів при відкритому тулбоксі/меню тегів, щоб воно завжди було поверх закладок та піднотаток */
+.sticker-tags-container:has(.sticker-tag-dropdown.active),
+.sticker-tags-container.has-active-dropdown,
+.note-sticker.has-active-tag .sticker-tags-container {
+    z-index: 100 !important;
 }
 
 /* Окремий бейдж тегу у вигляді наклейки / шматочка декоративного скотчу (Washi Tape) */

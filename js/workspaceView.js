@@ -182,6 +182,12 @@ window.App = window.App || {};
                 document.querySelectorAll('.has-active-emoji-picker').forEach(el => {
                     el.classList.remove('has-active-emoji-picker');
                 });
+                document.querySelectorAll('.has-active-tag').forEach(el => {
+                    el.classList.remove('has-active-tag');
+                });
+                document.querySelectorAll('.has-active-dropdown').forEach(el => {
+                    el.classList.remove('has-active-dropdown');
+                });
                 document.querySelectorAll('.sticker-add-tag-btn.active, .column-filter-btn.active, .column-more-btn.active').forEach(b => {
                     b.classList.remove('active');
                 });
@@ -199,6 +205,12 @@ window.App = window.App || {};
                     });
                     document.querySelectorAll('.has-active-emoji-picker').forEach(el => {
                         el.classList.remove('has-active-emoji-picker');
+                    });
+                    document.querySelectorAll('.has-active-tag').forEach(el => {
+                        el.classList.remove('has-active-tag');
+                    });
+                    document.querySelectorAll('.has-active-dropdown').forEach(el => {
+                        el.classList.remove('has-active-dropdown');
                     });
                     document.querySelectorAll('.column-more-btn.active').forEach(b => b.classList.remove('active'));
                     return;

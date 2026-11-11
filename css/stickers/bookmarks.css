@@ -12,7 +12,7 @@
     margin-right: -24px; /* Доходить рівно до правої межі картки */
     width: calc(100% + 24px);
     position: relative;
-    z-index: 6;
+    z-index: 2;
     pointer-events: auto;
 }
 

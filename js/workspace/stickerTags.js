@@ -284,7 +284,13 @@ window.App = window.App || {};
             addTagBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 document.querySelectorAll('.sticker-menu-dropdown.active, .sticker-emoji-picker-dropdown.active, .sticker-tag-dropdown.active, .column-filter-dropdown.active').forEach(d => {
-                    if (d !== tagDropdown) d.classList.remove('active', 'open-upward');
+                    if (d !== tagDropdown) {
+                        d.classList.remove('active', 'open-upward');
+                        const pCont = d.closest('.sticker-tags-container');
+                        if (pCont) pCont.classList.remove('has-active-dropdown');
+                        const pCard = d.closest('.note-sticker');
+                        if (pCard) pCard.classList.remove('has-active-tag');
+                    }
                 });
                 document.querySelectorAll('.sticker-add-tag-btn.active').forEach(b => {
                     if (b !== addTagBtn) b.classList.remove('active');
@@ -298,11 +304,15 @@ window.App = window.App || {};
                     }
                     tagDropdown.classList.add('active');
                     addTagBtn.classList.add('active');
+                    tagsContainer.classList.add('has-active-dropdown');
+                    card.classList.add('has-active-tag');
                     const addInput = tagDropdown.querySelector('.tag-add-input');
                     if (addInput) setTimeout(() => addInput.focus(), 60);
                 } else {
                     tagDropdown.classList.remove('active', 'open-upward');
                     addTagBtn.classList.remove('active');
+                    tagsContainer.classList.remove('has-active-dropdown');
+                    card.classList.remove('has-active-tag');
                 }
             });
 

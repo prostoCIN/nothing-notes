@@ -104,7 +104,7 @@
 .note-sticker:has(.sticker-emoji-picker-dropdown.active),
 .note-sticker:has(.sticker-menu-dropdown.active),
 .note-sticker:has(.sticker-tag-dropdown.active) {
-    z-index: 30 !important;
+    z-index: 100 !important;
 }
 
 /* Кольорові теми для нотаток */

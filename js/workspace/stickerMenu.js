@@ -359,6 +359,8 @@ window.App = window.App || {};
                                 }
                                 tagDropdown.classList.add('active');
                                 addBtn.classList.add('active');
+                                if (tagsBox) tagsBox.classList.add('has-active-dropdown');
+                                card.classList.add('has-active-tag');
                                 const addInput = tagDropdown.querySelector('.tag-add-input');
                                 if (addInput) addInput.focus();
                             }
