@@ -207,7 +207,65 @@ window.App = window.App || {};
             this.applyCustomColors();
         },
 
+        getDefaultColor(tokenKey) {
+            for (const group of CUSTOM_TOKEN_GROUPS) {
+                const found = group.tokens.find(t => t.key === tokenKey);
+                if (found) return found.default;
+            }
+            return '#16b981';
+        },
+
+        updateTokenRowState(tokenKey, hex) {
+            const row = document.querySelector(`.theme-token-row[data-token-key="${tokenKey}"]`);
+            if (!row) return;
+
+            const preview = row.querySelector('.theme-color-swatch-preview');
+            const hexInput = row.querySelector('.theme-hex-input');
+            const controls = row.querySelector('.theme-token-controls');
+            const normHex = normalizeHex(hex);
+
+            if (preview) preview.style.backgroundColor = normHex;
+            if (hexInput && document.activeElement !== hexInput) {
+                hexInput.value = normHex.toUpperCase();
+            }
+
+            const defaultColor = this.getDefaultColor(tokenKey);
+            const isCustom = normHex.toLowerCase() !== defaultColor.toLowerCase();
+            let resetBtn = row.querySelector('.theme-token-reset-btn');
+
+            if (isCustom) {
+                if (!resetBtn && controls) {
+                    resetBtn = document.createElement('button');
+                    resetBtn.type = 'button';
+                    resetBtn.className = 'theme-token-reset-btn';
+                    resetBtn.setAttribute('data-reset-key', tokenKey);
+                    const isUa = !window.App.i18n || (window.App.i18n.getLanguage && window.App.i18n.getLanguage() === 'ua');
+                    resetBtn.setAttribute('title', isUa ? 'Скинути до дефолту' : 'Reset to default');
+                    resetBtn.textContent = '↺';
+                    resetBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.resetToken(tokenKey);
+                    });
+                    controls.appendChild(resetBtn);
+                }
+            } else if (resetBtn) {
+                resetBtn.remove();
+            }
+        },
+
+        resetToken(key) {
+            if (window.App.colorPickerPopover) window.App.colorPickerPopover.close();
+            const colors = this.getCustomColors();
+            delete colors[key];
+            this.saveCustomColors(colors);
+            this.applyCustomColors();
+
+            const defaultColor = this.getDefaultColor(key);
+            this.updateTokenRowState(key, defaultColor);
+        },
+
         resetAll() {
+            if (window.App.colorPickerPopover) window.App.colorPickerPopover.close();
             try {
                 localStorage.removeItem(STORAGE_KEY_CUSTOM_COLORS);
             } catch (e) {}
@@ -217,6 +275,7 @@ window.App = window.App || {};
                 for (const token of group.tokens) {
                     root.style.removeProperty(token.key);
                     token.aliases.forEach(alias => root.style.removeProperty(alias));
+                    this.updateTokenRowState(token.key, token.default);
                 }
             }
             root.style.removeProperty('--accent-subtle');
@@ -291,7 +350,7 @@ window.App = window.App || {};
             `;
         },
 
-        bindEvents(modalOverlayEl, onUpdate) {
+        bindEvents(modalOverlayEl) {
             if (!modalOverlayEl) return;
 
             // 1. Відкриття кастомного NothingNotes калорпікера по кліку на свотч
@@ -302,7 +361,6 @@ window.App = window.App || {};
                     const key = wrap.getAttribute('data-token-key');
                     const row = wrap.closest('.theme-token-row');
                     const hexInput = row ? row.querySelector('.theme-hex-input') : null;
-                    const preview = wrap.querySelector('.theme-color-swatch-preview');
                     const currentHex = hexInput && isValidHex(hexInput.value) ? hexInput.value : '#16b981';
 
                     if (window.App.colorPickerPopover) {
@@ -310,13 +368,14 @@ window.App = window.App || {};
                             anchorEl: wrap,
                             initialColor: currentHex,
                             onChange: (newHex) => {
-                                if (preview) preview.style.backgroundColor = newHex;
-                                if (hexInput) hexInput.value = newHex.toUpperCase();
                                 this.setCustomColor(key, newHex);
+                                this.updateTokenRowState(key, newHex);
                             },
                             onClose: (finalHex) => {
-                                this.setCustomColor(key, finalHex);
-                                if (typeof onUpdate === 'function') onUpdate();
+                                if (finalHex && isValidHex(finalHex)) {
+                                    this.setCustomColor(key, finalHex);
+                                    this.updateTokenRowState(key, finalHex);
+                                }
                             }
                         });
                     }
@@ -339,12 +398,11 @@ window.App = window.App || {};
                     if (!hex.startsWith('#')) hex = '#' + hex;
                     if (isValidHex(hex)) {
                         const key = input.getAttribute('data-token-key');
-                        const row = input.closest('.theme-token-row');
-                        if (row) {
-                            const preview = row.querySelector('.theme-color-swatch-preview');
-                            if (preview) preview.style.backgroundColor = hex;
-                        }
                         this.setCustomColor(key, hex);
+                        this.updateTokenRowState(key, hex);
+                        if (window.App.colorPickerPopover && window.App.colorPickerPopover.isOpen()) {
+                            window.App.colorPickerPopover.updateColor(hex);
+                        }
                     }
                 });
 
@@ -354,7 +412,7 @@ window.App = window.App || {};
                     if (isValidHex(hex)) {
                         const key = input.getAttribute('data-token-key');
                         this.setCustomColor(key, hex);
-                        if (typeof onUpdate === 'function') onUpdate();
+                        this.updateTokenRowState(key, hex);
                     }
                 });
             });
@@ -363,23 +421,17 @@ window.App = window.App || {};
             const resetAllBtn = modalOverlayEl.querySelector('#theme-reset-all-btn');
             if (resetAllBtn) {
                 resetAllBtn.addEventListener('click', () => {
-                    if (window.App.colorPickerPopover) window.App.colorPickerPopover.close();
                     this.resetAll();
-                    if (typeof onUpdate === 'function') onUpdate();
                 });
             }
 
             // 4. Скинути окремий колір
             const resetTokenBtns = modalOverlayEl.querySelectorAll('.theme-token-reset-btn');
             resetTokenBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    if (window.App.colorPickerPopover) window.App.colorPickerPopover.close();
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
                     const key = btn.getAttribute('data-reset-key');
-                    const colors = this.getCustomColors();
-                    delete colors[key];
-                    this.saveCustomColors(colors);
-                    this.applyCustomColors();
-                    if (typeof onUpdate === 'function') onUpdate();
+                    this.resetToken(key);
                 });
             });
         }

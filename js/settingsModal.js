@@ -173,7 +173,7 @@ window.App = window.App || {};
             }
 
             if (window.App.settingsThemeTab) {
-                window.App.settingsThemeTab.bindEvents(modalOverlayEl, () => this.render());
+                window.App.settingsThemeTab.bindEvents(modalOverlayEl);
             }
 
             tabButtons.forEach(btn => {

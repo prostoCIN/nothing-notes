@@ -228,6 +228,10 @@ window.App = window.App || {};
                 const rgbVal = hsvToRgb(currentHue, currentSat, currentVal);
                 currentHex = rgbToHex(rgbVal.r, rgbVal.g, rgbVal.b).toLowerCase();
 
+                if (activeInstance) {
+                    activeInstance.currentHex = currentHex;
+                }
+
                 // Положення та колір 2D полотна
                 canvasWrap.style.backgroundColor = `hsl(${Math.round(currentHue)}, 100%, 50%)`;
                 canvasThumb.style.left = `${(currentSat * 100).toFixed(1)}%`;
@@ -460,14 +464,23 @@ window.App = window.App || {};
                 popoverEl,
                 cleanupListeners,
                 onClose,
-                currentHex,
+                _currentHex: currentHex,
+                get currentHex() {
+                    return this._currentHex;
+                },
+                set currentHex(val) {
+                    this._currentHex = val;
+                },
                 updateColor(hex) {
                     if (isValidHex(hex)) {
-                        const rgbP = hexToRgb(hex);
+                        const fullHex = normalizeHex(hex);
+                        const rgbP = hexToRgb(fullHex);
                         const hsvP = rgbToHsv(rgbP.r, rgbP.g, rgbP.b);
                         currentHue = hsvP.h;
                         currentSat = hsvP.s;
                         currentVal = hsvP.v;
+                        currentHex = fullHex;
+                        if (activeInstance) activeInstance.currentHex = fullHex;
                         syncUI(false);
                     }
                 }
