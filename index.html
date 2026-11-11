@@ -41,6 +41,27 @@
                 document.documentElement.setAttribute('data-theme', 'forest');
                 var meta = document.querySelector('meta[name="theme-color"]');
                 if (meta) meta.setAttribute('content', '#1d1e19');
+
+                var raw = localStorage.getItem('nothing_notes_custom_colors');
+                if (raw) {
+                    var colors = JSON.parse(raw);
+                    var root = document.documentElement;
+                    var aliasMap = {
+                        '--bg-base': ['--bg-color'],
+                        '--bg-surface': ['--sidebar-bg', '--column-bg'],
+                        '--bg-elevated': ['--modal-bg', '--surface-dropdown', '--toolbar-bg'],
+                        '--border-subtle': ['--border-color']
+                    };
+                    for (var k in colors) {
+                        if (colors[k]) {
+                            root.style.setProperty(k, colors[k]);
+                            if (aliasMap[k]) {
+                                aliasMap[k].forEach(function(a) { root.style.setProperty(a, colors[k]); });
+                            }
+                            if (k === '--bg-base' && meta) meta.setAttribute('content', colors[k]);
+                        }
+                    }
+                }
             } catch(e) {}
         })();
 

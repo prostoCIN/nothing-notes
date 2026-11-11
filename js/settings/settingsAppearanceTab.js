@@ -53,22 +53,7 @@ window.App = window.App || {};
                         </div>
                     </div>
 
-                    <!-- Блок 1: Вибір теми оформлення сайту -->
-                    <div class="settings-section-title" style="margin-top: 10px;" data-i18n="settings.theme.title">${t('settings.theme.title')}</div>
-                    <div class="settings-theme-grid" id="settings-theme-grid" style="grid-template-columns: 1fr;">
-                        <button type="button" class="settings-theme-card active" data-theme="forest">
-                            <div class="settings-theme-preview forest-preview">
-                                <div class="theme-preview-dot"></div>
-                            </div>
-                            <div class="settings-theme-label">
-                                <span class="settings-theme-name" data-i18n="settings.theme.forest.name">${t('settings.theme.forest.name')}</span>
-                                <span class="settings-theme-sub" data-i18n="settings.theme.forest.desc">${t('settings.theme.forest.desc')}</span>
-                            </div>
-                            <div class="settings-theme-check">✓</div>
-                        </button>
-                    </div>
-
-                    <!-- Блок 2: Параметри редактора та нотаток -->
+                    <!-- Блок: Параметри редактора та нотаток -->
                     <div class="settings-section-title" style="margin-top: 14px;" data-i18n="settings.editor.title">${t('settings.editor.title')}</div>
                     <div class="settings-item">
                         <div class="settings-item-info">
@@ -108,7 +93,6 @@ window.App = window.App || {};
             const prefs = window.App.settingsPreferences;
             const autoCapToggle = modalOverlayEl.querySelector('#settings-autocap-toggle');
             const compactToggle = modalOverlayEl.querySelector('#settings-compact-toggle');
-            const themeCards = modalOverlayEl.querySelectorAll('#settings-theme-grid .settings-theme-card');
             const langDropdownWrap = modalOverlayEl.querySelector('#settings-lang-dropdown-wrap');
             const langBtn = modalOverlayEl.querySelector('#settings-lang-btn');
             const langOptions = modalOverlayEl.querySelectorAll('.settings-lang-option');
@@ -143,16 +127,6 @@ window.App = window.App || {};
                     }
                 });
             }
-
-            // Вибір теми
-            themeCards.forEach(card => {
-                card.addEventListener('click', () => {
-                    const themeKey = card.getAttribute('data-theme');
-                    if (themeKey && prefs) {
-                        prefs.setTheme(themeKey, true);
-                    }
-                });
-            });
 
             if (autoCapToggle && prefs) {
                 autoCapToggle.checked = prefs.isAutoCapitalizeEnabled();

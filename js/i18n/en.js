@@ -303,6 +303,7 @@ export const en = {
         closeTitle: 'Close (Esc)',
         tabs: {
             general: 'General',
+            theme: 'Theme & Colors',
             account: 'Account & Cloud',
             shortcuts: 'Shortcuts'
         },

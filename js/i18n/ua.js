@@ -303,6 +303,7 @@ export const ua = {
         closeTitle: 'Закрити (Esc)',
         tabs: {
             general: 'Загальні',
+            theme: 'Тема та кольори',
             account: 'Акаунт і хмара',
             shortcuts: 'Гарячі клавіші'
         },
