@@ -6,28 +6,22 @@ window.App = window.App || {};
         if (!el) return;
         const maxScroll = el.scrollWidth - el.clientWidth;
         if (maxScroll <= 2) {
-            el.style.maskImage = 'none';
-            el.style.webkitMaskImage = 'none';
+            el.style.setProperty('mask-image', 'none');
+            el.style.setProperty('-webkit-mask-image', 'none');
             return;
         }
         const hasLeft = el.scrollLeft > 3;
         const hasRight = el.scrollLeft < maxScroll - 3;
+        let mask = 'none';
         if (hasLeft && hasRight) {
-            const mask = 'linear-gradient(to right, transparent 0, black 16px, black calc(100% - 16px), transparent 100%)';
-            el.style.maskImage = mask;
-            el.style.webkitMaskImage = mask;
+            mask = 'linear-gradient(to right, transparent 0, black 16px, black calc(100% - 16px), transparent 100%)';
         } else if (hasLeft) {
-            const mask = 'linear-gradient(to right, transparent 0, black 16px, black 100%)';
-            el.style.maskImage = mask;
-            el.style.webkitMaskImage = mask;
+            mask = 'linear-gradient(to right, transparent 0, black 16px, black 100%)';
         } else if (hasRight) {
-            const mask = 'linear-gradient(to right, black 0, black calc(100% - 16px), transparent 100%)';
-            el.style.maskImage = mask;
-            el.style.webkitMaskImage = mask;
-        } else {
-            el.style.maskImage = 'none';
-            el.style.webkitMaskImage = 'none';
+            mask = 'linear-gradient(to right, black 0, black calc(100% - 16px), transparent 100%)';
         }
+        el.style.setProperty('mask-image', mask);
+        el.style.setProperty('-webkit-mask-image', mask);
     }
 
     window.App.workspaceColumn = {
@@ -263,163 +257,270 @@ window.App = window.App || {};
                 titleWrap.appendChild(noteIconPicker);
                 titleWrap.appendChild(titleH2);
 
-                // Додаємо послідовність відкритих рівнів вище у форматі навігаційних лінків (breadcrumbs)
-                if (colIndex > 0 && state && Array.isArray(state.activeChain)) {
+                // Додаємо послідовність відкритих рівнів (нотаток та піднотаток) у форматі навігаційних лінків (breadcrumbs)
+                if (state && Array.isArray(state.activeChain) && state.activeChain.length > 1) {
                     const breadcrumbs = document.createElement('div');
                     breadcrumbs.className = 'column-title-breadcrumbs';
                     breadcrumbs.setAttribute('aria-label', t('column.breadcrumbsLabel'));
 
-                    // Будуємо ланцюжок відкритих рівнів: від кореня (блокнота) до попередньої нотатки (colIndex - 1)
-                    const ancestors = [];
+                    // Будуємо ланцюжок усіх відкритих рівнів окрім поточного (блокнот, нотатки, піднотатки)
+                    const sequence = [];
 
-                    // 1. Рівень 0 - Головний блокнот
-                    ancestors.push({
-                        title: (currentBoard && currentBoard.name) ? currentBoard.name : t('common.defaultBoard'),
-                        icon: (currentBoard && currentBoard.icon) ? currentBoard.icon : '📋',
-                        colIndex: 0,
-                        noteId: null
-                    });
+                    // 1. Рівень 0 - Головний блокнот (якщо поточна колонка не є кореневою)
+                    if (colIndex !== 0) {
+                        sequence.push({
+                            title: (currentBoard && currentBoard.name) ? currentBoard.name : t('common.defaultBoard'),
+                            icon: (currentBoard && currentBoard.icon) ? currentBoard.icon : '📋',
+                            colIndex: 0,
+                            noteId: null
+                        });
+                    }
 
-                    // 2. Усі батьківські нотатки на вищих рівнях ланцюжка
-                    for (let lvl = 1; lvl < colIndex; lvl++) {
-                        const ancestorNoteId = state.activeChain[lvl];
-                        if (ancestorNoteId && noteManager) {
-                            const ancNote = noteManager.getNoteById(ancestorNoteId);
-                            ancestors.push({
-                                title: (ancNote && ancNote.title && ancNote.title.trim()) ? ancNote.title.trim() : t('sticker.untitled'),
-                                icon: (ancNote && ancNote.icon) ? ancNote.icon : '📄',
+                    // 2. Усі інші відкриті нотатки та піднотатки в активному ланцюжку
+                    for (let lvl = 1; lvl < state.activeChain.length; lvl++) {
+                        if (lvl === colIndex) continue;
+                        const chainNoteId = state.activeChain[lvl];
+                        if (chainNoteId && noteManager) {
+                            const chainNote = noteManager.getNoteById(chainNoteId);
+                            sequence.push({
+                                title: (chainNote && chainNote.title && chainNote.title.trim()) ? chainNote.title.trim() : t('sticker.untitled'),
+                                icon: (chainNote && chainNote.icon) ? chainNote.icon : '📄',
                                 colIndex: lvl,
-                                noteId: ancestorNoteId
+                                noteId: chainNoteId
                             });
                         }
                     }
 
-                    // Скрол коліщатком миші по горизонталі
-                    breadcrumbs.addEventListener('wheel', (e) => {
-                        if (e.ctrlKey || e.metaKey) return;
-                        if (breadcrumbs.scrollWidth > breadcrumbs.clientWidth) {
-                            const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-                            if (delta !== 0) {
-                                breadcrumbs.scrollLeft += delta;
-                                e.preventDefault();
-                                e.stopPropagation();
-                            }
-                        }
-                    }, { passive: false });
+                    // Сортуємо послідовність за індексом колонок (0 -> 1 -> 2 ...)
+                    sequence.sort((a, b) => a.colIndex - b.colIndex);
 
-                    // Перетягування мишею (drag-to-scroll)
-                    let isDown = false;
-                    let startX = 0;
-                    let scrollStart = 0;
-                    let hasDragged = false;
-
-                    breadcrumbs.addEventListener('mousedown', (e) => {
-                        if (e.button !== 0) return;
-                        isDown = true;
-                        hasDragged = false;
-                        startX = e.pageX - breadcrumbs.offsetLeft;
-                        scrollStart = breadcrumbs.scrollLeft;
-                    });
-
-                    const onMouseMove = (e) => {
-                        if (!isDown) return;
-                        const x = e.pageX - breadcrumbs.offsetLeft;
-                        const walk = x - startX;
-                        if (Math.abs(walk) > 4) {
-                            hasDragged = true;
-                            breadcrumbs.classList.add('is-dragging-breadcrumbs');
-                        }
-                        breadcrumbs.scrollLeft = scrollStart - walk;
-                    };
-
-                    const onMouseUp = () => {
-                        if (isDown) {
-                            isDown = false;
-                            breadcrumbs.classList.remove('is-dragging-breadcrumbs');
-                            setTimeout(() => {
-                                hasDragged = false;
-                            }, 50);
-                        }
-                    };
-
-                    breadcrumbs.addEventListener('mousemove', onMouseMove);
-                    breadcrumbs.addEventListener('mouseup', onMouseUp);
-                    breadcrumbs.addEventListener('mouseleave', onMouseUp);
-                    window.addEventListener('mouseup', onMouseUp);
-
-                    // Оновлення динамічної маски країв при скролі
-                    breadcrumbs.addEventListener('scroll', () => {
-                        updateBreadcrumbsMask(breadcrumbs);
-                    });
-
-                    ancestors.forEach((anc) => {
-                        const pipe = document.createElement('span');
-                        pipe.className = 'column-title-pipe';
-                        pipe.textContent = '|';
-                        breadcrumbs.appendChild(pipe);
-
-                        const linkBtn = document.createElement('button');
-                        linkBtn.type = 'button';
-                        linkBtn.className = 'column-breadcrumb-link';
-                        linkBtn.title = t('column.goTo', { title: anc.title });
-                        linkBtn.dataset.targetColIndex = String(anc.colIndex);
-                        linkBtn.dataset.targetNoteId = anc.noteId || 'root';
-                        linkBtn.dataset.targetTitle = anc.title || '';
-
-                        const iconSpan = document.createElement('span');
-                        iconSpan.className = 'column-breadcrumb-icon';
-                        iconSpan.textContent = anc.icon;
-
-                        const textSpan = document.createElement('span');
-                        textSpan.className = 'column-breadcrumb-text';
-                        textSpan.textContent = anc.title;
-
-                        linkBtn.appendChild(iconSpan);
-                        linkBtn.appendChild(textSpan);
-
-                        linkBtn.addEventListener('dragstart', (e) => e.preventDefault());
-
-                        linkBtn.addEventListener('click', (e) => {
-                            if (hasDragged) {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                return;
-                            }
-                            e.stopPropagation();
-                            const colsContainer = document.getElementById('columns-container');
-                            if (!colsContainer) return;
-                            const targetCol = colsContainer.querySelector(`.board-column[data-col-index="${anc.colIndex}"]`);
-                            if (targetCol) {
-                                targetCol.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-                                targetCol.classList.remove('column-nav-highlight');
-                                void targetCol.offsetWidth;
-                                targetCol.classList.add('column-nav-highlight');
-                                setTimeout(() => targetCol.classList.remove('column-nav-highlight'), 1400);
-
-                                if (anc.noteId) {
-                                    const card = document.querySelector(`.note-sticker[data-id="${anc.noteId}"]`);
-                                    if (card) {
-                                        card.classList.remove('note-nav-highlight');
-                                        void card.offsetWidth;
-                                        card.classList.add('note-nav-highlight');
-                                        setTimeout(() => card.classList.remove('note-nav-highlight'), 1400);
-                                    }
+                    if (sequence.length > 0) {
+                        // Скрол коліщатком миші по горизонталі
+                        breadcrumbs.addEventListener('wheel', (e) => {
+                            if (e.ctrlKey || e.metaKey) return;
+                            if (breadcrumbs.scrollWidth > breadcrumbs.clientWidth) {
+                                const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+                                if (delta !== 0) {
+                                    breadcrumbs.scrollLeft += delta;
+                                    e.preventDefault();
+                                    e.stopPropagation();
                                 }
                             }
+                        }, { passive: false });
+
+                        // Перетягування мишею на десктопі (drag-to-scroll)
+                        let isDown = false;
+                        let startX = 0;
+                        let scrollStart = 0;
+                        let hasDragged = false;
+
+                        breadcrumbs.addEventListener('mousedown', (e) => {
+                            if (e.button !== 0) return;
+                            isDown = true;
+                            hasDragged = false;
+                            startX = e.pageX - breadcrumbs.offsetLeft;
+                            scrollStart = breadcrumbs.scrollLeft;
                         });
 
-                        breadcrumbs.appendChild(linkBtn);
-                    });
+                        const onMouseMove = (e) => {
+                            if (!isDown) return;
+                            const x = e.pageX - breadcrumbs.offsetLeft;
+                            const walk = x - startX;
+                            if (Math.abs(walk) > 4) {
+                                hasDragged = true;
+                                breadcrumbs.classList.add('is-dragging-breadcrumbs');
+                            }
+                            breadcrumbs.scrollLeft = scrollStart - walk;
+                        };
 
-                    titleWrap.appendChild(breadcrumbs);
+                        const onMouseUp = () => {
+                            if (isDown) {
+                                isDown = false;
+                                breadcrumbs.classList.remove('is-dragging-breadcrumbs');
+                                setTimeout(() => {
+                                    hasDragged = false;
+                                }, 50);
+                            }
+                        };
 
-                    if (typeof ResizeObserver !== 'undefined') {
-                        const ro = new ResizeObserver(() => {
+                        breadcrumbs.addEventListener('mousemove', onMouseMove);
+                        breadcrumbs.addEventListener('mouseup', onMouseUp);
+                        breadcrumbs.addEventListener('mouseleave', onMouseUp);
+                        window.addEventListener('mouseup', onMouseUp);
+
+                        // Сенсорний скрол на мобільних пристроях (touch drag-to-scroll з інерцією та ізоляцією від свайпу колонок)
+                        let touchStartX = 0;
+                        let touchStartY = 0;
+                        let touchScrollStart = 0;
+                        let isTouchScrolling = false;
+                        let lastTouchX = 0;
+                        let lastTouchTime = 0;
+                        let touchVelocity = 0;
+                        let momentumAnimId = null;
+
+                        breadcrumbs.addEventListener('touchstart', (e) => {
+                            if (e.touches.length !== 1) return;
+                            if (momentumAnimId) {
+                                cancelAnimationFrame(momentumAnimId);
+                                momentumAnimId = null;
+                            }
+                            const touch = e.touches[0];
+                            touchStartX = touch.clientX;
+                            touchStartY = touch.clientY;
+                            lastTouchX = touch.clientX;
+                            lastTouchTime = Date.now();
+                            touchVelocity = 0;
+                            touchScrollStart = breadcrumbs.scrollLeft;
+                            isTouchScrolling = false;
+                            hasDragged = false;
+                        }, { passive: true });
+
+                        breadcrumbs.addEventListener('touchmove', (e) => {
+                            if (e.touches.length !== 1) return;
+                            const touch = e.touches[0];
+                            const currentX = touch.clientX;
+                            const currentY = touch.clientY;
+                            const deltaX = currentX - touchStartX;
+                            const deltaY = currentY - touchStartY;
+
+                            if (!isTouchScrolling) {
+                                // Визначаємо чи це горизонтальний свайп по хлібних крихтах
+                                if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 4) {
+                                    isTouchScrolling = true;
+                                    breadcrumbs.classList.add('is-dragging-breadcrumbs');
+                                } else if (Math.abs(deltaY) > 6) {
+                                    // Вертикальний скрол — не блокуємо
+                                    return;
+                                }
+                            }
+
+                            if (isTouchScrolling) {
+                                hasDragged = true;
+                                // Блокуємо свайп контейнера колонок (.columns-container)
+                                if (e.cancelable) e.preventDefault();
+                                e.stopPropagation();
+
+                                const now = Date.now();
+                                const dt = now - lastTouchTime;
+                                if (dt > 0) {
+                                    touchVelocity = (lastTouchX - currentX) / dt;
+                                }
+                                lastTouchX = currentX;
+                                lastTouchTime = now;
+
+                                breadcrumbs.scrollLeft = touchScrollStart - deltaX;
+                                updateBreadcrumbsMask(breadcrumbs);
+                            }
+                        }, { passive: false });
+
+                        const onTouchEnd = () => {
+                            if (isTouchScrolling) {
+                                isTouchScrolling = false;
+                                breadcrumbs.classList.remove('is-dragging-breadcrumbs');
+                                setTimeout(() => {
+                                    hasDragged = false;
+                                }, 120);
+
+                                // Плавна інерція після відриву пальця
+                                if (Math.abs(touchVelocity) > 0.15) {
+                                    let vel = touchVelocity * 14;
+                                    const glide = () => {
+                                        breadcrumbs.scrollLeft += vel;
+                                        updateBreadcrumbsMask(breadcrumbs);
+                                        vel *= 0.88;
+                                        if (Math.abs(vel) > 0.5) {
+                                            momentumAnimId = requestAnimationFrame(glide);
+                                        } else {
+                                            momentumAnimId = null;
+                                        }
+                                    };
+                                    momentumAnimId = requestAnimationFrame(glide);
+                                }
+                            }
+                        };
+
+                        breadcrumbs.addEventListener('touchend', onTouchEnd, { passive: true });
+                        breadcrumbs.addEventListener('touchcancel', onTouchEnd, { passive: true });
+
+                        // Оновлення динамічної маски країв при скролі
+                        breadcrumbs.addEventListener('scroll', () => {
                             updateBreadcrumbsMask(breadcrumbs);
                         });
-                        ro.observe(breadcrumbs);
+
+                        sequence.forEach((item) => {
+                            const pipe = document.createElement('span');
+                            pipe.className = 'column-title-pipe';
+                            pipe.textContent = '|';
+                            breadcrumbs.appendChild(pipe);
+
+                            const linkBtn = document.createElement('button');
+                            linkBtn.type = 'button';
+                            linkBtn.className = 'column-breadcrumb-link';
+                            linkBtn.title = t('column.goTo', { title: item.title });
+                            linkBtn.dataset.targetColIndex = String(item.colIndex);
+                            linkBtn.dataset.targetNoteId = item.noteId || 'root';
+                            linkBtn.dataset.targetTitle = item.title || '';
+
+                            const iconSpan = document.createElement('span');
+                            iconSpan.className = 'column-breadcrumb-icon';
+                            iconSpan.textContent = item.icon;
+
+                            const textSpan = document.createElement('span');
+                            textSpan.className = 'column-breadcrumb-text';
+                            textSpan.textContent = item.title;
+
+                            linkBtn.appendChild(iconSpan);
+                            linkBtn.appendChild(textSpan);
+
+                            linkBtn.addEventListener('dragstart', (e) => e.preventDefault());
+
+                            linkBtn.addEventListener('click', (e) => {
+                                if (hasDragged) {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    return;
+                                }
+                                e.stopPropagation();
+                                const colsContainer = document.getElementById('columns-container');
+                                if (!colsContainer) return;
+                                const targetCol = colsContainer.querySelector(`.board-column[data-col-index="${item.colIndex}"]`);
+                                if (targetCol) {
+                                    const isMobile = window.innerWidth <= 768;
+                                    targetCol.scrollIntoView({
+                                        behavior: 'smooth',
+                                        block: 'nearest',
+                                        inline: isMobile ? 'start' : 'center'
+                                    });
+                                    targetCol.classList.remove('column-nav-highlight');
+                                    void targetCol.offsetWidth;
+                                    targetCol.classList.add('column-nav-highlight');
+                                    setTimeout(() => targetCol.classList.remove('column-nav-highlight'), 1400);
+
+                                    if (item.noteId) {
+                                        const card = document.querySelector(`.note-sticker[data-id="${item.noteId}"]`);
+                                        if (card) {
+                                            card.classList.remove('note-nav-highlight');
+                                            void card.offsetWidth;
+                                            card.classList.add('note-nav-highlight');
+                                            setTimeout(() => card.classList.remove('note-nav-highlight'), 1400);
+                                        }
+                                    }
+                                }
+                            });
+
+                            breadcrumbs.appendChild(linkBtn);
+                        });
+
+                        titleWrap.appendChild(breadcrumbs);
+
+                        if (typeof ResizeObserver !== 'undefined') {
+                            const ro = new ResizeObserver(() => {
+                                updateBreadcrumbsMask(breadcrumbs);
+                            });
+                            ro.observe(breadcrumbs);
+                        }
+                        requestAnimationFrame(() => updateBreadcrumbsMask(breadcrumbs));
                     }
-                    requestAnimationFrame(() => updateBreadcrumbsMask(breadcrumbs));
                 }
             }
 

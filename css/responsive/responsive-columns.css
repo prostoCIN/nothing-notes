@@ -67,9 +67,9 @@
         display: flex !important;
         align-items: center !important;
         gap: 4px !important;
-        flex: 1 1 auto !important;
+        flex: 1 1 0px !important;
         min-width: 0 !important;
-        overflow: visible !important;
+        overflow: hidden !important;
     }
 
     .column-header-actions {
@@ -88,30 +88,58 @@
         font-size: 16px !important;
         font-weight: 700 !important;
         letter-spacing: -0.3px;
-        max-width: 130px !important;
-        flex-shrink: 1 !important;
+        max-width: 110px !important;
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
     }
 
     .column-title-breadcrumbs {
-        max-width: calc(100% - 140px) !important;
-        mask-image: linear-gradient(to right, black calc(100% - 16px), transparent 100%) !important;
-        -webkit-mask-image: linear-gradient(to right, black calc(100% - 16px), transparent 100%) !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 2px !important;
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+        touch-action: pan-x !important;
+        overscroll-behavior-x: contain !important;
+        scrollbar-width: none !important;
         padding-right: 6px !important;
+        cursor: grab !important;
+    }
+
+    .column-title-breadcrumbs::-webkit-scrollbar {
+        display: none !important;
     }
 
     .column-title-pipe {
-        margin: 0 2px !important;
+        margin: 0 3px !important;
         font-size: 11px !important;
+        flex-shrink: 0 !important;
     }
 
     .column-breadcrumb-link {
-        font-size: 11.5px !important;
-        max-width: 95px !important;
-        padding: 2px 4px !important;
+        font-size: 12px !important;
+        max-width: 110px !important;
+        padding: 2px 5px !important;
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
+        touch-action: pan-x !important;
+    }
+
+    .column-breadcrumb-icon {
+        flex-shrink: 0 !important;
     }
 
     .column-breadcrumb-text {
-        max-width: 75px !important;
+        max-width: 80px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
     }
 
     .column-count-badge {
