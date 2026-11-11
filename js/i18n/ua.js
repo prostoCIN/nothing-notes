@@ -508,6 +508,20 @@ export const ua = {
         changeIcon: 'Змінити емодзі',
         addIcon: 'Додати емодзі',
         searchPlaceholder: 'Пошук емодзі...',
-        removeIcon: 'Прибрати іконку'
+        removeIcon: 'Прибрати іконку',
+        notFound: 'Емодзі не знайдено',
+        clearSearch: 'Очистити пошук',
+        categories: {
+            recent: 'Часто використовувані',
+            smileys: 'Смайли та емоції',
+            gestures: 'Жести та люди',
+            animals: 'Тварини та природа',
+            food: 'Їжа та напої',
+            activities: 'Активності та спорт',
+            travel: 'Подорожі та місця',
+            objects: 'Об’єкти та робота',
+            symbols: 'Символи та знаки',
+            flags: 'Прапори'
+        }
     }
 };

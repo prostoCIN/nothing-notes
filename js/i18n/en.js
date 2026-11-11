@@ -508,6 +508,20 @@ export const en = {
         changeIcon: 'Change emoji',
         addIcon: 'Add emoji',
         searchPlaceholder: 'Search emoji...',
-        removeIcon: 'Remove icon'
+        removeIcon: 'Remove icon',
+        notFound: 'No emojis found',
+        clearSearch: 'Clear search',
+        categories: {
+            recent: 'Frequently used',
+            smileys: 'Smileys & Emotion',
+            gestures: 'People & Body',
+            animals: 'Animals & Nature',
+            food: 'Food & Drink',
+            activities: 'Activities & Sports',
+            travel: 'Travel & Places',
+            objects: 'Objects & Tools',
+            symbols: 'Symbols & Signs',
+            flags: 'Flags'
+        }
     }
 };
