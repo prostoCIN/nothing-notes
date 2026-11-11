@@ -497,7 +497,7 @@ window.App = window.App || {};
         refreshBookmarksSubmenu() {
             const pane = barElement.querySelector('#ws-pane-bookmarks');
             if (!pane) return;
-            pane.innerHTML = '';
+
             const state = window.App.state;
             const noteManager = window.App.noteManager;
             const stickerBookmarks = window.App.stickerBookmarks;
@@ -506,101 +506,216 @@ window.App = window.App || {};
             const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
             const selectedNotes = selectedIds.map(id => noteManager ? noteManager.getNoteById(id) : null).filter(Boolean);
 
-            // Кнопка відкриття Bookmark Picker
-            const pickerBtn = document.createElement('button');
-            pickerBtn.type = 'button';
-            pickerBtn.className = 'selection-bookmark-action-btn';
-            pickerBtn.innerHTML = `
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-                </svg>
-                <span>${t('selectionBar.bookmarkTitle') || 'Обрати закладку для виділених...'}</span>
-            `;
-            pickerBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.closeSubmenus();
-                if (stickerBookmarks && stickerBookmarks.openBookmarkPicker) {
-                    stickerBookmarks.openBookmarkPicker(selectedNotes);
-                }
-            });
-            pane.appendChild(pickerBtn);
+            if (selectedNotes.length === 0) {
+                pane.innerHTML = `<div class="selection-submenu-empty">${t('selectionBar.noNotesSelected') || 'Немає вибраних нотаток'}</div>`;
+                return;
+            }
 
-            // Список наявних закладок у виділених нотатках
-            const allLinkedIds = new Set();
-            selectedNotes.forEach(n => {
-                const ids = Array.isArray(n.linkedNoteIds) ? n.linkedNoteIds : (stickerBookmarks ? stickerBookmarks.getSavedBookmarks(n.id) : []);
-                ids.forEach(id => allLinkedIds.add(id));
+            const primaryNote = selectedNotes[0];
+            const currentBoardId = primaryNote.boardId || state.activeBoardId;
+            const ownBoards = Array.isArray(state.boards) ? state.boards : [];
+            const primaryBoardId = ownBoards[0]?.id;
+
+            const selectedIdsSet = new Set(selectedNotes.map(n => n.id));
+            const allNotes = state.notes || [];
+            const availableNotes = allNotes.filter(n => {
+                if (selectedIdsSet.has(n.id) || n.isDeleted) return false;
+                const noteBoard = n.boardId || primaryBoardId;
+                const currentBoard = currentBoardId || primaryBoardId;
+                return noteBoard === currentBoard;
             });
 
-            if (allLinkedIds.size > 0) {
-                const linkedListTitle = document.createElement('div');
-                linkedListTitle.className = 'selection-submenu-title';
-                linkedListTitle.style.marginTop = '6px';
-                linkedListTitle.textContent = t('selectionBar.bookmarkTabTitle') || 'Прив\'язані закладки:';
-                pane.appendChild(linkedListTitle);
+            // Сортуємо нотатки за датою останнього оновлення
+            availableNotes.sort((a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0));
 
-                const listWrap = document.createElement('div');
-                listWrap.className = 'selection-tag-list';
-                listWrap.style.maxHeight = '140px';
+            // Перевіряємо чи вже створена структура панелі (search row + list + clear wrap)
+            let searchInput = pane.querySelector('.bookmark-search-input');
+            let listWrap = pane.querySelector('.selection-bookmarks-list');
+            let clearWrap = pane.querySelector('.selection-bookmarks-clear-wrap');
 
-                allLinkedIds.forEach(targetId => {
-                    const targetNote = noteManager ? noteManager.getNoteById(targetId) : null;
-                    if (!targetNote) return;
+            if (!searchInput || !listWrap || !clearWrap) {
+                pane.innerHTML = '';
 
-                    const item = document.createElement('div');
-                    item.className = 'selection-tag-item';
-                    const rawTitle = (targetNote.title && targetNote.title.trim()) ? targetNote.title.trim() : (t('common.untitled') || 'Без назви');
-                    const icon = targetNote.icon || '🔖';
+                // 1. Поле швидкого пошуку нотатки для закладки
+                const searchWrap = document.createElement('div');
+                searchWrap.className = 'tag-add-option-row';
+                searchWrap.style.marginBottom = '6px';
 
-                    item.innerHTML = `
-                        <div class="selection-tag-main-action">
-                            <span>${icon}</span>
-                            <span class="selection-tag-text">${rawTitle}</span>
-                        </div>
-                        <button class="selection-tag-del-btn" title="Видалити закладку">×</button>
-                    `;
+                searchInput = document.createElement('input');
+                searchInput.type = 'text';
+                searchInput.className = 'tag-add-input bookmark-search-input';
+                searchInput.placeholder = t('sticker.bookmarksSearchPlaceholder') || 'Пошук нотатки для закладки...';
+                searchInput.autocomplete = 'off';
 
-                    // Видалити цю закладку з усіх виділених нотаток
-                    const delBtn = item.querySelector('.selection-tag-del-btn');
-                    delBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        selectedNotes.forEach(n => {
-                            if (stickerBookmarks && stickerBookmarks.removeBookmark) {
-                                stickerBookmarks.removeBookmark(n, targetId, null, false);
-                            }
-                        });
-                        this.refreshBookmarksSubmenu();
-                    });
+                searchWrap.appendChild(searchInput);
+                pane.appendChild(searchWrap);
 
-                    listWrap.appendChild(item);
-                });
-
+                // 2. Список нотаток
+                listWrap = document.createElement('div');
+                listWrap.className = 'selection-tag-list selection-bookmarks-list';
+                listWrap.style.maxHeight = '160px';
                 pane.appendChild(listWrap);
 
-                // Очистити всі закладки
-                const clearBtn = document.createElement('button');
-                clearBtn.type = 'button';
-                clearBtn.className = 'selection-tag-clear-btn';
-                clearBtn.innerHTML = `
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                    <span>Очистити всі закладки</span>
-                `;
-                clearBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    allLinkedIds.forEach(targetId => {
-                        selectedNotes.forEach(n => {
-                            if (stickerBookmarks && stickerBookmarks.removeBookmark) {
-                                stickerBookmarks.removeBookmark(n, targetId, null, false);
-                            }
-                        });
-                    });
-                    this.refreshBookmarksSubmenu();
+                // 3. Блок кнопки очищення
+                clearWrap = document.createElement('div');
+                clearWrap.className = 'selection-bookmarks-clear-wrap';
+                pane.appendChild(clearWrap);
+
+                searchInput.addEventListener('input', () => {
+                    renderBookmarkList(searchInput.value.trim());
                 });
-                pane.appendChild(clearBtn);
+                searchInput.addEventListener('click', (e) => e.stopPropagation());
+                searchInput.addEventListener('keydown', (e) => e.stopPropagation());
             }
+
+            const renderBookmarkList = (filterQuery = '') => {
+                listWrap.innerHTML = '';
+                clearWrap.innerHTML = '';
+
+                if (availableNotes.length === 0) {
+                    const emptyMsg = document.createElement('div');
+                    emptyMsg.className = 'selection-submenu-empty';
+                    emptyMsg.textContent = t('sticker.emptyNotebook') || 'У цьому блокноті немає інших нотаток для закладки';
+                    listWrap.appendChild(emptyMsg);
+                    return;
+                }
+
+                const cleanQuery = filterQuery.toLowerCase().trim();
+                const filteredNotes = cleanQuery
+                    ? availableNotes.filter(n => {
+                        const titleMatch = (n.title || '').toLowerCase().includes(cleanQuery);
+                        const contentMatch = (n.content || '').toLowerCase().includes(cleanQuery);
+                        return titleMatch || contentMatch;
+                    })
+                    : availableNotes;
+
+                if (filteredNotes.length === 0) {
+                    const emptyMsg = document.createElement('div');
+                    emptyMsg.className = 'selection-submenu-empty';
+                    emptyMsg.textContent = 'Нотаток не знайдено';
+                    listWrap.appendChild(emptyMsg);
+                } else {
+                    filteredNotes.forEach(targetNote => {
+                        const item = document.createElement('div');
+                        item.className = 'selection-tag-item';
+
+                        const countWithBookmark = selectedNotes.filter(n => {
+                            const ids = Array.isArray(n.linkedNoteIds)
+                                ? n.linkedNoteIds
+                                : (stickerBookmarks ? stickerBookmarks.getSavedBookmarks(n.id) : []);
+                            return ids.includes(targetNote.id);
+                        }).length;
+
+                        const allHaveBookmark = selectedNotes.length > 0 && countWithBookmark === selectedNotes.length;
+                        const someHaveBookmark = countWithBookmark > 0 && !allHaveBookmark;
+
+                        if (allHaveBookmark) {
+                            item.classList.add('active');
+                        } else if (someHaveBookmark) {
+                            item.classList.add('partial');
+                        }
+
+                        const colorIndex = window.App.getBookmarkColorIndex
+                            ? window.App.getBookmarkColorIndex(targetNote.id, targetNote.title)
+                            : 0;
+
+                        const rawTitle = (targetNote.title && targetNote.title.trim())
+                            ? targetNote.title.trim()
+                            : (t('sticker.untitled') || 'Без назви');
+                        const icon = targetNote.icon || '📄';
+
+                        item.innerHTML = `
+                            <div class="selection-tag-main-action">
+                                <span>${icon}</span>
+                                <span class="selection-tag-text">${rawTitle}</span>
+                                <span class="bookmark-picker-tape-pill bookmark-tape-color-${colorIndex}" title="${t('sticker.bookmarkTapePreview') || 'Колір закладки'}"></span>
+                                <span class="selection-tag-status-icon">${allHaveBookmark ? '✓' : (someHaveBookmark ? '–' : '')}</span>
+                            </div>
+                            ${(allHaveBookmark || someHaveBookmark) ? `<button class="selection-tag-del-btn" title="Видалити закладку">×</button>` : ''}
+                        `;
+
+                        // Клік по самому елементу — додати або зняти закладку з виділених нотаток
+                        const mainAction = item.querySelector('.selection-tag-main-action');
+                        mainAction.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            if (allHaveBookmark) {
+                                // Якщо вже у всіх виділених — знімаємо
+                                selectedNotes.forEach(n => {
+                                    const card = document.querySelector(`.note-sticker[data-note-id="${n.id}"]`);
+                                    if (stickerBookmarks && stickerBookmarks.removeBookmark) {
+                                        stickerBookmarks.removeBookmark(n, targetNote.id, card, false);
+                                    }
+                                });
+                            } else {
+                                // Додаємо закладку до всіх виділених
+                                selectedNotes.forEach(n => {
+                                    const card = document.querySelector(`.note-sticker[data-note-id="${n.id}"]`);
+                                    if (stickerBookmarks && stickerBookmarks.addBookmark) {
+                                        stickerBookmarks.addBookmark(n, targetNote.id, card, false);
+                                    }
+                                });
+                            }
+                            renderBookmarkList(searchInput.value.trim());
+                        });
+
+                        // Клік по кнопці × — видалення цієї закладки з виділених
+                        const delBtn = item.querySelector('.selection-tag-del-btn');
+                        if (delBtn) {
+                            delBtn.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                selectedNotes.forEach(n => {
+                                    const card = document.querySelector(`.note-sticker[data-note-id="${n.id}"]`);
+                                    if (stickerBookmarks && stickerBookmarks.removeBookmark) {
+                                        stickerBookmarks.removeBookmark(n, targetNote.id, card, false);
+                                    }
+                                });
+                                renderBookmarkList(searchInput.value.trim());
+                            });
+                        }
+
+                        listWrap.appendChild(item);
+                    });
+                }
+
+                // Перевіряємо чи хоч одна виділена нотатка має хоч якісь закладки
+                const anyBookmarksExist = selectedNotes.some(n => {
+                    const ids = Array.isArray(n.linkedNoteIds)
+                        ? n.linkedNoteIds
+                        : (stickerBookmarks ? stickerBookmarks.getSavedBookmarks(n.id) : []);
+                    return ids.length > 0;
+                });
+
+                if (anyBookmarksExist) {
+                    const clearBtn = document.createElement('button');
+                    clearBtn.type = 'button';
+                    clearBtn.className = 'selection-tag-clear-btn';
+                    clearBtn.innerHTML = `
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                        <span>Очистити всі закладки</span>
+                    `;
+                    clearBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        selectedNotes.forEach(n => {
+                            const ids = Array.isArray(n.linkedNoteIds)
+                                ? [...n.linkedNoteIds]
+                                : (stickerBookmarks ? [...stickerBookmarks.getSavedBookmarks(n.id)] : []);
+                            ids.forEach(targetId => {
+                                const card = document.querySelector(`.note-sticker[data-note-id="${n.id}"]`);
+                                if (stickerBookmarks && stickerBookmarks.removeBookmark) {
+                                    stickerBookmarks.removeBookmark(n, targetId, card, false);
+                                }
+                            });
+                        });
+                        renderBookmarkList(searchInput.value.trim());
+                    });
+                    clearWrap.appendChild(clearBtn);
+                }
+            };
+
+            renderBookmarkList(searchInput.value.trim());
         },
 
         /**

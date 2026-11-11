@@ -436,6 +436,21 @@ html[data-theme="light"] .selection-group-separator {
     flex-shrink: 0;
 }
 
+.selection-tag-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1 1 auto;
+    font-size: var(--font-xs);
+    letter-spacing: -0.1px;
+}
+
+.selection-tag-main-action .bookmark-picker-tape-pill {
+    margin-left: 6px;
+    margin-right: 4px;
+    flex-shrink: 0;
+}
+
 .selection-tag-clear-btn {
     background: none;
     border: 1px dashed rgba(239, 68, 68, 0.4);
