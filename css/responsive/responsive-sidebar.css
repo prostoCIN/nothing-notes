@@ -110,7 +110,7 @@
     }
 
     /* 4. Збільшення блоків блокнотів та нотаток у лівій панелі (в 1.5 - 1.8 рази) для зручного тапу та свайпу */
-    .board-item,
+    .board-item:not(.is-dragging),
     .note-item {
         min-height: 48px !important;
         padding: 8px 12px !important;
@@ -127,6 +127,14 @@
         border: none !important;
         box-shadow: none !important;
         transition: padding-right 0.24s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    .board-item.is-dragging {
+        position: fixed !important;
+        z-index: 10000 !important;
+        transition: none !important;
+        pointer-events: none !important;
+        margin: 0 !important;
     }
 
     /* Фонова карточка рядка (відокремлений контейнер тексту та іконки) */

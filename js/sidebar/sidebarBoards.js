@@ -298,12 +298,14 @@ window.App = window.App || {};
                     placeholder.style.height = `${initialRect.height || 36}px`;
                     parentContainer.insertBefore(placeholder, li);
 
+                    li.classList.add('is-dragging');
+                    li.style.setProperty('position', 'fixed', 'important');
+                    li.style.setProperty('z-index', '10000', 'important');
+                    li.style.setProperty('transition', 'none', 'important');
+                    li.style.setProperty('margin', '0', 'important');
                     li.style.width = `${initialRect.width}px`;
                     li.style.left = `${currentX - shiftX}px`;
                     li.style.top = `${currentY - shiftY}px`;
-                    li.style.zIndex = '10000';
-                    li.style.position = 'fixed';
-                    li.classList.add('is-dragging');
 
                     boardsScroller.update(currentX, currentY);
                     boardsScroller.start((x, y) => updatePositions(x, y));
@@ -454,6 +456,10 @@ window.App = window.App || {};
                         placeholder.remove();
 
                         li.classList.remove('is-dragging');
+                        li.style.removeProperty('position');
+                        li.style.removeProperty('z-index');
+                        li.style.removeProperty('transition');
+                        li.style.removeProperty('margin');
                         li.style.position = '';
                         li.style.width = '';
                         li.style.left = '';

@@ -258,6 +258,8 @@ html[data-theme="light"] .sidebar-nest-pocket.active-hover .nest-pocket-icon {
 /* Активний стан перетягуваного блокнота (як у нотатках) */
 .board-item.is-dragging,
 .board-item.is-board-dragging {
+    position: fixed !important;
+    z-index: 10000 !important;
     background-color: var(--sidebar-bg, #1e1e1e) !important;
     border: 1.5px solid #10b981 !important;
     border-radius: 8px !important;
@@ -265,7 +267,8 @@ html[data-theme="light"] .sidebar-nest-pocket.active-hover .nest-pocket-icon {
     opacity: 0.96 !important;
     cursor: grabbing !important;
     pointer-events: none !important;
-    z-index: 10000 !important;
+    margin: 0 !important;
+    transition: none !important;
     transform: scale(1.02);
 }
 
