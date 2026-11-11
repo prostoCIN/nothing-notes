@@ -66,9 +66,10 @@
 
     body.is-sidebar-dragging .sidebar-list,
     body.is-sidebar-dragging #notes-list,
-    body.is-sidebar-dragging #sidebar-boards-list,
     body.is-sidebar-dragging .note-item,
-    body.is-sidebar-dragging .board-item {
+    body.is-board-reordering .sidebar-list,
+    body.is-board-reordering #sidebar-boards-list,
+    body.is-board-reordering .board-item {
         touch-action: none !important;
     }
 

@@ -149,7 +149,7 @@ window.App = window.App || {};
 
                 li.addEventListener('click', (e) => {
                     if (e.target.closest('.board-actions') || textSpan.contentEditable === 'true') return;
-                    if (li.dataset.dragged === 'true' || document.body.classList.contains('is-sidebar-dragging')) return;
+                    if (li.dataset.dragged === 'true' || document.body.classList.contains('is-board-reordering')) return;
                     if (state.activeBoardId !== board.id && window.App.boardManager) {
                         window.App.boardManager.switchBoard(board.id);
                     }
@@ -279,7 +279,7 @@ window.App = window.App || {};
                     if (isDragging) return;
                     isDragging = true;
 
-                    document.body.classList.add('is-sidebar-dragging');
+                    document.body.classList.add('is-board-reordering');
                     if (boardsList) {
                         boardsList.style.touchAction = 'none';
                     }
@@ -437,7 +437,7 @@ window.App = window.App || {};
                     window.removeEventListener('pointercancel', onPointerUp);
                     window.removeEventListener('blur', onPointerUp);
                     window.removeEventListener('contextmenu', onContextMenu);
-                    document.body.classList.remove('is-sidebar-dragging');
+                    document.body.classList.remove('is-board-reordering');
 
                     const wasDragging = isDragging;
 

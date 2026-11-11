@@ -56,7 +56,8 @@ window.App = window.App || {};
                     el.classList.contains('touch-drag-active') || 
                     el.classList.contains('is-board-dragging') || 
                     el.classList.contains('is-dragging') || 
-                    document.body.classList.contains('is-sidebar-dragging')
+                    document.body.classList.contains('is-sidebar-dragging') ||
+                    document.body.classList.contains('is-board-reordering')
                 ) {
                     return;
                 }
@@ -78,6 +79,7 @@ window.App = window.App || {};
                 if (!touchStarted) return;
                 if (
                     document.body.classList.contains('is-sidebar-dragging') || 
+                    document.body.classList.contains('is-board-reordering') || 
                     el.classList.contains('touch-drag-active') || 
                     el.classList.contains('is-dragging')
                 ) {

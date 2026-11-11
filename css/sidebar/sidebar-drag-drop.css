@@ -41,14 +41,15 @@ body.is-sidebar-pocket-open .sidebar-drag-placeholder {
 
 /* Плавне збільшення висоти плашок нотаток і блокнотів під час режиму перетягування для максимальної зручності */
 body.is-sidebar-dragging .note-item:not(.is-dragging),
-body.is-sidebar-dragging .board-item:not(.is-dragging) {
+body.is-board-reordering .board-item:not(.is-dragging) {
     padding-top: 9px;
     padding-bottom: 9px;
     margin-bottom: 3px;
     transition: padding 0.2s cubic-bezier(0.2, 0, 0, 1), margin 0.2s ease, background-color 0.15s ease;
 }
 
-body.is-sidebar-dragging .sidebar-drag-placeholder {
+body.is-sidebar-dragging .sidebar-drag-placeholder,
+body.is-board-reordering .sidebar-drag-placeholder {
     min-height: 38px;
     border: 1.5px dashed #10b981 !important;
     background-color: rgba(16, 185, 129, 0.16) !important;
