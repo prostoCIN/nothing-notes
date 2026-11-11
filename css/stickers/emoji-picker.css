@@ -173,7 +173,7 @@
 .emoji-grid-item {
     background: none;
     border: none;
-    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", sans-serif !important;
+    font-family: "Apple Color Emoji", "Noto Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif !important;
     font-size: 22px !important;
     line-height: 1 !important;
     width: 36px;

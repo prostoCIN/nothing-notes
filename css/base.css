@@ -20,7 +20,7 @@ html, body {
 }
 
 body {
-    font-family: 'JetBrains Mono', monospace, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-family: 'JetBrains Mono', monospace, -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple Color Emoji", "Noto Color Emoji", "Segoe UI Emoji", sans-serif;
     background-color: var(--bg-color);
     background-image: var(--body-bg-gradient);
     background-attachment: fixed;
@@ -29,6 +29,16 @@ body {
     display: flex;
     overflow: hidden;
     -webkit-font-smoothing: antialiased;
+}
+
+/* Підтримка повноколірних емодзі та прапорів на Windows через Noto Color Emoji */
+.emoji-grid-item,
+.emoji-cat-tab-btn,
+.sticker-emoji-btn,
+.note-item-icon,
+.board-item-icon,
+.column-header-emoji-picker .sticker-emoji-btn {
+    font-family: "Apple Color Emoji", "Noto Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif !important;
 }
 
 .app-container {

@@ -1,5 +1,5 @@
 // Service Worker для NothingNotes PWA (Автономний режим та офлайн-робота)
-const CACHE_NAME = 'nothing-notes-v43';
+const CACHE_NAME = 'nothing-notes-v44';
 
 const STATIC_PRECACHE = [
     './',
@@ -57,8 +57,8 @@ self.addEventListener('fetch', (event) => {
                     }
                 }
 
-                // Якщо отримано валідну відповідь, оновлюємо кеш у фоні
-                if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+                // Якщо отримано валідну відповідь, оновлюємо кеш у фоні (включаючи шрифти Google Fonts через CORS)
+                if (networkResponse && networkResponse.status === 200 && (networkResponse.type === 'basic' || networkResponse.type === 'cors')) {
                     const responseToCache = networkResponse.clone();
                     caches.open(CACHE_NAME).then((cache) => {
                         cache.put(request, responseToCache);
