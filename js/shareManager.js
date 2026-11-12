@@ -97,7 +97,7 @@ window.App = window.App || {};
 
                 // Якщо розшарено лише конкретні нотатки — фільтруємо їх та їхні піднотатки
                 if (Array.isArray(shareData.note_ids) && shareData.note_ids.length > 0) {
-                    const allowedSet = new Set(shareData.note_ids);
+                    const allowedSet = new Set(shareData.note_ids.map(id => String(id)));
                     
                     // Рекурсивно додаємо дочірні нотатки, тільки якщо includeSubnotes !== false
                     if (includeSubnotes !== false) {
@@ -105,15 +105,17 @@ window.App = window.App || {};
                         while (addedMore) {
                             addedMore = false;
                             finalNotes.forEach(n => {
-                                if (n.parent_id && allowedSet.has(n.parent_id) && !allowedSet.has(n.id)) {
-                                    allowedSet.add(n.id);
+                                const parentIdStr = n.parent_id ? String(n.parent_id) : null;
+                                const idStr = String(n.id);
+                                if (parentIdStr && allowedSet.has(parentIdStr) && !allowedSet.has(idStr)) {
+                                    allowedSet.add(idStr);
                                     addedMore = true;
                                 }
                             });
                         }
                     }
 
-                    finalNotes = finalNotes.filter(n => allowedSet.has(n.id));
+                    finalNotes = finalNotes.filter(n => allowedSet.has(String(n.id)));
                 }
 
                 // Фільтруємо нотатки, які користувач-читач видалив/приховав для себе

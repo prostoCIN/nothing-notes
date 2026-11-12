@@ -450,10 +450,10 @@ window.App = window.App || {};
             const state = window.App.state;
             if (!state) return;
 
+            const isAlreadyOpen = Array.isArray(state.activeChain) && state.activeChain[colIndex + 1] === noteId;
             state.activeChain = state.activeChain.slice(0, colIndex + 1);
 
-            const nextNoteId = state.activeChain[colIndex + 1];
-            if (nextNoteId === noteId) {
+            if (isAlreadyOpen) {
                 this.render();
                 return;
             }
@@ -552,15 +552,14 @@ window.App = window.App || {};
             }
 
             // Валідуємо ланцюжок activeChain: він повинен починатися з null,
-            // і кожен наступний parentNoteId повинен існувати, належати поточному активному блокноту
-            // та мати батьківський ID, що збігається з попереднім елементом ланцюжка.
+            // і кожен наступний parentNoteId повинен існувати та належати поточному активному блокноту.
             if (state && Array.isArray(state.activeChain)) {
                 const noteManager = window.App.noteManager;
                 const validChain = [null];
                 for (let i = 1; i < state.activeChain.length; i++) {
                     const pId = state.activeChain[i];
                     const n = noteManager ? noteManager.getNoteById(pId) : null;
-                    if (n && n.boardId === currentBoard.id && (n.parentId || null) === (validChain[i - 1] || null)) {
+                    if (n && n.boardId === currentBoard.id) {
                         validChain.push(pId);
                     } else {
                         break;

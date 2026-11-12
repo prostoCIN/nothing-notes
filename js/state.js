@@ -247,7 +247,22 @@ window.App.storage = {
         localStorage.setItem('minimal_readonly_boards', JSON.stringify(boards));
     },
     getReadOnlyNotes() {
-        return JSON.parse(localStorage.getItem('minimal_readonly_notes')) || [];
+        const raw = JSON.parse(localStorage.getItem('minimal_readonly_notes')) || [];
+        if (!Array.isArray(raw) || raw.length === 0) return [];
+        // Нормалізація: якщо батьківська нотатка не входить до нотаток цього спільного блокнота,
+        // робимо її кореневою (parentId = null)
+        const boardIdsMap = new Map();
+        raw.forEach(n => {
+            if (!boardIdsMap.has(n.boardId)) boardIdsMap.set(n.boardId, new Set());
+            boardIdsMap.get(n.boardId).add(String(n.id));
+        });
+        raw.forEach(n => {
+            const boardSet = boardIdsMap.get(n.boardId);
+            if (n.parentId && boardSet && !boardSet.has(String(n.parentId))) {
+                n.parentId = null;
+            }
+        });
+        return raw;
     },
     saveReadOnlyNotes(notes) {
         localStorage.setItem('minimal_readonly_notes', JSON.stringify(notes));

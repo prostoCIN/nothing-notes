@@ -123,8 +123,19 @@ window.DOMPurify = window.DOMPurify || DOMPurify;
         },
 
         getNoteById(id) {
+            if (!id) return null;
+            const strId = String(id);
+            const state = window.App.state;
+            const currentBoardId = state ? state.activeBoardId : null;
             const allNotes = this.getAllNotes();
-            return allNotes.find(n => n.id === id) || null;
+
+            // Пріоритет: спочатку шукаємо нотатку в поточному активному блокноті (для коректної роботи мульти-акаунтів і спільних блокнотів)
+            if (currentBoardId) {
+                const activeNote = allNotes.find(n => String(n.id) === strId && n.boardId === currentBoardId);
+                if (activeNote) return activeNote;
+            }
+
+            return allNotes.find(n => String(n.id) === strId) || null;
         },
 
         createNewNote(parentId = null, shouldFocus = true) {
