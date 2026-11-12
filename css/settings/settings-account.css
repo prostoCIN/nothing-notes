@@ -166,3 +166,47 @@
     margin-top: 2px;
 }
 
+@media (max-width: 480px) {
+    .settings-account-card {
+        padding: 12px;
+        gap: 10px;
+    }
+
+    .settings-account-avatar {
+        width: 38px;
+        height: 38px;
+        font-size: 16px;
+    }
+
+    .settings-account-name {
+        font-size: 13px;
+    }
+
+    .settings-account-email {
+        font-size: 11px;
+    }
+
+    .settings-account-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .settings-account-actions .settings-btn-primary,
+    .settings-account-actions .settings-btn-danger {
+        width: 100%;
+        padding: 9px 12px;
+    }
+
+    .settings-stats-row {
+        gap: 8px;
+    }
+
+    .settings-stat-box {
+        padding: 10px 8px;
+    }
+
+    .settings-stat-num {
+        font-size: 16px;
+    }
+}
+

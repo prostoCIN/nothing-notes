@@ -464,6 +464,41 @@
     transform: rotate(-45deg);
 }
 
+@media (max-width: 480px) {
+    .theme-token-row {
+        padding: 6px 4px;
+        gap: 6px;
+    }
+
+    .theme-token-name {
+        font-size: 11.5px;
+    }
+
+    .theme-token-desc {
+        font-size: 10px;
+    }
+
+    .theme-token-controls {
+        gap: 6px;
+    }
+
+    .theme-hex-input {
+        width: 64px;
+        font-size: 10.5px;
+        padding: 4px 2px;
+    }
+
+    .theme-color-swatch-wrap {
+        width: 24px;
+        height: 24px;
+    }
+
+    .theme-token-reset-btn {
+        font-size: 12px;
+        padding: 1px 2px;
+    }
+}
+
 /* ==========================================================================
    NothingNotes Bespoke Color Picker Popover
    ========================================================================== */
