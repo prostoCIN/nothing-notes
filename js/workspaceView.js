@@ -551,6 +551,24 @@ window.App = window.App || {};
                 return;
             }
 
+            // Валідуємо ланцюжок activeChain: він повинен починатися з null,
+            // і кожен наступний parentNoteId повинен існувати, належати поточному активному блокноту
+            // та мати батьківський ID, що збігається з попереднім елементом ланцюжка.
+            if (state && Array.isArray(state.activeChain)) {
+                const noteManager = window.App.noteManager;
+                const validChain = [null];
+                for (let i = 1; i < state.activeChain.length; i++) {
+                    const pId = state.activeChain[i];
+                    const n = noteManager ? noteManager.getNoteById(pId) : null;
+                    if (n && n.boardId === currentBoard.id && (n.parentId || null) === (validChain[i - 1] || null)) {
+                        validChain.push(pId);
+                    } else {
+                        break;
+                    }
+                }
+                state.activeChain = validChain;
+            }
+
             // Синхронізуємо стан верхнього хедера
             const boardTitleEl = document.getElementById('workspace-header-board-title');
             const boardIconEl = document.getElementById('workspace-header-board-icon');

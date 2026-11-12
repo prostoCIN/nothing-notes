@@ -93,8 +93,17 @@ window.App = window.App || {};
                     });
                     localStorage.setItem('minimal_board_tag_options', JSON.stringify(allBoardsTags));
 
-                    if (!state.activeBoardId || !state.boards.find(b => b.id === state.activeBoardId)) {
-                        state.activeBoardId = state.boards[0].id;
+                    const isCurrentBoardValid = () => {
+                        if (!state.activeBoardId) return false;
+                        if (state.boards && state.boards.some(b => b.id === state.activeBoardId)) return true;
+                        if (state.readOnlyBoards && state.readOnlyBoards.some(b => b.id === state.activeBoardId)) return true;
+                        return false;
+                    };
+
+                    if (!isCurrentBoardValid()) {
+                        state.activeBoardId = state.boards.length > 0 ? state.boards[0].id : null;
+                        state.activeChain = [null];
+                        if (state.expandedSidebarNoteIds) state.expandedSidebarNoteIds.clear();
                         window.App.storage.saveActiveBoardId(state.activeBoardId);
                     }
                 } else {
@@ -107,8 +116,16 @@ window.App = window.App || {};
                     if (Array.isArray(boardsToMigrate) && boardsToMigrate.length > 0) {
                         state.boards = boardsToMigrate;
                         window.App.storage.saveBoards(state.boards);
-                        if (!state.activeBoardId || !state.boards.find(b => b.id === state.activeBoardId)) {
-                            state.activeBoardId = state.boards[0].id;
+                        const isCurrentBoardValid = () => {
+                            if (!state.activeBoardId) return false;
+                            if (state.boards && state.boards.some(b => b.id === state.activeBoardId)) return true;
+                            if (state.readOnlyBoards && state.readOnlyBoards.some(b => b.id === state.activeBoardId)) return true;
+                            return false;
+                        };
+                        if (!isCurrentBoardValid()) {
+                            state.activeBoardId = state.boards.length > 0 ? state.boards[0].id : null;
+                            state.activeChain = [null];
+                            if (state.expandedSidebarNoteIds) state.expandedSidebarNoteIds.clear();
                             window.App.storage.saveActiveBoardId(state.activeBoardId);
                         }
                         await this.syncBoards(cs);
@@ -117,7 +134,7 @@ window.App = window.App || {};
 
                 // 2. Синхронізація спільних блокнотів читача з таблиці `user_shared_tokens`
                 let sharedTokens = [];
-                const { data: dbSharedTokens } = await supabase
+                const { data: dbSharedTokens, error: tokensErr } = await supabase
                     .from('user_shared_tokens')
                     .select('share_token');
 
@@ -129,6 +146,15 @@ window.App = window.App || {};
                         sharedTokens = legacyTokens;
                         await this.syncSharedTokens(legacyTokens, cloudSync);
                     }
+                }
+
+                // Якщо в базі токенів ще немає (або вони щойно додані локально) — беремо локальні спільні блокноти і синхронізуємо
+                const localReadOnlyBoards = state.readOnlyBoards || (window.App.storage ? window.App.storage.getReadOnlyBoards() : []);
+                const localTokens = localReadOnlyBoards.map(b => b.shareToken).filter(Boolean);
+
+                if (sharedTokens.length === 0 && localTokens.length > 0 && !tokensErr) {
+                    sharedTokens = localTokens;
+                    await this.syncSharedTokens(localTokens, cloudSync);
                 }
 
                 if (sharedTokens.length > 0 && window.App.shareManager) {
@@ -147,15 +173,27 @@ window.App = window.App || {};
                         }
                     }
 
-                    state.readOnlyBoards = loadedSharedBoards;
-                    state.readOnlyNotes = loadedSharedNotes;
-                    window.App.storage.saveReadOnlyBoards(state.readOnlyBoards);
-                    window.App.storage.saveReadOnlyNotes(state.readOnlyNotes);
-                } else if (sharedTokens.length === 0) {
+                    if (loadedSharedBoards.length > 0 || sharedTokens.length === 0) {
+                        state.readOnlyBoards = loadedSharedBoards;
+                        state.readOnlyNotes = loadedSharedNotes;
+                        window.App.storage.saveReadOnlyBoards(state.readOnlyBoards);
+                        window.App.storage.saveReadOnlyNotes(state.readOnlyNotes);
+                    }
+                } else if (sharedTokens.length === 0 && localTokens.length === 0) {
                     state.readOnlyBoards = [];
                     state.readOnlyNotes = [];
                     window.App.storage.saveReadOnlyBoards([]);
                     window.App.storage.saveReadOnlyNotes([]);
+                }
+
+                // Перевіряємо валідність активного блокнота після завантаження спільних блокнотів
+                const isBoardValidAfterSync = (state.boards && state.boards.some(b => b.id === state.activeBoardId)) ||
+                    (state.readOnlyBoards && state.readOnlyBoards.some(b => b.id === state.activeBoardId));
+                if (!state.activeBoardId || !isBoardValidAfterSync) {
+                    state.activeBoardId = state.boards.length > 0 ? state.boards[0].id : null;
+                    state.activeChain = [null];
+                    if (state.expandedSidebarNoteIds) state.expandedSidebarNoteIds.clear();
+                    window.App.storage.saveActiveBoardId(state.activeBoardId);
                 }
 
                 const { data: cloudNotes, error } = await supabase

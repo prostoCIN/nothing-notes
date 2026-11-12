@@ -127,24 +127,33 @@ window.App = window.App || {};
                 const sanitizer = window.App.stickerPasteSanitizer;
                 const safeSanitize = (html) => (sanitizer && sanitizer.sanitizeNoteHtml ? sanitizer.sanitizeNoteHtml(html) : (html || ''));
 
-                const formattedNotes = finalNotes.map(n => ({
-                    id: String(n.id || ''),
-                    boardId: 'shared_' + shareData.board_id,
-                    parentId: n.parent_id || null,
-                    title: String(n.title || '').slice(0, 500),
-                    content: safeSanitize(n.content || ''),
-                    color: n.color || 'yellow',
-                    fontSize: n.font_size || 16,
-                    icon: n.icon || '',
-                    images: n.images || [],
-                    isCollapsed: !!n.is_collapsed,
-                    tags: Array.isArray(n.tags) ? n.tags : [],
-                    linkedNoteIds: Array.isArray(n.linked_note_ids) ? n.linked_note_ids : (Array.isArray(n.linkedNoteIds) ? n.linkedNoteIds : []),
-                    orderIndex: typeof n.order_index === 'number' ? n.order_index : 0,
-                    createdAt: new Date(n.created_at).getTime() || Date.now(),
-                    updatedAt: n.updated_at ? new Date(n.updated_at).getTime() : Date.now(),
-                    isReadOnly: true
-                }));
+                const finalIdsSet = new Set(finalNotes.map(n => String(n.id)));
+                const formattedNotes = finalNotes.map(n => {
+                    const stringId = String(n.id || '');
+                    const stringParentId = n.parent_id ? String(n.parent_id) : null;
+                    // Якщо батьківська нотатка не входить у список розшарених нотаток,
+                    // робимо цю нотатку кореневою (parentId = null) у межах спільного блокнота
+                    const validParentId = (stringParentId && finalIdsSet.has(stringParentId)) ? stringParentId : null;
+
+                    return {
+                        id: stringId,
+                        boardId: 'shared_' + shareData.board_id,
+                        parentId: validParentId,
+                        title: String(n.title || '').slice(0, 500),
+                        content: safeSanitize(n.content || ''),
+                        color: n.color || 'yellow',
+                        fontSize: n.font_size || 16,
+                        icon: n.icon || '',
+                        images: n.images || [],
+                        isCollapsed: !!n.is_collapsed,
+                        tags: Array.isArray(n.tags) ? n.tags : [],
+                        linkedNoteIds: Array.isArray(n.linked_note_ids) ? n.linked_note_ids : (Array.isArray(n.linkedNoteIds) ? n.linkedNoteIds : []),
+                        orderIndex: typeof n.order_index === 'number' ? n.order_index : 0,
+                        createdAt: new Date(n.created_at).getTime() || Date.now(),
+                        updatedAt: n.updated_at ? new Date(n.updated_at).getTime() : Date.now(),
+                        isReadOnly: true
+                    };
+                });
 
                 return {
                     share: shareData,
@@ -197,6 +206,8 @@ window.App = window.App || {};
             // Перемикаємося на цей доданий блокнот
             state.activeBoardId = sharedBoard.id;
             storage.saveActiveBoardId(sharedBoard.id);
+            state.activeChain = [null];
+            if (state.expandedSidebarNoteIds) state.expandedSidebarNoteIds.clear();
 
             // Оновлюємо інтерфейс
             if (window.App.sidebarView) window.App.sidebarView.render();
@@ -225,6 +236,8 @@ window.App = window.App || {};
             if (state.activeBoardId === sharedBoardId) {
                 state.activeBoardId = state.boards.length > 0 ? state.boards[0].id : null;
                 storage.saveActiveBoardId(state.activeBoardId);
+                state.activeChain = [null];
+                if (state.expandedSidebarNoteIds) state.expandedSidebarNoteIds.clear();
             }
 
             if (window.App.sidebarView) window.App.sidebarView.render();
