@@ -41,6 +41,14 @@
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
 }
 
+.board-title-pill.is-readonly {
+    border-color: rgba(245, 158, 11, 0.35);
+}
+
+.board-title-pill.is-readonly .board-title-icon {
+    color: #f59e0b;
+}
+
 .board-title-icon {
     display: flex;
     align-items: center;

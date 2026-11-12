@@ -435,7 +435,12 @@ export const ua = {
         connectBadgeMakeSubnote: 'Зробити піднотаткою',
         connectBadgeSelf: 'Неможливо (сама до себе)',
         connectBadgeAlreadySubnote: 'Вже є піднотаткою',
-        connectBadgeCycle: 'Неможливо (цикл)'
+        connectBadgeCycle: 'Неможливо (цикл)',
+        createNoteHere: 'Створити нотатку тут',
+        emptyTitle: 'На цій дошці поки немає стікерів',
+        emptySubtitle: 'Клікніть правою кнопкою миші на полотні, щоб створити першу нотатку',
+        emptyReadOnlyTitle: 'У цьому спільному блокноті ще немає нотаток',
+        emptyReadOnlySubtitle: 'Власник блокнота ще не додав сюди нотаток'
     },
     confirm: {
         deleteNoteTitle: 'Видалити нотатку?',

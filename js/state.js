@@ -66,7 +66,9 @@ window.App.storage = {
         if (!noteId) return;
         try {
             const map = this.getBoardPositions();
-            map[noteId] = { canvasX: Math.round(x), canvasY: Math.round(y), boardX: Math.round(x), boardY: Math.round(y) };
+            const rx = Math.round(x);
+            const ry = Math.round(y);
+            map[noteId] = { canvasX: rx, canvasY: ry, boardX: rx, boardY: ry, x: rx, y: ry };
             localStorage.setItem('minimal_board_positions', JSON.stringify(map));
         } catch {}
     },

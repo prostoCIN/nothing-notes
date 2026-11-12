@@ -435,7 +435,12 @@ export const en = {
         connectBadgeMakeSubnote: 'Make subnote',
         connectBadgeSelf: 'Cannot connect to itself',
         connectBadgeAlreadySubnote: 'Already a subnote',
-        connectBadgeCycle: 'Cannot connect (cycle)'
+        connectBadgeCycle: 'Cannot connect (cycle)',
+        createNoteHere: 'Create note here',
+        emptyTitle: 'No sticky notes on this board yet',
+        emptySubtitle: 'Right-click on the canvas to create the first note',
+        emptyReadOnlyTitle: 'No notes in this shared notebook yet',
+        emptyReadOnlySubtitle: 'The owner has not added any notes here yet'
     },
     confirm: {
         deleteNoteTitle: 'Delete note?',

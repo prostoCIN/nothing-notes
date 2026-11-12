@@ -194,18 +194,26 @@ window.App = window.App || {};
             container.className = 'board-view-wrapper';
 
             const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
+            const isBoardReadOnly = !!(currentBoard && (currentBoard.isReadOnly || (currentBoard.id && String(currentBoard.id).startsWith('shared_'))));
 
             container.innerHTML = `
                 <div class="board-toolbar">
                     <div class="board-toolbar-left">
-                        <div class="board-title-pill">
+                        <div class="board-title-pill ${isBoardReadOnly ? 'is-readonly' : ''}">
                             <span class="board-title-icon">
+                                ${isBoardReadOnly ? `
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                </svg>
+                                ` : `
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                     <rect x="3" y="3" width="18" height="18" rx="2"></rect>
                                     <path d="M8 8h3v3H8z"></path>
                                     <path d="M13 13h3v3h-3z"></path>
                                     <path d="M11 9.5c2 0 2 5 2 5"></path>
                                 </svg>
+                                `}
                             </span>
                             <span class="board-title-text">${currentBoard.name}</span>
                             <span class="board-nodes-count" id="board-nodes-counter" title="${t('board.nodesCount') || 'Кількість стікерів'}" data-i18n-title="board.nodesCount">0</span>
@@ -365,13 +373,24 @@ window.App = window.App || {};
             if (!currentBoard) return;
 
             const boardIdStr = String(currentBoard.id);
+            const origBoardIdStr = currentBoard.originalBoardId ? String(currentBoard.originalBoardId) : null;
+            const isBoardReadOnly = !!(currentBoard && (currentBoard.isReadOnly || boardIdStr.startsWith('shared_')));
 
             // Якщо для цього блокнота камера вже була ініціалізована або збережена — за замовчуванням зберігаємо положення камери
             const shouldPreserveCamera = options.preserveCamera !== undefined
                 ? Boolean(options.preserveCamera)
                 : Boolean(isCameraInitializedForBoard || boardCameras.has(boardIdStr));
 
-            const boardNotes = allNotes.filter(n => String(n.boardId) === boardIdStr);
+            const isMatchingBoard = (noteBoardId) => {
+                if (!noteBoardId) return false;
+                const str = String(noteBoardId);
+                if (str === boardIdStr) return true;
+                if (origBoardIdStr && (str === origBoardIdStr || 'shared_' + str === boardIdStr)) return true;
+                if (boardIdStr.startsWith('shared_') && boardIdStr.replace('shared_', '') === str) return true;
+                return false;
+            };
+
+            const boardNotes = allNotes.filter(n => isMatchingBoard(n.boardId));
             const notesMap = new Map();
             boardNotes.forEach(n => notesMap.set(n.id, n));
 
@@ -379,39 +398,93 @@ window.App = window.App || {};
             nodes = [];
             edges = [];
 
+            // Якщо на дошці взагалі немає нотаток — відображаємо дружній порожній стан
+            if (boardNotes.length === 0) {
+                if (nodesLayer) {
+                    const emptyPlaceholder = document.createElement('div');
+                    emptyPlaceholder.className = 'board-empty-placeholder';
+                    const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
+                    emptyPlaceholder.innerHTML = `
+                        <div class="board-empty-icon">
+                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                                <path d="M8 8h3v3H8z"></path>
+                                <path d="M13 13h3v3h-3z"></path>
+                                <path d="M11 9.5c2 0 2 5 2 5"></path>
+                            </svg>
+                        </div>
+                        <div class="board-empty-title">${isBoardReadOnly ? (t('board.emptyReadOnlyTitle') || 'У цьому спільному блокноті ще немає нотаток') : (t('board.emptyTitle') || 'На цій дошці поки немає стікерів')}</div>
+                        <div class="board-empty-subtitle">${isBoardReadOnly ? (t('board.emptyReadOnlySubtitle') || 'Власник блокнота ще не додав сюди нотаток') : (t('board.emptySubtitle') || 'Клікніть правою кнопкою миші на полотні, щоб створити першу нотатку')}</div>
+                    `;
+                    nodesLayer.appendChild(emptyPlaceholder);
+                }
+
+                const counterEl = container ? container.querySelector('#board-nodes-counter') : null;
+                if (counterEl) counterEl.textContent = '0';
+                const orphansEl = container ? container.querySelector('#board-orphans-counter') : null;
+                if (orphansEl) orphansEl.textContent = '0';
+                this.draw();
+                return;
+            }
+
+            function findRootNoteId(note) {
+                if (!note) return null;
+                const visited = new Set();
+                let cur = note;
+                while (cur && cur.parentId && notesMap.has(cur.parentId)) {
+                    if (visited.has(cur.id)) break;
+                    visited.add(cur.id);
+                    cur = notesMap.get(cur.parentId);
+                }
+                return cur ? cur.id : note.id;
+            }
+
             let anyMissingPosition = false;
 
             boardNotes.forEach((note, idx) => {
-                const isRoot = !note.parentId || !notesMap.has(note.parentId);
+                const validParentId = (note.parentId && notesMap.has(note.parentId)) ? note.parentId : null;
+                const isRoot = !validParentId;
                 const hasChildren = boardNotes.some(child => child.parentId === note.id);
                 const isOrphan = isRoot && !hasChildren;
 
                 let posX = 0;
                 let posY = 0;
 
-                let rawX = typeof note.canvasX === 'number' ? note.canvasX : (typeof note.boardX === 'number' ? note.boardX : null);
-                let rawY = typeof note.canvasY === 'number' ? note.canvasY : (typeof note.boardY === 'number' ? note.boardY : null);
+                let rawX = (typeof note.canvasX === 'number' && !isNaN(note.canvasX)) ? note.canvasX : ((typeof note.boardX === 'number' && !isNaN(note.boardX)) ? note.boardX : null);
+                let rawY = (typeof note.canvasY === 'number' && !isNaN(note.canvasY)) ? note.canvasY : ((typeof note.boardY === 'number' && !isNaN(note.boardY)) ? note.boardY : null);
 
                 if ((rawX === null || rawY === null) && window.App.storage && window.App.storage.getBoardPositions) {
                     const posMap = window.App.storage.getBoardPositions();
                     if (posMap && posMap[note.id]) {
-                        rawX = posMap[note.id].x;
-                        rawY = posMap[note.id].y;
-                        note.canvasX = rawX;
-                        note.canvasY = rawY;
-                        note.boardX = rawX;
-                        note.boardY = rawY;
+                        const saved = posMap[note.id];
+                        if (rawX === null) {
+                            if (typeof saved.canvasX === 'number' && !isNaN(saved.canvasX)) rawX = saved.canvasX;
+                            else if (typeof saved.boardX === 'number' && !isNaN(saved.boardX)) rawX = saved.boardX;
+                            else if (typeof saved.x === 'number' && !isNaN(saved.x)) rawX = saved.x;
+                        }
+                        if (rawY === null) {
+                            if (typeof saved.canvasY === 'number' && !isNaN(saved.canvasY)) rawY = saved.canvasY;
+                            else if (typeof saved.boardY === 'number' && !isNaN(saved.boardY)) rawY = saved.boardY;
+                            else if (typeof saved.y === 'number' && !isNaN(saved.y)) rawY = saved.y;
+                        }
+                        if (typeof rawX === 'number' && typeof rawY === 'number' && !isNaN(rawX) && !isNaN(rawY)) {
+                            note.canvasX = rawX;
+                            note.canvasY = rawY;
+                            note.boardX = rawX;
+                            note.boardY = rawY;
+                        }
                     }
                 }
 
-                if (rawX !== null && rawY !== null) {
+                if (typeof rawX === 'number' && typeof rawY === 'number' && !isNaN(rawX) && !isNaN(rawY)) {
                     posX = rawX;
                     posY = rawY;
                 } else {
                     anyMissingPosition = true;
                 }
 
-                const branchColor = getBranchColor(note.parentId || note.id, idx);
+                const branchRootId = findRootNoteId(note);
+                const branchColor = getBranchColor(branchRootId, idx);
 
                 const nodeObj = {
                     id: note.id,
@@ -421,7 +494,7 @@ window.App = window.App || {};
                     tags: noteManager ? noteManager.getNoteTags(note) : (note.tags || []),
                     isRoot: isRoot,
                     isOrphan: isOrphan,
-                    parentId: note.parentId || null,
+                    parentId: validParentId,
                     x: posX,
                     y: posY,
                     width: 380,
@@ -438,7 +511,7 @@ window.App = window.App || {};
                     card.dataset.boardNodeId = note.id;
 
                     this.attachCardDrag(card, nodeObj);
-                    if (window.App.boardConnect) {
+                    if (!isBoardReadOnly && window.App.boardConnect) {
                         window.App.boardConnect.attachConnectionHandles(card, nodeObj, this);
                     }
                     nodesLayer.appendChild(card);
@@ -451,6 +524,12 @@ window.App = window.App || {};
 
                 nodes.push(nodeObj);
             });
+
+            // Якщо кілька нотаток злиплися в (0, 0) — це ознака відсутності коректного розміщення
+            const zeroCount = nodes.filter(n => n.x === 0 && n.y === 0).length;
+            if (nodes.length > 1 && zeroCount > 1) {
+                anyMissingPosition = true;
+            }
 
             // Ієрархічні зв'язки
             nodes.forEach(node => {
@@ -552,13 +631,17 @@ window.App = window.App || {};
             nodes.forEach(n => {
                 const nw = n.width || 380;
                 const nh = n.height || 140;
-                minX = Math.min(minX, n.x);
-                minY = Math.min(minY, n.y);
-                maxX = Math.max(maxX, n.x + nw);
-                maxY = Math.max(maxY, n.y + nh);
+                if (typeof n.x === 'number' && !isNaN(n.x)) {
+                    minX = Math.min(minX, n.x);
+                    maxX = Math.max(maxX, n.x + nw);
+                }
+                if (typeof n.y === 'number' && !isNaN(n.y)) {
+                    minY = Math.min(minY, n.y);
+                    maxY = Math.max(maxY, n.y + nh);
+                }
             });
 
-            if (!isFinite(minX)) return true;
+            if (!isFinite(minX) || !isFinite(minY)) return true;
 
             const screenMinX = (minX - width / 2) * zoom + camera.x;
             const screenMaxX = (maxX - width / 2) * zoom + camera.x;
@@ -600,10 +683,14 @@ window.App = window.App || {};
             nodes.forEach(n => {
                 const nw = n.width || (n.element && n.element.offsetWidth > 40 ? n.element.offsetWidth : 380);
                 const nh = n.height || (n.element && n.element.offsetHeight > 40 ? n.element.offsetHeight : 140);
-                minX = Math.min(minX, n.x);
-                minY = Math.min(minY, n.y);
-                maxX = Math.max(maxX, n.x + nw);
-                maxY = Math.max(maxY, n.y + nh);
+                if (typeof n.x === 'number' && !isNaN(n.x)) {
+                    minX = Math.min(minX, n.x);
+                    maxX = Math.max(maxX, n.x + nw);
+                }
+                if (typeof n.y === 'number' && !isNaN(n.y)) {
+                    minY = Math.min(minY, n.y);
+                    maxY = Math.max(maxY, n.y + nh);
+                }
             });
 
             if (!isFinite(minX) || !isFinite(minY)) {
@@ -985,10 +1072,15 @@ window.App = window.App || {};
 
             boundCanvasContextMenu = (e) => {
                 e.preventDefault();
+                const currentBoard = window.App.boardManager ? window.App.boardManager.getActiveBoard() : null;
+                const isBoardReadOnly = !!(currentBoard && (currentBoard.isReadOnly || (currentBoard.id && String(currentBoard.id).startsWith('shared_'))));
                 const world = interaction.screenToWorld(e.clientX, e.clientY, canvas);
                 if (window.App.boardContextMenu) {
                     window.App.boardContextMenu.show(e.clientX, e.clientY, world.x, world.y, {
-                        onCreateNote: (wx, wy) => this.createNoteAtWorldPosition(wx, wy),
+                        isReadOnly: isBoardReadOnly,
+                        onCreateNote: (wx, wy) => {
+                            if (!isBoardReadOnly) this.createNoteAtWorldPosition(wx, wy);
+                        },
                         onAutoLayout: () => this.runAutoLayout(),
                         onResetZoom: () => this.centerCameraOnAllNodes()
                     });
@@ -1146,22 +1238,41 @@ window.App = window.App || {};
         saveNodePosition(node) {
             if (!node || !node.id) return;
             const state = window.App.state;
-            if (!state || !state.notes) return;
+            if (!state) return;
 
-            const n = state.notes.find(item => item.id === node.id);
-            if (n) {
-                n.canvasX = Math.round(node.x);
-                n.canvasY = Math.round(node.y);
-                n.boardX = Math.round(node.x);
-                n.boardY = Math.round(node.y);
+            const roundX = Math.round(node.x);
+            const roundY = Math.round(node.y);
+
+            // Завжди зберігаємо у локальний кеш координат дошки
+            if (window.App.storage && window.App.storage.saveBoardPosition) {
+                window.App.storage.saveBoardPosition(node.id, roundX, roundY);
+            }
+
+            // Якщо це власна нотатка
+            const ownNote = state.notes ? state.notes.find(item => item.id === node.id) : null;
+            if (ownNote) {
+                ownNote.canvasX = roundX;
+                ownNote.canvasY = roundY;
+                ownNote.boardX = roundX;
+                ownNote.boardY = roundY;
                 if (window.App.storage) {
-                    if (window.App.storage.saveBoardPosition) {
-                        window.App.storage.saveBoardPosition(n.id, n.canvasX, n.canvasY);
-                    }
                     window.App.storage.saveNotes(state.notes);
                 }
                 if (window.App.cloudSync && window.App.cloudSync.syncNote) {
-                    window.App.cloudSync.syncNote(n);
+                    window.App.cloudSync.syncNote(ownNote);
+                }
+                return;
+            }
+
+            // Якщо це спільна нотатка (тільки для читання)
+            const readOnlyNote = state.readOnlyNotes ? state.readOnlyNotes.find(item => item.id === node.id) : null;
+            if (readOnlyNote) {
+                readOnlyNote.canvasX = roundX;
+                readOnlyNote.canvasY = roundY;
+                readOnlyNote.boardX = roundX;
+                readOnlyNote.boardY = roundY;
+                if (window.App.storage && window.App.storage.saveReadOnlyNotes) {
+                    window.App.storage.saveReadOnlyNotes(state.readOnlyNotes);
                 }
             }
         },
@@ -1182,6 +1293,7 @@ window.App = window.App || {};
         createNoteAtWorldPosition(worldX, worldY) {
             const currentBoard = window.App.boardManager ? window.App.boardManager.getActiveBoard() : null;
             if (!currentBoard) return;
+            if (currentBoard.isReadOnly || (currentBoard.id && String(currentBoard.id).startsWith('shared_'))) return;
 
             if (window.App.noteManager && window.App.noteManager.createNewNote) {
                 const newNote = window.App.noteManager.createNewNote(null, false);
@@ -1203,6 +1315,9 @@ window.App = window.App || {};
         },
 
         createSubnoteForNode(parentId) {
+            const currentBoard = window.App.boardManager ? window.App.boardManager.getActiveBoard() : null;
+            if (currentBoard && (currentBoard.isReadOnly || (currentBoard.id && String(currentBoard.id).startsWith('shared_')))) return;
+
             const parentNode = nodes.find(n => n.id === parentId);
             if (!parentNode) return;
 

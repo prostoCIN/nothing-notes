@@ -9,23 +9,27 @@ window.App = window.App || {};
         show(clientX, clientY, worldX, worldY, callbacks = {}) {
             this.close();
 
-            const { onCreateNote, onAutoLayout, onResetZoom } = callbacks;
+            const { onCreateNote, onAutoLayout, onResetZoom, isReadOnly = false } = callbacks;
 
             menuEl = document.createElement('div');
             menuEl.className = 'board-canvas-context-menu';
             menuEl.style.left = Math.min(window.innerWidth - 220, clientX) + 'px';
             menuEl.style.top = Math.min(window.innerHeight - 180, clientY) + 'px';
 
+            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
+
             menuEl.innerHTML = `
+                ${!isReadOnly ? `
                 <button class="board-canvas-context-item is-primary" id="ctx-create-note-btn">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="12" r="9"></circle>
                         <line x1="12" y1="8" x2="12" y2="16"></line>
                         <line x1="8" y1="12" x2="16" y2="12"></line>
                     </svg>
-                    <span>Створити нотатку тут</span>
+                    <span>${t('board.createNoteHere') || 'Створити нотатку тут'}</span>
                 </button>
                 <div class="board-canvas-context-divider"></div>
+                ` : ''}
                 <button class="board-canvas-context-item" id="ctx-layout-btn">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="3" y="3" width="7" height="7"></rect>
@@ -33,7 +37,7 @@ window.App = window.App || {};
                         <rect x="14" y="14" width="7" height="7"></rect>
                         <rect x="3" y="14" width="7" height="7"></rect>
                     </svg>
-                    <span>Впорядкувати стікери</span>
+                    <span>${t('graph.autoLayoutTitle') || 'Впорядкувати стікери'}</span>
                 </button>
                 <button class="board-canvas-context-item" id="ctx-reset-zoom-btn">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -42,7 +46,7 @@ window.App = window.App || {};
                         <path d="M21 3l-7 7"></path>
                         <path d="M3 21l7-7"></path>
                     </svg>
-                    <span>Скинути масштаб</span>
+                    <span>${t('board.zoomReset') || 'Скинути масштаб'}</span>
                 </button>
             `;
 
