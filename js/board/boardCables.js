@@ -213,22 +213,25 @@ window.App = window.App || {};
             ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, endX, endY);
             ctx.lineCap = 'round';
 
+            const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim() || '#10b981';
+            const dangerColor = getComputedStyle(document.documentElement).getPropertyValue('--danger-color').trim() || '#ef4444';
+
             if (targetNode && isValid) {
-                ctx.strokeStyle = '#10b981';
+                ctx.strokeStyle = accentColor;
                 ctx.lineWidth = 3.2 / camera.zoom;
-                ctx.shadowColor = '#10b981';
+                ctx.shadowColor = accentColor;
                 ctx.shadowBlur = 14;
                 ctx.setLineDash([]);
             } else if (targetNode && !isValid) {
-                ctx.strokeStyle = '#ef4444';
+                ctx.strokeStyle = dangerColor;
                 ctx.lineWidth = 2.8 / camera.zoom;
-                ctx.shadowColor = '#ef4444';
+                ctx.shadowColor = dangerColor;
                 ctx.shadowBlur = 10;
                 ctx.setLineDash([8, 6]);
             } else {
-                ctx.strokeStyle = '#10b981';
+                ctx.strokeStyle = accentColor;
                 ctx.lineWidth = 2.4 / camera.zoom;
-                ctx.shadowColor = 'rgba(16, 185, 129, 0.45)';
+                ctx.shadowColor = accentColor;
                 ctx.shadowBlur = 8;
                 ctx.setLineDash([6, 5]);
             }

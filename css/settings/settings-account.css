@@ -122,21 +122,22 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    background: rgba(239, 68, 68, 0.12);
-    border: 1px solid rgba(239, 68, 68, 0.25);
-    color: #ef4444;
+    background: var(--danger-subtle);
+    border: 1px solid var(--danger-color);
+    color: var(--danger-color);
     padding: 10px 14px;
     border-radius: 8px;
     font-size: var(--font-xs);
     font-weight: 600;
     font-family: inherit;
     cursor: pointer;
-    transition: background 0.15s, border-color 0.15s;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 
 .settings-btn-danger:hover {
-    background: rgba(239, 68, 68, 0.2);
-    border-color: rgba(239, 68, 68, 0.4);
+    background: var(--danger-color);
+    border-color: var(--danger-color);
+    color: #ffffff;
 }
 
 /* Статистика / сховище */

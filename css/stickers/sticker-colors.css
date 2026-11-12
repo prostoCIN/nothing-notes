@@ -52,17 +52,17 @@
 }
 
 .sticker-menu-item-delete {
-    color: #f87171 !important;
+    color: var(--danger-color) !important;
 }
 
 .sticker-menu-item-delete:hover {
-    background-color: rgba(239, 68, 68, 0.15) !important;
-    color: #fca5a5 !important;
+    background-color: var(--danger-subtle) !important;
+    color: var(--danger-color) !important;
 }
 
 .sticker-menu-item.active {
-    color: #10b981;
-    background-color: rgba(16, 185, 129, 0.12);
+    color: var(--accent-color, #10b981);
+    background-color: var(--accent-subtle);
 }
 
 .menu-item-badge {
@@ -140,8 +140,8 @@
 }
 
 .sticker-delete-btn:hover {
-    background-color: rgba(220, 38, 38, 0.15);
-    color: #b91c1c;
+    background-color: var(--danger-subtle);
+    color: var(--danger-color);
     opacity: 1 !important;
 }
 

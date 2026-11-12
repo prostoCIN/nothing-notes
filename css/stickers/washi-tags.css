@@ -274,8 +274,8 @@
 }
 
 .tag-option-del-btn:hover {
-    background: rgba(239, 68, 68, 0.2);
-    color: #f87171;
+    background: var(--danger-subtle);
+    color: var(--danger-color);
     opacity: 1 !important;
 }
 

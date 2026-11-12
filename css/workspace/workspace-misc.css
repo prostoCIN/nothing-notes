@@ -34,9 +34,9 @@ body.global-eraser-active .sticker-content {
 }
 
 body.global-eraser-active #workspace-eraser-btn {
-    background: #ef4444 !important;
+    background: var(--danger-color) !important;
     color: #ffffff !important;
-    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+    box-shadow: 0 2px 8px var(--danger-subtle);
 }
 
 

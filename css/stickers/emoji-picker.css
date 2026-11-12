@@ -111,7 +111,7 @@
 .emoji-remove-btn {
     background: none;
     border: none;
-    color: #ef4444;
+    color: var(--danger-color);
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;

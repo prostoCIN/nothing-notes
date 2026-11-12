@@ -180,8 +180,8 @@
 }
 
 .sticker-image-remove-btn:hover {
-    background: var(--danger-color, #ef4444) !important;
-    border-color: var(--danger-color, #ef4444) !important;
+    background: var(--danger-color) !important;
+    border-color: var(--danger-color) !important;
     color: #ffffff !important;
     transform: scale(1.1);
 }
@@ -257,7 +257,7 @@
 }
 
 .polaroid-lightbox-close:hover {
-    background: #ef4444;
+    background: var(--danger-color);
     transform: scale(1.15);
 }
 

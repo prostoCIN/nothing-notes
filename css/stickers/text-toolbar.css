@@ -140,16 +140,16 @@ mark.note-marker.hl-purple { background-color: rgba(233, 213, 255, 0.9); }
 }
 
 .text-sel-color-btn.clear-marker-btn {
-    background: rgba(239, 68, 68, 0.15);
-    color: #ef4444;
-    border-color: rgba(239, 68, 68, 0.4);
+    background: var(--danger-subtle);
+    color: var(--danger-color);
+    border-color: var(--danger-color);
 }
 
 .text-sel-color-btn.clear-marker-btn:hover {
-    background: #ef4444 !important;
+    background: var(--danger-color) !important;
     color: #ffffff !important;
-    border-color: #ef4444 !important;
-    box-shadow: 0 0 10px rgba(239, 68, 68, 0.55);
+    border-color: var(--danger-color) !important;
+    box-shadow: 0 0 10px var(--danger-subtle);
     transform: scale(1.18);
 }
 

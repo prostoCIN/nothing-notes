@@ -332,7 +332,7 @@ html[data-theme="ivory"] .note-item.is-editing .note-item-title[contenteditable=
 .sidebar-action-btn.delete-btn:hover,
 .board-delete-btn:hover,
 .delete-btn:hover {
-    background-color: rgba(255, 99, 99, 0.2) !important;
+    background-color: var(--danger-subtle) !important;
     color: var(--danger-color) !important;
     opacity: 1 !important;
 }
@@ -341,7 +341,7 @@ html[data-theme="ivory"] .note-item.is-editing .note-item-title[contenteditable=
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: #10b981;
+    color: var(--accent-color, #10b981);
     flex-shrink: 0;
     margin-right: 2px;
     opacity: 0.9;

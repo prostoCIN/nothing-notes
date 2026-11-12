@@ -171,12 +171,12 @@
 }
 
 .selection-action-group .selection-action-delete-btn {
-    color: #ef4444;
+    color: var(--danger-color);
 }
 
 .selection-action-group .selection-action-delete-btn:hover:not(:disabled) {
-    background: #ef4444 !important;
-    border-color: #ef4444 !important;
+    background: var(--danger-color) !important;
+    border-color: var(--danger-color) !important;
     color: #ffffff !important;
 }
 
@@ -234,10 +234,10 @@
 }
 
 .selection-action-delete-btn:hover:not(:disabled) {
-    background: #ef4444 !important;
-    border-color: #ef4444 !important;
+    background: var(--danger-color) !important;
+    border-color: var(--danger-color) !important;
     color: #ffffff !important;
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+    box-shadow: 0 4px 12px var(--danger-subtle);
 }
 
 /* Дефолтні класи видимості для десктопу/мобільного */
@@ -625,8 +625,8 @@
     position: absolute;
     top: -8px;
     right: -8px;
-    background: #10b981;
-    color: #062419;
+    background: var(--accent-color, #10b981);
+    color: #ffffff;
     font-weight: 800;
     font-size: 12px;
     min-width: 24px;
@@ -636,7 +636,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.45), 0 0 0 2px rgba(255, 255, 255, 0.9);
+    box-shadow: 0 4px 14px var(--accent-subtle), 0 0 0 2px rgba(255, 255, 255, 0.9);
     z-index: 1000000;
     pointer-events: none;
     box-sizing: border-box;

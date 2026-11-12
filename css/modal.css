@@ -106,7 +106,7 @@
 }
 
 .hold-delete-btn.hold-info-btn .hold-btn-progress {
-    background-color: #059669;
+    background-color: var(--accent-color);
 }
 
 .modal-cancel-btn {
@@ -157,7 +157,7 @@
 }
 
 .hold-delete-btn:hover {
-    border-color: #ef4444;
+    border-color: var(--danger-color);
 }
 
 .hold-btn-text {
@@ -177,7 +177,7 @@
     left: 0;
     height: 100%;
     width: 0%;
-    background-color: #dc2626;
+    background-color: var(--danger-color);
     z-index: 1;
     pointer-events: none;
     transition: width 0.05s linear;

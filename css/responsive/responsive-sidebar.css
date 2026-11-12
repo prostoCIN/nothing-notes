@@ -394,15 +394,15 @@
     }
 
     html[data-theme="light"] .note-item.is-active-note .note-actions .edit-btn {
-        background: rgba(16, 185, 129, 0.12) !important;
+        background: var(--accent-subtle) !important;
     }
 
-    /* Видалити (чистий червоний iOS delete) */
+    /* Видалити (колір небезпеки delete) */
     .board-item .sidebar-action-btn.delete-btn,
     .note-item .sidebar-action-btn.delete-btn,
     .board-item .board-delete-btn,
     .note-item .delete-btn {
-        background: #ef4444 !important;
+        background: var(--danger-color) !important;
         color: #ffffff !important;
     }
 

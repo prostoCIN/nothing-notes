@@ -234,20 +234,20 @@
 
 .auth-error-msg {
     font-size: 12px;
-    color: #ef4444;
-    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger-color);
+    background: var(--danger-subtle);
     padding: 8px 10px;
     border-radius: 6px;
-    border: 1px solid rgba(239, 68, 68, 0.2);
+    border: 1px solid var(--danger-color);
 }
 
 .auth-success-msg {
     font-size: 12px;
-    color: #10b981;
-    background: rgba(16, 185, 129, 0.1);
+    color: var(--accent-color);
+    background: var(--accent-subtle);
     padding: 8px 10px;
     border-radius: 6px;
-    border: 1px solid rgba(16, 185, 129, 0.2);
+    border: 1px solid var(--accent-color);
 }
 
 .auth-submit-btn {

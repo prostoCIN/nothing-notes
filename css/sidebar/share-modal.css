@@ -254,12 +254,12 @@
 }
 
 .share-modal-status.success {
-    color: #34d399;
+    color: var(--accent-color);
     font-weight: 500;
 }
 
 .share-modal-status.error {
-    color: #ef4444;
+    color: var(--danger-color);
 }
 
 /* ==========================================================================

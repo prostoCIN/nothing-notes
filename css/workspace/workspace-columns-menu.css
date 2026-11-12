@@ -181,7 +181,7 @@
 .column-menu-clear-filter-btn {
     background: none;
     border: none;
-    color: #f87171;
+    color: var(--danger-color);
     font-size: 11px;
     font-weight: 600;
     cursor: pointer;

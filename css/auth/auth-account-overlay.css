@@ -216,8 +216,8 @@
 }
 
 .account-item-logout-btn:hover {
-    color: #ef4444;
-    background: rgba(239, 68, 68, 0.16);
+    color: var(--danger-color);
+    background: var(--danger-subtle);
     transform: scale(1.08);
 }
 
@@ -258,9 +258,9 @@
 }
 
 .account-add-btn:hover {
-    background: rgba(16, 185, 129, 0.12);
-    color: #10b981;
-    border-color: rgba(16, 185, 129, 0.28);
+    background: var(--accent-subtle);
+    color: var(--accent-color);
+    border-color: var(--accent-color);
 }
 
 .account-logout-btn {
@@ -270,7 +270,7 @@
 }
 
 .account-logout-btn:hover {
-    background: rgba(239, 68, 68, 0.12);
-    color: #ef4444;
-    border-color: rgba(239, 68, 68, 0.25);
+    background: var(--danger-subtle);
+    color: var(--danger-color);
+    border-color: var(--danger-color);
 }
