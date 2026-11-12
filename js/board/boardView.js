@@ -367,13 +367,11 @@ window.App = window.App || {};
         buildBoardData(options = {}) {
             const state = window.App.state;
             const noteManager = window.App.noteManager;
-            const allNotes = noteManager ? noteManager.getAllNotes() : (state ? state.notes || [] : []);
 
             const currentBoard = window.App.boardManager ? window.App.boardManager.getActiveBoard() : null;
             if (!currentBoard) return;
 
             const boardIdStr = String(currentBoard.id);
-            const origBoardIdStr = currentBoard.originalBoardId ? String(currentBoard.originalBoardId) : null;
             const isBoardReadOnly = !!(currentBoard && (currentBoard.isReadOnly || boardIdStr.startsWith('shared_')));
 
             // Якщо для цього блокнота камера вже була ініціалізована або збережена — за замовчуванням зберігаємо положення камери
@@ -381,16 +379,33 @@ window.App = window.App || {};
                 ? Boolean(options.preserveCamera)
                 : Boolean(isCameraInitializedForBoard || boardCameras.has(boardIdStr));
 
-            const isMatchingBoard = (noteBoardId) => {
-                if (!noteBoardId) return false;
-                const str = String(noteBoardId);
-                if (str === boardIdStr) return true;
-                if (origBoardIdStr && (str === origBoardIdStr || 'shared_' + str === boardIdStr)) return true;
-                if (boardIdStr.startsWith('shared_') && boardIdStr.replace('shared_', '') === str) return true;
-                return false;
-            };
+            // СТРОГО розділяємо власні нотатки та спільні нотатки:
+            // - Для спільного блокнота беремо ВИКЛЮЧНО state.readOnlyNotes
+            // - Для власного блокнота беремо ВИКЛЮЧНО state.notes
+            // В жодному разі не змішуємо їх і не використовуємо неточні збіги ID!
+            let boardNotes = [];
+            const seenIds = new Set();
 
-            const boardNotes = allNotes.filter(n => isMatchingBoard(n.boardId));
+            if (isBoardReadOnly) {
+                const readOnlyList = state ? (state.readOnlyNotes || []) : [];
+                boardNotes = readOnlyList.filter(n => {
+                    if (n && String(n.boardId) === boardIdStr && !seenIds.has(n.id)) {
+                        seenIds.add(n.id);
+                        return true;
+                    }
+                    return false;
+                });
+            } else {
+                const ownList = state ? (state.notes || []) : [];
+                boardNotes = ownList.filter(n => {
+                    if (n && String(n.boardId) === boardIdStr && !seenIds.has(n.id)) {
+                        seenIds.add(n.id);
+                        return true;
+                    }
+                    return false;
+                });
+            }
+
             const notesMap = new Map();
             boardNotes.forEach(n => notesMap.set(n.id, n));
 
@@ -439,7 +454,10 @@ window.App = window.App || {};
                 return cur ? cur.id : note.id;
             }
 
-            let anyMissingPosition = false;
+            let anyMissingPosition = Boolean(options.forceLayout);
+            let zeroCount = 0;
+            const posSet = new Set();
+            let hasOverlap = false;
 
             boardNotes.forEach((note, idx) => {
                 const validParentId = (note.parentId && notesMap.has(note.parentId)) ? note.parentId : null;
@@ -479,6 +497,10 @@ window.App = window.App || {};
                 if (typeof rawX === 'number' && typeof rawY === 'number' && !isNaN(rawX) && !isNaN(rawY)) {
                     posX = rawX;
                     posY = rawY;
+                    if (rawX === 0 && rawY === 0) zeroCount++;
+                    const key = `${Math.round(rawX)}_${Math.round(rawY)}`;
+                    if (posSet.has(key)) hasOverlap = true;
+                    posSet.add(key);
                 } else {
                     anyMissingPosition = true;
                 }
@@ -525,9 +547,8 @@ window.App = window.App || {};
                 nodes.push(nodeObj);
             });
 
-            // Якщо кілька нотаток злиплися в (0, 0) — це ознака відсутності коректного розміщення
-            const zeroCount = nodes.filter(n => n.x === 0 && n.y === 0).length;
-            if (nodes.length > 1 && zeroCount > 1) {
+            // Якщо кілька нотаток злиплися в (0, 0) або мають повне накладання координат — запускаємо авторозміщення
+            if (nodes.length > 1 && (zeroCount > 1 || hasOverlap)) {
                 anyMissingPosition = true;
             }
 
