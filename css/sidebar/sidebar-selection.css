@@ -22,20 +22,23 @@
     transition: transform 0.15s ease;
 }
 
-.note-item.is-selected.is-active-note {
+.note-item.is-selected.is-active-note,
+.board-item.is-selected.active {
     background-color: rgba(16, 185, 129, 0.32) !important;
     box-shadow: inset 3.5px 0 0 #ffffff, 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
-/* Windows-style виділення нотаток у сайдбарі */
-.note-item.is-selected {
+/* Windows-style виділення нотаток та блокнотів у сайдбарі */
+.note-item.is-selected,
+.board-item.is-selected {
     background-color: rgba(16, 185, 129, 0.22) !important;
     border: 1px solid #10b981 !important;
     color: #ffffff !important;
     border-radius: 6px;
 }
 
-.note-item.is-selected:hover {
+.note-item.is-selected:hover,
+.board-item.is-selected:hover {
     background-color: rgba(16, 185, 129, 0.28) !important;
 }
 

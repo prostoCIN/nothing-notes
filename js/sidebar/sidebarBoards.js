@@ -62,7 +62,8 @@ window.App = window.App || {};
 
             boards.forEach(board => {
                 const li = document.createElement('li');
-                li.className = `board-item ${board.id === state.activeBoardId ? 'active' : ''}`;
+                const isSelected = state.selectedSidebarBoardIds && state.selectedSidebarBoardIds.has(board.id);
+                li.className = `board-item ${board.id === state.activeBoardId ? 'active' : ''} ${isSelected ? 'is-selected' : ''}`;
                 li.dataset.boardId = board.id;
 
                 // Ручка перетягування (Drag Handle) для зміни порядку блокнотів
@@ -130,7 +131,9 @@ window.App = window.App || {};
                             title: 'Поділитись блокнотом',
                             onClick: () => {
                                 if (window.App.shareManager) {
-                                    window.App.shareManager.showShareModal(board.id);
+                                    const isGroup = state.selectedSidebarBoardIds && state.selectedSidebarBoardIds.has(board.id) && state.selectedSidebarBoardIds.size > 1;
+                                    const targetBoardIds = isGroup ? Array.from(state.selectedSidebarBoardIds) : board.id;
+                                    window.App.shareManager.showShareModal(targetBoardIds);
                                 }
                             }
                         },
@@ -142,9 +145,14 @@ window.App = window.App || {};
                         },
                         delete: {
                             title: 'Видалити блокнот',
-                            onClick: () => {
+                            onClick: (e) => {
                                 if (window.App.boardManager) {
-                                    window.App.boardManager.deleteBoard(board.id);
+                                    const isGroup = state.selectedSidebarBoardIds && state.selectedSidebarBoardIds.has(board.id) && state.selectedSidebarBoardIds.size > 1;
+                                    if (isGroup && window.App.boardManager.deleteBoards) {
+                                        window.App.boardManager.deleteBoards(Array.from(state.selectedSidebarBoardIds), e);
+                                    } else {
+                                        window.App.boardManager.deleteBoard(board.id, e);
+                                    }
                                 }
                             }
                         }
@@ -154,6 +162,56 @@ window.App = window.App || {};
                 li.addEventListener('click', (e) => {
                     if (e.target.closest('.board-actions') || textSpan.contentEditable === 'true') return;
                     if (li.dataset.dragged === 'true' || document.body.classList.contains('is-board-reordering')) return;
+
+                    const allBoardItems = [...document.querySelectorAll('#sidebar-boards-list .board-item, #sidebar-shared-boards-list .board-item')];
+
+                    if (e.ctrlKey || e.metaKey) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        state.selectedSidebarBoardIds = state.selectedSidebarBoardIds || new Set();
+                        if (state.selectedSidebarBoardIds.has(board.id)) {
+                            state.selectedSidebarBoardIds.delete(board.id);
+                            li.classList.remove('is-selected');
+                        } else {
+                            state.selectedSidebarBoardIds.add(board.id);
+                            li.classList.add('is-selected');
+                        }
+                        return;
+                    }
+
+                    if (e.shiftKey) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        state.selectedSidebarBoardIds = state.selectedSidebarBoardIds || new Set();
+                        const lastSelectedId = state.selectedSidebarBoardIds.size > 0
+                            ? [...state.selectedSidebarBoardIds].pop()
+                            : state.activeBoardId;
+                        const lastIdx = allBoardItems.findIndex(r => r.dataset.boardId === lastSelectedId);
+                        const currentIdx = allBoardItems.findIndex(r => r.dataset.boardId === board.id);
+
+                        if (lastIdx !== -1 && currentIdx !== -1) {
+                            const start = Math.min(lastIdx, currentIdx);
+                            const end = Math.max(lastIdx, currentIdx);
+                            for (let i = start; i <= end; i++) {
+                                const item = allBoardItems[i];
+                                if (item.dataset.boardId) {
+                                    state.selectedSidebarBoardIds.add(item.dataset.boardId);
+                                    item.classList.add('is-selected');
+                                }
+                            }
+                        } else {
+                            state.selectedSidebarBoardIds.add(board.id);
+                            li.classList.add('is-selected');
+                        }
+                        return;
+                    }
+
+                    // Звичайний клік без клавіш Shift/Ctrl
+                    if (state.selectedSidebarBoardIds && state.selectedSidebarBoardIds.size > 0) {
+                        state.selectedSidebarBoardIds.clear();
+                        allBoardItems.forEach(item => item.classList.remove('is-selected'));
+                    }
+
                     if (state.activeBoardId !== board.id && window.App.boardManager) {
                         window.App.boardManager.switchBoard(board.id);
                     }
@@ -184,14 +242,15 @@ window.App = window.App || {};
             li.addEventListener('dragstart', (e) => e.preventDefault());
 
             li.addEventListener('pointerdown', (e) => {
-                // Не перетягуємо при редагуванні, кліку на кнопки дій або нелівій кнопці миші
+                // Не перетягуємо при редагуванні, кліку на кнопки дій, модифікаторах виділення або нелівій кнопці миші
                 if (
                     li.classList.contains('is-editing') || 
                     e.target.closest('.board-actions') || 
                     e.target.closest('.sidebar-action-btn') || 
                     e.target.closest('.delete-btn') || 
                     li.querySelector('[contenteditable="true"]') || 
-                    e.button !== 0
+                    e.button !== 0 ||
+                    e.shiftKey || e.ctrlKey || e.metaKey
                 ) {
                     return;
                 }
@@ -531,7 +590,8 @@ window.App = window.App || {};
 
             readOnlyBoards.forEach(board => {
                 const li = document.createElement('li');
-                li.className = `board-item shared-board-item ${board.id === state.activeBoardId ? 'active' : ''}`;
+                const isSelected = state.selectedSidebarBoardIds && state.selectedSidebarBoardIds.has(board.id);
+                li.className = `board-item shared-board-item ${board.id === state.activeBoardId ? 'active' : ''} ${isSelected ? 'is-selected' : ''}`;
                 li.dataset.boardId = board.id;
 
                 const nameSpan = document.createElement('span');
@@ -578,6 +638,29 @@ window.App = window.App || {};
                 const actionsDiv = document.createElement('div');
                 actionsDiv.className = 'board-actions';
 
+                // Кнопка поділитися спільним блокнотом
+                const shareBtn = document.createElement('button');
+                shareBtn.className = 'sidebar-action-btn share-btn';
+                shareBtn.title = t('sidebar.actions.share') || 'Поділитись блокнотом';
+                shareBtn.innerHTML = `
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="18" cy="5" r="3"></circle>
+                        <circle cx="6" cy="12" r="3"></circle>
+                        <circle cx="18" cy="19" r="3"></circle>
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                    </svg>
+                `;
+                shareBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (window.App.shareManager) {
+                        const isGroup = state.selectedSidebarBoardIds && state.selectedSidebarBoardIds.has(board.id) && state.selectedSidebarBoardIds.size > 1;
+                        const targetBoardIds = isGroup ? Array.from(state.selectedSidebarBoardIds) : board.id;
+                        window.App.shareManager.showShareModal(targetBoardIds);
+                    }
+                });
+                actionsDiv.appendChild(shareBtn);
+
                 // Якщо автор дозволив копіювання — кнопка зберегти собі
                 if (board.allowClone) {
                     const cloneBtn = document.createElement('button');
@@ -619,6 +702,12 @@ window.App = window.App || {};
                 `;
                 unlinkBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
+                    const isGroup = state.selectedSidebarBoardIds && state.selectedSidebarBoardIds.has(board.id) && state.selectedSidebarBoardIds.size > 1;
+                    if (isGroup && window.App.boardManager && window.App.boardManager.deleteBoards) {
+                        window.App.boardManager.deleteBoards(Array.from(state.selectedSidebarBoardIds), e);
+                        return;
+                    }
+
                     if (window.App.confirmModal) {
                         window.App.confirmModal.show({
                             title: t('confirm.unlinkBoardTitle') || 'Прибрати спільний блокнот?',
@@ -638,6 +727,56 @@ window.App = window.App || {};
 
                 li.addEventListener('click', (e) => {
                     if (e.target.closest('.board-actions')) return;
+
+                    const allBoardItems = [...document.querySelectorAll('#sidebar-boards-list .board-item, #sidebar-shared-boards-list .board-item')];
+
+                    if (e.ctrlKey || e.metaKey) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        state.selectedSidebarBoardIds = state.selectedSidebarBoardIds || new Set();
+                        if (state.selectedSidebarBoardIds.has(board.id)) {
+                            state.selectedSidebarBoardIds.delete(board.id);
+                            li.classList.remove('is-selected');
+                        } else {
+                            state.selectedSidebarBoardIds.add(board.id);
+                            li.classList.add('is-selected');
+                        }
+                        return;
+                    }
+
+                    if (e.shiftKey) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        state.selectedSidebarBoardIds = state.selectedSidebarBoardIds || new Set();
+                        const lastSelectedId = state.selectedSidebarBoardIds.size > 0
+                            ? [...state.selectedSidebarBoardIds].pop()
+                            : state.activeBoardId;
+                        const lastIdx = allBoardItems.findIndex(r => r.dataset.boardId === lastSelectedId);
+                        const currentIdx = allBoardItems.findIndex(r => r.dataset.boardId === board.id);
+
+                        if (lastIdx !== -1 && currentIdx !== -1) {
+                            const start = Math.min(lastIdx, currentIdx);
+                            const end = Math.max(lastIdx, currentIdx);
+                            for (let i = start; i <= end; i++) {
+                                const item = allBoardItems[i];
+                                if (item.dataset.boardId) {
+                                    state.selectedSidebarBoardIds.add(item.dataset.boardId);
+                                    item.classList.add('is-selected');
+                                }
+                            }
+                        } else {
+                            state.selectedSidebarBoardIds.add(board.id);
+                            li.classList.add('is-selected');
+                        }
+                        return;
+                    }
+
+                    // Звичайний клік без клавіш Shift/Ctrl
+                    if (state.selectedSidebarBoardIds && state.selectedSidebarBoardIds.size > 0) {
+                        state.selectedSidebarBoardIds.clear();
+                        allBoardItems.forEach(item => item.classList.remove('is-selected'));
+                    }
+
                     if (state.activeBoardId !== board.id && window.App.boardManager) {
                         window.App.boardManager.switchBoard(board.id);
                     }

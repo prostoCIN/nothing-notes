@@ -106,7 +106,9 @@ window.App = window.App || {};
                             title: 'Поділитись нотаткою',
                             onClick: () => {
                                 if (window.App.shareManager) {
-                                    window.App.shareManager.showShareModal(note.boardId, [note.id]);
+                                    const isGroup = state.selectedSidebarNoteIds.has(note.id) && state.selectedSidebarNoteIds.size > 1;
+                                    const targetNoteIds = isGroup ? Array.from(state.selectedSidebarNoteIds) : [note.id];
+                                    window.App.shareManager.showShareModal(note.boardId, targetNoteIds);
                                 }
                             }
                         },

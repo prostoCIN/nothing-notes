@@ -462,6 +462,8 @@ export const en = {
         moveMultipleToTargetMsg: 'Are you sure you want to move {count} selected notes to {target}?',
         deleteBoardTitle: 'Delete notebook "{name}"?',
         deleteBoardMsg: 'Are you sure you want to delete notebook <span class="confirm-modal-highlight">"{name}"</span>? All its notes ({count}) will be permanently deleted.',
+        deleteBoardsTitle: 'Delete {count} notebooks?',
+        deleteBoardsMsg: 'Are you sure you want to delete {count} notebooks: <span class="confirm-modal-highlight">"{names}"</span>?',
         cloneBoardTitle: 'Copy notebook?',
         cloneBoardMsg: 'Create an independent copy of notebook <span class="confirm-modal-highlight">"{name}"</span> in your private notebooks?',
         holdToClone: 'Hold to copy',

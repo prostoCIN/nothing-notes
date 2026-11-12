@@ -302,6 +302,7 @@ window.App.storage = {
         activeNoteId: null, // ID поточної активної/сфокусованої нотатки для візуальної синхронізації з сайдбаром
         expandedSidebarNoteIds: new Set(), // ID розгорнутих нотаток у сайдбарі
         selectedSidebarNoteIds: new Set(), // ID виділених нотаток у сайдбарі (Windows-style selection)
+        selectedSidebarBoardIds: new Set(), // ID виділених блокнотів у сайдбарі
         selectedWorkspaceNoteIds: new Set(), // ID вибраних нотаток на головній області (iOS Gallery style)
         isWorkspaceSelectMode: false, // Режим мульти-вибору на головній області
         viewMode: window.App.storage.getViewMode(), // Режим перегляду: 'columns' | 'board' | 'graph'
@@ -496,6 +497,7 @@ window.App.storage = {
 
         clearSelections() {
             rawState.selectedSidebarNoteIds.clear();
+            rawState.selectedSidebarBoardIds.clear();
             rawState.selectedWorkspaceNoteIds.clear();
             rawState.isWorkspaceSelectMode = false;
             this._notify('selection:cleared', null);
@@ -519,6 +521,7 @@ window.App.storage = {
             rawState.activeNoteId = null;
             rawState.expandedSidebarNoteIds.clear();
             rawState.selectedSidebarNoteIds.clear();
+            rawState.selectedSidebarBoardIds.clear();
             rawState.selectedWorkspaceNoteIds.clear();
             rawState.isWorkspaceSelectMode = false;
             rawState.isDraggingNote = false;

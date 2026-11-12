@@ -24,7 +24,11 @@ window.App = window.App || {};
             if (defaultTab === 'ai') defaultTab = 'export';
 
             const state = window.App.state;
-            const targetBoard = (state.boards || []).find(b => b.id === boardId) || { name: 'Блокнот', id: boardId };
+            const isMultiBoard = Array.isArray(boardId) && boardId.length > 1;
+            const boardIds = isMultiBoard ? boardId : (Array.isArray(boardId) ? boardId : [boardId]);
+            const allBoards = [...(state.boards || []), ...(state.readOnlyBoards || [])];
+            const targetBoards = boardIds.map(id => allBoards.find(b => b.id === id) || { name: 'Блокнот', id }).filter(Boolean);
+            const targetBoard = targetBoards[0] || (state.boards || [])[0] || { name: 'Блокнот', id: 'default' };
 
             // Отримуємо відповідні об'єкти нотаток
             let targetNotes = [];
@@ -34,7 +38,7 @@ window.App = window.App || {};
                 const noteSet = new Set(noteIds);
                 targetNotes = allAvailableNotes.filter(n => noteSet.has(n.id));
             } else {
-                targetNotes = allAvailableNotes.filter(n => n.boardId === boardId);
+                targetNotes = allAvailableNotes.filter(n => boardIds.includes(n.boardId));
             }
 
             const isSpecificNotes = Array.isArray(noteIds) && noteIds.length > 0;
@@ -69,11 +73,15 @@ window.App = window.App || {};
 
             const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
 
-            const docTitle = singleNote ? (singleNote.title || t('common.untitled')) : (targetBoard ? targetBoard.name : t('common.defaultBoard'));
+            const docTitle = isMultiBoard
+                ? targetBoards.map(b => b.name).join(', ')
+                : (singleNote ? (singleNote.title || t('common.untitled')) : (targetBoard ? targetBoard.name : t('common.defaultBoard')));
             const exportDocName = docTitle.replace(/[/\\?%*:|"<>]/g, '-').trim();
 
             let titleText = t('share.shareTitle') || 'Спільний доступ';
-            if (isSpecificNotes) {
+            if (isMultiBoard) {
+                titleText = `Шеринг блокнотів (${targetBoards.length})`;
+            } else if (isSpecificNotes) {
                 if (singleNote) {
                     titleText = t('share.shareNoteTitle', { title: singleNote.title || t('common.untitled') }) || `Шеринг нотатки: «${singleNote.title || 'Без назви'}»`;
                 } else {
@@ -147,9 +155,11 @@ window.App = window.App || {};
                         <!-- Вкладка 1: Для користувачів у додатку NothingNotes -->
                         <div class="share-tab-pane ${defaultTab === 'nothingnotes' ? 'active' : ''}" id="share-pane-nothingnotes">
                             <p class="share-modal-desc">
-                                ${isSpecificNotes 
-                                    ? (t('share.descNothingNotesSingle') || 'Створіть спільне посилання для користувачів NothingNotes. Нотатка відкриється у повноцінному веб-інтерфейсі блокнота.') 
-                                    : (t('share.descNothingNotesBoard') || 'Будь-хто з цим посиланням зможе додати ваш блокнот для перегляду у NothingNotes.')}
+                                ${isMultiBoard
+                                    ? `Спільні посилання для виділених блокнотів (${targetBoards.length}). Користувачі зможуть відкрити їх у режимі читання.`
+                                    : (isSpecificNotes 
+                                        ? (t('share.descNothingNotesSingle') || 'Створіть спільне посилання для користувачів NothingNotes. Нотатка відкриється у повноцінному веб-інтерфейсі блокнота.') 
+                                        : (t('share.descNothingNotesBoard') || 'Будь-хто з цим посиланням зможе додати ваш блокнот для перегляду у NothingNotes.'))}
                             </p>
 
                             ${isSpecificNotes ? `
@@ -176,6 +186,16 @@ window.App = window.App || {};
                                 </label>
                             </div>
 
+                            ${isMultiBoard ? `
+                            <div class="share-multi-boards-container" id="share-multi-boards-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; margin-bottom: 12px;"></div>
+                            <button type="button" class="share-copy-btn" id="share-multi-copy-all-btn" style="width: 100%; margin-bottom: 8px;">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                                <span>Скопіювати всі посилання</span>
+                            </button>
+                            ` : `
                             <div class="share-link-box">
                                 <input type="text" class="share-link-input" id="share-nn-link-input" readonly placeholder="${t('share.generatingLink') || 'Генерація посилання...'}" data-i18n-placeholder="share.generatingLink">
                                 <button class="share-copy-btn" id="share-nn-copy-btn">
@@ -186,6 +206,7 @@ window.App = window.App || {};
                                     <span data-i18n="common.copy">Скопіювати</span>
                                 </button>
                             </div>
+                            `}
 
                             <div class="share-modal-status" id="share-nn-status"></div>
                         </div>
@@ -317,24 +338,76 @@ window.App = window.App || {};
                 });
             });
 
+            let multiBoardResults = [];
             const generateLinks = async () => {
                 if (isGenerating) return;
                 isGenerating = true;
 
-                nnInput.value = 'Створення безпечного посилання...';
-                nnCopyBtn.disabled = true;
+                if (nnInput) {
+                    nnInput.value = 'Створення безпечного посилання...';
+                    if (nnCopyBtn) nnCopyBtn.disabled = true;
+                }
                 setStatusMessage(nnStatus, '');
 
                 try {
                     const allowClone = cloneToggle ? cloneToggle.checked : false;
-                    const res = await this.createShareLink(boardId, noteIds, allowClone);
-                    baseShareUrl = res.shareUrl;
+                    if (isMultiBoard) {
+                        const container = modalEl.querySelector('#share-multi-boards-list');
+                        if (container) container.innerHTML = '<div style="font-size: 13px; color: var(--text-muted); padding: 8px 0;">Генерація посилань...</div>';
 
-                    updateShareLinks();
-                    nnCopyBtn.disabled = false;
+                        const results = [];
+                        for (const b of targetBoards) {
+                            try {
+                                if (b.shareToken) {
+                                    const origin = window.location.origin + window.location.pathname;
+                                    results.push({ board: b, url: `${origin}?share_board=${b.shareToken}` });
+                                } else {
+                                    const res = await this.createShareLink(b.id, null, allowClone);
+                                    results.push({ board: b, url: res.shareUrl });
+                                }
+                            } catch (e) {
+                                console.warn('[ShareModal] Failed to share board:', b.name, e);
+                            }
+                        }
+
+                        multiBoardResults = results;
+                        if (container) {
+                            container.innerHTML = '';
+                            results.forEach(({ board, url }) => {
+                                const row = document.createElement('div');
+                                row.style.cssText = 'display: flex; align-items: center; gap: 8px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 10px;';
+                                row.innerHTML = `
+                                    <span style="font-size: 14px; flex-shrink: 0;">${board.icon || '📋'}</span>
+                                    <span style="font-size: 13px; font-weight: 500; min-width: 70px; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(board.name)}</span>
+                                    <input type="text" readonly value="${url}" style="flex: 1; min-width: 60px; font-size: 11px; background: transparent; border: none; color: var(--text-muted); outline: none;">
+                                    <button type="button" class="share-copy-btn" style="padding: 4px 8px; font-size: 11px; height: 26px; flex-shrink: 0;" title="Скопіювати">
+                                        <span>Скопіювати</span>
+                                    </button>
+                                `;
+                                const rowBtn = row.querySelector('button');
+                                rowBtn.addEventListener('click', async () => {
+                                    try {
+                                        await navigator.clipboard.writeText(url);
+                                        setStatusMessage(nnStatus, `Посилання на «${board.name}» скопійовано!`);
+                                    } catch (err) {
+                                        row.querySelector('input').select();
+                                        document.execCommand('copy');
+                                    }
+                                });
+                                container.appendChild(row);
+                            });
+                        }
+                    } else {
+                        const targetId = boardIds[0] || boardId;
+                        const res = await this.createShareLink(targetId, noteIds, allowClone);
+                        baseShareUrl = res.shareUrl;
+
+                        updateShareLinks();
+                        if (nnCopyBtn) nnCopyBtn.disabled = false;
+                    }
                 } catch (err) {
                     const errMsg = err.message || 'Не вдалося створити посилання. Перевірте авторизацію.';
-                    nnInput.value = 'Потрібен вхід в акаунт';
+                    if (nnInput) nnInput.value = 'Потрібен вхід в акаунт';
                     setStatusMessage(nnStatus, errMsg, true);
                 } finally {
                     isGenerating = false;
@@ -359,17 +432,32 @@ window.App = window.App || {};
             }
             generateLinks();
 
-            // Копіювання посилання NothingNotes
-            nnCopyBtn.addEventListener('click', async () => {
-                if (!nnInput.value || nnInput.value.startsWith('Створення')) return;
-                try {
-                    await navigator.clipboard.writeText(nnInput.value);
-                    setStatusMessage(nnStatus, 'Посилання NothingNotes скопійовано!');
-                } catch (e) {
-                    nnInput.select();
-                    document.execCommand('copy');
-                }
-            });
+            // Копіювання посилання NothingNotes для одиночного блокнота
+            if (nnCopyBtn) {
+                nnCopyBtn.addEventListener('click', async () => {
+                    if (!nnInput || !nnInput.value || nnInput.value.startsWith('Створення')) return;
+                    try {
+                        await navigator.clipboard.writeText(nnInput.value);
+                        setStatusMessage(nnStatus, 'Посилання NothingNotes скопійовано!');
+                    } catch (e) {
+                        nnInput.select();
+                        document.execCommand('copy');
+                    }
+                });
+            }
+
+            // Копіювання всіх посилань для групи блокнотів
+            const copyAllBtn = modalEl.querySelector('#share-multi-copy-all-btn');
+            if (copyAllBtn) {
+                copyAllBtn.addEventListener('click', async () => {
+                    if (!multiBoardResults || multiBoardResults.length === 0) return;
+                    const text = multiBoardResults.map(r => `${r.board.name}: ${r.url}`).join('\n');
+                    try {
+                        await navigator.clipboard.writeText(text);
+                        setStatusMessage(nnStatus, `Скопійовано посилання для ${multiBoardResults.length} блокнотів!`);
+                    } catch (e) {}
+                });
+            }
 
             // Логіка вкладки Markdown
             const mdCopyBtn = modalEl.querySelector('#share-md-copy-btn');

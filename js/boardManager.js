@@ -239,6 +239,135 @@ window.App = window.App || {};
                     performDelete();
                 }
             }
+        },
+
+        deleteBoards(ids, event) {
+            if (event) event.stopPropagation();
+
+            const state = window.App.state;
+            const storage = window.App.storage;
+
+            const targetIds = Array.isArray(ids) ? ids.filter(Boolean) : [ids];
+            if (targetIds.length === 0) return;
+
+            if (targetIds.length === 1) {
+                return this.deleteBoard(targetIds[0], event);
+            }
+
+            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
+
+            // Розділяємо на власні блокноти та спільні
+            const ownBoardsToDelete = (state.boards || []).filter(b => targetIds.includes(b.id));
+            const sharedBoardsToDelete = (state.readOnlyBoards || []).filter(b => targetIds.includes(b.id));
+
+            const totalCount = ownBoardsToDelete.length + sharedBoardsToDelete.length;
+            if (totalCount === 0) return;
+
+            // Рахуємо нотатки у власних блокнотах
+            const ownBoardIdsSet = new Set(ownBoardsToDelete.map(b => b.id));
+            const notesInBoardsCount = (state.notes || []).filter(n => ownBoardIdsSet.has(n.boardId)).length;
+
+            const boardNames = [...ownBoardsToDelete, ...sharedBoardsToDelete].map(b => b.name).join(', ');
+            const displayNames = boardNames.length > 50 ? boardNames.slice(0, 47) + '...' : boardNames;
+
+            const title = t('confirm.deleteBoardsTitle', { count: totalCount }) || `Видалити ${totalCount} блокнотів?`;
+            let message = t('confirm.deleteBoardsMsg', { count: totalCount, names: displayNames }) || 
+                `Ви дійсно хочете видалити ${totalCount} блокнотів: <span class="confirm-modal-highlight">"${displayNames}"</span>?`;
+            
+            if (notesInBoardsCount > 0) {
+                message += `<br><br>Усі нотатки в них (${notesInBoardsCount} шт.) будуть назавжди стерті.`;
+            }
+            if (sharedBoardsToDelete.length > 0) {
+                message += `<br><br>Спільні блокноти (${sharedBoardsToDelete.length} шт.) будуть відв'язані від вашого списку читання.`;
+            }
+
+            const performGroupDelete = () => {
+                // 1. Відв'язуємо спільні блокноти
+                sharedBoardsToDelete.forEach(sb => {
+                    if (window.App.shareManager) {
+                        window.App.shareManager.removeSharedBoard(sb.id);
+                    }
+                });
+
+                // 2. Видаляємо власні блокноти
+                if (ownBoardsToDelete.length > 0) {
+                    state.boards = state.boards.filter(b => !ownBoardIdsSet.has(b.id));
+                    storage.saveBoards(state.boards);
+
+                    const deletedNotes = state.notes.filter(n => ownBoardIdsSet.has(n.boardId));
+                    deletedNotes.forEach(dn => {
+                        if (Array.isArray(dn.images)) {
+                            dn.images.forEach(im => {
+                                if (im && im.id) {
+                                    if (window.App.imageDb) window.App.imageDb.deleteImage(im.id);
+                                    if (window.App.cloudSync && window.App.cloudSync.deleteImageFile) {
+                                        window.App.cloudSync.deleteImageFile(im.id);
+                                    }
+                                }
+                            });
+                        }
+                    });
+
+                    state.notes = state.notes.filter(n => !ownBoardIdsSet.has(n.boardId));
+                    storage.saveNotes(state.notes, true);
+
+                    if (window.App.events) {
+                        ownBoardsToDelete.forEach(b => window.App.events.emit('board:deleted', { boardId: b.id }));
+                    }
+
+                    if (window.App.cloudSync) {
+                        ownBoardsToDelete.forEach(b => {
+                            if (window.App.cloudSync.deleteBoardFromCloud) {
+                                window.App.cloudSync.deleteBoardFromCloud(b.id);
+                            }
+                        });
+                        window.App.cloudSync.syncBoards();
+                        if (deletedNotes.length > 0) {
+                            if (window.App.cloudSync.deleteNotesFromCloud) {
+                                window.App.cloudSync.deleteNotesFromCloud(deletedNotes.map(dn => dn.id));
+                            } else {
+                                deletedNotes.forEach(dn => window.App.cloudSync.deleteNoteFromCloud(dn.id));
+                            }
+                        }
+                        if (window.App.supabase) {
+                            window.App.supabase.from('board_shares').delete().in('board_id', Array.from(ownBoardIdsSet)).then(() => {});
+                        }
+                    }
+                }
+
+                // Очищаємо виділення
+                if (state.selectedSidebarBoardIds) state.selectedSidebarBoardIds.clear();
+
+                // Перемикаємо дошку або показуємо welcome
+                const remainingOwnBoards = state.boards || [];
+                const remainingSharedBoards = state.readOnlyBoards || [];
+                const isCurrentActiveDeleted = targetIds.includes(state.activeBoardId);
+
+                if (remainingOwnBoards.length === 0 && remainingSharedBoards.length === 0) {
+                    state.activeBoardId = null;
+                    storage.saveActiveBoardId(null);
+                    this.notifyWelcomeNeeded();
+                } else if (isCurrentActiveDeleted) {
+                    const nextBoardId = remainingOwnBoards.length > 0 ? remainingOwnBoards[0].id : remainingSharedBoards[0].id;
+                    this.switchBoard(nextBoardId);
+                } else {
+                    this.notifyBoardChanged(state.activeBoardId);
+                }
+
+                if (window.App.sidebarView) window.App.sidebarView.render();
+            };
+
+            if (window.App.confirmModal) {
+                window.App.confirmModal.show({
+                    title,
+                    message,
+                    confirmText: t('common.holdToConfirm') || 'Затисніть для видалення',
+                    type: 'danger',
+                    onConfirm: performGroupDelete
+                });
+            } else {
+                if (confirm(title)) performGroupDelete();
+            }
         }
     };
 })();

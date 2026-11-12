@@ -462,6 +462,8 @@ export const ua = {
         moveMultipleToTargetMsg: 'Ви дійсно хочете перемістити {count} виділені нотатки в {target}?',
         deleteBoardTitle: 'Видалити блокнот "{name}"?',
         deleteBoardMsg: 'Ви дійсно бажаєте видалити блокнот <span class="confirm-modal-highlight">"{name}"</span>? Усі його нотатки ({count} шт.) будуть назавжди видалені.',
+        deleteBoardsTitle: 'Видалити {count} блокнотів?',
+        deleteBoardsMsg: 'Ви дійсно бажаєте видалити {count} блокнотів: <span class="confirm-modal-highlight">"{names}"</span>?',
         cloneBoardTitle: 'Скопіювати блокнот?',
         cloneBoardMsg: 'Створити незалежну копію блокнота <span class="confirm-modal-highlight">"{name}"</span> у ваших особистих блокнотах?',
         holdToClone: 'Затисніть для копіювання',
