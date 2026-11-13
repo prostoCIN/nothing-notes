@@ -204,6 +204,21 @@ window.App = window.App || {};
                     } else {
                         root.style.removeProperty(token.key);
                         token.aliases.forEach(alias => root.style.removeProperty(alias));
+
+                        // Очищення залежних змінних при скиданні окремого токена
+                        if (token.key === '--accent-color') {
+                            root.style.removeProperty('--accent-subtle');
+                            root.style.removeProperty('--accent-glow');
+                            root.style.removeProperty('--accent-border');
+                            root.style.removeProperty('--accent-hover');
+                            root.style.removeProperty('--accent-strong');
+                            root.style.removeProperty('--accent-soft');
+                        } else if (token.key === '--danger-color') {
+                            root.style.removeProperty('--danger-subtle');
+                        } else if (token.key === '--bg-base') {
+                            const metaTheme = document.querySelector('meta[name="theme-color"]');
+                            if (metaTheme) metaTheme.setAttribute('content', '#1d1e19');
+                        }
                     }
                 }
             }
@@ -212,7 +227,15 @@ window.App = window.App || {};
         setCustomColor(key, hex) {
             if (!isValidHex(hex)) return;
             const colors = this.getCustomColors();
-            colors[key] = normalizeHex(hex);
+            const normHex = normalizeHex(hex);
+            const defaultColor = this.getDefaultColor(key);
+
+            if (normHex.toLowerCase() === defaultColor.toLowerCase()) {
+                delete colors[key];
+            } else {
+                colors[key] = normHex;
+            }
+
             this.saveCustomColors(colors);
             this.applyCustomColors();
         },
