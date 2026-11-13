@@ -343,7 +343,12 @@
     .board-item .sidebar-action-btn.share-btn,
     .note-item .sidebar-action-btn.share-btn {
         background: var(--accent-color) !important;
-        color: #ffffff !important;
+        color: var(--accent-contrast, #062419) !important;
+    }
+
+    .board-item .sidebar-action-btn.share-btn svg,
+    .note-item .sidebar-action-btn.share-btn svg {
+        stroke: var(--accent-contrast, #062419) !important;
     }
 
     /* Перейменувати (колір контейнеру де текст та іконка при свайпі) */

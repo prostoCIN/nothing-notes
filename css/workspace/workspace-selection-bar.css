@@ -626,7 +626,7 @@
     top: -8px;
     right: -8px;
     background: var(--accent-color);
-    color: #ffffff;
+    color: var(--accent-contrast, #062419);
     font-weight: 800;
     font-size: 12px;
     min-width: 24px;

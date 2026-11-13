@@ -102,12 +102,12 @@
     .header-select-btn.active {
         background: var(--accent-color) !important;
         border-color: transparent !important;
-        color: #ffffff !important;
+        color: var(--accent-contrast, #062419) !important;
         box-shadow: 0 3px 10px var(--accent-glow) !important;
     }
 
     .header-select-btn.active svg {
-        stroke: #ffffff !important;
+        stroke: var(--accent-contrast, #062419) !important;
     }
 
     /* Компактний перемикач режимів "Колонки / Граф" тільки з іконками */
@@ -150,12 +150,12 @@
 
     .header-segment-btn.active {
         background: var(--accent-color) !important;
-        color: #ffffff !important;
+        color: var(--accent-contrast, #062419) !important;
         box-shadow: 0 3px 10px var(--accent-glow) !important;
     }
 
     .header-segment-btn.active svg {
-        stroke: #ffffff !important;
+        stroke: var(--accent-contrast, #062419) !important;
     }
 
     .header-divider {

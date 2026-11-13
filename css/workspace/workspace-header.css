@@ -134,12 +134,12 @@
 
 .header-action-icon-btn.active {
     background: var(--accent-color) !important;
-    color: #ffffff !important;
+    color: var(--accent-contrast, #062419) !important;
     box-shadow: 0 3px 10px var(--accent-glow) !important;
 }
 
 .header-action-icon-btn.active svg {
-    stroke: #ffffff !important;
+    stroke: var(--accent-contrast, #062419) !important;
 }
 
 /* Група швидкого пензля з палітрою (єдина капсула) */
@@ -409,13 +409,13 @@
 
 .header-segment-btn.active {
     background: var(--accent-color) !important;
-    color: #ffffff !important;
+    color: var(--accent-contrast, #062419) !important;
     font-weight: 700;
     box-shadow: 0 3px 10px var(--accent-glow) !important;
 }
 
 .header-segment-btn.active svg {
-    stroke: #ffffff !important;
+    stroke: var(--accent-contrast, #062419) !important;
 }
 
 .header-divider {
@@ -450,11 +450,11 @@
 .header-select-btn.active {
     background: var(--accent-color) !important;
     border-color: transparent !important;
-    color: #ffffff !important;
+    color: var(--accent-contrast, #062419) !important;
     font-weight: 800;
     box-shadow: 0 3px 10px var(--accent-glow) !important;
 }
 
 .header-select-btn.active svg {
-    stroke: #ffffff !important;
+    stroke: var(--accent-contrast, #062419) !important;
 }

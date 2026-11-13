@@ -167,7 +167,7 @@
 .graph-export-download-btn {
     background: var(--accent-color);
     border-color: var(--accent-color);
-    color: #ffffff;
+    color: var(--accent-contrast, #062419);
 }
 
 .graph-export-download-btn:hover {

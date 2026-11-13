@@ -194,6 +194,18 @@ window.App = window.App || {};
                             if (strong) root.style.setProperty('--accent-strong', strong);
                             const soft = hexToRgba(val, 0.08);
                             if (soft) root.style.setProperty('--accent-soft', soft);
+
+                            // Контрастний колір тексту для акцентних кнопок: темний #062419 для світлих/яскравих відтінків, білий для темних
+                            const getLuminance = (hex) => {
+                                let c = hex.replace('#', '').trim();
+                                if (c.length === 3) c = c.split('').map(x => x + x).join('');
+                                if (c.length !== 6) return 1;
+                                const r = parseInt(c.substring(0, 2), 16);
+                                const g = parseInt(c.substring(2, 4), 16);
+                                const b = parseInt(c.substring(4, 6), 16);
+                                return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+                            };
+                            root.style.setProperty('--accent-contrast', getLuminance(val) > 0.48 ? '#062419' : '#ffffff');
                         } else if (token.key === '--danger-color') {
                             const sub = hexToRgba(val, 0.14);
                             if (sub) root.style.setProperty('--danger-subtle', sub);
@@ -213,6 +225,7 @@ window.App = window.App || {};
                             root.style.removeProperty('--accent-hover');
                             root.style.removeProperty('--accent-strong');
                             root.style.removeProperty('--accent-soft');
+                            root.style.removeProperty('--accent-contrast');
                         } else if (token.key === '--danger-color') {
                             root.style.removeProperty('--danger-subtle');
                         } else if (token.key === '--bg-base') {
@@ -317,6 +330,7 @@ window.App = window.App || {};
             root.style.removeProperty('--accent-hover');
             root.style.removeProperty('--accent-strong');
             root.style.removeProperty('--accent-soft');
+            root.style.removeProperty('--accent-contrast');
             root.style.removeProperty('--danger-subtle');
 
             const metaTheme = document.querySelector('meta[name="theme-color"]');

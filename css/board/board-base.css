@@ -81,7 +81,7 @@
 
 .board-ctrl-btn.is-active {
     background: var(--accent-color) !important;
-    color: #ffffff !important;
+    color: var(--accent-contrast, #062419) !important;
 }
 
 .board-ctrl-divider {

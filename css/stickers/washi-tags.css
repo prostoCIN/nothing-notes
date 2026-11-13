@@ -331,5 +331,5 @@
 
 .tag-add-btn:hover {
     background: var(--accent-color);
-    color: #ffffff;
+    color: var(--accent-contrast, #062419);
 }

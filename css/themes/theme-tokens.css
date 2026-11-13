@@ -44,6 +44,7 @@ html[data-theme="forest"] {
 
     /* Фірмовий смарт-акцент NothingNotes */
     --accent-color: #16b981;
+    --accent-contrast: #062419;
     --accent-emerald: var(--accent-color);
     --emerald-gradient: var(--accent-color);
     --emerald-gradient-text: var(--accent-color);

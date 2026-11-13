@@ -467,7 +467,7 @@ body.is-sticker-dragging * {
 
 .sticker-subnotes-container.is-expanded .subnotes-pill-badge {
     background: var(--accent-color);
-    color: #ffffff;
+    color: var(--accent-contrast, #062419);
 }
 
 /* Права вертикальна кнопка переходу зі стрілочкою (~56px) */
@@ -506,14 +506,15 @@ body.is-sticker-dragging * {
 .subnotes-nav-btn.active,
 .sticker-subnotes-container.is-expanded .subnotes-nav-btn {
     background: var(--accent-color);
-    color: #ffffff;
+    color: var(--accent-contrast, #062419);
     border-left-color: var(--accent-color);
 }
 
 .subnotes-nav-btn.active .subnotes-nav-arrow,
 .sticker-subnotes-container.is-expanded .subnotes-nav-btn .subnotes-nav-arrow {
     transform: translateX(1px);
-    color: #ffffff;
+    color: var(--accent-contrast, #062419);
+    stroke: var(--accent-contrast, #062419);
 }
 
 /* ==========================================================================
