@@ -128,7 +128,7 @@ body {
    Універсальні семантичні правила поверхонь (Surface Tokens Integration)
    ========================================================================== */
 
-/* 1. Усі бекдропи та затемнення оверлеїв автоматично наслідують токен теми */
+/* 1. Усі бекдропи та затемнення оверлеїв автоматично наслідують токен теми та плавний блюр iOS */
 .modal-overlay,
 .auth-modal-backdrop,
 .settings-modal-backdrop,
@@ -137,9 +137,12 @@ body {
 .sidebar-overlay,
 .graph-mobile-sheet-backdrop {
     background: var(--backdrop-bg, rgba(0, 0, 0, 0.65));
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    transition: opacity var(--dur-smooth) var(--ease-ios-spring), visibility var(--dur-smooth) var(--ease-ios-spring);
 }
 
-/* 2. Усі картки модальних вікон автоматично адаптуються під тему */
+/* 2. Усі картки модальних вікон автоматично адаптуються під тему та пружинне виринання */
 .modal-card,
 [class$="-modal-card"],
 [class$="-modal-box"] {
@@ -147,6 +150,7 @@ body {
     color: var(--text-main);
     border: 1px solid var(--border-color);
     box-shadow: var(--modal-shadow);
+    transition: transform var(--dur-smooth) var(--ease-ios-sheet), opacity var(--dur-smooth) var(--ease-ios-spring);
 }
 
 /* 3. Усі випадаючі меню та тултіпи використовують токени поверхонь */
@@ -167,6 +171,27 @@ body {
     color: var(--tooltip-color, var(--text-main));
     border: 1px solid var(--tooltip-border, var(--border-color));
     box-shadow: var(--panel-shadow, 0 4px 14px rgba(0, 0, 0, 0.15));
+}
+
+/* 4. Загальні тактильні мікро-відгуки (iOS Click Compression & Haptic Feel) */
+button:not(:disabled):not(.disabled):active,
+.btn:not(:disabled):not(.disabled):active,
+.action-btn:not(:disabled):not(.disabled):active,
+.clickable:active {
+    transform: scale(0.96);
+    transition: transform var(--dur-instant) var(--ease-ios-spring);
+}
+
+/* 5. Повага до системних налаштувань користувача щодо зменшення руху (Accessibility) */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
 }
 
 /* Responsive adjustments */

@@ -11,7 +11,10 @@
     border-radius: 12px;
     padding: 22px 24px 22px 42px;
     position: relative;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.25s ease, border-color 0.25s ease;
+    transition: transform var(--dur-smooth) var(--ease-ios-spring), 
+                box-shadow var(--dur-smooth) var(--ease-ios-spring), 
+                background-color var(--dur-quick) ease, 
+                border-color var(--dur-quick) ease;
     box-shadow: var(--sticker-shadow, 0 4px 14px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.08));
     width: 100%;
     display: flex;
@@ -50,8 +53,11 @@
     justify-content: center;
     color: #ffffff;
     opacity: 0;
-    transform: scale(0.7);
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transform: scale(0.6);
+    transition: transform var(--dur-quick) var(--ease-ios-bounce), 
+                opacity var(--dur-quick) ease, 
+                background-color var(--dur-quick) ease, 
+                border-color var(--dur-quick) ease;
     z-index: 25;
     pointer-events: none;
 }
@@ -69,6 +75,7 @@
 .note-sticker.is-ws-selected .sticker-select-checkbox {
     background-color: var(--accent-color) !important;
     border-color: var(--accent-color) !important;
+    color: var(--accent-contrast, #062419);
     opacity: 1 !important;
     transform: scale(1.08);
     box-shadow: 0 2px 8px var(--accent-strong);
@@ -176,16 +183,18 @@
 }
 
 .note-sticker.is-dragging {
-    opacity: 0.95;
+    opacity: 0.96;
     transform: none !important;
-    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45), 0 0 0 2px var(--accent-strong) !important;
+    box-shadow: 0 24px 50px rgba(0, 0, 0, 0.45), 0 8px 18px rgba(0, 0, 0, 0.25), 0 0 0 2px var(--accent-strong) !important;
     cursor: grabbing !important;
     pointer-events: auto !important;
     user-select: none !important;
     touch-action: none !important;
     z-index: 999999 !important;
     overflow: hidden !important;
-    transition: height 0.22s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s ease, opacity 0.2s ease !important;
+    transition: height var(--dur-quick) var(--ease-ios-spring), 
+                box-shadow var(--dur-quick) var(--ease-ios-spring), 
+                opacity var(--dur-quick) ease !important;
 }
 
 body.is-sticker-dragging {
@@ -215,8 +224,9 @@ body.is-sticker-dragging * {
 .note-sticker.drag-nest-target {
     border: 2px dashed var(--accent-color) !important;
     background-color: #dbeafe !important;
-    transform: scale(0.99);
-    box-shadow: 0 0 0 4px var(--accent-border), 0 10px 25px rgba(0, 0, 0, 0.3) !important;
+    transform: scale(0.985);
+    box-shadow: 0 0 0 4px var(--accent-border), 0 14px 32px rgba(0, 0, 0, 0.32) !important;
+    transition: transform var(--dur-quick) var(--ease-ios-bounce), box-shadow var(--dur-quick) ease;
 }
 
 /* Підсвічування для режиму Swap (обмін місцями в сітці) */
@@ -225,7 +235,7 @@ body.is-sticker-dragging * {
     outline-offset: 2px;
     transform: scale(0.98);
     box-shadow: 0 8px 24px var(--accent-glow) !important;
-    transition: transform 0.15s ease, outline-color 0.15s ease;
+    transition: transform var(--dur-quick) var(--ease-ios-bounce), outline-color var(--dur-quick) ease;
 }
 
 .sticker-drag-placeholder {
@@ -236,6 +246,18 @@ body.is-sticker-dragging * {
     width: 100%;
     flex-shrink: 0 !important;
     min-height: 160px;
+    animation: iosPlaceholderIn var(--dur-quick) var(--ease-ios-spring) forwards;
+}
+
+@keyframes iosPlaceholderIn {
+    from {
+        opacity: 0;
+        transform: scale(0.94);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 .note-sticker.highlight-pulse {

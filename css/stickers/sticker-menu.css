@@ -73,6 +73,12 @@
     gap: 4px;
     color: var(--text-main);
     overflow: hidden;
+    transform-origin: top right;
+}
+
+.sticker-menu-dropdown.active {
+    display: flex;
+    animation: iosDropdownAppear var(--dur-quick) var(--ease-ios-bounce) forwards;
 }
 
 /* Дворівневий контейнер-слайдер для підменю дій */
@@ -86,7 +92,7 @@
 .sticker-menu-slider {
     display: flex;
     width: 200%;
-    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform var(--dur-smooth) var(--ease-ios-spring);
 }
 
 .sticker-menu-viewport.is-sub-active .sticker-menu-slider {

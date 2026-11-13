@@ -93,9 +93,17 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all var(--transition-fast);
+    transition: transform var(--dur-instant) var(--ease-ios-spring), 
+                background-color var(--dur-quick) ease, 
+                border-color var(--dur-quick) ease, 
+                color var(--dur-quick) ease,
+                box-shadow var(--dur-quick) ease;
     padding: 0;
     flex-shrink: 0;
+}
+
+.header-action-icon-btn:not(:disabled):not(.disabled):active {
+    transform: scale(0.9);
 }
 
 /* Всередині згрупованих блоків (header-tools-pill) кнопки є компактними елементами групи */
@@ -218,6 +226,19 @@
 
 .header-brush-dropdown.active {
     display: flex;
+    animation: iosDropdownAppear var(--dur-quick) var(--ease-ios-bounce) forwards;
+    transform-origin: top left;
+}
+
+@keyframes iosDropdownAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
 
 /* Контейнер кнопки з підказкою */
@@ -233,7 +254,7 @@
     position: absolute;
     top: calc(100% + 8px);
     left: 50%;
-    transform: translateX(-50%) translateY(-4px);
+    transform: translateX(-50%) translateY(-6px) scale(0.94);
     background: var(--tooltip-bg);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
@@ -248,7 +269,9 @@
     pointer-events: none;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s ease;
+    transition: opacity var(--dur-quick) var(--ease-ios-spring), 
+                transform var(--dur-quick) var(--ease-ios-bounce), 
+                visibility var(--dur-quick) var(--ease-ios-spring);
     z-index: 10001;
 }
 

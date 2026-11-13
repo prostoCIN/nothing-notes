@@ -53,12 +53,23 @@
     --glass-blur: blur(24px) saturate(180%);
     --glass-card-shadow: 0 12px 36px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.14);
 
-    /* Єдина система кривих та таймінгів анімацій */
+    /* Єдина система кривих та таймінгів анімацій (iOS Fluid Spring Motion) */
+    --ease-ios-spring: cubic-bezier(0.32, 0.72, 0, 1);
+    --ease-ios-bounce: cubic-bezier(0.34, 1.45, 0.64, 1);
+    --ease-ios-sheet: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-ios-exit: cubic-bezier(0.4, 0, 1, 1);
     --ease-out-smooth: cubic-bezier(0.2, 0.8, 0.2, 1);
     --ease-standard: cubic-bezier(0.2, 0, 0, 1);
-    --transition-fast: 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
-    --transition-normal: 0.2s cubic-bezier(0.2, 0, 0, 1);
-    --transition-fade: opacity 0.2s cubic-bezier(0.2, 0, 0, 1), transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+
+    --dur-instant: 110ms;
+    --dur-quick: 200ms;
+    --dur-smooth: 300ms;
+    --dur-deliberate: 420ms;
+
+    --transition-fast: 0.15s cubic-bezier(0.32, 0.72, 0, 1);
+    --transition-normal: 0.24s cubic-bezier(0.32, 0.72, 0, 1);
+    --transition-spring: 0.32s cubic-bezier(0.34, 1.45, 0.64, 1);
+    --transition-fade: opacity 0.22s cubic-bezier(0.32, 0.72, 0, 1), transform 0.25s cubic-bezier(0.32, 0.72, 0, 1);
 
     /* Стандартизована 4-рівнева типографічна сітка */
     --font-xs: 12px; /* Бейджі, підказки, другорядні підписи, теги, заголовки меню */

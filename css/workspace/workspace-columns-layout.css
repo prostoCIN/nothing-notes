@@ -44,7 +44,14 @@
     padding: 22px 24px 20px 24px;
     box-shadow: var(--glass-specular);
     box-sizing: border-box;
-    transition: flex 0.25s cubic-bezier(0.16, 1, 0.3, 1), min-width 0.25s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.25s cubic-bezier(0.16, 1, 0.3, 1), width 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    transition: flex var(--dur-deliberate) var(--ease-ios-spring), 
+                min-width var(--dur-deliberate) var(--ease-ios-spring), 
+                max-width var(--dur-deliberate) var(--ease-ios-spring), 
+                width var(--dur-deliberate) var(--ease-ios-spring), 
+                transform var(--dur-smooth) var(--ease-ios-spring), 
+                border-color var(--dur-quick) ease, 
+                background-color var(--dur-quick) ease, 
+                box-shadow var(--dur-quick) ease;
 }
 
 /* Коли колонок 3 і більше — кожна колонка займає 50% доступної ширини екрана */

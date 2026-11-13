@@ -24,7 +24,9 @@
     z-index: 1000;
     opacity: 0;
     pointer-events: none;
-    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease, box-shadow 0.25s ease;
+    transition: transform var(--dur-deliberate) var(--ease-ios-bounce), 
+                opacity var(--dur-smooth) ease, 
+                box-shadow var(--dur-smooth) ease;
     max-width: calc(100vw - 48px);
     box-sizing: border-box;
 }
@@ -669,12 +671,13 @@
     z-index: 1000000;
     pointer-events: none;
     box-sizing: border-box;
-    animation: badgePop 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: badgePop 0.22s var(--ease-ios-bounce);
 }
 
 @keyframes badgePop {
-    from { transform: scale(0.6); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
+    0% { transform: scale(0.5); opacity: 0; }
+    60% { transform: scale(1.18); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
 }
 
 /* ==========================================================================

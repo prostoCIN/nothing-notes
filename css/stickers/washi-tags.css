@@ -31,7 +31,9 @@
     letter-spacing: 0.25px;
     border-radius: 4px;
     cursor: default;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+    transition: transform var(--dur-quick) var(--ease-ios-bounce), 
+                box-shadow var(--dur-quick) ease, 
+                opacity var(--dur-quick) ease;
     box-shadow: 0 1.5px 4px rgba(0, 0, 0, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.45);
     backdrop-filter: blur(2px);
     transform: rotate(-0.6deg);
@@ -42,8 +44,12 @@
 }
 
 .sticker-tag-badge:hover {
-    transform: scale(1.05) rotate(0deg);
+    transform: scale(1.06) rotate(0deg);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.sticker-tag-badge:active {
+    transform: scale(0.96) rotate(0deg);
 }
 
 /* 6 пастельних варіацій шматочків скотчу (Washi Tape Colors) */

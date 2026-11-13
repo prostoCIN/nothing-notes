@@ -84,7 +84,7 @@ window.App = window.App || {};
                 card.style.transition = 'none';
                 card.style.transform = `translate(${dx}px, ${dy}px)`;
                 requestAnimationFrame(() => {
-                    card.style.transition = 'transform 0.24s cubic-bezier(0.2, 0, 0, 1)';
+                    card.style.transition = 'transform 0.28s cubic-bezier(0.32, 0.72, 0, 1)';
                     card.style.transform = '';
                 });
             }
