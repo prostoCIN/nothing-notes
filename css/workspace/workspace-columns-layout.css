@@ -58,7 +58,7 @@
 @keyframes columnSlideInRight {
     from {
         opacity: 0;
-        transform: translateX(42px) scale(0.97);
+        transform: translateX(42px) scale(0.98);
     }
     to {
         opacity: 1;
@@ -66,15 +66,17 @@
     }
 }
 
-/* Плавний виїзд колонки при закритті (iOS Spring Slide Out) */
-@keyframes columnSlideOutRight {
+/* Плавне пружне розширення колонки при закритті сусідніх (iOS Spring Stretch & Expand) */
+@keyframes columnExpandToFull {
     from {
-        opacity: 1;
-        transform: translateX(0) scale(1);
+        opacity: 0.95;
+        transform: scaleX(0.97);
+        transform-origin: left center;
     }
     to {
-        opacity: 0;
-        transform: translateX(42px) scale(0.97);
+        opacity: 1;
+        transform: scaleX(1);
+        transform-origin: left center;
     }
 }
 
@@ -83,9 +85,9 @@
     will-change: transform, opacity;
 }
 
-.board-column.column-exiting {
-    animation: columnSlideOutRight var(--dur-quick) var(--ease-ios-spring) forwards !important;
-    pointer-events: none;
+.board-column.column-expanding {
+    animation: columnExpandToFull var(--dur-smooth) var(--ease-ios-spring) both;
+    will-change: transform, opacity;
 }
 
 /* Коли колонок 3 і більше — кожна колонка займає 50% доступної ширини екрана */

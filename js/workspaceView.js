@@ -451,13 +451,13 @@ window.App = window.App || {};
             if (!state) return;
 
             const isAlreadyOpen = Array.isArray(state.activeChain) && state.activeChain[colIndex + 1] === noteId;
+            state.activeChain = state.activeChain.slice(0, colIndex + 1);
 
             if (isAlreadyOpen) {
-                this.closeColumn(colIndex + 1);
+                this.render();
                 return;
             }
 
-            state.activeChain = state.activeChain.slice(0, colIndex + 1);
             state.activeChain.push(noteId);
             this.render();
 
@@ -480,37 +480,19 @@ window.App = window.App || {};
                 } else {
                     container.scrollTo({ left: container.scrollWidth, behavior: 'smooth' });
                 }
-            }, 60);
+            }, 50);
         },
 
         closeColumn(colIndex) {
             const state = window.App.state;
             if (!state) return;
 
-            const els = window.App.getElements();
-            const container = els ? els.columnsContainer : document.getElementById('columns-container');
+            state.activeChain = state.activeChain.slice(0, colIndex);
+            this.render();
 
-            // Знаходимо всі колонки від colIndex і далі, які закриваються
-            const colsToClose = container ? Array.from(container.querySelectorAll('.board-column')).filter(c => {
-                const idx = parseInt(c.dataset.colIndex, 10);
-                return !isNaN(idx) && idx >= colIndex;
-            }) : [];
-
-            const finishClose = () => {
-                state.activeChain = state.activeChain.slice(0, colIndex);
-                this.render();
-
-                const lastParentId = state.activeChain[state.activeChain.length - 1];
-                if (window.App.sidebarView) {
-                    window.App.sidebarView.setActiveNote(lastParentId, { autoExpand: false, scrollIntoView: true });
-                }
-            };
-
-            if (colsToClose.length > 0) {
-                colsToClose.forEach(c => c.classList.add('column-exiting'));
-                setTimeout(finishClose, 180);
-            } else {
-                finishClose();
+            const lastParentId = state.activeChain[state.activeChain.length - 1];
+            if (window.App.sidebarView) {
+                window.App.sidebarView.setActiveNote(lastParentId, { autoExpand: false, scrollIntoView: true });
             }
         },
 
@@ -725,123 +707,45 @@ window.App = window.App || {};
                 els.columnsContainer.classList.remove('has-stretched-column', 'has-locked-column');
             }
 
-            // Розумна реконсиляція колонок для збереження плавних переходів ширини (100% -> 50%)
-            const prevColumnEls = Array.from(els.columnsContainer.querySelectorAll(':scope > .board-column:not(.column-exiting)'));
-            const isBoardSwitched = this._lastRenderedBoardId !== currentBoard.id;
-            this._lastRenderedBoardId = currentBoard.id;
+            // Очищуємо контейнер для гарантії точного розтягування колонок без залишкових DOM-вузлів
+            els.columnsContainer.innerHTML = '';
 
-            // Якщо змінили блокнот або зараз відкрито порожній екран / canvas — повне очищення
-            if (isBoardSwitched || els.columnsContainer.querySelector('.empty-workspace') || prevColumnEls.length === 0) {
-                els.columnsContainer.innerHTML = '';
-                if (state && state.activeChain && window.App.workspaceColumn) {
-                    state.activeChain.forEach((parentNoteId, colIndex) => {
-                        const columnEl = window.App.workspaceColumn.createColumn({
-                            colIndex,
-                            parentNoteId,
-                            currentBoard,
-                            isBoardReadOnly,
-                            onCloseColumn: (idx) => this.closeColumn(idx),
-                            onLayoutChange: () => this.render(),
-                            onFilterChange: () => this.render()
-                        });
+            const currentChainLength = (state && state.activeChain) ? state.activeChain.length : 1;
+            const prevChainLength = typeof this._prevChainLength === 'number' ? this._prevChainLength : currentChainLength;
+            this._prevChainLength = currentChainLength;
 
-                        if (colIndex > 0) {
-                            columnEl.classList.add('column-entering');
-                        }
+            const isOpeningNewColumn = currentChainLength > prevChainLength;
+            const isClosingColumn = currentChainLength < prevChainLength;
 
-                        els.columnsContainer.appendChild(columnEl);
-
-                        const parentKey = parentNoteId || 'root';
-                        const scrollList = columnEl.querySelector('.column-notes-list, .board-column-notes-list');
-                        if (scrollList && scrollPositions.has(parentKey)) {
-                            scrollList.scrollTop = scrollPositions.get(parentKey);
-                        }
+            // Рендеримо кожну колонку ланцюжка
+            if (state && state.activeChain && window.App.workspaceColumn) {
+                state.activeChain.forEach((parentNoteId, colIndex) => {
+                    const columnEl = window.App.workspaceColumn.createColumn({
+                        colIndex,
+                        parentNoteId,
+                        currentBoard,
+                        isBoardReadOnly,
+                        onCloseColumn: (idx) => this.closeColumn(idx),
+                        onLayoutChange: () => this.render(),
+                        onFilterChange: () => this.render()
                     });
-                }
-            } else {
-                // Той самий блокнот: зберігаємо вже відкриті колонки, щоб спрацьовував CSS transition flex/width!
-                const targetChain = state.activeChain || [null];
 
-                // 1. Видаляємо зайві старі колонки, індекс яких вийшов за межі нового targetChain
-                prevColumnEls.forEach(col => {
-                    const idx = parseInt(col.dataset.colIndex, 10);
-                    if (idx >= targetChain.length) {
-                        col.remove();
+                    // Якщо щойно відкрили нову підколонку — плавний виїзд праворуч
+                    if (isOpeningNewColumn && colIndex === currentChainLength - 1 && colIndex > 0) {
+                        columnEl.classList.add('column-entering');
                     }
-                });
+                    // Якщо закрили сусідню колонку — решта колонок плавно розширюються на весь доступний простір
+                    else if (isClosingColumn) {
+                        columnEl.classList.add('column-expanding');
+                    }
 
-                // 2. Для кожної колонки в новому ланцюжку:
-                targetChain.forEach((parentNoteId, colIndex) => {
+                    els.columnsContainer.appendChild(columnEl);
+
+                    // Відновлюємо точну позицію скролу цієї колонки
                     const parentKey = parentNoteId || 'root';
-                    const existingCol = els.columnsContainer.querySelector(`.board-column[data-col-index="${colIndex}"]`);
-
-                    if (existingCol && existingCol.dataset.parentId === parentKey) {
-                        // Якщо змінилась кількість колонок (відкрили або закрили піднотатку) — повністю зберігаємо DOM
-                        // колонки, щоб плавно анімувалась її ширина (flex), та лише синхронізуємо маркер піднотатки на картках!
-                        if (targetChain.length !== prevColumnEls.length) {
-                            const childNoteId = targetChain[colIndex + 1];
-                            existingCol.querySelectorAll('.note-sticker[data-note-id]').forEach(card => {
-                                const isThisCardOpen = childNoteId && card.dataset.noteId === childNoteId;
-                                card.classList.toggle('has-open-subnotes', !!isThisCardOpen);
-                                const subnotesBtn = card.querySelector('.subnotes-nav-btn');
-                                if (subnotesBtn) subnotesBtn.classList.toggle('active', !!isThisCardOpen);
-                                const moreBtn = card.querySelector('.sticker-more-btn');
-                                if (moreBtn) moreBtn.classList.toggle('has-active-chain', !!isThisCardOpen);
-                            });
-                            return;
-                        }
-
-                        // Якщо кількість колонок та сама (наприклад, додано/відредаговано нотатку) — оновлюємо колонку
-                        const freshCol = window.App.workspaceColumn.createColumn({
-                            colIndex,
-                            parentNoteId,
-                            currentBoard,
-                            isBoardReadOnly,
-                            onCloseColumn: (idx) => this.closeColumn(idx),
-                            onLayoutChange: () => this.render(),
-                            onFilterChange: () => this.render()
-                        });
-                        existingCol.replaceWith(freshCol);
-
-                        const scrollList = freshCol.querySelector('.column-notes-list, .board-column-notes-list');
-                        if (scrollList && scrollPositions.has(parentKey)) {
-                            scrollList.scrollTop = scrollPositions.get(parentKey);
-                        }
-                    } else if (existingCol) {
-                        const freshCol = window.App.workspaceColumn.createColumn({
-                            colIndex,
-                            parentNoteId,
-                            currentBoard,
-                            isBoardReadOnly,
-                            onCloseColumn: (idx) => this.closeColumn(idx),
-                            onLayoutChange: () => this.render(),
-                            onFilterChange: () => this.render()
-                        });
-                        freshCol.classList.add('column-entering');
-                        existingCol.replaceWith(freshCol);
-
-                        const scrollList = freshCol.querySelector('.column-notes-list, .board-column-notes-list');
-                        if (scrollList && scrollPositions.has(parentKey)) {
-                            scrollList.scrollTop = scrollPositions.get(parentKey);
-                        }
-                    } else {
-                        // Нова колонка додається до ланцюжка (наприклад, відкрили піднотатку)
-                        const newCol = window.App.workspaceColumn.createColumn({
-                            colIndex,
-                            parentNoteId,
-                            currentBoard,
-                            isBoardReadOnly,
-                            onCloseColumn: (idx) => this.closeColumn(idx),
-                            onLayoutChange: () => this.render(),
-                            onFilterChange: () => this.render()
-                        });
-                        newCol.classList.add('column-entering');
-                        els.columnsContainer.appendChild(newCol);
-
-                        const scrollList = newCol.querySelector('.column-notes-list, .board-column-notes-list');
-                        if (scrollList && scrollPositions.has(parentKey)) {
-                            scrollList.scrollTop = scrollPositions.get(parentKey);
-                        }
+                    const scrollList = columnEl.querySelector('.column-notes-list, .board-column-notes-list');
+                    if (scrollList && scrollPositions.has(parentKey)) {
+                        scrollList.scrollTop = scrollPositions.get(parentKey);
                     }
                 });
             }
