@@ -44,50 +44,9 @@
     padding: 22px 24px 20px 24px;
     box-shadow: var(--glass-specular);
     box-sizing: border-box;
-    transition: flex var(--dur-deliberate) var(--ease-ios-spring), 
-                min-width var(--dur-deliberate) var(--ease-ios-spring), 
-                max-width var(--dur-deliberate) var(--ease-ios-spring), 
-                width var(--dur-deliberate) var(--ease-ios-spring), 
-                transform var(--dur-smooth) var(--ease-ios-spring), 
-                border-color var(--dur-quick) ease, 
+    transition: border-color var(--dur-quick) ease, 
                 background-color var(--dur-quick) ease, 
                 box-shadow var(--dur-quick) ease;
-}
-
-/* Плавний в'їзд нової колонки (iOS Spring Slide In) */
-@keyframes columnSlideInRight {
-    from {
-        opacity: 0;
-        transform: translateX(42px) scale(0.98);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0) scale(1);
-    }
-}
-
-/* Плавне пружне розширення колонки при закритті сусідніх (iOS Spring Stretch & Expand) */
-@keyframes columnExpandToFull {
-    from {
-        opacity: 0.95;
-        transform: scaleX(0.97);
-        transform-origin: left center;
-    }
-    to {
-        opacity: 1;
-        transform: scaleX(1);
-        transform-origin: left center;
-    }
-}
-
-.board-column.column-entering {
-    animation: columnSlideInRight var(--dur-smooth) var(--ease-ios-spring) both;
-    will-change: transform, opacity;
-}
-
-.board-column.column-expanding {
-    animation: columnExpandToFull var(--dur-smooth) var(--ease-ios-spring) both;
-    will-change: transform, opacity;
 }
 
 /* Коли колонок 3 і більше — кожна колонка займає 50% доступної ширини екрана */

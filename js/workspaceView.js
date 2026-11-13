@@ -467,20 +467,18 @@ window.App = window.App || {};
                 window.App.sidebarView.setActiveNote(noteId, { autoExpand: true, scrollIntoView: true });
             }
 
-            // Автоматично скролимо контейнер колонок до останньої щойно відкритої колонки
-            setTimeout(() => {
-                const els = window.App.getElements();
-                const container = els ? els.columnsContainer : document.getElementById('columns-container');
-                if (!container) return;
-
+            // Миттєвий скрол контейнера колонок до нової колонки без затримок
+            const els = window.App.getElements();
+            const container = els ? els.columnsContainer : document.getElementById('columns-container');
+            if (container) {
                 const lastColIndex = colIndex + 1;
                 const newCol = container.querySelector(`.board-column[data-col-index="${lastColIndex}"]`);
                 if (newCol) {
-                    newCol.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'end' });
+                    newCol.scrollIntoView({ behavior: 'auto', block: 'nearest', inline: 'end' });
                 } else {
-                    container.scrollTo({ left: container.scrollWidth, behavior: 'smooth' });
+                    container.scrollLeft = container.scrollWidth;
                 }
-            }, 50);
+            }
         },
 
         closeColumn(colIndex) {
@@ -710,13 +708,6 @@ window.App = window.App || {};
             // Очищуємо контейнер для гарантії точного розтягування колонок без залишкових DOM-вузлів
             els.columnsContainer.innerHTML = '';
 
-            const currentChainLength = (state && state.activeChain) ? state.activeChain.length : 1;
-            const prevChainLength = typeof this._prevChainLength === 'number' ? this._prevChainLength : currentChainLength;
-            this._prevChainLength = currentChainLength;
-
-            const isOpeningNewColumn = currentChainLength > prevChainLength;
-            const isClosingColumn = currentChainLength < prevChainLength;
-
             // Рендеримо кожну колонку ланцюжка
             if (state && state.activeChain && window.App.workspaceColumn) {
                 state.activeChain.forEach((parentNoteId, colIndex) => {
@@ -729,15 +720,6 @@ window.App = window.App || {};
                         onLayoutChange: () => this.render(),
                         onFilterChange: () => this.render()
                     });
-
-                    // Якщо щойно відкрили нову підколонку — плавний виїзд праворуч
-                    if (isOpeningNewColumn && colIndex === currentChainLength - 1 && colIndex > 0) {
-                        columnEl.classList.add('column-entering');
-                    }
-                    // Якщо закрили сусідню колонку — решта колонок плавно розширюються на весь доступний простір
-                    else if (isClosingColumn) {
-                        columnEl.classList.add('column-expanding');
-                    }
 
                     els.columnsContainer.appendChild(columnEl);
 
