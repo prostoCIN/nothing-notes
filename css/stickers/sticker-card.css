@@ -466,8 +466,8 @@ body.is-sticker-dragging * {
 }
 
 .sticker-subnotes-container.is-expanded .subnotes-pill-badge {
-    background: var(--accent-color);
-    color: var(--accent-contrast, #062419);
+    background: rgba(0, 0, 0, 0.14);
+    color: #1c1917;
 }
 
 /* Права вертикальна кнопка переходу зі стрілочкою (~56px) */
@@ -494,27 +494,39 @@ body.is-sticker-dragging * {
 
 .subnotes-nav-btn:hover,
 .sticker-subnotes-container:hover .subnotes-nav-btn {
-    background: var(--accent-subtle);
-    color: var(--accent-color);
+    background: rgba(0, 0, 0, 0.05);
+    color: rgba(0, 0, 0, 0.7);
 }
 
 .subnotes-nav-btn:hover .subnotes-nav-arrow,
 .sticker-subnotes-container:hover .subnotes-nav-btn .subnotes-nav-arrow {
     transform: translateX(3px);
+    color: #1c1917;
 }
 
 .subnotes-nav-btn.active,
 .sticker-subnotes-container.is-expanded .subnotes-nav-btn {
-    background: var(--accent-color);
-    color: var(--accent-contrast, #062419);
-    border-left-color: var(--accent-color);
+    background: rgba(0, 0, 0, 0.04);
+    color: rgba(0, 0, 0, 0.65);
+    border-left-color: rgba(0, 0, 0, 0.08);
 }
 
 .subnotes-nav-btn.active .subnotes-nav-arrow,
 .sticker-subnotes-container.is-expanded .subnotes-nav-btn .subnotes-nav-arrow {
     transform: translateX(1px);
-    color: var(--accent-contrast, #062419);
-    stroke: var(--accent-contrast, #062419);
+    color: rgba(0, 0, 0, 0.7);
+}
+
+.subnotes-nav-btn.active:hover,
+.sticker-subnotes-container.is-expanded .subnotes-nav-btn:hover {
+    background: rgba(0, 0, 0, 0.08);
+    color: #1c1917;
+}
+
+.subnotes-nav-btn.active:hover .subnotes-nav-arrow,
+.sticker-subnotes-container.is-expanded .subnotes-nav-btn:hover .subnotes-nav-arrow {
+    transform: translateX(3px);
+    color: #1c1917;
 }
 
 /* ==========================================================================
