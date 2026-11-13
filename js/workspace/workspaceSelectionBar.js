@@ -349,151 +349,17 @@ window.App = window.App || {};
 
         refreshTagSubmenu() {
             if (!barElement) return;
-            const state = window.App.state;
-            const storage = window.App.storage;
-            const noteManager = window.App.noteManager;
+            const containerEl = barElement.querySelector('#ws-plus-tags');
+            if (!containerEl) return;
 
-            const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
-
-            const populateTagContainer = (containerEl) => {
-                if (!containerEl) return;
-                containerEl.innerHTML = '';
-
-                const options = storage.getTagOptions ? storage.getTagOptions() : [];
-
-                if (options.length === 0) {
-                    const emptyText = document.createElement('div');
-                    emptyText.className = 'selection-submenu-empty';
-                    emptyText.textContent = t('sticker.emptyTags');
-                    containerEl.appendChild(emptyText);
-                } else {
-                    const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
-                    const selectedNotes = selectedIds.map(id => noteManager.getNoteById(id)).filter(Boolean);
-
-                    const tagList = document.createElement('div');
-                    tagList.className = 'selection-tag-list';
-
-                    options.forEach(tagText => {
-                        const item = document.createElement('div');
-                        item.className = 'selection-tag-item';
-
-                        const colorIndex = window.App.getTagColorIndex ? window.App.getTagColorIndex(tagText) : 0;
-
-                        const countWithTag = selectedNotes.filter(note => {
-                            const tags = Array.isArray(note.tags) ? note.tags : (note.tag ? [note.tag.text || note.tag] : []);
-                            return tags.includes(tagText);
-                        }).length;
-
-                        const allHaveTag = selectedNotes.length > 0 && countWithTag === selectedNotes.length;
-                        const someHaveTag = countWithTag > 0 && !allHaveTag;
-
-                        if (allHaveTag) {
-                            item.classList.add('active');
-                        } else if (someHaveTag) {
-                            item.classList.add('partial');
-                        }
-
-                        item.innerHTML = `
-                            <div class="selection-tag-main-action">
-                                <span class="selection-tag-color-dot tag-tape-color-${colorIndex}"></span>
-                                <span class="selection-tag-text">${tagText}</span>
-                                <span class="selection-tag-status-icon">${allHaveTag ? '✓' : (someHaveTag ? '–' : '')}</span>
-                            </div>
-                            <button class="selection-tag-del-btn" title="${t('sticker.delTagTooltip')}">×</button>
-                        `;
-
-                        // Клік по самому тегу — додати до виділених або зняти з них
-                        const mainAction = item.querySelector('.selection-tag-main-action');
-                        mainAction.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            if (selectedIds.length === 0) return;
-                            if (window.App.workspaceSelectionActions) {
-                                window.App.workspaceSelectionActions.toggleTag(selectedIds, tagText);
-                            }
-                        });
-
-                        // Клік по кнопці × — повне видалення тегу зі списку та з усіх нотаток
-                        const delBtn = item.querySelector('.selection-tag-del-btn');
-                        delBtn.addEventListener('pointerdown', (e) => {
-                            e.stopPropagation();
-                        });
-                        delBtn.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            if (window.App.workspaceSelectionActions) {
-                                window.App.workspaceSelectionActions.deleteTagGlobally(tagText);
-                            }
-                        });
-
-                        tagList.appendChild(item);
-                    });
-
-                    containerEl.appendChild(tagList);
-                }
-
-                // Опція зняти всі теги
-                const clearTagsBtn = document.createElement('button');
-                clearTagsBtn.className = 'selection-tag-clear-btn';
-                clearTagsBtn.innerHTML = `
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                    <span>${t('selectionBar.clearAllTags')}</span>
-                `;
-                clearTagsBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
-                    if (selectedIds.length === 0) return;
-                    if (window.App.workspaceSelectionActions) {
-                        window.App.workspaceSelectionActions.clearAllTags(selectedIds);
-                    }
+            if (window.App.tagHub && window.App.tagHub.mount) {
+                window.App.tagHub.mount(containerEl, {
+                    getTargetNoteIds: () => Array.from(window.App.state.selectedWorkspaceNoteIds),
+                    isSelectionBar: true,
+                    autoFocus: false,
+                    onTagsChanged: () => {}
                 });
-
-                containerEl.appendChild(clearTagsBtn);
-
-                // Рядок створення нового тегу прямо з панелі вибору
-                const addRow = document.createElement('div');
-                addRow.className = 'tag-add-option-row';
-
-                const addInput = document.createElement('input');
-                addInput.type = 'text';
-                addInput.className = 'tag-add-input';
-                addInput.placeholder = t('sticker.newTagPlaceholder');
-
-                const submitNewTag = () => {
-                    const newOpt = addInput.value.trim();
-                    if (newOpt) {
-                        const selectedIds = Array.from(state.selectedWorkspaceNoteIds);
-                        if (window.App.workspaceSelectionActions) {
-                            window.App.workspaceSelectionActions.createAndAssignTag(newOpt, selectedIds);
-                        }
-                    }
-                };
-
-                addInput.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        submitNewTag();
-                    }
-                });
-                addInput.addEventListener('click', (e) => e.stopPropagation());
-
-                const addBtn = document.createElement('button');
-                addBtn.type = 'button';
-                addBtn.className = 'tag-add-btn';
-                addBtn.textContent = '+';
-                addBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    submitNewTag();
-                });
-
-                addRow.appendChild(addInput);
-                addRow.appendChild(addBtn);
-                containerEl.appendChild(addRow);
-            };
-
-            populateTagContainer(barElement.querySelector('#ws-plus-tags'));
+            }
         },
 
         refreshBookmarksSubmenu() {

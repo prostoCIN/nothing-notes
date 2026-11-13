@@ -155,28 +155,33 @@
     color: var(--accent-color);
 }
 
-/* Випадаюче вікно вибору та створення тегів */
+/* ==========================================================================
+   Випадаюче вікно та тулбар вибору/створення тегів (Smart Tag Hub)
+   ========================================================================== */
 .sticker-tag-dropdown {
     position: absolute;
     top: calc(100% + 6px);
     left: 0;
-    background-color: var(--modal-bg, #242424);
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    background-color: var(--modal-bg, rgba(39, 40, 34, 0.95));
+    backdrop-filter: var(--glass-blur, blur(20px));
+    -webkit-backdrop-filter: var(--glass-blur, blur(20px));
+    border: 1px solid var(--border-strong, rgba(255, 255, 255, 0.16));
     border-radius: 12px;
     padding: 10px;
     box-sizing: border-box;
-    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05);
     z-index: 120;
     display: none;
     flex-direction: column;
-    gap: 8px;
-    min-width: 230px;
+    min-width: 250px;
+    max-width: 290px;
+    width: 260px;
 }
 
 .sticker-tag-dropdown.open-upward {
     top: auto !important;
     bottom: calc(100% + 6px) !important;
-    box-shadow: 0 -16px 36px rgba(0, 0, 0, 0.7) !important;
+    box-shadow: 0 -16px 36px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
 }
 
 .sticker-tag-dropdown.active {
@@ -188,69 +193,352 @@
     animation: menuFadeInUp 0.15s ease-out;
 }
 
-.tag-options-list {
+/* ==========================================================================
+   Уніфікований Smart Tags Hub Toolbar
+   ========================================================================== */
+.tag-hub-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    width: 100%;
+    box-sizing: border-box;
+    user-select: none;
+}
+
+.tag-hub-wrapper.is-selection-bar {
+    padding: 0;
+}
+
+/* 1. Поле пошуку / створення у шапці */
+.tag-hub-toolbar {
+    width: 100%;
+}
+
+.tag-hub-search-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: var(--bg-subtle, rgba(255, 255, 255, 0.06));
+    border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.12));
+    border-radius: 8px;
+    padding: 0 8px;
+    height: 32px;
+    box-sizing: border-box;
+    transition: all var(--transition-fast, 0.15s ease);
+}
+
+.tag-hub-search-wrap:focus-within {
+    border-color: var(--accent-color);
+    background: var(--active-bg, rgba(255, 255, 255, 0.1));
+    box-shadow: 0 0 0 2px var(--accent-subtle);
+}
+
+.tag-hub-search-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    margin-right: 6px;
+    flex-shrink: 0;
+}
+
+.tag-hub-input {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-main);
+    font-size: var(--font-xs, 12px);
+    font-family: inherit;
+    font-weight: 500;
+    padding: 0;
+}
+
+.tag-hub-input::placeholder {
+    color: var(--text-muted);
+    opacity: 0.75;
+}
+
+.tag-hub-clear-search-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 15px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.12s ease;
+}
+
+.tag-hub-clear-search-btn:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* 2. Панель швидкого створення та палітра стрічок Washi */
+.tag-hub-create-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: var(--bg-subtle, rgba(255, 255, 255, 0.04));
+    border: 1px dashed var(--accent-border);
+    border-radius: 8px;
+    padding: 6px 8px;
+    animation: menuFadeIn 0.15s ease;
+    box-sizing: border-box;
+}
+
+.tag-hub-create-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    cursor: pointer;
+    padding: 5px 8px;
+    border-radius: 6px;
+    background: var(--accent-subtle);
+    color: var(--text-main);
+    transition: all 0.15s ease;
+}
+
+.tag-hub-create-btn:hover,
+.tag-hub-create-btn.keyboard-focused {
+    background: var(--accent-hover);
+    transform: translateX(1px);
+}
+
+.tag-hub-create-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--font-xs, 12px);
+    min-width: 0;
+    overflow: hidden;
+}
+
+.tag-hub-create-plus {
+    font-weight: 700;
+    color: var(--accent-color);
+    font-size: 14px;
+    line-height: 1;
+}
+
+.tag-hub-create-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tag-hub-create-text b {
+    color: var(--accent-color);
+}
+
+.tag-hub-create-kbd {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-muted);
+}
+
+/* Палітра Washi Color Strip */
+.tag-hub-color-strip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2px 2px 0 2px;
+    gap: 6px;
+}
+
+.tag-hub-color-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.tag-hub-color-dots {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tag-color-dot-btn {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    cursor: pointer;
+    padding: 0;
+    box-sizing: border-box;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, outline 0.15s ease;
+}
+
+.tag-color-dot-btn:hover {
+    transform: scale(1.3);
+}
+
+.tag-color-dot-btn.active {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 1px;
+    transform: scale(1.2);
+}
+
+/* 3. Статус-бар (прикріплено + очистити) */
+.tag-hub-status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1px 4px 5px 4px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.tag-hub-count-badge {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.2px;
+}
+
+.tag-hub-clear-all-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+}
+
+.tag-hub-clear-all-btn:hover {
+    background: var(--danger-subtle);
+    color: var(--danger-color);
+}
+
+/* 4. Список тегів */
+.tag-hub-list {
     display: flex;
     flex-direction: column;
     gap: 3px;
-    max-height: 155px; /* Рівно ~5 рядків тегів */
+    max-height: 170px;
     overflow-y: auto;
     padding-right: 2px;
 }
 
-.tag-option-item {
+.tag-hub-empty-state {
+    padding: 14px 10px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tag-hub-empty-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.tag-hub-empty-desc {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.35;
+}
+
+.tag-hub-no-match {
+    padding: 10px;
+    text-align: center;
+    font-size: 11.5px;
+    color: var(--text-muted);
+}
+
+.tag-hub-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 6px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    color: var(--text-main);
-    padding: 3px 6px 3px 8px;
+    background: var(--bg-subtle, rgba(255, 255, 255, 0.04));
+    border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.06));
+    padding: 3px 6px 3px 6px;
     border-radius: 8px;
-    font-size: var(--font-xs);
-    font-weight: 600;
-    transition: all var(--transition-fast);
-    font-family: inherit;
+    transition: all var(--transition-fast, 0.15s ease);
     width: 100%;
     box-sizing: border-box;
 }
 
-.tag-option-main-action {
+.tag-hub-item:hover,
+.tag-hub-item.keyboard-focused {
+    background: var(--hover-bg, rgba(255, 255, 255, 0.08));
+    border-color: var(--border-strong, rgba(255, 255, 255, 0.16));
+}
+
+.tag-hub-item.active {
+    background: var(--accent-subtle);
+    border-color: var(--accent-border);
+}
+
+.tag-hub-item.partial {
+    background: var(--bg-subtle);
+    border-color: var(--border-strong);
+}
+
+.tag-hub-item-main {
     display: flex;
     align-items: center;
     gap: 8px;
-    flex-grow: 1;
+    flex: 1;
     min-width: 0;
     cursor: pointer;
-    padding: 4px 0;
+    padding: 2px 0;
 }
 
-.tag-option-item:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.15);
-}
-
-.tag-option-item.active {
-    background: var(--accent-hover);
-    border-color: var(--accent-color);
-    color: var(--accent-color);
-}
-
-.tag-option-status-icon {
+/* Міні-бейдж Washi стрічки у списку */
+.tag-hub-item-tape {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 7px;
+    border-radius: 4px;
     font-size: 11px;
     font-weight: 700;
+    letter-spacing: 0.2px;
+    max-width: 175px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    transition: transform 0.12s ease;
+}
+
+.tag-hub-item:hover .tag-hub-item-tape {
+    transform: scale(1.02);
+}
+
+.tag-hub-item-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tag-hub-item-status {
+    font-size: 11px;
+    font-weight: 800;
     margin-left: auto;
     color: var(--accent-color);
 }
 
-.tag-option-text {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 12.5px;
-}
-
-.tag-option-del-btn {
+.tag-hub-item-del {
     background: none;
     border: none;
     color: var(--text-muted);
@@ -261,75 +549,27 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-size: 14px;
-    line-height: 1;
-    transition: all 0.15s ease;
-    opacity: 0.45;
-    flex-shrink: 0;
     padding: 0;
-}
-
-.tag-option-item:hover .tag-option-del-btn {
-    opacity: 0.8;
-}
-
-.tag-option-del-btn:hover {
-    background: var(--danger-subtle);
-    color: var(--danger-color);
-    opacity: 1 !important;
-}
-
-.tag-add-option-row {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    border-top: 1px solid rgba(255, 255, 255, 0.09);
-    padding-top: 8px;
-    margin-top: 2px;
-}
-
-.tag-add-input {
-    flex-grow: 1;
-    background: var(--hover-bg, rgba(255, 255, 255, 0.06));
-    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.18));
-    border-radius: 6px;
-    padding: 6px 8px;
-    font-size: 12.5px;
-    color: var(--text-main, #ffffff);
-    outline: none;
-    font-family: inherit;
-    box-sizing: border-box;
-    transition: border-color 0.15s ease, background 0.15s ease;
-}
-
-.tag-add-input:focus {
-    border-color: var(--accent-color);
-    background: var(--active-bg, rgba(255, 255, 255, 0.1));
-}
-
-.tag-add-input::placeholder {
-    color: var(--text-muted, rgba(255, 255, 255, 0.4));
-}
-
-.tag-add-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    background: var(--accent-subtle);
-    border: 1px solid var(--accent-border);
-    color: var(--accent-color);
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    padding: 6px 10px;
-    cursor: pointer;
+    opacity: 0;
     transition: all 0.15s ease;
-    font-family: inherit;
-    white-space: nowrap;
+    flex-shrink: 0;
 }
 
-.tag-add-btn:hover {
-    background: var(--accent-color);
-    color: var(--accent-contrast, #062419);
+.tag-hub-item:hover .tag-hub-item-del,
+.tag-hub-item.keyboard-focused .tag-hub-item-del {
+    opacity: 0.65;
+}
+
+.tag-hub-item-del:hover {
+    background: var(--danger-subtle) !important;
+    color: var(--danger-color) !important;
+    opacity: 1 !important;
+    transform: scale(1.1);
+}
+
+/* Для сенсорних екранів іконка кошика видима */
+@media (hover: none) {
+    .tag-hub-item-del {
+        opacity: 0.5;
+    }
 }

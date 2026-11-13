@@ -45,6 +45,22 @@ window.App.BOOKMARK_TAPE_HEX = [
     '#ef4444'  // 5: Кораловий (Coral)
 ];
 
+window.App.TAG_TAPE_HEX = window.App.BOOKMARK_TAPE_HEX;
+
+window.App.getTagColorIndex = function(tagText) {
+    if (!tagText || typeof tagText !== 'string') return 0;
+    const colors = (window.App.storage && window.App.storage.getTagColors) ? window.App.storage.getTagColors() : {};
+    if (colors[tagText] !== undefined) {
+        return Number(colors[tagText]);
+    }
+    let hash = 0;
+    for (let i = 0; i < tagText.length; i++) {
+        hash = (hash << 5) - hash + tagText.charCodeAt(i);
+        hash |= 0;
+    }
+    return Math.abs(hash) % 6;
+};
+
 window.App.storage = {
     _notesSaveTimer: null,
     _pendingNotes: null,
@@ -215,6 +231,27 @@ window.App.storage = {
         localStorage.setItem('minimal_board_tag_options', JSON.stringify(allBoardsTags));
         if (window.App && window.App.cloudSync && window.App.cloudSync.syncTagOptions) {
             window.App.cloudSync.syncTagOptions();
+        }
+    },
+    getTagColors(boardId = null) {
+        const targetBoardId = boardId || this.getActiveBoardId() || 'default';
+        const allColors = JSON.parse(localStorage.getItem('minimal_board_tag_colors')) || {};
+        return allColors[targetBoardId] || {};
+    },
+    saveTagColor(tagText, colorIndex, boardId = null) {
+        if (!tagText) return;
+        const targetBoardId = boardId || this.getActiveBoardId() || 'default';
+        const allColors = JSON.parse(localStorage.getItem('minimal_board_tag_colors')) || {};
+        if (!allColors[targetBoardId]) allColors[targetBoardId] = {};
+        allColors[targetBoardId][tagText] = Number(colorIndex);
+        localStorage.setItem('minimal_board_tag_colors', JSON.stringify(allColors));
+    },
+    deleteTagColor(tagText, boardId = null) {
+        const targetBoardId = boardId || this.getActiveBoardId() || 'default';
+        const allColors = JSON.parse(localStorage.getItem('minimal_board_tag_colors')) || {};
+        if (allColors[targetBoardId] && allColors[targetBoardId][tagText] !== undefined) {
+            delete allColors[targetBoardId][tagText];
+            localStorage.setItem('minimal_board_tag_colors', JSON.stringify(allColors));
         }
     },
     getColumnLayouts() {

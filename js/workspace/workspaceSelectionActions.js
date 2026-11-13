@@ -77,6 +77,9 @@ window.App = window.App || {};
             if (window.App.workspaceView) {
                 window.App.workspaceView.render();
             }
+            if (window.App.events && window.App.events.emit) {
+                window.App.events.emit('tags:changed');
+            }
             if (window.App.workspaceSelectionBar) {
                 window.App.workspaceSelectionBar.refreshTagSubmenu();
             }
@@ -92,6 +95,9 @@ window.App = window.App || {};
             if (storage.saveTagOptions) {
                 storage.saveTagOptions(currentOptions);
             }
+            if (storage.deleteTagColor) {
+                storage.deleteTagColor(tagText);
+            }
 
             state.notes.forEach(n => {
                 if (Array.isArray(n.tags) && n.tags.includes(tagText)) {
@@ -103,6 +109,10 @@ window.App = window.App || {};
             });
 
             storage.saveNotes(state.notes);
+
+            if (window.App.events && window.App.events.emit) {
+                window.App.events.emit('tags:changed');
+            }
 
             // Оновлюємо візуальні бейджі на картках без руйнування DOM
             document.querySelectorAll('.sticker-tag-badge').forEach(badge => {
@@ -160,13 +170,16 @@ window.App = window.App || {};
             if (window.App.workspaceView) {
                 window.App.workspaceView.render();
             }
+            if (window.App.events && window.App.events.emit) {
+                window.App.events.emit('tags:changed');
+            }
             if (window.App.workspaceSelectionBar) {
                 window.App.workspaceSelectionBar.closeSubmenus();
             }
         },
 
         // Створити новий тег та призначити його виділеним нотаткам
-        createAndAssignTag(newTagText, noteIds) {
+        createAndAssignTag(newTagText, noteIds, colorIndex = null) {
             const tag = newTagText ? newTagText.trim() : '';
             if (!tag) return;
             const state = window.App.state;
@@ -179,6 +192,10 @@ window.App = window.App || {};
                 if (storage.saveTagOptions) {
                     storage.saveTagOptions(currentAvailable);
                 }
+            }
+
+            if (colorIndex !== null && colorIndex !== undefined && storage.saveTagColor) {
+                storage.saveTagColor(tag, colorIndex);
             }
 
             if (noteIds && noteIds.length > 0) {
@@ -200,6 +217,10 @@ window.App = window.App || {};
                 if (window.App.workspaceView) {
                     window.App.workspaceView.render();
                 }
+            }
+
+            if (window.App.events && window.App.events.emit) {
+                window.App.events.emit('tags:changed');
             }
 
             if (window.App.workspaceSelectionBar) {
