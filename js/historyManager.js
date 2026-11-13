@@ -400,20 +400,14 @@ window.App = window.App || {};
 
                 if (!isUndoKey && !isRedoKey) return;
 
-                // 1. Якщо користувач у полі вводу чи textarea — залишаємо нативне скасування тексту
+                // 1. Якщо користувач у звичайному окремому полі форми (пошук, створення блокнота, модалки)
                 const activeEl = document.activeElement;
                 if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) {
                     return;
                 }
 
-                // 2. Якщо користувач редагує текст у нотатці (contenteditable) — дозволяємо браузеру
-                // виконувати миттєве посимвольне скасування тексту (0 мс) зі збереженням позиції курсору
-                const isContentEditable = activeEl && (activeEl.isContentEditable || activeEl.closest('[contenteditable="true"]'));
-                if (isContentEditable) {
-                    return;
-                }
-
-                // 3. Для всіх інших випадків (робочий простір, картки, переміщення, кольори, видалення тощо):
+                // 2. Для робочого простору та карток нотаток (включно з редагуванням тексту в contenteditable)
+                // керування повністю належить менеджеру історії для багаторазового покрокового відкату
                 e.preventDefault();
                 e.stopPropagation();
 
