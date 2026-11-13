@@ -160,7 +160,10 @@ window.App = window.App || {};
                     const menuDropdown = card.querySelector('.sticker-menu-dropdown');
 
                     // Закриваємо всі інші відкриті меню
-                    document.querySelectorAll('.sticker-menu-dropdown.active, .sticker-emoji-picker-dropdown.active, .sticker-tag-dropdown.active, .column-filter-dropdown.active, .sidebar-context-menu').forEach(d => {
+                    if (window.App.closeAllTagDropdowns) {
+                        window.App.closeAllTagDropdowns();
+                    }
+                    document.querySelectorAll('.sticker-menu-dropdown.active, .sticker-emoji-picker-dropdown.active, .column-filter-dropdown.active, .sidebar-context-menu').forEach(d => {
                         if (d !== menuDropdown) d.classList.remove('active', 'open-upward');
                     });
 

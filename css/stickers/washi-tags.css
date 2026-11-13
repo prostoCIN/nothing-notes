@@ -19,6 +19,21 @@
     z-index: 100 !important;
 }
 
+/* Якщо нотатка не має жодного тегу — приховуємо кнопку додавання тегу, щоб не створювати порожній слот */
+.sticker-tags-container:not(:has(.sticker-tag-badge)) .sticker-add-tag-btn {
+    display: none !important;
+}
+
+/* Якщо немає тегів і випадаюче меню тегів закрите — повністю приховуємо контейнер */
+.sticker-tags-container:not(:has(.sticker-tag-badge)):not(:has(.sticker-tag-dropdown.active)) {
+    display: none !important;
+}
+
+/* При відкритому випадаючому меню для нотатки без тегів прибираємо зайвий відступ */
+.sticker-tags-container:not(:has(.sticker-tag-badge)) {
+    margin-top: 0 !important;
+}
+
 /* Окремий бейдж тегу у вигляді наклейки / шматочка декоративного скотчу (Washi Tape) */
 .sticker-tag-badge {
     position: relative;

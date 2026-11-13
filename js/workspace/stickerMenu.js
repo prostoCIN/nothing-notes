@@ -353,13 +353,15 @@ window.App = window.App || {};
                         setTimeout(() => {
                             const addBtn = card.querySelector('.sticker-add-tag-btn');
                             const tagDropdown = card.querySelector('.sticker-tag-dropdown');
-                            if (addBtn && tagDropdown) {
+                            if (tagDropdown) {
                                 if (typeof tagDropdown.refreshContent === 'function') tagDropdown.refreshContent();
+                                const hasVisibleAddBtn = addBtn && tagsBox && tagsBox.querySelectorAll('.sticker-tag-badge').length > 0;
+                                const anchorEl = hasVisibleAddBtn ? addBtn : (tagsBox || card);
                                 if (window.App.smartPositionDropdown) {
-                                    window.App.smartPositionDropdown(addBtn, tagDropdown, 160);
+                                    window.App.smartPositionDropdown(anchorEl, tagDropdown, 160);
                                 }
                                 tagDropdown.classList.add('active');
-                                addBtn.classList.add('active');
+                                if (hasVisibleAddBtn && addBtn) addBtn.classList.add('active');
                                 if (tagsBox) tagsBox.classList.add('has-active-dropdown');
                                 card.classList.add('has-active-tag');
                                 const addInput = tagDropdown.querySelector('.tag-hub-input, .tag-add-input');
@@ -594,7 +596,10 @@ window.App = window.App || {};
 
             moreBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                document.querySelectorAll('.sticker-menu-dropdown.active, .sticker-emoji-picker-dropdown.active, .sticker-tag-dropdown.active, .column-filter-dropdown.active').forEach(d => {
+                if (window.App.closeAllTagDropdowns) {
+                    window.App.closeAllTagDropdowns();
+                }
+                document.querySelectorAll('.sticker-menu-dropdown.active, .sticker-emoji-picker-dropdown.active, .column-filter-dropdown.active').forEach(d => {
                     if (d !== menuDropdown) d.classList.remove('active', 'open-upward');
                 });
 

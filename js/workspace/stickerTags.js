@@ -490,6 +490,9 @@ window.App = window.App || {};
             // 2. Кнопка "+ Тег" та поповер єдиного тулбару тегів
             const addTagBtn = document.createElement('button');
             addTagBtn.className = 'sticker-add-tag-btn';
+            if (noteTags.length === 0) {
+                addTagBtn.style.display = 'none';
+            }
             addTagBtn.title = isUa ? 'Додати або керувати тегами' : 'Add or manage tags';
             addTagBtn.innerHTML = `
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
@@ -507,6 +510,11 @@ window.App = window.App || {};
                 addTagBtn.classList.remove('active');
                 tagsContainer.classList.remove('has-active-dropdown');
                 card.classList.remove('has-active-tag');
+                const badgeCount = tagsContainer.querySelectorAll('.sticker-tag-badge').length;
+                if (badgeCount === 0) {
+                    tagsContainer.style.display = 'none';
+                    addTagBtn.style.display = 'none';
+                }
             };
 
             const renderDropdownContent = () => {
@@ -562,5 +570,36 @@ window.App = window.App || {};
 
             return tagsContainer;
         }
+    };
+
+    /**
+     * Закриває окреме випадаюче меню тегів та ховає контейнер/кнопку, якщо в нотатці 0 тегів
+     */
+    window.App.closeTagDropdown = function(dropdownEl) {
+        if (!dropdownEl) return;
+        dropdownEl.classList.remove('active', 'open-upward');
+        const container = dropdownEl.closest('.sticker-tags-container');
+        if (container) {
+            container.classList.remove('has-active-dropdown');
+            const card = container.closest('.note-sticker');
+            if (card) card.classList.remove('has-active-tag');
+            const addBtn = container.querySelector('.sticker-add-tag-btn');
+            if (addBtn) addBtn.classList.remove('active');
+            if (container.querySelectorAll('.sticker-tag-badge').length === 0) {
+                container.style.display = 'none';
+                if (addBtn) addBtn.style.display = 'none';
+            }
+        }
+    };
+
+    /**
+     * Закриває всі активні випадаючі меню тегів на робочому просторі
+     */
+    window.App.closeAllTagDropdowns = function(exceptDropdown = null) {
+        document.querySelectorAll('.sticker-tag-dropdown.active').forEach(d => {
+            if (d !== exceptDropdown) {
+                window.App.closeTagDropdown(d);
+            }
+        });
     };
 })();

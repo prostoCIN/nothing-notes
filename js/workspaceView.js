@@ -205,9 +205,19 @@ window.App = window.App || {};
                     return;
                 }
 
+                if (window.App.closeAllTagDropdowns) {
+                    window.App.closeAllTagDropdowns();
+                }
+
                 document.querySelectorAll('.sticker-menu-dropdown.active, .sticker-emoji-picker-dropdown.active, .sticker-tag-dropdown.active, .column-filter-dropdown.active, .column-menu-dropdown.active, .sidebar-context-menu').forEach(d => {
                     d.classList.remove('active', 'open-upward');
                     if (d.classList.contains('sidebar-context-menu')) d.remove();
+                    if (d.classList.contains('sticker-tag-dropdown')) {
+                        const p = d.closest('.sticker-tags-container');
+                        if (p && p.querySelectorAll('.sticker-tag-badge').length === 0) {
+                            p.style.display = 'none';
+                        }
+                    }
                 });
                 document.querySelectorAll('.has-active-emoji-picker').forEach(el => {
                     el.classList.remove('has-active-emoji-picker');
@@ -229,9 +239,18 @@ window.App = window.App || {};
             // Закриття меню при натисканні Escape
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
+                    if (window.App.closeAllTagDropdowns) {
+                        window.App.closeAllTagDropdowns();
+                    }
                     document.querySelectorAll('.sticker-menu-dropdown.active, .sticker-emoji-picker-dropdown.active, .sticker-tag-dropdown.active, .column-filter-dropdown.active, .column-menu-dropdown.active, .sidebar-context-menu').forEach(d => {
                         d.classList.remove('active', 'open-upward');
                         if (d.classList.contains('sidebar-context-menu')) d.remove();
+                        if (d.classList.contains('sticker-tag-dropdown')) {
+                            const p = d.closest('.sticker-tags-container');
+                            if (p && p.querySelectorAll('.sticker-tag-badge').length === 0) {
+                                p.style.display = 'none';
+                            }
+                        }
                     });
                     document.querySelectorAll('.has-active-emoji-picker').forEach(el => {
                         el.classList.remove('has-active-emoji-picker');
