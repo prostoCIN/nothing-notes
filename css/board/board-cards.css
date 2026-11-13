@@ -263,6 +263,13 @@
     z-index: 50;
 }
 
+.board-nodes-layer .note-sticker.is-connect-target-valid:not([data-connect-badge])::after,
+.board-nodes-layer .note-sticker.is-connect-target-valid[data-connect-badge=""]::after,
+.board-nodes-layer .note-sticker.is-connect-target-invalid:not([data-connect-badge])::after,
+.board-nodes-layer .note-sticker.is-connect-target-invalid[data-connect-badge=""]::after {
+    display: none !important;
+}
+
 .board-nodes-layer .note-sticker.is-connect-target-invalid {
     outline: 2px dashed var(--danger-color) !important;
     box-shadow: 0 0 20px var(--danger-subtle) !important;

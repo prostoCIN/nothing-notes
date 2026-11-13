@@ -1453,7 +1453,8 @@ window.App = window.App || {};
                         connectState.targetNode,
                         connectState.isValid,
                         connectState.sourceSide,
-                        camera
+                        camera,
+                        connectState.targetNodes
                     );
                 }
             }
@@ -1522,7 +1523,11 @@ window.App = window.App || {};
 
                 // Якщо картка перетягується, з'єднується або містить поточний фокус редагування — не приховуємо її
                 const isDraggingThis = isDraggingNode && draggedNode === node;
-                const isConnectingThis = connectState && connectState.isConnecting && (connectState.sourceNode === node || connectState.targetNode === node);
+                const isConnectingThis = connectState && connectState.isConnecting && (
+                    connectState.sourceNode === node || 
+                    connectState.targetNode === node ||
+                    (Array.isArray(connectState.targetNodes) && connectState.targetNodes.includes(node))
+                );
                 const hasFocus = activeEl && node.element.contains(activeEl);
 
                 const shouldShow = inViewport || isDraggingThis || isConnectingThis || hasFocus;

@@ -433,6 +433,7 @@ export const en = {
         connectHandleTitle: 'Connect (make a subnote)',
         connectBadgeChange: 'Change link',
         connectBadgeMakeSubnote: 'Make subnote',
+        connectBadgeMakeSubnotesGroup: 'Make subnotes ({count})',
         connectBadgeSelf: 'Cannot connect to itself',
         connectBadgeAlreadySubnote: 'Already a subnote',
         connectBadgeCycle: 'Cannot connect (cycle)',

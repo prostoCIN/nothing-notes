@@ -433,6 +433,7 @@ export const ua = {
         connectHandleTitle: 'Провести зв\'язок (зробити піднотаткою)',
         connectBadgeChange: 'Змінити зв\'язок',
         connectBadgeMakeSubnote: 'Зробити піднотаткою',
+        connectBadgeMakeSubnotesGroup: 'Зробити піднотатками ({count})',
         connectBadgeSelf: 'Неможливо (сама до себе)',
         connectBadgeAlreadySubnote: 'Вже є піднотаткою',
         connectBadgeCycle: 'Неможливо (цикл)',

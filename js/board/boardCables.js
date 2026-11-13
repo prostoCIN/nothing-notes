@@ -156,10 +156,26 @@ window.App = window.App || {};
 
         /**
          * Малює тимчасовий кабель під час протягування зв'язку від плюсика
+         * Підтримує як одиночні з'єднання, так і розгалуження на групу виділених нотаток
          */
-        drawDraftCable(ctx, startPos, currentPos, targetNode, isValid, sourceSide, camera) {
+        drawDraftCable(ctx, startPos, currentPos, targetNode, isValid, sourceSide, camera, targetNodes = null) {
             if (!ctx || !startPos || !currentPos) return;
 
+            const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim() || '#10b981';
+            const dangerColor = getComputedStyle(document.documentElement).getPropertyValue('--danger-color').trim() || '#ef4444';
+
+            // Якщо під курсором група виділених карток — малюємо розгалужені кабелі до кожної з них
+            if (Array.isArray(targetNodes) && targetNodes.length > 1 && isValid) {
+                targetNodes.forEach(tNode => {
+                    this._drawDraftCurve(ctx, startPos, currentPos, tNode, true, sourceSide, camera, accentColor, dangerColor);
+                });
+                return;
+            }
+
+            this._drawDraftCurve(ctx, startPos, currentPos, targetNode, isValid, sourceSide, camera, accentColor, dangerColor);
+        },
+
+        _drawDraftCurve(ctx, startPos, currentPos, targetNode, isValid, sourceSide, camera, accentColor, dangerColor) {
             let endX = currentPos.x;
             let endY = currentPos.y;
 
@@ -214,9 +230,6 @@ window.App = window.App || {};
             ctx.moveTo(startPos.x, startPos.y);
             ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, endX, endY);
             ctx.lineCap = 'round';
-
-            const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim() || '#10b981';
-            const dangerColor = getComputedStyle(document.documentElement).getPropertyValue('--danger-color').trim() || '#ef4444';
 
             if (targetNode && isValid) {
                 ctx.strokeStyle = accentColor;
