@@ -397,7 +397,7 @@ window.App = window.App || {};
             availableNotes.sort((a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0));
 
             // Перевіряємо чи вже створена структура панелі (search row + list + clear wrap)
-            let searchInput = pane.querySelector('.bookmark-search-input');
+            let searchInput = pane.querySelector('.selection-bookmark-search-input');
             let listWrap = pane.querySelector('.selection-bookmarks-list');
             let clearWrap = pane.querySelector('.selection-bookmarks-clear-wrap');
 
@@ -406,12 +406,12 @@ window.App = window.App || {};
 
                 // 1. Поле швидкого пошуку нотатки для закладки
                 const searchWrap = document.createElement('div');
-                searchWrap.className = 'tag-add-option-row';
+                searchWrap.className = 'selection-bookmark-search-wrap';
                 searchWrap.style.marginBottom = '6px';
 
                 searchInput = document.createElement('input');
                 searchInput.type = 'text';
-                searchInput.className = 'tag-add-input bookmark-search-input';
+                searchInput.className = 'selection-bookmark-search-input';
                 searchInput.placeholder = t('sticker.bookmarksSearchPlaceholder') || 'Пошук нотатки для закладки...';
                 searchInput.autocomplete = 'off';
 

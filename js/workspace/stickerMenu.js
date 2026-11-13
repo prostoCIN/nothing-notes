@@ -362,7 +362,7 @@ window.App = window.App || {};
                                 addBtn.classList.add('active');
                                 if (tagsBox) tagsBox.classList.add('has-active-dropdown');
                                 card.classList.add('has-active-tag');
-                                const addInput = tagDropdown.querySelector('.tag-add-input');
+                                const addInput = tagDropdown.querySelector('.tag-hub-input, .tag-add-input');
                                 if (addInput) addInput.focus();
                             }
                         }, 60);

@@ -1064,7 +1064,7 @@ window.App = window.App || {};
                     '.emoji-picker-scroll, ' +
                     '.emoji-categories-bar, ' +
                     '.sticker-tag-dropdown, ' +
-                    '.tag-options-list, ' +
+                    '.tag-hub-list, ' +
                     '.sticker-menu-dropdown, ' +
                     '.board-help-popover, ' +
                     '.bookmark-picker-modal, ' +
