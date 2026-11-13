@@ -90,7 +90,6 @@ window.App = window.App || {};
             const navTooltip = isChainOpen 
                 ? (i18n ? i18n.t('sticker.hideSubnotesCol') : 'Приховати колонку піднотаток') 
                 : (i18n ? i18n.t('sticker.openSubnotesCol') : 'Перейти до піднотаток');
-            const quickAddTooltip = i18n ? (i18n.t('sticker.addSubnote') || 'Додати піднотатку') : 'Додати піднотатку';
 
             // Основна ліва частина (заголовок + прев'ю списку)
             const mainArea = document.createElement('div');
@@ -110,21 +109,6 @@ window.App = window.App || {};
                 <span>${subnotesTitleText}</span>
                 <span class="subnotes-pill-badge">${childCount}</span>
             `;
-
-            if (!isReadOnly) {
-                const quickAddBtn = document.createElement('button');
-                quickAddBtn.type = 'button';
-                quickAddBtn.className = 'subnotes-quick-add-btn';
-                quickAddBtn.title = quickAddTooltip;
-                quickAddBtn.innerHTML = `
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
-                `;
-                quickAddBtn.addEventListener('click', triggerQuickAdd);
-                headerLeft.appendChild(quickAddBtn);
-            }
 
             headerRow.appendChild(headerLeft);
 
