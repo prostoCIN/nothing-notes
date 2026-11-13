@@ -21,7 +21,7 @@ window.App = window.App || {};
                 },
                 {
                     key: '--bg-surface',
-                    aliases: ['--sidebar-bg', '--column-bg'],
+                    aliases: ['--sidebar-bg', '--column-bg', '--header-bg'],
                     nameUa: 'Сайдбар та колонки',
                     nameEn: 'Sidebar & columns',
                     default: '#272822',
@@ -30,7 +30,7 @@ window.App = window.App || {};
                 },
                 {
                     key: '--bg-elevated',
-                    aliases: ['--modal-bg', '--surface-dropdown', '--toolbar-bg'],
+                    aliases: ['--modal-bg', '--surface-dropdown', '--toolbar-bg', '--search-bar-bg'],
                     nameUa: 'Вікна, меню та тулбари',
                     nameEn: 'Modals, menus & toolbars',
                     default: '#32332c',
@@ -80,7 +80,7 @@ window.App = window.App || {};
             tokens: [
                 {
                     key: '--border-subtle',
-                    aliases: ['--border-color'],
+                    aliases: ['--border-color', '--search-bar-border'],
                     nameUa: 'Тонкі роздільники',
                     nameEn: 'Subtle borders',
                     default: '#3a3b33',

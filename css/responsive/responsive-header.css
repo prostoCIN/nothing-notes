@@ -66,8 +66,8 @@
         align-items: center !important;
         justify-content: center !important;
         border-radius: 8px !important;
-        background: var(--hover-bg, rgba(255, 255, 255, 0.05)) !important;
-        border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1)) !important;
+        background: var(--bg-subtle) !important;
+        border: 1px solid var(--border-subtle) !important;
         color: var(--text-main) !important;
         transition: all 0.15s ease !important;
     }
@@ -102,18 +102,18 @@
     .header-select-btn.active {
         background: var(--accent-color) !important;
         border-color: transparent !important;
-        color: #062419 !important;
+        color: #ffffff !important;
         box-shadow: 0 3px 10px var(--accent-glow) !important;
     }
 
     .header-select-btn.active svg {
-        stroke: #062419 !important;
+        stroke: #ffffff !important;
     }
 
     /* Компактний перемикач режимів "Колонки / Граф" тільки з іконками */
     .header-segment-control {
-        background: var(--hover-bg, rgba(255, 255, 255, 0.05)) !important;
-        border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1)) !important;
+        background: var(--bg-subtle) !important;
+        border: 1px solid var(--border-subtle) !important;
         border-radius: 8px !important;
         padding: 2px !important;
         height: 36px !important;
@@ -150,15 +150,16 @@
 
     .header-segment-btn.active {
         background: var(--accent-color) !important;
-        color: #062419 !important;
+        color: #ffffff !important;
         box-shadow: 0 3px 10px var(--accent-glow) !important;
     }
 
     .header-segment-btn.active svg {
-        stroke: #062419 !important;
+        stroke: #ffffff !important;
     }
 
     .header-divider {
+        background: var(--border-subtle) !important;
         margin: 0 1px !important;
         height: 16px !important;
         opacity: 0.5;

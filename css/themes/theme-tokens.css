@@ -24,7 +24,7 @@ html[data-theme="forest"] {
     --bg-color: #1d1e19;
     --sidebar-bg: #272822;
     --modal-bg: rgba(39, 40, 34, 0.95);
-    --header-bg: rgba(29, 30, 25, 0.85);
+    --header-bg: color-mix(in srgb, var(--bg-surface) 88%, transparent);
     --column-bg: rgba(39, 40, 34, 0.55);
     --column-border: rgba(255, 255, 255, 0.08);
     --graph-bg: radial-gradient(circle at center, #272822 0%, #1d1e19 100%);

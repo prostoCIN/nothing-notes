@@ -15,10 +15,10 @@
     top: calc(100% + 10px);
     display: flex;
     align-items: center;
-    background: var(--search-bar-bg, rgba(22, 22, 26, 0.98));
+    background: var(--bg-elevated, var(--modal-bg));
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    border: 1px solid var(--search-bar-border, var(--border-color));
+    border: 1px solid var(--border-subtle);
     box-shadow: var(--dropdown-shadow, 0 16px 36px rgba(0, 0, 0, 0.7));
     border-radius: 12px;
     padding: 7px 10px 7px 14px;
@@ -37,7 +37,7 @@
     right: 8px;
     border-width: 5px;
     border-style: solid;
-    border-color: transparent transparent var(--search-bar-border, var(--border-color)) transparent;
+    border-color: transparent transparent var(--border-subtle) transparent;
 }
 
 @keyframes searchBarDropdownAppear {
