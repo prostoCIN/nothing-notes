@@ -186,7 +186,7 @@ html[data-theme="light"] .sidebar-nest-pocket.active-hover .nest-pocket-icon {
     color: var(--text-main);
 }
 
-.board-item.active, .note-item.active {
+.note-item.active {
     background-color: var(--active-bg);
     color: var(--text-main);
     font-weight: 500;

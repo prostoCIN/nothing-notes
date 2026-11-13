@@ -2,8 +2,9 @@
    Windows-style гумове виділення мишкою, активна нотатка та дії рядка
    ========================================================================== */
 
-/* Візуальна синхронізація активної/сфокусованої нотатки з робочої області */
-.note-item.is-active-note {
+/* Візуальна синхронізація активної/сфокусованої нотатки та активного блокноту */
+.note-item.is-active-note,
+.board-item.active {
     background-color: var(--accent-subtle) !important;
     color: var(--text-main) !important;
     font-weight: 600;
@@ -12,12 +13,20 @@
     padding-left: 9px;
 }
 
-.note-item.is-active-note .note-item-title {
+.note-item.is-active-note:hover,
+.board-item.active:hover {
+    background-color: var(--accent-hover) !important;
+}
+
+.note-item.is-active-note .note-item-title,
+.board-item.active .board-item-name,
+.board-item.active .board-item-text {
     color: #ffffff;
     font-weight: 600;
 }
 
-.note-item.is-active-note .note-item-icon {
+.note-item.is-active-note .note-item-icon,
+.board-item.active .board-item-icon {
     transform: scale(1.12);
     transition: transform 0.15s ease;
 }

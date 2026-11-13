@@ -253,6 +253,7 @@
 }
 
 .board-item.active .sidebar-child-count,
+.note-item.is-active-note .sidebar-child-count,
 .note-item.is-selected .sidebar-child-count {
     background: rgba(255, 255, 255, 0.14);
     color: var(--text-main);

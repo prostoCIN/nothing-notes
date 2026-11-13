@@ -161,19 +161,13 @@
     }
 
     /* Стани виділення / активності фону картки */
-    .board-item.active::before {
-        background: rgba(255, 255, 255, 0.1) !important;
-    }
-
-    html[data-theme="light"] .board-item.active::before {
-        background: rgba(0, 0, 0, 0.06) !important;
-    }
-
+    .board-item.active::before,
     .note-item.is-active-note::before {
         background: var(--accent-subtle) !important;
         box-shadow: inset 3.5px 0 0 var(--accent-color), 0 1px 4px rgba(0, 0, 0, 0.25) !important;
     }
 
+    html[data-theme="light"] .board-item.active::before,
     html[data-theme="light"] .note-item.is-active-note::before {
         background: var(--accent-subtle) !important;
     }
@@ -365,10 +359,7 @@
     }
 
     /* Якщо плашка активна — кнопка редагування наслідує її активний тон */
-    .board-item.active .board-actions .edit-btn {
-        background: rgba(255, 255, 255, 0.1) !important;
-    }
-
+    .board-item.active .board-actions .edit-btn,
     .note-item.is-active-note .note-actions .edit-btn {
         background: var(--accent-subtle) !important;
     }
@@ -389,10 +380,7 @@
         stroke: var(--text-main, #111827) !important;
     }
 
-    html[data-theme="light"] .board-item.active .board-actions .edit-btn {
-        background: rgba(0, 0, 0, 0.06) !important;
-    }
-
+    html[data-theme="light"] .board-item.active .board-actions .edit-btn,
     html[data-theme="light"] .note-item.is-active-note .note-actions .edit-btn {
         background: var(--accent-subtle) !important;
     }
