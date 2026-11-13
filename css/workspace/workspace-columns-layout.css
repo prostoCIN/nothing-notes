@@ -54,6 +54,40 @@
                 box-shadow var(--dur-quick) ease;
 }
 
+/* Плавний в'їзд нової колонки (iOS Spring Slide In) */
+@keyframes columnSlideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(42px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+/* Плавний виїзд колонки при закритті (iOS Spring Slide Out) */
+@keyframes columnSlideOutRight {
+    from {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(42px) scale(0.97);
+    }
+}
+
+.board-column.column-entering {
+    animation: columnSlideInRight var(--dur-smooth) var(--ease-ios-spring) both;
+    will-change: transform, opacity;
+}
+
+.board-column.column-exiting {
+    animation: columnSlideOutRight var(--dur-quick) var(--ease-ios-spring) forwards !important;
+    pointer-events: none;
+}
+
 /* Коли колонок 3 і більше — кожна колонка займає 50% доступної ширини екрана */
 .columns-container.has-many-columns .board-column {
     flex: 0 0 calc((100% - 14px) / 2) !important;
