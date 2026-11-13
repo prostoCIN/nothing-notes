@@ -403,31 +403,44 @@ body.is-sticker-dragging * {
 /* Інтерактивний блок списку піднотаток всередині стікера */
 .sticker-subnotes-container {
     margin-top: 14px;
-    padding: 10px 12px;
+    padding: 0;
     background-color: rgba(0, 0, 0, 0.04);
     border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 8px;
+    display: flex;
+    align-items: stretch;
+    overflow: hidden;
     cursor: pointer;
     transition: all 0.2s ease;
     user-select: none;
+    box-sizing: border-box;
 }
 
 .sticker-subnotes-container:hover {
-    background-color: rgba(0, 0, 0, 0.07);
+    background-color: rgba(0, 0, 0, 0.06);
     border-color: rgba(0, 0, 0, 0.14);
-    transform: scale(0.995);
 }
 
-.sticker-subnotes-container.chain-active {
+.sticker-subnotes-container.chain-active,
+.sticker-subnotes-container.is-expanded {
     background-color: var(--accent-soft);
     border-color: var(--accent-border);
     box-shadow: 0 2px 8px var(--accent-subtle);
 }
 
+/* Ліва зона контенту піднотаток */
+.subnotes-main-area {
+    flex: 1;
+    min-width: 0;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
 .sticker-subnotes-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     font-size: 12px;
     font-weight: 700;
     color: #292524;
@@ -439,6 +452,7 @@ body.is-sticker-dragging * {
     align-items: center;
     gap: 6px;
     color: #292524;
+    min-width: 0;
 }
 
 .subnotes-pill-badge {
@@ -448,6 +462,7 @@ body.is-sticker-dragging * {
     font-weight: 700;
     padding: 1px 6px;
     border-radius: 10px;
+    line-height: 1.2;
 }
 
 .sticker-subnotes-container.is-expanded .subnotes-pill-badge {
@@ -455,20 +470,162 @@ body.is-sticker-dragging * {
     color: #ffffff;
 }
 
-.subnotes-header-right {
+/* Кнопка швидкого створення піднотатки в шапці блоку */
+.subnotes-quick-add-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    color: #292524;
+    cursor: pointer;
+    margin-left: 4px;
+    padding: 0;
+    flex-shrink: 0;
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.subnotes-quick-add-btn:hover {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: #ffffff;
+    transform: scale(1.15);
+    box-shadow: 0 2px 6px var(--accent-glow);
+}
+
+/* Права вертикальна кнопка переходу зі стрілочкою (~56px) */
+.subnotes-nav-btn {
+    width: 56px;
+    min-width: 52px;
+    max-width: 60px;
     display: flex;
     align-items: center;
-}
-
-.subnotes-toggle-status {
-    font-size: 11px;
-    font-weight: 600;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.03);
+    border: none;
+    border-left: 1px solid rgba(0, 0, 0, 0.08);
     color: rgba(0, 0, 0, 0.45);
-    transition: color 0.15s ease;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
 }
 
-.sticker-subnotes-container:hover .subnotes-toggle-status {
+.subnotes-nav-arrow {
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.15s ease;
+}
+
+.subnotes-nav-btn:hover,
+.sticker-subnotes-container:hover .subnotes-nav-btn {
+    background: var(--accent-subtle);
     color: var(--accent-color);
+}
+
+.subnotes-nav-btn:hover .subnotes-nav-arrow,
+.sticker-subnotes-container:hover .subnotes-nav-btn .subnotes-nav-arrow {
+    transform: translateX(3px);
+}
+
+.subnotes-nav-btn.active,
+.sticker-subnotes-container.is-expanded .subnotes-nav-btn {
+    background: var(--accent-color);
+    color: #ffffff;
+    border-left-color: var(--accent-color);
+}
+
+.subnotes-nav-btn.active .subnotes-nav-arrow,
+.sticker-subnotes-container.is-expanded .subnotes-nav-btn .subnotes-nav-arrow {
+    transform: translateX(1px);
+    color: #ffffff;
+}
+
+/* ==========================================================================
+   Варіант А: Чиста напівпрозора ghost-плашка для додавання першої піднотатки
+   ========================================================================== */
+.sticker-subnotes-empty-ghost {
+    margin-top: 10px;
+    min-height: 32px;
+    height: 32px;
+    border: 1px dashed rgba(0, 0, 0, 0.16);
+    background-color: rgba(0, 0, 0, 0.02);
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 0 0 10px;
+    box-sizing: border-box;
+    opacity: 0;
+    transform: translateY(2px);
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease, background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+
+/* Проявлення на десктопному ховері стікера або фокусі */
+@media (hover: hover) {
+    .note-sticker:hover .sticker-subnotes-empty-ghost,
+    .note-sticker:focus-within .sticker-subnotes-empty-ghost {
+        opacity: 0.7;
+        transform: translateY(0);
+        pointer-events: auto;
+    }
+    
+    .note-sticker:hover .sticker-subnotes-empty-ghost:hover {
+        opacity: 1;
+        background-color: var(--accent-soft);
+        border-color: var(--accent-border);
+        border-style: solid;
+        color: var(--accent-color);
+    }
+    
+    .sticker-subnotes-empty-ghost:hover .subnotes-empty-nav-btn {
+        background-color: var(--accent-subtle);
+        color: var(--accent-color);
+    }
+    
+    .sticker-subnotes-empty-ghost:hover .subnotes-nav-arrow {
+        transform: translateX(3px);
+    }
+}
+
+/* На мобільних тач-пристроях делікатна доступність при виділенні або взаємодії */
+@media (hover: none) {
+    .sticker-subnotes-empty-ghost {
+        opacity: 0.55;
+        transform: translateY(0);
+        pointer-events: auto;
+    }
+    .note-sticker.is-ws-selected .sticker-subnotes-empty-ghost,
+    .note-sticker:focus-within .sticker-subnotes-empty-ghost {
+        opacity: 1;
+    }
+}
+
+.subnotes-empty-add-area {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.55);
+    flex: 1;
+    min-width: 0;
+    letter-spacing: 0.1px;
+}
+
+.subnotes-empty-add-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.subnotes-empty-nav-btn {
+    height: 100%;
+    width: 48px;
+    min-width: 44px;
+    border-left: 1px dashed rgba(0, 0, 0, 0.14);
 }
 
 .sticker-subnotes-preview-list {

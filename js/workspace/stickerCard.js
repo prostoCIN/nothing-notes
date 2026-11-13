@@ -137,9 +137,9 @@ window.App = window.App || {};
                 }
             }
 
-            // 6. Блок списку піднотаток (якщо є)
+            // 6. Блок списку піднотаток (якщо є або кнопка створення)
             if (window.App.stickerSubnotes) {
-                const subnotesBlock = window.App.stickerSubnotes.createSubnotesBlock(note, colIndex, isChainOpen);
+                const subnotesBlock = window.App.stickerSubnotes.createSubnotesBlock(note, colIndex, isChainOpen, isReadOnly);
                 if (subnotesBlock) {
                     card.appendChild(subnotesBlock);
                 }
