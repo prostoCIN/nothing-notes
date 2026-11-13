@@ -130,6 +130,18 @@ window.App = window.App || {};
                         </button>
                     </form>
 
+                    <div class="auth-divider">
+                        <span data-i18n="auth.orDivider">або</span>
+                    </div>
+
+                    <button type="button" class="auth-guest-btn" id="auth-guest-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <span data-i18n="auth.continueAsGuest">Продовжити як гість</span>
+                    </button>
+
                     <div class="auth-footer">
                         <span id="auth-toggle-text" data-i18n="auth.noAccount">Ще немає акаунту?</span>
                         <button type="button" class="auth-toggle-btn" id="auth-toggle-mode-btn" data-i18n="auth.toggleRegister">Зареєструватися</button>
@@ -401,11 +413,43 @@ window.App = window.App || {};
             closeBtn.addEventListener('click', () => this.close());
             backdrop.addEventListener('click', () => this.close());
 
+            const guestBtn = modalEl.querySelector('#auth-guest-btn');
+            if (guestBtn) {
+                guestBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.continueAsGuest();
+                });
+            }
+
             window.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape' && modalEl.classList.contains('active')) {
                     this.close();
                 }
             });
+        },
+
+        continueAsGuest() {
+            this.close();
+
+            if (window.App.welcomeView) {
+                window.App.welcomeView.hide();
+            }
+
+            const state = window.App.state;
+            if (state) {
+                if (state.boards.length === 0 && window.App.boardManager) {
+                    const defaultName = (window.App.i18n ? window.App.i18n.t('sidebar.newBoardDefaultName') : null) || 'Мій блокнот';
+                    window.App.boardManager.createBoard(defaultName);
+                } else if (!state.activeBoardId && state.boards.length > 0) {
+                    state.activeBoardId = state.boards[0].id;
+                    if (window.App.storage) {
+                        window.App.storage.saveActiveBoardId(state.activeBoardId);
+                    }
+                }
+            }
+
+            if (window.App.sidebarView) window.App.sidebarView.render();
+            if (window.App.workspaceView) window.App.workspaceView.render();
         },
 
         open(isSignUp = false) {

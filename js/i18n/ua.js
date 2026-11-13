@@ -376,6 +376,8 @@ export const ua = {
         regConfirmPlaceholder: 'Повторіть пароль ще раз',
         submitLogin: 'Увійти',
         submitRegister: 'Створити акаунт',
+        continueAsGuest: 'Продовжити як гість',
+        orDivider: 'або',
         processing: 'Обробка...',
         haveAccount: 'Вже маєте акаунт?',
         noAccount: 'Ще немає акаунту?',

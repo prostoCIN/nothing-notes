@@ -376,6 +376,8 @@ export const en = {
         regConfirmPlaceholder: 'Repeat password',
         submitLogin: 'Sign In',
         submitRegister: 'Create Account',
+        continueAsGuest: 'Continue as guest',
+        orDivider: 'or',
         processing: 'Processing...',
         haveAccount: 'Already have an account?',
         noAccount: "Don't have an account?",
