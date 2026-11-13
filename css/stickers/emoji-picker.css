@@ -229,7 +229,7 @@
 
 .emoji-cat-tab-btn.active {
     opacity: 1;
-    background-color: rgba(16, 185, 129, 0.2);
-    box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.4);
+    background-color: var(--accent-hover);
+    box-shadow: 0 0 0 1px var(--accent-border);
     transform: scale(0.95);
 }

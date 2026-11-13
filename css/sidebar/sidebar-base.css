@@ -112,13 +112,13 @@
 }
 
 .notes-header.sidebar-root-drop-target {
-    background-color: rgba(16, 185, 129, 0.18) !important;
-    outline: 1.5px dashed #10b981 !important;
+    background-color: var(--accent-subtle) !important;
+    outline: 1.5px dashed var(--accent-color) !important;
     outline-offset: -1px;
 }
 
 .notes-header.sidebar-root-drop-target h2 {
-    color: #10b981 !important;
+    color: var(--accent-color) !important;
     font-weight: 800 !important;
 }
 

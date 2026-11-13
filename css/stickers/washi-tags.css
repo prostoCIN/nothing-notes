@@ -150,9 +150,9 @@
 }
 
 .sticker-add-tag-btn.active {
-    background-color: rgba(16, 185, 129, 0.1);
-    border-color: #10b981;
-    color: #059669;
+    background-color: var(--accent-subtle);
+    border-color: var(--accent-color);
+    color: var(--accent-color);
 }
 
 /* Випадаюче вікно вибору та створення тегів */
@@ -231,16 +231,16 @@
 }
 
 .tag-option-item.active {
-    background: rgba(16, 185, 129, 0.2);
-    border-color: #10b981;
-    color: #a7f3d0;
+    background: var(--accent-hover);
+    border-color: var(--accent-color);
+    color: var(--accent-color);
 }
 
 .tag-option-status-icon {
     font-size: 11px;
     font-weight: 700;
     margin-left: auto;
-    color: #34d399;
+    color: var(--accent-color);
 }
 
 .tag-option-text {
@@ -303,7 +303,7 @@
 }
 
 .tag-add-input:focus {
-    border-color: #10b981;
+    border-color: var(--accent-color);
     background: var(--active-bg, rgba(255, 255, 255, 0.1));
 }
 
@@ -316,9 +316,9 @@
     align-items: center;
     justify-content: center;
     gap: 5px;
-    background: rgba(16, 185, 129, 0.15);
-    border: 1px solid rgba(16, 185, 129, 0.35);
-    color: var(--accent-color, #10b981);
+    background: var(--accent-subtle);
+    border: 1px solid var(--accent-border);
+    color: var(--accent-color);
     border-radius: 6px;
     font-size: 12px;
     font-weight: 600;
@@ -330,6 +330,6 @@
 }
 
 .tag-add-btn:hover {
-    background: #10b981;
+    background: var(--accent-color);
     color: #ffffff;
 }

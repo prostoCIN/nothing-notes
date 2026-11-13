@@ -95,8 +95,8 @@
 
     .graph-mobile-filters-trigger.has-active-filters {
         color: #ffffff;
-        border-color: rgba(16, 185, 129, 0.45);
-        background: rgba(16, 185, 129, 0.18);
+        border-color: var(--accent-border);
+        background: var(--accent-subtle);
     }
 
     .graph-filter-dot {
@@ -106,8 +106,8 @@
         width: 6px;
         height: 6px;
         border-radius: 50%;
-        background: #10b981;
-        box-shadow: 0 0 6px #10b981;
+        background: var(--accent-color);
+        box-shadow: 0 0 6px var(--accent-color);
         display: none;
     }
 
@@ -237,8 +237,8 @@
     }
 
     .graph-mobile-toggle-btn.is-active {
-        background: rgba(16, 185, 129, 0.14);
-        border-color: rgba(16, 185, 129, 0.45);
+        background: var(--accent-subtle);
+        border-color: var(--accent-border);
     }
 
     .graph-mobile-toggle-btn.is-orphans-btn.is-active {
@@ -258,7 +258,7 @@
     }
 
     .graph-mobile-toggle-btn.is-active .graph-mobile-toggle-icon {
-        color: #10b981;
+        color: var(--accent-color);
     }
 
     .graph-mobile-toggle-btn.is-orphans-btn.is-active .graph-mobile-toggle-icon {
@@ -315,8 +315,8 @@
     }
 
     .graph-mobile-toggle-btn.is-active .graph-mobile-checkbox {
-        background: #10b981;
-        border-color: #10b981;
+        background: var(--accent-color);
+        border-color: var(--accent-color);
     }
 
     .graph-mobile-toggle-btn.is-orphans-btn.is-active .graph-mobile-checkbox {

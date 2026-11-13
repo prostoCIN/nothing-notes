@@ -195,7 +195,7 @@
 }
 
 .graph-ctrl-btn.is-active {
-    background: var(--accent-emerald, #10b981) !important;
+    background: var(--accent-color) !important;
     color: #ffffff !important;
 }
 

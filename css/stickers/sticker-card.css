@@ -31,7 +31,7 @@
 }
 
 .note-sticker.is-ws-selected {
-    box-shadow: 0 0 0 3px #10b981, 0 12px 32px rgba(16, 185, 129, 0.35) !important;
+    box-shadow: 0 0 0 3px var(--accent-color), 0 12px 32px var(--accent-glow) !important;
     transform: scale(0.98);
 }
 
@@ -63,15 +63,15 @@
 
 .note-sticker.in-select-mode:hover .sticker-select-checkbox {
     opacity: 1;
-    border-color: #10b981;
+    border-color: var(--accent-color);
 }
 
 .note-sticker.is-ws-selected .sticker-select-checkbox {
-    background-color: #10b981 !important;
-    border-color: #10b981 !important;
+    background-color: var(--accent-color) !important;
+    border-color: var(--accent-color) !important;
     opacity: 1 !important;
     transform: scale(1.08);
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.5);
+    box-shadow: 0 2px 8px var(--accent-strong);
 }
 
 .sticker-select-checkbox svg {
@@ -178,7 +178,7 @@
 .note-sticker.is-dragging {
     opacity: 0.95;
     transform: none !important;
-    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45), 0 0 0 2px rgba(16, 185, 129, 0.6) !important;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45), 0 0 0 2px var(--accent-strong) !important;
     cursor: grabbing !important;
     pointer-events: auto !important;
     user-select: none !important;
@@ -213,24 +213,24 @@ body.is-sticker-dragging * {
 
 /* Підсвічування цільової нотатки, коли на неї навели іншу нотатку для створення піднотатки */
 .note-sticker.drag-nest-target {
-    border: 2px dashed #10b981 !important;
+    border: 2px dashed var(--accent-color) !important;
     background-color: #dbeafe !important;
     transform: scale(0.99);
-    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.25), 0 10px 25px rgba(0, 0, 0, 0.3) !important;
+    box-shadow: 0 0 0 4px var(--accent-border), 0 10px 25px rgba(0, 0, 0, 0.3) !important;
 }
 
 /* Підсвічування для режиму Swap (обмін місцями в сітці) */
 .note-sticker.drag-swap-target {
-    outline: 2.5px solid #10b981 !important;
+    outline: 2.5px solid var(--accent-color) !important;
     outline-offset: 2px;
     transform: scale(0.98);
-    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35) !important;
+    box-shadow: 0 8px 24px var(--accent-glow) !important;
     transition: transform 0.15s ease, outline-color 0.15s ease;
 }
 
 .sticker-drag-placeholder {
-    background-color: rgba(16, 185, 129, 0.08);
-    border: 2px dashed rgba(16, 185, 129, 0.5);
+    background-color: var(--accent-soft);
+    border: 2px dashed var(--accent-strong);
     border-radius: 12px;
     box-sizing: border-box;
     width: 100%;
@@ -245,7 +245,7 @@ body.is-sticker-dragging * {
 @keyframes pulseSticker {
     0% {
         transform: scale(0.99);
-        box-shadow: 0 0 0 3px #10b981, 0 12px 32px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 0 0 3px var(--accent-color), 0 12px 32px rgba(0, 0, 0, 0.4);
     }
     100% {
         transform: scale(1);
@@ -419,9 +419,9 @@ body.is-sticker-dragging * {
 }
 
 .sticker-subnotes-container.chain-active {
-    background-color: rgba(16, 185, 129, 0.1);
-    border-color: rgba(16, 185, 129, 0.35);
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
+    background-color: var(--accent-soft);
+    border-color: var(--accent-border);
+    box-shadow: 0 2px 8px var(--accent-subtle);
 }
 
 .sticker-subnotes-header {
@@ -451,7 +451,7 @@ body.is-sticker-dragging * {
 }
 
 .sticker-subnotes-container.is-expanded .subnotes-pill-badge {
-    background: #10b981;
+    background: var(--accent-color);
     color: #ffffff;
 }
 
@@ -468,7 +468,7 @@ body.is-sticker-dragging * {
 }
 
 .sticker-subnotes-container:hover .subnotes-toggle-status {
-    color: #059669;
+    color: var(--accent-color);
 }
 
 .sticker-subnotes-preview-list {
@@ -529,11 +529,11 @@ body.is-sticker-dragging * {
 
 @keyframes stickerPulseHighlight {
     0% {
-        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.85), 0 8px 24px rgba(0, 0, 0, 0.35);
+        box-shadow: 0 0 0 0 var(--accent-color), 0 8px 24px rgba(0, 0, 0, 0.35);
         transform: scale(0.96);
     }
     35% {
-        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.5), 0 10px 26px rgba(16, 185, 129, 0.25);
+        box-shadow: 0 0 0 4px var(--accent-strong), 0 10px 26px var(--accent-glow);
         transform: scale(0.975);
     }
     100% {

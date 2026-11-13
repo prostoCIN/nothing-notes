@@ -4,10 +4,10 @@
 
 /* Візуальна синхронізація активної/сфокусованої нотатки з робочої області */
 .note-item.is-active-note {
-    background-color: rgba(16, 185, 129, 0.16) !important;
+    background-color: var(--accent-subtle) !important;
     color: var(--text-main) !important;
     font-weight: 600;
-    box-shadow: inset 3.5px 0 0 var(--accent-color, #10b981), 0 1px 4px rgba(0, 0, 0, 0.25);
+    box-shadow: inset 3.5px 0 0 var(--accent-color), 0 1px 4px rgba(0, 0, 0, 0.25);
     border-radius: 6px;
     padding-left: 9px;
 }
@@ -24,29 +24,29 @@
 
 .note-item.is-selected.is-active-note,
 .board-item.is-selected.active {
-    background-color: rgba(16, 185, 129, 0.32) !important;
+    background-color: var(--accent-border) !important;
     box-shadow: inset 3.5px 0 0 #ffffff, 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
 /* Windows-style виділення нотаток та блокнотів у сайдбарі */
 .note-item.is-selected,
 .board-item.is-selected {
-    background-color: rgba(16, 185, 129, 0.22) !important;
-    border: 1px solid #10b981 !important;
+    background-color: var(--accent-subtle) !important;
+    border: 1px solid var(--accent-color) !important;
     color: #ffffff !important;
     border-radius: 6px;
 }
 
 .note-item.is-selected:hover,
 .board-item.is-selected:hover {
-    background-color: rgba(16, 185, 129, 0.28) !important;
+    background-color: var(--accent-hover) !important;
 }
 
 /* Прямокутна рамка гумового виділення як на робочому столі Windows */
 .sidebar-marquee-selection {
     position: fixed;
-    border: 2px dashed #10b981;
-    background-color: rgba(16, 185, 129, 0.18);
+    border: 2px dashed var(--accent-color);
+    background-color: var(--accent-subtle);
     pointer-events: none;
     z-index: 99999;
     border-radius: 4px;
@@ -189,9 +189,9 @@ html[data-theme="ivory"] .note-item.is-editing {
     letter-spacing: -0.1px !important;
     color: var(--text-main) !important;
     background: var(--bg-elevated) !important;
-    border: 1.5px solid var(--accent-color, #10b981) !important;
+    border: 1.5px solid var(--accent-color) !important;
     border-radius: 6px !important;
-    box-shadow: 0 0 0 2.5px var(--accent-subtle, rgba(16, 185, 129, 0.22)), var(--dropdown-shadow) !important;
+    box-shadow: 0 0 0 2.5px var(--accent-subtle), var(--dropdown-shadow) !important;
     outline: none !important;
     cursor: text !important;
     user-select: text !important;
@@ -200,7 +200,7 @@ html[data-theme="ivory"] .note-item.is-editing {
     overflow-y: hidden !important;
     white-space: nowrap !important;
     scrollbar-width: none !important;
-    caret-color: var(--accent-emerald, #10b981) !important;
+    caret-color: var(--accent-color) !important;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -211,8 +211,8 @@ html[data-theme="ivory"] .board-item.is-editing .board-item-text[contenteditable
 html[data-theme="ivory"] .note-item.is-editing .note-item-title[contenteditable="true"] {
     background: #ffffff !important;
     color: #111827 !important;
-    border-color: #10b981 !important;
-    box-shadow: 0 0 0 2.5px rgba(16, 185, 129, 0.2), 0 1px 4px rgba(0, 0, 0, 0.1) !important;
+    border-color: var(--accent-color) !important;
+    box-shadow: 0 0 0 2.5px var(--accent-subtle), 0 1px 4px rgba(0, 0, 0, 0.1) !important;
 }
 
 /* Плейсхолдер для порожнього значення */
@@ -341,7 +341,7 @@ html[data-theme="ivory"] .note-item.is-editing .note-item-title[contenteditable=
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: var(--accent-color, #10b981);
+    color: var(--accent-color);
     flex-shrink: 0;
     margin-right: 2px;
     opacity: 0.9;

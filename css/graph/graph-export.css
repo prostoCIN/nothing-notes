@@ -93,8 +93,8 @@
 }
 
 .graph-export-tab.active {
-    background: rgba(16, 185, 129, 0.18);
-    color: #10b981;
+    background: var(--accent-subtle);
+    color: var(--accent-color);
 }
 
 .graph-export-content {
@@ -165,11 +165,11 @@
 }
 
 .graph-export-download-btn {
-    background: #10b981;
-    border-color: #10b981;
+    background: var(--accent-color);
+    border-color: var(--accent-color);
     color: #ffffff;
 }
 
 .graph-export-download-btn:hover {
-    background: #059669;
+    background: color-mix(in srgb, var(--accent-color) 85%, black);
 }

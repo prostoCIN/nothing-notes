@@ -47,8 +47,8 @@
 
 .settings-theme-card.active {
     background: var(--accent-subtle);
-    border-color: var(--accent-color, #10b981);
-    box-shadow: 0 0 0 1px var(--accent-color, #10b981), 0 4px 14px rgba(0, 0, 0, 0.25);
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 1px var(--accent-color), 0 4px 14px rgba(0, 0, 0, 0.25);
 }
 
 /* ==========================================================================
@@ -97,8 +97,8 @@
 }
 
 .settings-lang-dropdown-wrap.open .settings-lang-dropdown-btn {
-    border-color: var(--accent-color, #10b981);
-    box-shadow: 0 0 0 1px var(--accent-color, #10b981);
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 1px var(--accent-color);
 }
 
 .settings-lang-btn-left {
@@ -180,7 +180,7 @@
 
 .settings-lang-option.selected {
     background: var(--accent-subtle);
-    color: var(--accent-color, #10b981);
+    color: var(--accent-color);
     font-weight: 600;
 }
 
@@ -190,7 +190,7 @@
 }
 
 .settings-lang-option-check {
-    color: var(--accent-color, #10b981);
+    color: var(--accent-color);
     font-size: 13px;
     font-weight: 800;
     margin-left: 6px;
@@ -259,7 +259,7 @@
 .settings-theme-check {
     font-size: 13px;
     font-weight: 800;
-    color: var(--accent-color, #10b981);
+    color: var(--accent-color);
     opacity: 0;
     transform: scale(0.5);
     transition: all 0.15s ease;

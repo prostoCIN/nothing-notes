@@ -42,7 +42,7 @@
 .column-filter-clear-all {
     background: none;
     border: none;
-    color: #34d399;
+    color: var(--accent-color);
     font-size: 11px;
     cursor: pointer;
     font-weight: 500;
@@ -51,7 +51,7 @@
 }
 
 .column-filter-clear-all:hover {
-    color: #a7f3d0;
+    color: color-mix(in srgb, var(--accent-color) 80%, white);
     text-decoration: underline;
 }
 
@@ -107,8 +107,8 @@
 }
 
 .column-filter-item.active {
-    background-color: rgba(16, 185, 129, 0.15);
-    color: var(--accent-color, #10b981);
+    background-color: var(--accent-subtle);
+    color: var(--accent-color);
     font-weight: 600;
 }
 

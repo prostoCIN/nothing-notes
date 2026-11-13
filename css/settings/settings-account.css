@@ -26,7 +26,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 14px rgba(22, 185, 129, 0.3);
+    box-shadow: 0 4px 14px var(--accent-glow);
     flex-shrink: 0;
 }
 
@@ -64,9 +64,9 @@
 }
 
 .settings-account-badge.online {
-    background: rgba(16, 185, 129, 0.15);
-    color: #34d399;
-    border: 1px solid rgba(16, 185, 129, 0.25);
+    background: var(--accent-subtle);
+    color: var(--accent-color);
+    border: 1px solid var(--accent-border);
 }
 
 .settings-account-badge.offline {
@@ -83,7 +83,7 @@
 }
 
 .settings-account-badge.online .settings-badge-dot {
-    box-shadow: 0 0 8px #10b981;
+    box-shadow: 0 0 8px var(--accent-color);
 }
 
 .settings-account-actions {
@@ -107,7 +107,7 @@
     font-weight: 700;
     font-family: inherit;
     cursor: pointer;
-    box-shadow: 0 2px 10px rgba(22, 185, 129, 0.25);
+    box-shadow: 0 2px 10px var(--accent-glow);
     transition: opacity 0.15s, transform 0.15s;
 }
 

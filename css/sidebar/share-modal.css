@@ -178,7 +178,7 @@
 }
 
 .share-toggle-switch input:checked + .share-toggle-slider {
-    background-color: #10b981;
+    background-color: var(--accent-color);
 }
 
 .share-toggle-switch input:checked + .share-toggle-slider:before {
@@ -236,7 +236,7 @@
 }
 
 .share-copy-btn.copied {
-    background: #10b981;
+    background: var(--accent-color);
     color: #ffffff;
 }
 

@@ -23,10 +23,10 @@
 
 /* Кольорові рівневі напрямні (Tree Level Indent Guides): сходинки піраміди знань */
 .sidebar-subnotes-list[data-level="1"] {
-    border-left-color: rgba(16, 185, 129, 0.35); /* Сходинка 1: смарагдовий */
+    border-left-color: var(--accent-glow); /* Сходинка 1: акцент */
 }
 .sidebar-subnotes-list[data-level="1"]:hover {
-    border-left-color: rgba(16, 185, 129, 0.8);
+    border-left-color: var(--accent-color);
 }
 
 .sidebar-subnotes-list[data-level="2"] {
@@ -83,8 +83,8 @@
 /* Стан готовності до перетягування після затискання на мобільному */
 .note-item.touch-drag-active {
     transform: scale(1.02);
-    background: rgba(16, 185, 129, 0.18) !important;
-    border: 1px solid rgba(16, 185, 129, 0.4) !important;
+    background: var(--accent-subtle) !important;
+    border: 1px solid var(--accent-border) !important;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
     transition: transform 0.15s ease, background-color 0.15s ease;
     touch-action: none !important;
@@ -104,9 +104,9 @@
 }
 
 .sidebar-note-tree-node.is-dragging > .note-item {
-    border: 1.5px solid #10b981 !important;
+    border: 1.5px solid var(--accent-color) !important;
     background-color: #262626 !important;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 0 2px rgba(16, 185, 129, 0.25) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 0 2px var(--accent-hover) !important;
     color: #ffffff !important;
     border-radius: 8px !important;
     position: relative;

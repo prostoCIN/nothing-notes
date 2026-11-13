@@ -14,12 +14,14 @@ window.App = window.App || {};
                 activeTagFilter = null
             } = options;
 
+            const defaultAccentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim() || '#10b981';
+
             edges.forEach(edge => {
                 const p = edge.cachedPath;
                 if (!p) return;
 
                 const isTagEdge = (edge.type === 'tag');
-                const branchColor = edge.color || '#10b981';
+                const branchColor = edge.color || defaultAccentColor;
 
                 ctx.beginPath();
                 ctx.moveTo(p.x1, p.y1);

@@ -33,9 +33,9 @@
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
-        background: rgba(16, 185, 129, 0.12) !important;
-        border: 1.5px solid #10b981 !important;
-        color: #34d399 !important;
+        background: var(--accent-subtle) !important;
+        border: 1.5px solid var(--accent-color) !important;
+        color: var(--accent-color) !important;
         font-size: 12px !important;
         font-weight: 700 !important;
         width: 30px !important;
@@ -74,7 +74,7 @@
         border-color: transparent !important;
         color: #062419 !important;
         font-weight: 700 !important;
-        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35) !important;
+        box-shadow: 0 2px 8px var(--accent-glow) !important;
     }
 
     .selection-bar-actions {

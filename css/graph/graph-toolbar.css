@@ -44,7 +44,7 @@
 .graph-title-icon {
     display: flex;
     align-items: center;
-    color: #10b981;
+    color: var(--accent-color);
 }
 
 .graph-title-text {
@@ -103,8 +103,8 @@
 }
 
 .graph-toolbar-filter-btn.is-active {
-    background: rgba(16, 185, 129, 0.2);
-    color: #10b981;
+    background: var(--accent-hover);
+    color: var(--accent-color);
     font-weight: 600;
 }
 
@@ -148,8 +148,8 @@
 
 .graph-search-input:focus {
     width: 200px;
-    border-color: #10b981;
-    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px var(--accent-border);
 }
 
 .graph-search-icon-right {
@@ -246,9 +246,9 @@
 }
 
 .graph-tag-chip.is-active {
-    background: rgba(16, 185, 129, 0.25);
-    border-color: #10b981;
-    color: #10b981;
+    background: var(--accent-hover);
+    border-color: var(--accent-color);
+    color: var(--accent-color);
     font-weight: 700;
 }
 

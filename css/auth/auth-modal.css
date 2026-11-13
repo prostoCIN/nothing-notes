@@ -191,7 +191,7 @@
 }
 
 .auth-input-group input:focus {
-    border-color: #10b981;
+    border-color: var(--accent-color);
 }
 
 .auth-password-wrapper {
@@ -251,7 +251,7 @@
 }
 
 .auth-submit-btn {
-    background: #10b981;
+    background: var(--accent-color);
     color: #ffffff;
     border: none;
     padding: 11px;
@@ -260,12 +260,12 @@
     font-weight: 700;
     cursor: pointer;
     font-family: inherit;
-    transition: background 0.15s;
+    transition: background 0.15s, opacity 0.15s;
     margin-top: 4px;
 }
 
 .auth-submit-btn:hover {
-    background: #059669;
+    background: color-mix(in srgb, var(--accent-color) 85%, black);
 }
 
 .auth-submit-btn:disabled {
@@ -286,7 +286,7 @@
 .auth-toggle-btn {
     background: none;
     border: none;
-    color: #10b981;
+    color: var(--accent-color);
     font-weight: 600;
     cursor: pointer;
     padding: 0;

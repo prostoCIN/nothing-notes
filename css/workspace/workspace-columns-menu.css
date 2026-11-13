@@ -39,8 +39,8 @@
 }
 
 .column-more-btn.has-active-filter {
-    border-color: #10b981;
-    color: #34d399;
+    border-color: var(--accent-color);
+    color: var(--accent-color);
 }
 
 .column-filter-active-dot {
@@ -49,7 +49,7 @@
     right: 4px;
     width: 6px;
     height: 6px;
-    background-color: #10b981;
+    background-color: var(--accent-color);
     border-radius: 50%;
     box-shadow: 0 0 0 1.5px var(--bg-secondary, #1e1e24);
 }
@@ -231,7 +231,7 @@
 
 .column-menu-tag-item.active {
     background-color: var(--accent-subtle);
-    color: var(--accent-color, #10b981);
+    color: var(--accent-color);
     font-weight: 600;
 }
 
@@ -245,12 +245,12 @@
 }
 
 .column-tag-svg {
-    color: #10b981;
+    color: var(--accent-color);
     flex-shrink: 0;
 }
 
 .column-menu-tag-check {
-    color: #10b981;
+    color: var(--accent-color);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -313,47 +313,47 @@
 .column-layout-toggle-btn.active,
 .column-expand-toggle-btn.active {
     background-color: var(--accent-subtle);
-    border-color: #10b981;
-    color: #34d399;
+    border-color: var(--accent-color);
+    color: var(--accent-color);
 }
 
 /* Стан "замочок" для кнопки розтягування колонки */
 .column-expand-toggle-btn.active.is-locked {
-    background-color: rgba(16, 185, 129, 0.22);
-    border-color: #10b981;
-    color: #10b981;
-    box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+    background-color: var(--accent-hover);
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+    box-shadow: 0 0 8px var(--accent-glow);
 }
 
 .column-expand-toggle-btn.active.is-locked:hover {
-    background-color: rgba(16, 185, 129, 0.32);
-    color: #34d399;
+    background-color: var(--accent-border);
+    color: var(--accent-color);
 }
 
 html[data-theme="light"] .column-expand-toggle-btn.active.is-locked {
-    background-color: rgba(16, 185, 129, 0.16);
-    border-color: #10b981;
-    color: #059669;
-    box-shadow: 0 0 6px rgba(16, 185, 129, 0.2);
+    background-color: var(--accent-subtle);
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+    box-shadow: 0 0 6px var(--accent-subtle);
 }
 
 .column-select-toggle-btn.active {
-    background-color: #10b981;
-    border-color: #10b981;
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
     color: #ffffff;
     font-weight: 700;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+    box-shadow: 0 2px 8px var(--accent-glow);
 }
 
 .column-filter-btn.has-filter {
     background-color: var(--accent-subtle);
-    border-color: #10b981;
-    color: #34d399;
+    border-color: var(--accent-color);
+    color: var(--accent-color);
     font-weight: 600;
 }
 
 .column-filter-btn.active {
-    box-shadow: 0 0 0 1.5px #10b981;
+    box-shadow: 0 0 0 1.5px var(--accent-color);
 }
 
 

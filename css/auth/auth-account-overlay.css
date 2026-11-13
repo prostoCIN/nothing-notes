@@ -56,7 +56,7 @@
 }
 
 .account-switcher-title svg {
-    color: var(--accent-color, #10b981);
+    color: var(--accent-color);
 }
 
 .account-switcher-close {
@@ -121,8 +121,8 @@
 }
 
 .account-item.is-current {
-    background: rgba(16, 185, 129, 0.1);
-    border: 1px solid rgba(16, 185, 129, 0.28);
+    background: var(--accent-subtle);
+    border: 1px solid var(--accent-border);
 }
 
 .account-item.account-other-item {
@@ -152,7 +152,7 @@
     font-weight: 700;
     font-size: 13px;
     flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    box-shadow: 0 2px 8px var(--accent-glow);
 }
 
 .account-other-item .account-avatar {
@@ -193,8 +193,8 @@
     gap: 4px;
     font-size: 10px;
     font-weight: 600;
-    color: #10b981;
-    background: rgba(16, 185, 129, 0.15);
+    color: var(--accent-color);
+    background: var(--accent-subtle);
     padding: 3px 7px;
     border-radius: 12px;
     flex-shrink: 0;

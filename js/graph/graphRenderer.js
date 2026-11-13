@@ -46,6 +46,10 @@ window.App = window.App || {};
             }
 
             // 2. Лінії зв'язків (Edges)
+            const defaultAccentColor = (typeof window !== 'undefined' && window.getComputedStyle)
+                ? (getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim() || '#10b981')
+                : '#10b981';
+
             edges.forEach(edge => {
                 const n1 = edge.sourceNode;
                 const n2 = edge.targetNode;
@@ -54,7 +58,7 @@ window.App = window.App || {};
                 const isTagEdge = (edge.type === 'tag');
                 const isBookmarkEdge = (edge.type === 'bookmark');
                 const isHierarchyEdge = (edge.type === 'hierarchy');
-                const branchColor = edge.color || '#10b981';
+                const branchColor = edge.color || defaultAccentColor;
 
                 const isConnectedToHover = activeSubtreeIds && (activeSubtreeIds.has(n1.id) && activeSubtreeIds.has(n2.id));
                 const isFaded = activeSubtreeIds && !isConnectedToHover;

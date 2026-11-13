@@ -13,8 +13,13 @@ html[data-theme="forest"] {
     --border-subtle: rgba(255, 255, 255, 0.08);
     --border-strong: rgba(255, 255, 255, 0.16);
     --text-faint: rgba(255, 255, 255, 0.32);
-    --accent-subtle: rgba(16, 185, 129, 0.14);
-    --danger-subtle: rgba(249, 38, 114, 0.14);
+    --accent-subtle: color-mix(in srgb, var(--accent-color) 14%, transparent);
+    --accent-glow: color-mix(in srgb, var(--accent-color) 35%, transparent);
+    --accent-border: color-mix(in srgb, var(--accent-color) 28%, transparent);
+    --accent-hover: color-mix(in srgb, var(--accent-color) 20%, transparent);
+    --accent-strong: color-mix(in srgb, var(--accent-color) 50%, transparent);
+    --accent-soft: color-mix(in srgb, var(--accent-color) 8%, transparent);
+    --danger-subtle: color-mix(in srgb, var(--danger-color) 14%, transparent);
 
     --bg-color: #1d1e19;
     --sidebar-bg: #272822;
@@ -37,11 +42,12 @@ html[data-theme="forest"] {
     --scrollbar-thumb-hover: rgba(255, 255, 255, 0.22);
     --sticker-shadow: 0 4px 14px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.1);
 
-    /* Фірмовий смарагдовий акцент NothingNotes */
+    /* Фірмовий смарт-акцент NothingNotes */
     --accent-color: #16b981;
+    --accent-emerald: var(--accent-color);
     --emerald-gradient: var(--accent-color);
     --emerald-gradient-text: var(--accent-color);
-    --emerald-glow: 0 4px 16px var(--accent-subtle);
+    --emerald-glow: 0 4px 16px var(--accent-glow);
 
     --glass-bg: rgba(39, 40, 34, 0.8);
     --glass-bg-subtle: rgba(255, 255, 255, 0.03);
@@ -59,9 +65,9 @@ html[data-theme="forest"] {
     --tab-border: rgba(255, 255, 255, 0.08);
     --modal-footer-bg: rgba(29, 30, 25, 0.45);
     --modal-shadow: 0 24px 60px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);
-    --stats-banner-bg: rgba(16, 185, 129, 0.1);
-    --stats-banner-border: rgba(16, 185, 129, 0.22);
-    --stats-banner-text: #a7f3d0;
+    --stats-banner-bg: color-mix(in srgb, var(--accent-color) 10%, transparent);
+    --stats-banner-border: color-mix(in srgb, var(--accent-color) 22%, transparent);
+    --stats-banner-text: var(--accent-color);
     --btn-secondary-bg: rgba(255, 255, 255, 0.08);
     --btn-secondary-border: rgba(255, 255, 255, 0.15);
     --btn-secondary-hover: rgba(255, 255, 255, 0.16);

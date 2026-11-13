@@ -254,8 +254,8 @@
     .mobile-pagination-dot.active {
         width: 20px;
         border-radius: 10px;
-        background: #10b981;
-        box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+        background: var(--accent-color);
+        box-shadow: 0 0 8px var(--accent-glow);
     }
 
 }

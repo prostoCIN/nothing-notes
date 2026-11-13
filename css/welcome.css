@@ -9,7 +9,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: radial-gradient(circle at 50% 30%, rgba(16, 185, 129, 0.08) 0%, rgba(14, 14, 18, 0.95) 70%, #0c0c0e 100%);
+    background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--accent-color) 8%, transparent) 0%, rgba(14, 14, 18, 0.95) 70%, #0c0c0e 100%);
     padding: 20px;
     box-sizing: border-box;
     z-index: 9999;
@@ -47,7 +47,7 @@
     height: 36px;
     border-radius: 9px;
     flex-shrink: 0;
-    filter: drop-shadow(0 6px 16px rgba(16, 185, 129, 0.35));
+    filter: drop-shadow(0 6px 16px var(--accent-glow));
 }
 
 .welcome-brand-title {
@@ -91,13 +91,13 @@
     align-items: center;
     justify-content: center;
     gap: 10px;
-    box-shadow: 0 4px 14px rgba(22, 185, 129, 0.35);
+    box-shadow: 0 4px 14px var(--accent-glow);
     transition: all 0.2s ease;
 }
 
 .welcome-primary-btn:hover {
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(22, 185, 129, 0.45);
+    box-shadow: 0 6px 20px var(--accent-strong);
     filter: brightness(1.05);
 }
 

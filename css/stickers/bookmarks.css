@@ -328,7 +328,7 @@
 }
 
 .bookmark-picker-title-wrap svg {
-    color: #10b981;
+    color: var(--accent-color);
     flex-shrink: 0;
 }
 
@@ -407,8 +407,8 @@
 }
 
 .bookmark-picker-input:focus {
-    border-color: #10b981;
-    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px var(--accent-border);
     background: rgba(255, 255, 255, 0.09);
 }
 
@@ -462,8 +462,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(16, 185, 129, 0.12);
-    color: #10b981;
+    background: var(--accent-subtle);
+    color: var(--accent-color);
     border-radius: 6px;
     flex-shrink: 0;
 }
@@ -564,7 +564,7 @@
 }
 
 .bookmark-picker-item-title .bookmark-picker-match {
-    color: #10b981;
+    color: var(--accent-color);
     text-decoration: underline;
     font-weight: 700;
 }
@@ -622,7 +622,7 @@ html[data-theme="ivory"] .bookmark-picker-item.is-selected {
 
 html[data-theme="light"] .bookmark-picker-board-icon,
 html[data-theme="ivory"] .bookmark-picker-board-icon {
-    background: rgba(16, 185, 129, 0.1);
+    background: var(--accent-soft);
 }
 
 html[data-theme="light"] .bookmark-picker-item-icon,

@@ -135,7 +135,7 @@
 .header-action-icon-btn.active {
     background: var(--accent-color) !important;
     color: #062419 !important;
-    box-shadow: 0 3px 10px rgba(22, 185, 129, 0.35) !important;
+    box-shadow: 0 3px 10px var(--accent-glow) !important;
 }
 
 .header-action-icon-btn.active svg {
@@ -253,7 +253,7 @@
 }
 
 .header-tooltip b {
-    color: #10b981;
+    color: var(--accent-color);
 }
 
 /* Стрілочка зверху підказки */
@@ -411,7 +411,7 @@
     background: var(--accent-color) !important;
     color: #062419 !important;
     font-weight: 700;
-    box-shadow: 0 3px 10px rgba(22, 185, 129, 0.35) !important;
+    box-shadow: 0 3px 10px var(--accent-glow) !important;
 }
 
 .header-segment-btn.active svg {
@@ -452,7 +452,7 @@
     border-color: transparent !important;
     color: #062419 !important;
     font-weight: 800;
-    box-shadow: 0 3px 10px rgba(22, 185, 129, 0.35) !important;
+    box-shadow: 0 3px 10px var(--accent-glow) !important;
 }
 
 .header-select-btn.active svg {

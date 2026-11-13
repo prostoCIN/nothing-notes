@@ -38,14 +38,14 @@
     width: 64px;
     height: 64px;
     border-radius: 18px;
-    background: rgba(16, 185, 129, 0.12);
-    border: 1px solid rgba(16, 185, 129, 0.25);
-    color: #34d399;
+    background: var(--accent-subtle);
+    border: 1px solid var(--accent-border);
+    color: var(--accent-color);
     display: flex;
     align-items: center;
     justify-content: center;
     margin-bottom: 20px;
-    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
+    box-shadow: 0 8px 24px var(--accent-hover);
 }
 
 .workspace-empty-title {
@@ -86,9 +86,9 @@
 }
 
 .workspace-create-board-input:focus {
-    border-color: #10b981;
+    border-color: var(--accent-color);
     background: rgba(14, 14, 18, 0.98);
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+    box-shadow: 0 0 0 3px var(--accent-subtle);
 }
 
 .workspace-create-board-input::placeholder {
@@ -110,13 +110,13 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    box-shadow: 0 4px 14px rgba(22, 185, 129, 0.35);
+    box-shadow: 0 4px 14px var(--accent-glow);
     transition: all 0.2s ease;
 }
 
 .workspace-create-board-btn:hover {
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(22, 185, 129, 0.45);
+    box-shadow: 0 6px 20px var(--accent-strong);
     filter: brightness(1.05);
 }
 

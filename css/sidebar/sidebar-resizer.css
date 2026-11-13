@@ -32,18 +32,18 @@
 .sidebar-resizer:hover::after,
 .sidebar-resizer:focus-visible::after,
 body.is-sidebar-resizing .sidebar-resizer::after {
-    background-color: var(--accent-color, #10b981);
-    box-shadow: 0 0 10px rgba(16, 185, 129, 0.45);
+    background-color: var(--accent-color);
+    box-shadow: 0 0 10px var(--accent-glow);
     width: 3px;
 }
 
 .sidebar-resizer:hover,
 .sidebar-resizer:focus-visible {
-    background-color: rgba(16, 185, 129, 0.08);
+    background-color: var(--accent-soft);
 }
 
 body.is-sidebar-resizing .sidebar-resizer {
-    background-color: rgba(16, 185, 129, 0.12);
+    background-color: var(--accent-subtle);
 }
 
 /* Глобальний стан під час активного перетягування */

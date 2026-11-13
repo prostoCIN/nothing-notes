@@ -105,7 +105,7 @@ window.App = window.App || {};
             tokens: [
                 {
                     key: '--accent-color',
-                    aliases: [],
+                    aliases: ['--accent-emerald'],
                     nameUa: 'Фірмовий смарт-акцент',
                     nameEn: 'Brand accent',
                     default: '#16b981',
@@ -182,10 +182,20 @@ window.App = window.App || {};
 
                         // Спеціальні залежні змінні
                         if (token.key === '--accent-color') {
-                            const sub = hexToRgba(val, 0.15);
+                            const sub = hexToRgba(val, 0.14);
                             if (sub) root.style.setProperty('--accent-subtle', sub);
+                            const glow = hexToRgba(val, 0.35);
+                            if (glow) root.style.setProperty('--accent-glow', glow);
+                            const border = hexToRgba(val, 0.28);
+                            if (border) root.style.setProperty('--accent-border', border);
+                            const hover = hexToRgba(val, 0.20);
+                            if (hover) root.style.setProperty('--accent-hover', hover);
+                            const strong = hexToRgba(val, 0.50);
+                            if (strong) root.style.setProperty('--accent-strong', strong);
+                            const soft = hexToRgba(val, 0.08);
+                            if (soft) root.style.setProperty('--accent-soft', soft);
                         } else if (token.key === '--danger-color') {
-                            const sub = hexToRgba(val, 0.15);
+                            const sub = hexToRgba(val, 0.14);
                             if (sub) root.style.setProperty('--danger-subtle', sub);
                         } else if (token.key === '--bg-base') {
                             const metaTheme = document.querySelector('meta[name="theme-color"]');
@@ -279,6 +289,11 @@ window.App = window.App || {};
                 }
             }
             root.style.removeProperty('--accent-subtle');
+            root.style.removeProperty('--accent-glow');
+            root.style.removeProperty('--accent-border');
+            root.style.removeProperty('--accent-hover');
+            root.style.removeProperty('--accent-strong');
+            root.style.removeProperty('--accent-soft');
             root.style.removeProperty('--danger-subtle');
 
             const metaTheme = document.querySelector('meta[name="theme-color"]');

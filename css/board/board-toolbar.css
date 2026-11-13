@@ -156,8 +156,8 @@
 
 .board-search-input:focus {
     width: 200px;
-    border-color: #10b981;
-    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px var(--accent-border);
 }
 
 .board-search-icon-right {

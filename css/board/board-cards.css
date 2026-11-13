@@ -22,7 +22,7 @@
 }
 
 .board-nodes-layer .note-sticker.is-dragging {
-    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.55), 0 0 0 2.5px var(--accent-emerald, #10b981) !important;
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.55), 0 0 0 2.5px var(--accent-color) !important;
     z-index: 1000;
     will-change: left, top;
 }
@@ -71,7 +71,7 @@
 }
 
 .board-nodes-layer .note-sticker.is-ws-selected {
-    box-shadow: 0 0 0 3px var(--accent-emerald, #10b981), 0 16px 40px rgba(16, 185, 129, 0.45) !important;
+    box-shadow: 0 0 0 3px var(--accent-color), 0 16px 40px var(--accent-glow) !important;
 }
 
 .board-nodes-layer .note-sticker.is-faded {
@@ -89,7 +89,7 @@
 }
 
 .board-view-wrapper.board-lod-compact .board-nodes-layer .note-sticker.is-ws-selected {
-    box-shadow: 0 0 0 3px var(--accent-emerald, #10b981), 0 16px 40px rgba(16, 185, 129, 0.45) !important;
+    box-shadow: 0 0 0 3px var(--accent-color), 0 16px 40px var(--accent-glow) !important;
 }
 
 /* Приховуємо деталі вмісту без зміни розмірів картки:
@@ -203,10 +203,10 @@
 
 /* Ефект наведення на сам плюсик */
 .board-connect-handle:hover {
-    background: var(--accent-emerald, #10b981) !important;
+    background: var(--accent-color) !important;
     border-color: #ffffff !important;
     color: #ffffff !important;
-    box-shadow: 0 0 16px rgba(16, 185, 129, 0.75) !important;
+    box-shadow: 0 0 16px var(--accent-strong) !important;
 }
 
 .board-connect-handle-top:hover,
@@ -241,8 +241,8 @@
 
 /* Підсвічування цільової картки при з'єднанні */
 .board-nodes-layer .note-sticker.is-connect-target-valid {
-    outline: 2.5px solid var(--accent-emerald, #10b981) !important;
-    box-shadow: 0 0 24px rgba(16, 185, 129, 0.5) !important;
+    outline: 2.5px solid var(--accent-color) !important;
+    box-shadow: 0 0 24px var(--accent-strong) !important;
 }
 
 .board-nodes-layer .note-sticker.is-connect-target-valid::after {
@@ -251,7 +251,7 @@
     top: -34px;
     left: 50%;
     transform: translateX(-50%);
-    background: var(--accent-emerald, #10b981);
+    background: var(--accent-color);
     color: #ffffff;
     font-size: 11px;
     font-weight: 700;
@@ -259,7 +259,7 @@
     border-radius: 6px;
     white-space: nowrap;
     pointer-events: none;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    box-shadow: 0 4px 12px var(--accent-glow);
     z-index: 50;
 }
 

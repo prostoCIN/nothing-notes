@@ -90,9 +90,9 @@ mark.note-marker.hl-purple { background-color: rgba(233, 213, 255, 0.9); }
 }
 
 .text-sel-weight-btn.active {
-    background: #10b981 !important;
+    background: var(--accent-color) !important;
     color: #ffffff !important;
-    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4);
+    box-shadow: 0 2px 6px var(--accent-glow);
 }
 
 /* Палітра маркерів-хайлайтерів */
@@ -183,10 +183,10 @@ mark.note-marker.hl-purple { background-color: rgba(233, 213, 255, 0.9); }
 }
 
 .text-sel-scope-btn.active {
-    background: #10b981 !important;
-    border-color: #10b981 !important;
+    background: var(--accent-color) !important;
+    border-color: var(--accent-color) !important;
     color: #ffffff !important;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+    box-shadow: 0 2px 8px var(--accent-glow);
 }
 
 /* Окреме спливаюче віконечко-підказка під кнопкою "Всі" */
@@ -214,7 +214,7 @@ mark.note-marker.hl-purple { background-color: rgba(233, 213, 255, 0.9); }
 }
 
 .text-sel-tooltip b {
-    color: #34d399;
+    color: var(--accent-color);
 }
 
 /* Стрілочка зверху підказки */
@@ -236,10 +236,10 @@ mark.note-marker.hl-purple { background-color: rgba(233, 213, 255, 0.9); }
 }
 
 .text-sel-brush-btn.active {
-    background: #10b981 !important;
-    border-color: #10b981 !important;
+    background: var(--accent-color) !important;
+    border-color: var(--accent-color) !important;
     color: #ffffff !important;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+    box-shadow: 0 2px 8px var(--accent-glow);
 }
 
 /* Індикатор активного режиму швидкого пензля на нотатці */

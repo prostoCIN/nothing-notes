@@ -17,7 +17,7 @@ body.zen-mode-active #workspace-zen-btn {
     background: var(--accent-color) !important;
     border-color: transparent !important;
     color: #062419 !important;
-    box-shadow: 0 3px 10px rgba(22, 185, 129, 0.35) !important;
+    box-shadow: 0 3px 10px var(--accent-glow) !important;
 }
 
 body.zen-mode-active #workspace-zen-btn svg {

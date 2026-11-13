@@ -89,7 +89,7 @@
 
 .user-profile-clickable.is-open {
     background: var(--active-bg);
-    border-color: var(--accent-color, #10b981);
+    border-color: var(--accent-color);
 }
 
 .user-profile-chevron {
@@ -108,7 +108,7 @@
 
 .user-profile-clickable.is-open .user-profile-chevron {
     transform: rotate(180deg);
-    color: var(--accent-color, #10b981);
+    color: var(--accent-color);
 }
 
 .user-avatar {
@@ -116,7 +116,7 @@
     height: 26px;
     border-radius: 50%;
     background: var(--accent-color);
-    box-shadow: 0 2px 8px rgba(22, 185, 129, 0.35);
+    box-shadow: 0 2px 8px var(--accent-glow);
     color: #062419;
     display: flex;
     align-items: center;
@@ -154,10 +154,10 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: var(--accent-color, #10b981);
+    color: var(--accent-color);
     flex-shrink: 0;
     line-height: 1;
-    filter: drop-shadow(0 1px 3px rgba(16, 185, 129, 0.25));
+    filter: drop-shadow(0 1px 3px var(--accent-subtle));
 }
 
 .user-cloud-icon svg {
