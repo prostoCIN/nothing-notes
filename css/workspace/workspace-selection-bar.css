@@ -681,16 +681,19 @@
 }
 
 /* ==========================================================================
-   Прямокутна рамка гумового виділення як у лівій панелі (Marquee Selection)
+   Прямокутна рамка гумового виділення (iOS Freeform Marquee Selection)
    ========================================================================== */
 .workspace-marquee-selection {
     position: fixed;
-    border: 2px dashed var(--accent-color);
+    border: 1.5px dashed var(--accent-color);
     background-color: var(--accent-subtle);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     pointer-events: none;
     z-index: 99999;
-    border-radius: 4px;
+    border-radius: 6px;
     box-sizing: border-box;
+    box-shadow: 0 0 16px var(--accent-subtle);
 }
 
 

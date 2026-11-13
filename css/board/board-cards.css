@@ -11,18 +11,18 @@
     transform: none;
     box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.15);
     border-radius: 12px;
-    transition: box-shadow 0.16s ease, opacity 0.2s ease;
+    transition: box-shadow var(--dur-quick) var(--ease-ios-spring), opacity var(--dur-instant) var(--ease-ios-spring);
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: subpixel-antialiased;
     backface-visibility: hidden;
 }
 
 .board-nodes-layer .note-sticker:hover {
-    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.42), 0 3px 8px rgba(0, 0, 0, 0.22);
+    box-shadow: 0 16px 38px rgba(0, 0, 0, 0.42), 0 4px 10px rgba(0, 0, 0, 0.22);
 }
 
 .board-nodes-layer .note-sticker.is-dragging {
-    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.55), 0 0 0 2.5px var(--accent-color) !important;
+    box-shadow: 0 24px 56px rgba(0, 0, 0, 0.58), 0 0 0 2.5px var(--accent-color) !important;
     z-index: 1000;
     will-change: left, top;
 }
@@ -143,7 +143,7 @@
     pointer-events: none;
     z-index: 20;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
-    transition: opacity 0.16s ease, transform 0.16s ease, background 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+    transition: opacity var(--dur-instant) var(--ease-ios-spring), transform var(--dur-quick) var(--ease-ios-bounce), background-color var(--dur-instant) var(--ease-ios-spring), border-color var(--dur-instant) var(--ease-ios-spring), color var(--dur-instant) var(--ease-ios-spring);
     user-select: none;
 }
 
@@ -206,17 +206,27 @@
     background: var(--accent-color) !important;
     border-color: var(--accent-contrast, #062419) !important;
     color: var(--accent-contrast, #062419) !important;
-    box-shadow: 0 0 16px var(--accent-strong) !important;
+    box-shadow: 0 0 18px var(--accent-strong) !important;
 }
 
 .board-connect-handle-top:hover,
 .board-connect-handle-bottom:hover {
-    transform: translateX(-50%) scale(1.18) !important;
+    transform: translateX(-50%) scale(1.22) !important;
 }
 
 .board-connect-handle-left:hover,
 .board-connect-handle-right:hover {
-    transform: translateY(-50%) scale(1.18) !important;
+    transform: translateY(-50%) scale(1.22) !important;
+}
+
+.board-connect-handle-top:active,
+.board-connect-handle-bottom:active {
+    transform: translateX(-50%) scale(0.9) !important;
+}
+
+.board-connect-handle-left:active,
+.board-connect-handle-right:active {
+    transform: translateY(-50%) scale(0.9) !important;
 }
 
 /* Стан під час активного протягування лінії */

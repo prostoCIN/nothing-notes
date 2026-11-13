@@ -102,12 +102,17 @@
     color: var(--text-muted);
     cursor: pointer;
     box-shadow: none;
-    transition: all var(--transition-fast);
+    transition: background-color var(--dur-instant) var(--ease-ios-spring), color var(--dur-instant) var(--ease-ios-spring), transform var(--dur-instant) var(--ease-ios-bounce);
 }
 
 .board-toolbar-filter-btn:hover {
     color: var(--text-main);
     background: var(--hover-bg);
+    transform: scale(1.05);
+}
+
+.board-toolbar-filter-btn:active {
+    transform: scale(0.92);
 }
 
 .board-toolbar-filter-btn.is-active {
@@ -137,8 +142,8 @@
 
 .board-search-input {
     background: var(--toolbar-bg, rgba(22, 22, 26, 0.92));
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
     border: 1px solid var(--toolbar-border, rgba(255, 255, 255, 0.15));
     border-radius: 8px;
     height: 32px;
@@ -150,7 +155,7 @@
     font-family: inherit;
     outline: none;
     width: 150px;
-    transition: width 0.22s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    transition: width var(--dur-smooth) var(--ease-ios-spring), border-color var(--dur-instant) var(--ease-ios-spring), box-shadow var(--dur-instant) var(--ease-ios-spring);
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
 }
 
@@ -183,6 +188,11 @@
     padding: 2px 4px;
     display: flex;
     align-items: center;
+    transition: transform var(--dur-instant) var(--ease-ios-bounce), color var(--dur-instant) var(--ease-ios-spring);
+}
+
+.board-search-clear-btn:active {
+    transform: translateY(-50%) scale(0.85);
 }
 
 .board-tags-bar {
@@ -210,8 +220,8 @@
 
 .board-tag-chip {
     background: var(--toolbar-bg, rgba(26, 26, 30, 0.88));
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
     border: 1px solid var(--border-subtle);
     border-radius: 20px;
     padding: 3px 9px;
@@ -224,6 +234,16 @@
     gap: 5px;
     flex-shrink: 0;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+    transition: transform var(--dur-quick) var(--ease-ios-bounce), background-color var(--dur-instant) var(--ease-ios-spring), border-color var(--dur-instant) var(--ease-ios-spring), color var(--dur-instant) var(--ease-ios-spring);
+}
+
+.board-tag-chip:hover {
+    transform: scale(1.06);
+    color: var(--text-main);
+}
+
+.board-tag-chip:active {
+    transform: scale(0.94);
 }
 
 .board-tag-chip.is-active {

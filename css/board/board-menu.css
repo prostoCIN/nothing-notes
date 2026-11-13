@@ -15,7 +15,7 @@
     flex-direction: column;
     gap: 2px;
     color: var(--text-main, #ffffff);
-    animation: menuFadeIn 0.12s ease-out;
+    animation: menuFadeIn var(--dur-quick) var(--ease-ios-bounce);
 }
 
 .board-canvas-context-item {
@@ -33,7 +33,7 @@
     cursor: pointer;
     text-align: left;
     width: 100%;
-    transition: background 0.12s ease, color 0.12s ease;
+    transition: transform var(--dur-instant) var(--ease-ios-bounce), background-color var(--dur-instant) var(--ease-ios-spring), color var(--dur-instant) var(--ease-ios-spring);
 }
 
 .board-canvas-context-item:hover,
@@ -41,6 +41,11 @@
     background: var(--accent-subtle);
     color: var(--accent-color);
     outline: none;
+    transform: translateX(3px);
+}
+
+.board-canvas-context-item:active {
+    transform: scale(0.97);
 }
 
 .board-canvas-context-item.is-primary {
