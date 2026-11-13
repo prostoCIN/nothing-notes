@@ -184,7 +184,7 @@
     justify-content: center;
     text-align: center;
     cursor: pointer;
-    transition: transform 0.12s ease, background-color 0.15s ease;
+    transition: transform var(--dur-quick) var(--ease-ios-bounce), background-color var(--dur-instant) var(--ease-ios-spring);
     padding: 0;
     margin: 0 auto;
     box-sizing: border-box;
@@ -194,7 +194,12 @@
 
 .emoji-grid-item:hover {
     background-color: rgba(255, 255, 255, 0.12);
-    transform: scale(0.92); /* Делікатне мікро-зменшення емодзі */
+    transform: scale(1.22);
+    z-index: 2;
+}
+
+.emoji-grid-item:active {
+    transform: scale(0.9);
 }
 
 /* Нижня панель категорій (як в iOS/Android) */
@@ -215,7 +220,7 @@
     line-height: 1;
     padding: 4px;
     border-radius: 6px;
-    transition: background-color 0.15s, transform 0.15s, opacity 0.15s;
+    transition: background-color var(--dur-instant) var(--ease-ios-spring), transform var(--dur-instant) var(--ease-ios-bounce), opacity var(--dur-instant) var(--ease-ios-spring);
     opacity: 0.45;
     display: flex;
     align-items: center;
@@ -225,6 +230,11 @@
 .emoji-cat-tab-btn:hover {
     opacity: 1;
     background-color: rgba(255, 255, 255, 0.08);
+    transform: scale(1.08);
+}
+
+.emoji-cat-tab-btn:active {
+    transform: scale(0.88);
 }
 
 .emoji-cat-tab-btn.active {

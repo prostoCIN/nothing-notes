@@ -36,11 +36,15 @@
     height: 26px;
     border-radius: 7px;
     flex-shrink: 0;
-    transition: transform 0.2s ease;
+    transition: transform var(--dur-quick) var(--ease-ios-bounce);
 }
 
 .sidebar-brand:hover .sidebar-brand-logo {
-    transform: scale(1.06);
+    transform: scale(1.08);
+}
+
+.sidebar-brand:active .sidebar-brand-logo {
+    transform: scale(0.92);
 }
 
 .sidebar-brand-title {
@@ -156,12 +160,16 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background-color 0.2s, color 0.2s;
+    transition: background-color var(--dur-instant) var(--ease-ios-spring), color var(--dur-instant) var(--ease-ios-spring), transform var(--dur-instant) var(--ease-ios-bounce);
 }
 
 .header-add-btn:hover {
     background-color: var(--hover-bg);
     color: var(--text-main);
+}
+
+.header-add-btn:active {
+    transform: scale(0.88);
 }
 
 .sidebar-inline-form {
@@ -216,7 +224,7 @@
     border-radius: 4px;
     margin-right: 2px;
     flex-shrink: 0;
-    transition: transform var(--transition-fast), color var(--transition-fast), background-color var(--transition-fast);
+    transition: transform var(--dur-quick) var(--ease-ios-spring), color var(--dur-instant) var(--ease-ios-spring), background-color var(--dur-instant) var(--ease-ios-spring);
     padding: 0;
 }
 
@@ -225,9 +233,17 @@
     background-color: rgba(255, 255, 255, 0.08);
 }
 
+.note-toggle-arrow:active {
+    transform: scale(0.85);
+}
+
 .note-toggle-arrow.expanded {
     transform: rotate(90deg);
     color: var(--text-main);
+}
+
+.note-toggle-arrow.expanded:active {
+    transform: rotate(90deg) scale(0.85);
 }
 
 .sidebar-child-count {

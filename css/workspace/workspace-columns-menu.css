@@ -19,7 +19,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: all var(--transition-fast);
+    transition: background-color var(--dur-instant) var(--ease-ios-spring), color var(--dur-instant) var(--ease-ios-spring), border-color var(--dur-instant) var(--ease-ios-spring), transform var(--dur-instant) var(--ease-ios-bounce);
     flex-shrink: 0;
     user-select: none;
     padding: 0;
@@ -29,7 +29,11 @@
     background-color: var(--hover-bg);
     color: var(--text-main);
     border-color: var(--badge-hover-border, var(--text-muted));
-    transform: scale(0.96);
+    transform: scale(1.05);
+}
+
+.column-more-btn:active {
+    transform: scale(0.9);
 }
 
 .column-more-btn.active {
@@ -303,9 +307,13 @@
     background-color: var(--hover-bg);
     color: var(--text-main);
     border-color: rgba(255, 255, 255, 0.2);
-    transform: scale(0.96);
+    transform: scale(1.05);
 }
 
+.column-layout-toggle-btn:active,
+.column-expand-toggle-btn:active,
+.column-graph-toggle-btn:active,
+.column-select-toggle-btn:active,
 .column-add-note-btn:active {
     transform: scale(0.92);
 }

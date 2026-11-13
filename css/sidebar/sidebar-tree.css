@@ -66,9 +66,14 @@
     margin-bottom: 2px;
     min-height: 32px;
     box-sizing: border-box;
-    transition: background-color var(--transition-fast), opacity var(--transition-fast), color var(--transition-fast);
+    transition: background-color var(--dur-instant) var(--ease-ios-spring), opacity var(--dur-instant) var(--ease-ios-spring), color var(--dur-instant) var(--ease-ios-spring), transform var(--dur-instant) var(--ease-ios-bounce);
     color: var(--text-muted);
     user-select: none;
+    will-change: transform;
+}
+
+.board-item:active, .note-item:active {
+    transform: scale(0.97);
 }
 
 .note-item {
