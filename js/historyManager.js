@@ -1,5 +1,5 @@
 // js/historyManager.js - Оптимізований менеджер історії дій (Undo / Redo, Ctrl+Z, Ctrl+Y)
-// Працює на базі Smart Delta Diff: вираховує точкові зміни без копіювання всього додатку та без спаму в БД.
+// Працює на базі Smart Delta Diff, дедуплікації знімків та неблокуючого введення.
 window.App = window.App || {};
 
 (function() {
@@ -9,6 +9,11 @@ window.App = window.App || {};
     const boardHistory = new Map();
     let isExecutingHistoryAction = false;
     let textInputDebounceTimer = null;
+
+    // Відкладена черга хмарної синхронізації
+    let cloudSyncDebounceTimer = null;
+    const pendingCloudModified = new Map();
+    const pendingCloudDeleted = new Set();
 
     /**
      * Отримати сховище історії для поточного активного блокнота
@@ -91,6 +96,21 @@ window.App = window.App || {};
         return true;
     }
 
+    /**
+     * Порівняння двох повних знімків блокнота для усунення дублікатів (Ghost Undo)
+     */
+    function areSnapshotsEqual(snapA, snapB) {
+        if (!snapA || !snapB) return false;
+        if (snapA.length !== snapB.length) return false;
+        const mapB = new Map(snapB.map(n => [n.id, n]));
+        for (let i = 0; i < snapA.length; i++) {
+            const a = snapA[i];
+            const b = mapB.get(a.id);
+            if (!b || !areNotesEqual(a, b)) return false;
+        }
+        return true;
+    }
+
     window.App.historyManager = {
         init() {
             this.bindUIButtons();
@@ -98,7 +118,7 @@ window.App = window.App || {};
             this.updateButtonsState();
         },
 
-        // Захоплення поточного знімка стану активного блокнота
+        // Захоплення поточного знімка стану активного блокнота з дедуплікацією
         recordState(description = 'action') {
             if (isExecutingHistoryAction) return;
 
@@ -107,6 +127,12 @@ window.App = window.App || {};
 
             const h = getActiveBoardHistory();
             const snapshot = captureActiveBoardSnapshot();
+
+            // Якщо попередній стан у стеку такий самий — не дублюємо
+            const lastInStack = h.undoStack[h.undoStack.length - 1];
+            if (lastInStack && areSnapshotsEqual(lastInStack, snapshot)) {
+                return;
+            }
 
             h.undoStack.push(snapshot);
             if (h.undoStack.length > MAX_HISTORY_STEPS) {
@@ -119,7 +145,7 @@ window.App = window.App || {};
             this.updateButtonsState();
         },
 
-        // Запис для подій введення тексту (дебаунс 600 мс)
+        // Запис для подій введення тексту (дебаунс 450 мс з дедуплікацією)
         recordTextChange() {
             if (isExecutingHistoryAction) return;
 
@@ -131,25 +157,32 @@ window.App = window.App || {};
             // Фіксуємо стан "ДО" початку серії введення тексту
             if (!h.preTypingSnapshot) {
                 h.preTypingSnapshot = captureActiveBoardSnapshot();
-                h.undoStack.push(h.preTypingSnapshot);
-                if (h.undoStack.length > MAX_HISTORY_STEPS) {
-                    h.undoStack.shift();
+                const lastInStack = h.undoStack[h.undoStack.length - 1];
+                if (!lastInStack || !areSnapshotsEqual(lastInStack, h.preTypingSnapshot)) {
+                    h.undoStack.push(h.preTypingSnapshot);
+                    if (h.undoStack.length > MAX_HISTORY_STEPS) {
+                        h.undoStack.shift();
+                    }
+                    this.updateButtonsState();
                 }
-                this.updateButtonsState();
             }
 
             clearTimeout(textInputDebounceTimer);
             textInputDebounceTimer = setTimeout(() => {
                 const currentSnapshot = captureActiveBoardSnapshot();
-                h.undoStack.push(currentSnapshot);
-                if (h.undoStack.length > MAX_HISTORY_STEPS) {
-                    h.undoStack.shift();
+                const lastInStack = h.undoStack[h.undoStack.length - 1];
+                if (!lastInStack || !areSnapshotsEqual(lastInStack, currentSnapshot)) {
+                    h.undoStack.push(currentSnapshot);
+                    if (h.undoStack.length > MAX_HISTORY_STEPS) {
+                        h.undoStack.shift();
+                    }
                 }
                 h.preTypingSnapshot = null;
                 this.updateButtonsState();
-            }, 600);
+            }, 450);
         },
 
+        // Відкат (Undo) з дедуплікацією — гарантоване спрацьовування з першого кліку
         undo() {
             if (textInputDebounceTimer) {
                 clearTimeout(textInputDebounceTimer);
@@ -161,49 +194,78 @@ window.App = window.App || {};
 
             if (h.undoStack.length === 0) return;
 
-            // Зберігаємо поточний стан у Redo перед відкатом
             const currentSnapshot = captureActiveBoardSnapshot();
+
+            // Шукаємо перший попередній стан, який РЕАЛЬНО відрізняється від поточного на екрані
+            let previousSnapshot = null;
+            while (h.undoStack.length > 0) {
+                const candidate = h.undoStack.pop();
+                if (!areSnapshotsEqual(candidate, currentSnapshot)) {
+                    previousSnapshot = candidate;
+                    break;
+                }
+            }
+
+            if (!previousSnapshot) {
+                this.updateButtonsState();
+                return;
+            }
+
+            // Поточний стан записуємо в Redo
             h.redoStack.push(currentSnapshot);
 
-            const previousSnapshot = h.undoStack.pop();
-            if (previousSnapshot) {
-                isExecutingHistoryAction = true;
-                try {
-                    this.applyStateUpdate(previousSnapshot);
-                } catch (e) {
-                    console.error('[HistoryManager] Помилка при Undo:', e);
-                } finally {
-                    isExecutingHistoryAction = false;
-                }
+            isExecutingHistoryAction = true;
+            try {
+                this.triggerVisualFeedback('undo');
+                this.applyStateUpdate(previousSnapshot);
+            } catch (e) {
+                console.error('[HistoryManager] Помилка при Undo:', e);
+            } finally {
+                isExecutingHistoryAction = false;
             }
 
             this.updateButtonsState();
         },
 
+        // Повторення (Redo) з дедуплікацією
         redo() {
             const h = getActiveBoardHistory();
             if (h.redoStack.length === 0) return;
 
-            // Поточний стан переносимо в Undo
             const currentSnapshot = captureActiveBoardSnapshot();
+
+            // Шукаємо наступний стан, який РЕАЛЬНО відрізняється від поточного
+            let nextSnapshot = null;
+            while (h.redoStack.length > 0) {
+                const candidate = h.redoStack.pop();
+                if (!areSnapshotsEqual(candidate, currentSnapshot)) {
+                    nextSnapshot = candidate;
+                    break;
+                }
+            }
+
+            if (!nextSnapshot) {
+                this.updateButtonsState();
+                return;
+            }
+
+            // Поточний стан записуємо в Undo
             h.undoStack.push(currentSnapshot);
 
-            const nextSnapshot = h.redoStack.pop();
-            if (nextSnapshot) {
-                isExecutingHistoryAction = true;
-                try {
-                    this.applyStateUpdate(nextSnapshot);
-                } catch (e) {
-                    console.error('[HistoryManager] Помилка при Redo:', e);
-                } finally {
-                    isExecutingHistoryAction = false;
-                }
+            isExecutingHistoryAction = true;
+            try {
+                this.triggerVisualFeedback('redo');
+                this.applyStateUpdate(nextSnapshot);
+            } catch (e) {
+                console.error('[HistoryManager] Помилка при Redo:', e);
+            } finally {
+                isExecutingHistoryAction = false;
             }
 
             this.updateButtonsState();
         },
 
-        // Розумне точкове застосування змін стану (Smart Diff)
+        // Розумне точкове застосування змін стану (Smart Diff) без блокування UI
         applyStateUpdate(targetBoardNotes) {
             const state = window.App.state;
             const storage = window.App.storage;
@@ -222,65 +284,87 @@ window.App = window.App || {};
             currentBoardNotes.forEach(curr => {
                 const target = targetMap.get(curr.id);
                 if (!target) {
-                    // Нотатка була в поточному стані, але її немає у відновлюваному стані (скасування створення)
                     actuallyDeletedIds.push(curr.id);
                 } else if (!areNotesEqual(curr, target)) {
-                    // Нотатка дійсно змінилася за своїм вмістом чи параметрами
                     actuallyModified.push(target);
                 }
             });
 
-            // 2. Знаходимо відновлені нотатки (були видалені, але повертаються)
+            // 2. Знаходимо відновлені нотатки
             targetBoardNotes.forEach(target => {
                 if (!currentMap.has(target.id)) {
                     actuallyRestored.push(target);
                 }
             });
 
-            console.log('[HistoryManager] ⚡ Smart Diff applied:', {
-                modified: actuallyModified.length,
-                restored: actuallyRestored.length,
-                deleted: actuallyDeletedIds.length
-            });
-
             const now = Date.now();
-            // Оновлюємо timestamp ТІЛЬКИ для нотаток, які реально змінилися або повернулися
             actuallyModified.forEach(n => { n.updatedAt = now; });
             actuallyRestored.forEach(n => { n.updatedAt = now; });
 
             // Оновлюємо стан: нотатки інших блокнотів залишаються неторканими
             const otherBoardsNotes = state.notes.filter(n => n.boardId !== activeBoardId);
             state.notes = [...otherBoardsNotes, ...targetBoardNotes];
-            storage.saveNotes(state.notes, true);
 
-            // 3. ТОЧКОВА синхронізація з Supabase: пушимо тільки реальні зміни!
-            if (window.App.cloudSync) {
-                // Видаляємо нотатки, чиє створення скасувалося
-                if (actuallyDeletedIds.length > 0) {
-                    if (typeof window.App.cloudSync.deleteNotesFromCloud === 'function') {
-                        window.App.cloudSync.deleteNotesFromCloud(actuallyDeletedIds);
-                    } else {
-                        actuallyDeletedIds.forEach(id => window.App.cloudSync.deleteNoteFromCloud(id));
-                    }
-                }
+            // 1. Асинхронний запис у LocalStorage (не блокує інтерфейс синхронним stringify)
+            storage.saveNotes(state.notes, false);
 
-                // Пушимо ТІЛЬКИ реально змінені та відновлені нотатки
-                const notesToSync = [...actuallyModified, ...actuallyRestored];
-                if (notesToSync.length > 0) {
-                    notesToSync.forEach(note => window.App.cloudSync.syncNote(note));
-                    if (typeof window.App.cloudSync.flushPendingNotes === 'function') {
-                        window.App.cloudSync.flushPendingNotes();
-                    }
-                }
-            }
+            // 2. Відкладена дебаунс-синхронізація з хмарою (зменшує затримку мережі при серійних натисканнях)
+            this.scheduleCloudSync(actuallyModified, actuallyRestored, actuallyDeletedIds);
 
-            // Оновлюємо UI
+            // 3. Миттєве оновлення UI
             if (window.App.sidebarView) window.App.sidebarView.render();
             if (window.App.workspaceView) window.App.workspaceView.render();
 
             if (window.App.workspaceSelectionBar && typeof window.App.workspaceSelectionBar.refreshTagSubmenu === 'function') {
                 window.App.workspaceSelectionBar.refreshTagSubmenu();
                 window.App.workspaceSelectionBar.updateUI();
+            }
+        },
+
+        // Дебаунс хмарної синхронізації
+        scheduleCloudSync(modified, restored, deletedIds) {
+            if (!window.App.cloudSync) return;
+
+            (modified || []).forEach(n => pendingCloudModified.set(n.id, n));
+            (restored || []).forEach(n => pendingCloudModified.set(n.id, n));
+            (deletedIds || []).forEach(id => {
+                pendingCloudDeleted.add(id);
+                pendingCloudModified.delete(id);
+            });
+
+            clearTimeout(cloudSyncDebounceTimer);
+            cloudSyncDebounceTimer = setTimeout(() => {
+                if (window.App.cloudSync) {
+                    if (pendingCloudDeleted.size > 0) {
+                        const toDelete = Array.from(pendingCloudDeleted);
+                        if (typeof window.App.cloudSync.deleteNotesFromCloud === 'function') {
+                            window.App.cloudSync.deleteNotesFromCloud(toDelete);
+                        } else {
+                            toDelete.forEach(id => window.App.cloudSync.deleteNoteFromCloud(id));
+                        }
+                        pendingCloudDeleted.clear();
+                    }
+
+                    if (pendingCloudModified.size > 0) {
+                        pendingCloudModified.forEach(note => window.App.cloudSync.syncNote(note));
+                        if (typeof window.App.cloudSync.flushPendingNotes === 'function') {
+                            window.App.cloudSync.flushPendingNotes();
+                        }
+                        pendingCloudModified.clear();
+                    }
+                }
+            }, 350);
+        },
+
+        // Візуальний мікро-відгук на кнопках у хедері
+        triggerVisualFeedback(action = 'undo') {
+            const btnId = action === 'redo' ? 'workspace-redo-btn' : 'workspace-undo-btn';
+            const btn = document.getElementById(btnId);
+            if (btn && !btn.disabled) {
+                btn.classList.add('history-active-pulse');
+                setTimeout(() => {
+                    btn.classList.remove('history-active-pulse');
+                }, 180);
             }
         },
 
@@ -311,21 +395,31 @@ window.App = window.App || {};
 
                 const code = e.code;
                 const key = e.key.toLowerCase();
+                const isUndoKey = (code === 'KeyZ' || key === 'z' || key === 'я') && !e.shiftKey;
+                const isRedoKey = (code === 'KeyY' || key === 'y' || key === 'н') || ((code === 'KeyZ' || key === 'z' || key === 'я') && e.shiftKey);
 
-                // Ctrl+Z (Undo) або Ctrl+Shift+Z (Redo)
-                if (code === 'KeyZ' || key === 'z' || key === 'я') {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (e.shiftKey) {
-                        this.redo();
-                    } else {
-                        this.undo();
-                    }
-                } 
-                // Ctrl+Y (Redo)
-                else if (code === 'KeyY' || key === 'y' || key === 'н') {
-                    e.preventDefault();
-                    e.stopPropagation();
+                if (!isUndoKey && !isRedoKey) return;
+
+                // 1. Якщо користувач у полі вводу чи textarea — залишаємо нативне скасування тексту
+                const activeEl = document.activeElement;
+                if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) {
+                    return;
+                }
+
+                // 2. Якщо користувач редагує текст у нотатці (contenteditable) — дозволяємо браузеру
+                // виконувати миттєве посимвольне скасування тексту (0 мс) зі збереженням позиції курсору
+                const isContentEditable = activeEl && (activeEl.isContentEditable || activeEl.closest('[contenteditable="true"]'));
+                if (isContentEditable) {
+                    return;
+                }
+
+                // 3. Для всіх інших випадків (робочий простір, картки, переміщення, кольори, видалення тощо):
+                e.preventDefault();
+                e.stopPropagation();
+
+                if (isUndoKey) {
+                    this.undo();
+                } else if (isRedoKey) {
                     this.redo();
                 }
             }, true);
