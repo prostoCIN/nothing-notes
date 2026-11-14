@@ -411,6 +411,14 @@
     transform: scale(1.2);
 }
 
+/* Яскраві насичені кольори кружечків вибору кольору у смужці створення тегів */
+.tag-hub-color-dots .tag-color-dot-btn.tag-tape-color-0 { background: #3b82f6; border: 1.5px solid #60a5fa; }
+.tag-hub-color-dots .tag-color-dot-btn.tag-tape-color-1 { background: #10b981; border: 1.5px solid #34d399; }
+.tag-hub-color-dots .tag-color-dot-btn.tag-tape-color-2 { background: #f59e0b; border: 1.5px solid #fbbf24; }
+.tag-hub-color-dots .tag-color-dot-btn.tag-tape-color-3 { background: #ec4899; border: 1.5px solid #f472b6; }
+.tag-hub-color-dots .tag-color-dot-btn.tag-tape-color-4 { background: #8b5cf6; border: 1.5px solid #a78bfa; }
+.tag-hub-color-dots .tag-color-dot-btn.tag-tape-color-5 { background: #ef4444; border: 1.5px solid #f87171; }
+
 /* 3. Статус-бар (прикріплено + очистити) */
 .tag-hub-status-bar {
     display: flex;
@@ -529,21 +537,71 @@
 .tag-hub-item-tape {
     display: inline-flex;
     align-items: center;
-    padding: 2px 7px;
-    border-radius: 4px;
-    font-size: 11px;
+    padding: 3.5px 9px;
+    border-radius: 5px;
+    font-size: 11.5px;
     font-weight: 700;
-    letter-spacing: 0.2px;
-    max-width: 175px;
+    letter-spacing: 0.3px;
+    max-width: 185px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
     transition: transform 0.12s ease;
 }
 
 .tag-hub-item:hover .tag-hub-item-tape {
     transform: scale(1.02);
+}
+
+/* Висококонтрастні варіанти тегів у списку тулбару (Dark Mode) */
+.tag-hub-wrapper .tag-hub-item-tape.tag-tape-color-0 {
+    background-color: rgba(30, 58, 138, 0.65);
+    color: #bfdbfe;
+    border: 1px solid rgba(147, 197, 253, 0.5);
+    border-left: 3.5px dashed #60a5fa;
+    border-right: 3.5px dashed #60a5fa;
+}
+
+.tag-hub-wrapper .tag-hub-item-tape.tag-tape-color-1 {
+    background-color: rgba(6, 78, 59, 0.65);
+    color: #a7f3d0;
+    border: 1px solid rgba(110, 231, 183, 0.5);
+    border-left: 3.5px dashed #34d399;
+    border-right: 3.5px dashed #34d399;
+}
+
+.tag-hub-wrapper .tag-hub-item-tape.tag-tape-color-2 {
+    background-color: rgba(120, 53, 15, 0.65);
+    color: #fef08a;
+    border: 1px solid rgba(253, 224, 71, 0.5);
+    border-left: 3.5px dashed #fbbf24;
+    border-right: 3.5px dashed #fbbf24;
+}
+
+.tag-hub-wrapper .tag-hub-item-tape.tag-tape-color-3 {
+    background-color: rgba(131, 24, 67, 0.65);
+    color: #fbcfe8;
+    border: 1px solid rgba(244, 114, 182, 0.5);
+    border-left: 3.5px dashed #f472b6;
+    border-right: 3.5px dashed #f472b6;
+}
+
+.tag-hub-wrapper .tag-hub-item-tape.tag-tape-color-4 {
+    background-color: rgba(76, 29, 149, 0.65);
+    color: #ddd6fe;
+    border: 1px solid rgba(196, 181, 253, 0.5);
+    border-left: 3.5px dashed #a78bfa;
+    border-right: 3.5px dashed #a78bfa;
+}
+
+.tag-hub-wrapper .tag-hub-item-tape.tag-tape-color-5 {
+    background-color: rgba(127, 29, 29, 0.65);
+    color: #fecaca;
+    border: 1px solid rgba(248, 113, 113, 0.5);
+    border-left: 3.5px dashed #f87171;
+    border-right: 3.5px dashed #f87171;
 }
 
 .tag-hub-item-text {
