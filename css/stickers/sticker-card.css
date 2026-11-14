@@ -96,13 +96,66 @@
 .note-sticker.in-select-mode .sticker-actions,
 .note-sticker.in-select-mode .sticker-emoji-wrap {
     pointer-events: none;
-    opacity: 0.35;
 }
 
 .note-sticker.in-select-mode .sticker-title,
 .note-sticker.in-select-mode .sticker-content {
     user-select: none;
     pointer-events: none;
+}
+
+/* Плавний перехід прозорості елементів стікера */
+.note-sticker .sticker-title,
+.note-sticker .sticker-content,
+.note-sticker .sticker-actions,
+.note-sticker .sticker-emoji-wrap,
+.note-sticker .sticker-tags-container,
+.note-sticker .sticker-subnotes-container,
+.note-sticker .sticker-gallery-container,
+.note-sticker .sticker-bookmarks-container {
+    transition: opacity var(--dur-quick) ease;
+}
+
+/* У режимі вибору: невибрані картки та їхній текст стають напівпрозорими */
+.note-sticker.in-select-mode:not(.is-ws-selected) .sticker-title,
+.note-sticker.in-select-mode:not(.is-ws-selected) .sticker-content,
+.note-sticker.in-select-mode:not(.is-ws-selected) .sticker-tags-container,
+.note-sticker.in-select-mode:not(.is-ws-selected) .sticker-subnotes-container,
+.note-sticker.in-select-mode:not(.is-ws-selected) .sticker-gallery-container,
+.note-sticker.in-select-mode:not(.is-ws-selected) .sticker-bookmarks-container {
+    opacity: 0.55;
+}
+
+.note-sticker.in-select-mode:not(.is-ws-selected) .sticker-actions,
+.note-sticker.in-select-mode:not(.is-ws-selected) .sticker-emoji-wrap {
+    opacity: 0.4;
+}
+
+.note-sticker.in-select-mode:not(.is-ws-selected):hover .sticker-title,
+.note-sticker.in-select-mode:not(.is-ws-selected):hover .sticker-content,
+.note-sticker.in-select-mode:not(.is-ws-selected):hover .sticker-tags-container,
+.note-sticker.in-select-mode:not(.is-ws-selected):hover .sticker-subnotes-container,
+.note-sticker.in-select-mode:not(.is-ws-selected):hover .sticker-gallery-container,
+.note-sticker.in-select-mode:not(.is-ws-selected):hover .sticker-bookmarks-container,
+.note-sticker.in-select-mode:not(.is-ws-selected):hover .sticker-actions,
+.note-sticker.in-select-mode:not(.is-ws-selected):hover .sticker-emoji-wrap {
+    opacity: 0.8;
+}
+
+/* Коли картка вибрана: повна контрастність та насиченість */
+.note-sticker.in-select-mode.is-ws-selected .sticker-title,
+.note-sticker.in-select-mode.is-ws-selected .sticker-content,
+.note-sticker.in-select-mode.is-ws-selected .sticker-tags-container,
+.note-sticker.in-select-mode.is-ws-selected .sticker-subnotes-container,
+.note-sticker.in-select-mode.is-ws-selected .sticker-gallery-container,
+.note-sticker.in-select-mode.is-ws-selected .sticker-bookmarks-container {
+    opacity: 1 !important;
+}
+
+.note-sticker.in-select-mode.is-ws-selected .sticker-actions,
+.note-sticker.in-select-mode.is-ws-selected .sticker-emoji-wrap {
+    pointer-events: none;
+    opacity: 0.85;
 }
 
 /* Підняття стікера, коли в ньому відкрито пікер емодзі, меню 3 крапки або меню тегів */
