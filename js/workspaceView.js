@@ -617,9 +617,11 @@ window.App = window.App || {};
             const totalCols = state.activeChain.length;
             container.classList.toggle('has-many-columns', totalCols >= 3);
 
-            // Плавний скрол контейнера до нової колонки
+            // Плавний скрол контейнера до нової колонки (лише якщо вона виходить за межі видимості екрана)
             requestAnimationFrame(() => {
-                newColumnEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'end' });
+                if (container.scrollWidth > container.clientWidth + 5) {
+                    newColumnEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'end' });
+                }
             });
 
             this.renderMobilePagination();
