@@ -21,13 +21,13 @@ html[data-theme="forest"] {
     --accent-soft: color-mix(in srgb, var(--accent-color) 8%, transparent);
     --danger-subtle: color-mix(in srgb, var(--danger-color) 14%, transparent);
 
-    --bg-color: #1d1e19;
-    --sidebar-bg: #272822;
+    --bg-color: var(--bg-base);
+    --sidebar-bg: var(--bg-surface);
     --modal-bg: rgba(39, 40, 34, 0.95);
     --header-bg: color-mix(in srgb, var(--bg-surface) 88%, transparent);
     --column-bg: rgba(39, 40, 34, 0.55);
     --column-border: rgba(255, 255, 255, 0.08);
-    --graph-bg: radial-gradient(circle at center, #272822 0%, #1d1e19 100%);
+    --graph-bg: radial-gradient(circle at center, var(--bg-surface) 0%, var(--bg-base) 100%);
     --toolbar-bg: rgba(39, 40, 34, 0.92);
     --toolbar-border: rgba(255, 255, 255, 0.12);
 

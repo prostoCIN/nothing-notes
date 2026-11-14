@@ -9,6 +9,7 @@
     --sidebar-bg: var(--bg-surface);
     --header-bg: color-mix(in srgb, var(--bg-surface) 88%, transparent);
     --modal-bg: rgba(39, 40, 34, 0.95);
+    --graph-bg: radial-gradient(circle at center, var(--bg-surface) 0%, var(--bg-base) 100%);
 
     --text-main: rgba(255, 255, 255, 0.94);
     --text-muted: rgba(255, 255, 255, 0.55);

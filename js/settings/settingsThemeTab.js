@@ -393,6 +393,17 @@ window.App = window.App || {};
                     }
                 }
             }
+
+            // Динамічний градієнт фону полотна дошки та інтерактивного графу зв'язків
+            const currentBase = root.style.getPropertyValue('--bg-base') || colors['--bg-base'] || '';
+            const currentSurface = root.style.getPropertyValue('--bg-surface') || colors['--bg-surface'] || '';
+            if (currentBase || currentSurface) {
+                const baseVal = currentBase || 'var(--bg-base)';
+                const surfaceVal = currentSurface || 'var(--bg-surface)';
+                root.style.setProperty('--graph-bg', `radial-gradient(circle at center, ${surfaceVal} 0%, ${baseVal} 100%)`);
+            } else {
+                root.style.removeProperty('--graph-bg');
+            }
         },
 
         setCustomColor(key, hex) {
@@ -492,6 +503,7 @@ window.App = window.App || {};
             root.style.removeProperty('--accent-soft');
             root.style.removeProperty('--accent-contrast');
             root.style.removeProperty('--danger-subtle');
+            root.style.removeProperty('--graph-bg');
 
             const metaTheme = document.querySelector('meta[name="theme-color"]');
             if (metaTheme) metaTheme.setAttribute('content', '#1d1e19');
