@@ -69,6 +69,7 @@ import './sync/syncUI.js';
 import './cloudSync.js';
 import './shareManager.js';
 import './settings/settingsPreferences.js';
+import './settings/settingsThemeTab.js';
 import './accountManager.js';
 import './modalsFacade.js';
 
