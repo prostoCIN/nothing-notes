@@ -341,20 +341,20 @@
     font-weight: 700;
     cursor: pointer;
     font-family: inherit;
-    transition: all var(--dur-quick) var(--ease-ios-spring);
-    box-shadow: 0 2px 8px var(--accent-subtle);
+    transition: background var(--dur-quick) ease, border-color var(--dur-quick) ease, box-shadow var(--dur-quick) ease, transform var(--dur-quick) ease;
+    box-shadow: none;
     box-sizing: border-box;
 }
 
 .theme-save-preset-btn-large:hover {
     background: var(--accent-hover);
     border-style: solid;
-    transform: translateY(-1.5px);
-    box-shadow: 0 4px 16px var(--accent-glow);
+    border-color: var(--accent-color);
+    box-shadow: 0 0 14px var(--accent-glow);
 }
 
 .theme-save-preset-btn-large:active {
-    transform: scale(0.985);
+    transform: scale(0.99);
 }
 
 .theme-preset-create-form {
