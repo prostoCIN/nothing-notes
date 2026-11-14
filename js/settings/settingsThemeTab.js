@@ -627,19 +627,22 @@ window.App = window.App || {};
                 const isActive = id === activeId;
                 card.classList.toggle('active', isActive);
 
-                const infoWrap = card.querySelector('.theme-preset-info');
-                if (infoWrap) {
-                    let badge = infoWrap.querySelector('.theme-preset-active-badge');
-                    if (isActive) {
-                        if (!badge) {
-                            badge = document.createElement('span');
-                            badge.className = 'theme-preset-active-badge';
-                            badge.textContent = isUa ? 'Активний' : 'Active';
-                            infoWrap.appendChild(badge);
-                        }
-                    } else if (badge) {
-                        badge.remove();
+                let check = card.querySelector('.theme-preset-active-check');
+                if (isActive) {
+                    if (!check) {
+                        check = document.createElement('span');
+                        check.className = 'theme-preset-active-check';
+                        check.setAttribute('title', isUa ? 'Активний набір' : 'Active preset');
+                        check.innerHTML = `
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="16 9 10.5 14.5 8 12"></polyline>
+                            </svg>
+                        `;
+                        card.appendChild(check);
                     }
+                } else if (check) {
+                    check.remove();
                 }
             });
         },
@@ -658,6 +661,14 @@ window.App = window.App || {};
 
                 return `
                     <div class="theme-preset-card ${isActive ? 'active' : ''}" data-preset-id="${preset.id}" role="button" tabindex="0" title="${isUa ? 'Застосувати набір' : 'Apply preset'}">
+                        ${isActive ? `
+                            <span class="theme-preset-active-check" title="${isUa ? 'Активний набір' : 'Active preset'}">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="16 9 10.5 14.5 8 12"></polyline>
+                                </svg>
+                            </span>
+                        ` : ''}
                         <div class="theme-preset-swatches">
                             <span class="theme-preset-swatch" style="background-color: ${bgBase};" title="${isUa ? 'Фон' : 'Background'}: ${bgBase}"></span>
                             <span class="theme-preset-swatch" style="background-color: ${bgSurface};" title="${isUa ? 'Поверхня' : 'Surface'}: ${bgSurface}"></span>
@@ -666,7 +677,6 @@ window.App = window.App || {};
                         </div>
                         <div class="theme-preset-info">
                             <span class="theme-preset-name">${presetName}</span>
-                            ${isActive ? `<span class="theme-preset-active-badge">${isUa ? 'Активний' : 'Active'}</span>` : ''}
                         </div>
                         ${preset.isCustom ? `
                             <button type="button" class="theme-preset-delete-btn" data-delete-id="${preset.id}" title="${isUa ? 'Видалити пресет' : 'Delete preset'}">

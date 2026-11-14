@@ -498,16 +498,33 @@
     text-overflow: ellipsis;
 }
 
-.theme-preset-active-badge {
-    font-size: 9px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
+.theme-preset-active-check {
+    position: absolute;
+    top: 7px;
+    right: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
     color: var(--accent-color);
     background: var(--accent-subtle);
-    padding: 1.5px 4.5px;
-    border-radius: 4px;
-    flex-shrink: 0;
+    border: 1px solid var(--accent-border);
+    border-radius: 50%;
+    box-shadow: 0 1px 4px var(--accent-subtle);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.theme-preset-active-check svg {
+    width: 13px;
+    height: 13px;
+}
+
+/* Якщо на кастомному активному пресеті навести курсор, кнопка видалення плавно замінює галочку */
+.theme-preset-card:has(.theme-preset-delete-btn):hover .theme-preset-active-check {
+    opacity: 0;
 }
 
 .theme-preset-delete-btn {
@@ -525,6 +542,7 @@
     border-radius: 4px;
     cursor: pointer;
     opacity: 0;
+    z-index: 2;
     transition: opacity 0.15s ease, color 0.15s ease, background-color 0.15s ease;
 }
 
