@@ -780,26 +780,9 @@ window.App = window.App || {};
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     const id = btn.getAttribute('data-delete-id');
-                    const all = this.getAllPresets();
-                    const target = all.find(p => p.id === id);
-                    const pName = target ? target.name : '';
-                    const isUa = !window.App.i18n || (window.App.i18n.getLanguage && window.App.i18n.getLanguage() === 'ua');
-
-                    const doDelete = () => {
-                        this.deletePreset(id);
-                        this.refreshPresetsGrid(modalOverlayEl);
-                        this.updateActivePresetBadges(modalOverlayEl);
-                    };
-
-                    if (window.App.confirmModal && window.App.confirmModal.show) {
-                        window.App.confirmModal.show({
-                            title: isUa ? 'Видалити пресет?' : 'Delete preset?',
-                            desc: isUa ? `Видалити збережений пресет "${pName}"?` : `Delete saved preset "${pName}"?`,
-                            onConfirm: doDelete
-                        });
-                    } else if (confirm(isUa ? `Видалити пресет "${pName}"?` : `Delete preset "${pName}"?`)) {
-                        doDelete();
-                    }
+                    this.deletePreset(id);
+                    this.refreshPresetsGrid(modalOverlayEl);
+                    this.updateActivePresetBadges(modalOverlayEl);
                 });
             });
         },
