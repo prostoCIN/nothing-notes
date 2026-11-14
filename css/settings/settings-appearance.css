@@ -279,6 +279,239 @@
     gap: 12px;
 }
 
+/* ==========================================================================
+   Пресети та збережені набори кольорів теми
+   ========================================================================== */
+.theme-presets-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 12px 14px;
+}
+
+.theme-presets-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.theme-presets-title-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.theme-presets-title {
+    font-size: var(--font-sm);
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.theme-presets-subtitle {
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+}
+
+.theme-save-preset-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: var(--accent-subtle);
+    border: 1px solid var(--accent-border);
+    color: var(--accent-color);
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.theme-save-preset-btn:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+}
+
+.theme-preset-create-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: var(--bg-surface);
+    border: 1px solid var(--accent-border);
+    border-radius: 10px;
+    animation: menuFadeIn 0.15s ease-out;
+}
+
+.theme-preset-name-input {
+    flex: 1;
+    min-width: 140px;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    padding: 6px 10px;
+    color: var(--text-main);
+    font-size: 12px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s ease;
+}
+
+.theme-preset-name-input:focus {
+    border-color: var(--accent-color);
+}
+
+.theme-preset-submit-btn {
+    padding: 6px 12px;
+    background: var(--accent-color);
+    color: var(--accent-contrast, #ffffff);
+    border: none;
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity 0.15s ease;
+    white-space: nowrap;
+}
+
+.theme-preset-submit-btn:hover {
+    opacity: 0.9;
+}
+
+.theme-preset-cancel-btn {
+    padding: 6px 10px;
+    background: none;
+    color: var(--text-muted);
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+
+.theme-preset-cancel-btn:hover {
+    color: var(--text-main);
+    border-color: var(--border-strong);
+}
+
+.theme-presets-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+    gap: 8px;
+    width: 100%;
+}
+
+.theme-preset-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.theme-preset-card:hover {
+    border-color: var(--border-strong);
+    background: var(--hover-bg, rgba(255, 255, 255, 0.04));
+    transform: translateY(-1.5px);
+}
+
+.theme-preset-card.active {
+    border-color: var(--accent-color);
+    background: var(--accent-soft, rgba(22, 185, 129, 0.08));
+    box-shadow: 0 0 0 1px var(--accent-border);
+}
+
+.theme-preset-swatches {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.theme-preset-swatch {
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    flex-shrink: 0;
+}
+
+.theme-preset-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    min-width: 0;
+}
+
+.theme-preset-name {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.theme-preset-active-badge {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: var(--accent-color);
+    background: var(--accent-subtle);
+    padding: 1.5px 4.5px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.theme-preset-delete-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+}
+
+.theme-preset-card:hover .theme-preset-delete-btn {
+    opacity: 0.75;
+}
+
+.theme-preset-delete-btn:hover {
+    opacity: 1;
+    color: var(--danger-color);
+    background: var(--danger-subtle);
+}
+
 .theme-customizer-banner {
     display: flex;
     align-items: center;
@@ -496,6 +729,14 @@
     .theme-token-reset-btn {
         font-size: 12px;
         padding: 1px 2px;
+    }
+
+    .theme-presets-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .theme-preset-delete-btn {
+        opacity: 0.85;
     }
 }
 

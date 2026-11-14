@@ -1,8 +1,9 @@
-// js/settings/settingsThemeTab.js - Вкладка кастомізації теми оформлення та редагування root-кольорів
+// js/settings/settingsThemeTab.js - Вкладка кастомізації теми оформлення, редагування root-кольорів та збереження пресетів
 window.App = window.App || {};
 
 (function() {
     const STORAGE_KEY_CUSTOM_COLORS = 'nothing_notes_custom_colors';
+    const STORAGE_KEY_THEME_PRESETS = 'nothing_notes_theme_presets';
 
     const CUSTOM_TOKEN_GROUPS = [
         {
@@ -125,6 +126,117 @@ window.App = window.App || {};
         }
     ];
 
+    const BUILTIN_PRESETS = [
+        {
+            id: 'builtin_forest',
+            nameUa: 'Темний ліс',
+            nameEn: 'Forest (Default)',
+            isCustom: false,
+            colors: {
+                '--bg-base': '#1d1e19',
+                '--bg-surface': '#272822',
+                '--bg-elevated': '#32332c',
+                '--bg-subtle': '#22231d',
+                '--text-main': '#f8f8f2',
+                '--text-muted': '#8c8d84',
+                '--border-subtle': '#3a3b33',
+                '--border-strong': '#5a5b4c',
+                '--accent-color': '#16b981',
+                '--danger-color': '#f92672'
+            }
+        },
+        {
+            id: 'builtin_obsidian',
+            nameUa: 'OLED Обсидіан',
+            nameEn: 'OLED Obsidian',
+            isCustom: false,
+            colors: {
+                '--bg-base': '#050507',
+                '--bg-surface': '#101114',
+                '--bg-elevated': '#181920',
+                '--bg-subtle': '#0d0e12',
+                '--text-main': '#f3f4f6',
+                '--text-muted': '#71717a',
+                '--border-subtle': '#20222a',
+                '--border-strong': '#383b47',
+                '--accent-color': '#3b82f6',
+                '--danger-color': '#ef4444'
+            }
+        },
+        {
+            id: 'builtin_cyberpunk',
+            nameUa: 'Синтвейв Неон',
+            nameEn: 'Synthwave Neon',
+            isCustom: false,
+            colors: {
+                '--bg-base': '#0e1017',
+                '--bg-surface': '#171a26',
+                '--bg-elevated': '#202536',
+                '--bg-subtle': '#121520',
+                '--text-main': '#f1f5f9',
+                '--text-muted': '#8899ac',
+                '--border-subtle': '#282e44',
+                '--border-strong': '#424c6e',
+                '--accent-color': '#ec4899',
+                '--danger-color': '#f43f5e'
+            }
+        },
+        {
+            id: 'builtin_mocha',
+            nameUa: 'Теплий Мокко',
+            nameEn: 'Warm Mocha',
+            isCustom: false,
+            colors: {
+                '--bg-base': '#181411',
+                '--bg-surface': '#231d18',
+                '--bg-elevated': '#2f2721',
+                '--bg-subtle': '#1d1814',
+                '--text-main': '#f5efe6',
+                '--text-muted': '#9e9184',
+                '--border-subtle': '#3b322a',
+                '--border-strong': '#574a3f',
+                '--accent-color': '#f59e0b',
+                '--danger-color': '#e11d48'
+            }
+        },
+        {
+            id: 'builtin_nordic',
+            nameUa: 'Нордичний Сизий',
+            nameEn: 'Nordic Frost',
+            isCustom: false,
+            colors: {
+                '--bg-base': '#11161d',
+                '--bg-surface': '#182029',
+                '--bg-elevated': '#222c38',
+                '--bg-subtle': '#141a22',
+                '--text-main': '#f0f6fc',
+                '--text-muted': '#7d8f9f',
+                '--border-subtle': '#283544',
+                '--border-strong': '#3d4f66',
+                '--accent-color': '#06b6d4',
+                '--danger-color': '#f87171'
+            }
+        },
+        {
+            id: 'builtin_amethyst',
+            nameUa: 'Глибокий Аметист',
+            nameEn: 'Deep Amethyst',
+            isCustom: false,
+            colors: {
+                '--bg-base': '#130f1c',
+                '--bg-surface': '#1d172b',
+                '--bg-elevated': '#271f3a',
+                '--bg-subtle': '#161121',
+                '--text-main': '#f5f3ff',
+                '--text-muted': '#8f85a4',
+                '--border-subtle': '#342a4d',
+                '--border-strong': '#4f3f75',
+                '--accent-color': '#a855f7',
+                '--danger-color': '#fb7185'
+            }
+        }
+    ];
+
     function hexToRgba(hex, alpha) {
         if (!hex || typeof hex !== 'string') return null;
         let c = hex.replace('#', '').trim();
@@ -151,6 +263,7 @@ window.App = window.App || {};
 
     const settingsThemeTab = {
         CUSTOM_TOKEN_GROUPS,
+        BUILTIN_PRESETS,
 
         getCustomColors() {
             try {
@@ -167,6 +280,51 @@ window.App = window.App || {};
             } catch (e) {
                 console.warn('[SettingsThemeTab] Помилка збереження кольорів:', e);
             }
+        },
+
+        getSavedPresets() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY_THEME_PRESETS);
+                return raw ? JSON.parse(raw) : [];
+            } catch (e) {
+                return [];
+            }
+        },
+
+        saveSavedPresets(presets) {
+            try {
+                localStorage.setItem(STORAGE_KEY_THEME_PRESETS, JSON.stringify(presets));
+            } catch (e) {
+                console.warn('[SettingsThemeTab] Помилка збереження пресетів:', e);
+            }
+        },
+
+        getAllPresets() {
+            const saved = this.getSavedPresets();
+            return [...BUILTIN_PRESETS, ...saved];
+        },
+
+        isPresetActive(preset) {
+            if (!preset || !preset.colors) return false;
+            const currentColors = this.getCustomColors();
+            for (const group of CUSTOM_TOKEN_GROUPS) {
+                for (const token of group.tokens) {
+                    const activeVal = (currentColors[token.key] || token.default).toLowerCase();
+                    const presetVal = (preset.colors[token.key] || token.default).toLowerCase();
+                    if (activeVal !== presetVal) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        },
+
+        getActivePresetId() {
+            const all = this.getAllPresets();
+            for (const p of all) {
+                if (this.isPresetActive(p)) return p.id;
+            }
+            return null;
         },
 
         applyCustomColors() {
@@ -251,6 +409,7 @@ window.App = window.App || {};
 
             this.saveCustomColors(colors);
             this.applyCustomColors();
+            this.updateActivePresetBadges();
         },
 
         getDefaultColor(tokenKey) {
@@ -308,6 +467,7 @@ window.App = window.App || {};
 
             const defaultColor = this.getDefaultColor(key);
             this.updateTokenRowState(key, defaultColor);
+            this.updateActivePresetBadges();
         },
 
         resetAll() {
@@ -337,6 +497,177 @@ window.App = window.App || {};
             if (metaTheme) metaTheme.setAttribute('content', '#1d1e19');
 
             this.applyCustomColors();
+            this.updateActivePresetBadges();
+        },
+
+        applyPreset(presetId) {
+            const all = this.getAllPresets();
+            const preset = all.find(p => p.id === presetId);
+            if (!preset) return;
+
+            if (preset.id === 'builtin_forest') {
+                this.resetAll();
+                return;
+            }
+
+            const colorsToSave = {};
+            for (const group of CUSTOM_TOKEN_GROUPS) {
+                for (const token of group.tokens) {
+                    const val = preset.colors[token.key] || token.default;
+                    if (val.toLowerCase() !== token.default.toLowerCase()) {
+                        colorsToSave[token.key] = val.toLowerCase();
+                    }
+                }
+            }
+
+            this.saveCustomColors(colorsToSave);
+            this.applyCustomColors();
+
+            // Оновлюємо стан інпутів і свотчів у списку токенів
+            for (const group of CUSTOM_TOKEN_GROUPS) {
+                for (const token of group.tokens) {
+                    const effectiveColor = preset.colors[token.key] || token.default;
+                    this.updateTokenRowState(token.key, effectiveColor);
+                }
+            }
+
+            this.updateActivePresetBadges();
+        },
+
+        saveCurrentAsPreset(name) {
+            const cleanName = (name || '').trim();
+            if (!cleanName) return null;
+
+            const currentColors = this.getCustomColors();
+            const fullSnapshot = {};
+            for (const group of CUSTOM_TOKEN_GROUPS) {
+                for (const token of group.tokens) {
+                    fullSnapshot[token.key] = (currentColors[token.key] || token.default).toLowerCase();
+                }
+            }
+
+            const newPreset = {
+                id: 'custom_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                name: cleanName,
+                isCustom: true,
+                colors: fullSnapshot,
+                createdAt: Date.now()
+            };
+
+            const saved = this.getSavedPresets();
+            saved.push(newPreset);
+            this.saveSavedPresets(saved);
+
+            return newPreset;
+        },
+
+        deletePreset(presetId) {
+            let saved = this.getSavedPresets();
+            saved = saved.filter(p => p.id !== presetId);
+            this.saveSavedPresets(saved);
+        },
+
+        updateActivePresetBadges(container = document) {
+            const activeId = this.getActivePresetId();
+            const isUa = !window.App.i18n || (window.App.i18n.getLanguage && window.App.i18n.getLanguage() === 'ua');
+
+            container.querySelectorAll('.theme-preset-card').forEach(card => {
+                const id = card.getAttribute('data-preset-id');
+                const isActive = id === activeId;
+                card.classList.toggle('active', isActive);
+
+                const infoWrap = card.querySelector('.theme-preset-info');
+                if (infoWrap) {
+                    let badge = infoWrap.querySelector('.theme-preset-active-badge');
+                    if (isActive) {
+                        if (!badge) {
+                            badge = document.createElement('span');
+                            badge.className = 'theme-preset-active-badge';
+                            badge.textContent = isUa ? 'Активний' : 'Active';
+                            infoWrap.appendChild(badge);
+                        }
+                    } else if (badge) {
+                        badge.remove();
+                    }
+                }
+            });
+        },
+
+        renderPresetsCardsHTML(isUa) {
+            const allPresets = this.getAllPresets();
+            const activeId = this.getActivePresetId();
+
+            return allPresets.map(preset => {
+                const presetName = preset.isCustom ? preset.name : (isUa ? preset.nameUa : preset.nameEn);
+                const isActive = preset.id === activeId;
+                const bgBase = preset.colors['--bg-base'] || '#1d1e19';
+                const bgSurface = preset.colors['--bg-surface'] || '#272822';
+                const accent = preset.colors['--accent-color'] || '#16b981';
+                const textMain = preset.colors['--text-main'] || '#f8f8f2';
+
+                return `
+                    <div class="theme-preset-card ${isActive ? 'active' : ''}" data-preset-id="${preset.id}" role="button" tabindex="0" title="${isUa ? 'Застосувати набір' : 'Apply preset'}">
+                        <div class="theme-preset-swatches">
+                            <span class="theme-preset-swatch" style="background-color: ${bgBase};" title="${isUa ? 'Фон' : 'Background'}: ${bgBase}"></span>
+                            <span class="theme-preset-swatch" style="background-color: ${bgSurface};" title="${isUa ? 'Поверхня' : 'Surface'}: ${bgSurface}"></span>
+                            <span class="theme-preset-swatch" style="background-color: ${accent};" title="${isUa ? 'Акцент' : 'Accent'}: ${accent}"></span>
+                            <span class="theme-preset-swatch" style="background-color: ${textMain};" title="${isUa ? 'Текст' : 'Text'}: ${textMain}"></span>
+                        </div>
+                        <div class="theme-preset-info">
+                            <span class="theme-preset-name">${presetName}</span>
+                            ${isActive ? `<span class="theme-preset-active-badge">${isUa ? 'Активний' : 'Active'}</span>` : ''}
+                        </div>
+                        ${preset.isCustom ? `
+                            <button type="button" class="theme-preset-delete-btn" data-delete-id="${preset.id}" title="${isUa ? 'Видалити пресет' : 'Delete preset'}">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        },
+
+        renderPresetsSectionHTML(isUa) {
+            return `
+                <div class="theme-presets-section">
+                    <div class="theme-presets-header">
+                        <div class="theme-presets-title-wrap">
+                            <span class="theme-presets-title">${isUa ? 'Колекції та набори теми' : 'Theme Presets & Palettes'}</span>
+                            <span class="theme-presets-subtitle">${isUa ? 'Оберіть стиль в один клік або збережіть свою комбінацію' : 'Choose a style in one click or save your own'}</span>
+                        </div>
+                        <button type="button" class="theme-save-preset-btn" id="theme-save-preset-btn">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            <span>${isUa ? 'Зберегти як пресет' : 'Save as preset'}</span>
+                        </button>
+                    </div>
+
+                    <div class="theme-preset-create-form" id="theme-preset-create-form" style="display: none;">
+                        <input type="text" class="theme-preset-name-input" id="theme-preset-name-input" placeholder="${isUa ? 'Введіть назву пресету...' : 'Preset name...'}" maxlength="32" autocomplete="off" spellcheck="false">
+                        <button type="button" class="theme-preset-submit-btn" id="theme-preset-submit-btn">${isUa ? 'Зберегти' : 'Save'}</button>
+                        <button type="button" class="theme-preset-cancel-btn" id="theme-preset-cancel-btn">${isUa ? 'Скасувати' : 'Cancel'}</button>
+                    </div>
+
+                    <div class="theme-presets-grid" id="theme-presets-grid">
+                        ${this.renderPresetsCardsHTML(isUa)}
+                    </div>
+                </div>
+            `;
+        },
+
+        refreshPresetsGrid(modalOverlayEl) {
+            if (!modalOverlayEl) modalOverlayEl = document.querySelector('.modal-overlay');
+            if (!modalOverlayEl) return;
+            const grid = modalOverlayEl.querySelector('#theme-presets-grid');
+            if (!grid) return;
+            const isUa = !window.App.i18n || (window.App.i18n.getLanguage && window.App.i18n.getLanguage() === 'ua');
+            grid.innerHTML = this.renderPresetsCardsHTML(isUa);
+            this.bindPresetCardEvents(modalOverlayEl);
         },
 
         renderHTML(isVisible) {
@@ -385,8 +716,8 @@ window.App = window.App || {};
                 <div class="settings-tab-content settings-theme-customizer" id="settings-tab-theme" style="display: ${isVisible ? 'flex' : 'none'};">
                     <div class="theme-customizer-banner">
                         <div class="theme-customizer-banner-info">
-                            <span class="theme-customizer-banner-title">${isUa ? 'Базова тема: Темний ліс' : 'Base Theme: Forest'}</span>
-                            <span class="theme-customizer-banner-desc">${isUa ? 'Змінюйте кольори в реальному часі за допомогою палітри' : 'Customize colors in real-time using color pickers'}</span>
+                            <span class="theme-customizer-banner-title">${isUa ? 'Палітра оформлення інтерфейсу' : 'Interface Theme Palette'}</span>
+                            <span class="theme-customizer-banner-desc">${isUa ? 'Керуйте глобальними кольорами сторінки або збережіть свій стиль' : 'Manage global theme colors or save your custom style'}</span>
                         </div>
                         <button type="button" class="theme-reset-all-btn" id="theme-reset-all-btn">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -397,15 +728,136 @@ window.App = window.App || {};
                         </button>
                     </div>
 
+                    ${this.renderPresetsSectionHTML(isUa)}
+
                     ${groupsHTML}
                 </div>
             `;
         },
 
+        bindPresetCardEvents(modalOverlayEl) {
+            if (!modalOverlayEl) return;
+
+            modalOverlayEl.querySelectorAll('.theme-preset-card').forEach(card => {
+                card.addEventListener('click', (e) => {
+                    if (e.target.closest('.theme-preset-delete-btn')) return;
+                    const id = card.getAttribute('data-preset-id');
+                    this.applyPreset(id);
+                });
+
+                card.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        if (e.target.closest('.theme-preset-delete-btn')) return;
+                        e.preventDefault();
+                        const id = card.getAttribute('data-preset-id');
+                        this.applyPreset(id);
+                    }
+                });
+            });
+
+            modalOverlayEl.querySelectorAll('.theme-preset-delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = btn.getAttribute('data-delete-id');
+                    const all = this.getAllPresets();
+                    const target = all.find(p => p.id === id);
+                    const pName = target ? target.name : '';
+                    const isUa = !window.App.i18n || (window.App.i18n.getLanguage && window.App.i18n.getLanguage() === 'ua');
+
+                    const doDelete = () => {
+                        this.deletePreset(id);
+                        this.refreshPresetsGrid(modalOverlayEl);
+                        this.updateActivePresetBadges(modalOverlayEl);
+                    };
+
+                    if (window.App.confirmModal && window.App.confirmModal.show) {
+                        window.App.confirmModal.show({
+                            title: isUa ? 'Видалити пресет?' : 'Delete preset?',
+                            desc: isUa ? `Видалити збережений пресет "${pName}"?` : `Delete saved preset "${pName}"?`,
+                            onConfirm: doDelete
+                        });
+                    } else if (confirm(isUa ? `Видалити пресет "${pName}"?` : `Delete preset "${pName}"?`)) {
+                        doDelete();
+                    }
+                });
+            });
+        },
+
+        bindPresetEvents(modalOverlayEl) {
+            if (!modalOverlayEl) return;
+
+            const saveBtn = modalOverlayEl.querySelector('#theme-save-preset-btn');
+            const createForm = modalOverlayEl.querySelector('#theme-preset-create-form');
+            const nameInput = modalOverlayEl.querySelector('#theme-preset-name-input');
+            const submitBtn = modalOverlayEl.querySelector('#theme-preset-submit-btn');
+            const cancelBtn = modalOverlayEl.querySelector('#theme-preset-cancel-btn');
+
+            if (saveBtn && createForm) {
+                saveBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isVisible = createForm.style.display !== 'none';
+                    createForm.style.display = isVisible ? 'none' : 'flex';
+                    if (!isVisible && nameInput) {
+                        nameInput.value = '';
+                        setTimeout(() => nameInput.focus(), 60);
+                    }
+                });
+            }
+
+            const handleCreate = () => {
+                if (!nameInput) return;
+                const name = nameInput.value.trim();
+                if (!name) {
+                    nameInput.focus();
+                    return;
+                }
+                const preset = this.saveCurrentAsPreset(name);
+                if (preset) {
+                    createForm.style.display = 'none';
+                    nameInput.value = '';
+                    this.refreshPresetsGrid(modalOverlayEl);
+                    this.updateActivePresetBadges(modalOverlayEl);
+                }
+            };
+
+            if (submitBtn) {
+                submitBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    handleCreate();
+                });
+            }
+
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (createForm) createForm.style.display = 'none';
+                    if (nameInput) nameInput.value = '';
+                });
+            }
+
+            if (nameInput) {
+                nameInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleCreate();
+                    } else if (e.key === 'Escape') {
+                        e.preventDefault();
+                        if (createForm) createForm.style.display = 'none';
+                        nameInput.value = '';
+                    }
+                });
+            }
+
+            this.bindPresetCardEvents(modalOverlayEl);
+        },
+
         bindEvents(modalOverlayEl) {
             if (!modalOverlayEl) return;
 
-            // 1. Відкриття кастомного NothingNotes калорпікера по кліку на свотч
+            // 1. Події системи пресетів
+            this.bindPresetEvents(modalOverlayEl);
+
+            // 2. Відкриття кастомного NothingNotes калорпікера по кліку на свотч
             const swatchWraps = modalOverlayEl.querySelectorAll('.theme-color-swatch-wrap');
             swatchWraps.forEach(wrap => {
                 const handleOpenPicker = (e) => {
@@ -442,7 +894,7 @@ window.App = window.App || {};
                 });
             });
 
-            // 2. Редагування кольору через поле введення HEX
+            // 3. Редагування кольору через поле введення HEX
             const hexInputs = modalOverlayEl.querySelectorAll('.theme-hex-input');
             hexInputs.forEach(input => {
                 input.addEventListener('input', (e) => {
@@ -469,7 +921,7 @@ window.App = window.App || {};
                 });
             });
 
-            // 3. Скинути всі кольори до стандартних
+            // 4. Скинути всі кольори до стандартних
             const resetAllBtn = modalOverlayEl.querySelector('#theme-reset-all-btn');
             if (resetAllBtn) {
                 resetAllBtn.addEventListener('click', () => {
@@ -477,7 +929,7 @@ window.App = window.App || {};
                 });
             }
 
-            // 4. Скинути окремий колір
+            // 5. Скинути окремий колір
             const resetTokenBtns = modalOverlayEl.querySelectorAll('.theme-token-reset-btn');
             resetTokenBtns.forEach(btn => {
                 btn.addEventListener('click', (e) => {
