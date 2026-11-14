@@ -267,37 +267,42 @@ window.App = window.App || {};
 
         getCurrentUserId() {
             try {
+                // 1. Якщо сесія вже в оперативній пам'яті
                 const cs = window.App.cloudSync;
                 const user = cs && cs.getCurrentUser ? cs.getCurrentUser() : null;
-                return user && user.id ? user.id : null;
+                if (user && user.id) return user.id;
+
+                // 2. Якщо додаток щойно перезавантажився, перевіряємо збережений акаунт (синхронно в 0 мс)
+                const rawAccounts = localStorage.getItem('nothing_notes_saved_accounts');
+                if (rawAccounts) {
+                    const accs = JSON.parse(rawAccounts);
+                    const activeAcc = Array.isArray(accs) ? (accs.find(a => a.is_active) || accs[0]) : null;
+                    if (activeAcc && activeAcc.id) return activeAcc.id;
+                }
+
+                // 3. Також перевіряємо сесійний токен Supabase
+                for (let i = 0; i < localStorage.length; i++) {
+                    const k = localStorage.key(i);
+                    if (k && k.startsWith('sb-') && k.endsWith('-auth-token')) {
+                        const val = JSON.parse(localStorage.getItem(k));
+                        if (val && val.user && val.user.id) return val.user.id;
+                    }
+                }
+                return null;
             } catch (e) {
                 return null;
             }
         },
 
-        getCustomColorsStorageKey() {
-            const uid = this.getCurrentUserId();
-            return uid ? `${STORAGE_KEY_CUSTOM_COLORS}_${uid}` : STORAGE_KEY_CUSTOM_COLORS;
-        },
-
-        getThemePresetsStorageKey() {
-            const uid = this.getCurrentUserId();
-            return uid ? `${STORAGE_KEY_THEME_PRESETS}_${uid}` : STORAGE_KEY_THEME_PRESETS;
-        },
-
         getCustomColors() {
             try {
-                const key = this.getCustomColorsStorageKey();
-                let raw = localStorage.getItem(key);
-                if (!raw && key !== STORAGE_KEY_CUSTOM_COLORS) {
-                    const legacy = localStorage.getItem(STORAGE_KEY_CUSTOM_COLORS);
-                    if (legacy) {
-                        localStorage.setItem(key, legacy);
-                        localStorage.removeItem(STORAGE_KEY_CUSTOM_COLORS);
-                        raw = legacy;
-                    }
-                } else if (raw && key !== STORAGE_KEY_CUSTOM_COLORS) {
-                    localStorage.removeItem(STORAGE_KEY_CUSTOM_COLORS);
+                const uid = this.getCurrentUserId();
+                let raw = null;
+                if (uid) {
+                    raw = localStorage.getItem(`${STORAGE_KEY_CUSTOM_COLORS}_${uid}`);
+                }
+                if (!raw) {
+                    raw = localStorage.getItem(STORAGE_KEY_CUSTOM_COLORS);
                 }
                 return raw ? JSON.parse(raw) : {};
             } catch (e) {
@@ -307,13 +312,19 @@ window.App = window.App || {};
 
         saveCustomColors(colors, syncToCloud = true) {
             try {
-                const key = this.getCustomColorsStorageKey();
-                if (colors && Object.keys(colors).length > 0) {
-                    localStorage.setItem(key, JSON.stringify(colors));
+                const uid = this.getCurrentUserId();
+                const json = colors && Object.keys(colors).length > 0 ? JSON.stringify(colors) : null;
+                if (json) {
+                    localStorage.setItem(STORAGE_KEY_CUSTOM_COLORS, json);
+                    if (uid) {
+                        localStorage.setItem(`${STORAGE_KEY_CUSTOM_COLORS}_${uid}`, json);
+                    }
                 } else {
-                    localStorage.removeItem(key);
+                    localStorage.removeItem(STORAGE_KEY_CUSTOM_COLORS);
+                    if (uid) {
+                        localStorage.removeItem(`${STORAGE_KEY_CUSTOM_COLORS}_${uid}`);
+                    }
                 }
-                localStorage.removeItem(STORAGE_KEY_CUSTOM_COLORS);
             } catch (e) {
                 console.warn('[SettingsThemeTab] Помилка збереження кольорів:', e);
             }
@@ -324,17 +335,18 @@ window.App = window.App || {};
 
         getSavedPresets() {
             try {
-                const key = this.getThemePresetsStorageKey();
+                const uid = this.getCurrentUserId();
+                if (!uid) return [];
+                const key = `${STORAGE_KEY_THEME_PRESETS}_${uid}`;
                 let raw = localStorage.getItem(key);
-                if (!raw && key !== STORAGE_KEY_THEME_PRESETS) {
+                if (!raw) {
+                    // Якщо в ключі користувача ще пусто, але є старий локальний набір — переносимо його до акаунту
                     const legacy = localStorage.getItem(STORAGE_KEY_THEME_PRESETS);
                     if (legacy) {
                         localStorage.setItem(key, legacy);
                         localStorage.removeItem(STORAGE_KEY_THEME_PRESETS);
                         raw = legacy;
                     }
-                } else if (raw && key !== STORAGE_KEY_THEME_PRESETS) {
-                    localStorage.removeItem(STORAGE_KEY_THEME_PRESETS);
                 }
                 return raw ? JSON.parse(raw) : [];
             } catch (e) {
@@ -344,7 +356,9 @@ window.App = window.App || {};
 
         saveSavedPresets(presets, syncToCloud = true) {
             try {
-                const key = this.getThemePresetsStorageKey();
+                const uid = this.getCurrentUserId();
+                if (!uid) return;
+                const key = `${STORAGE_KEY_THEME_PRESETS}_${uid}`;
                 localStorage.setItem(key, JSON.stringify(presets));
                 localStorage.removeItem(STORAGE_KEY_THEME_PRESETS);
             } catch (e) {
@@ -388,32 +402,29 @@ window.App = window.App || {};
             const cloudColors = meta.custom_colors;
             const uid = user.id;
 
-            // 1. Пресети: якщо є в хмарі — завантажуємо в локальний кеш користувача
+            // 1. Пресети акаунта: якщо є в хмарі — оновлюємо локальний кеш акаунта
             if (Array.isArray(cloudPresets)) {
-                const key = `${STORAGE_KEY_THEME_PRESETS}_${uid}`;
-                localStorage.setItem(key, JSON.stringify(cloudPresets));
+                localStorage.setItem(`${STORAGE_KEY_THEME_PRESETS}_${uid}`, JSON.stringify(cloudPresets));
                 localStorage.removeItem(STORAGE_KEY_THEME_PRESETS);
             } else {
-                // Якщо в хмарі ще нема, але в локальному кеші є — синхронізуємо в акаунт
+                // Якщо в хмарі ще нема пресетів, але в акаунті локально є — відправляємо в хмару
                 const localPresets = this.getSavedPresets();
                 if (localPresets.length > 0) {
                     this.syncThemesToCloud();
                 }
             }
 
-            // 2. Кольори: якщо є в хмарі — застосовуємо
+            // 2. Кольори теми акаунта
             if (cloudColors && typeof cloudColors === 'object' && Object.keys(cloudColors).length > 0) {
-                const key = `${STORAGE_KEY_CUSTOM_COLORS}_${uid}`;
-                localStorage.setItem(key, JSON.stringify(cloudColors));
-                localStorage.removeItem(STORAGE_KEY_CUSTOM_COLORS);
+                this.saveCustomColors(cloudColors, false);
                 this.applyCustomColors();
             } else if (meta.hasOwnProperty('custom_colors') && Object.keys(cloudColors || {}).length === 0) {
-                const key = `${STORAGE_KEY_CUSTOM_COLORS}_${uid}`;
-                localStorage.removeItem(key);
-                localStorage.removeItem(STORAGE_KEY_CUSTOM_COLORS);
                 this.resetAll();
             } else {
-                this.applyCustomColors();
+                const current = this.getCustomColors();
+                if (Object.keys(current).length > 0) {
+                    this.syncThemesToCloud();
+                }
             }
 
             this.updateActivePresetBadges();
@@ -610,9 +621,11 @@ window.App = window.App || {};
         resetAll() {
             if (window.App.colorPickerPopover) window.App.colorPickerPopover.close();
             try {
-                const key = this.getCustomColorsStorageKey();
-                localStorage.removeItem(key);
+                const uid = this.getCurrentUserId();
                 localStorage.removeItem(STORAGE_KEY_CUSTOM_COLORS);
+                if (uid) {
+                    localStorage.removeItem(`${STORAGE_KEY_CUSTOM_COLORS}_${uid}`);
+                }
             } catch (e) {}
 
             const root = document.documentElement;
