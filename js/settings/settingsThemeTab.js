@@ -4,6 +4,8 @@ window.App = window.App || {};
 (function() {
     const STORAGE_KEY_CUSTOM_COLORS = 'nothing_notes_custom_colors';
     const STORAGE_KEY_THEME_PRESETS = 'nothing_notes_theme_presets';
+    const STORAGE_KEY_ACTIVE_PRESET = 'nothing_notes_active_preset';
+    let _syncThemesTimer = null;
 
     const CUSTOM_TOKEN_GROUPS = [
         {
@@ -265,27 +267,55 @@ window.App = window.App || {};
         CUSTOM_TOKEN_GROUPS,
         BUILTIN_PRESETS,
 
+        migrateLegacyStorage(uid) {
+            try {
+                if (uid) {
+                    const legacyPresets = localStorage.getItem(STORAGE_KEY_THEME_PRESETS);
+                    const userPresetsKey = `${STORAGE_KEY_THEME_PRESETS}_${uid}`;
+                    if (legacyPresets) {
+                        if (!localStorage.getItem(userPresetsKey)) {
+                            localStorage.setItem(userPresetsKey, legacyPresets);
+                        }
+                        localStorage.removeItem(STORAGE_KEY_THEME_PRESETS);
+                    }
+
+                    const legacyColors = localStorage.getItem(STORAGE_KEY_CUSTOM_COLORS);
+                    const userColorsKey = `${STORAGE_KEY_CUSTOM_COLORS}_${uid}`;
+                    if (legacyColors) {
+                        if (!localStorage.getItem(userColorsKey)) {
+                            localStorage.setItem(userColorsKey, legacyColors);
+                        }
+                        localStorage.removeItem(STORAGE_KEY_CUSTOM_COLORS);
+                    }
+                } else {
+                    localStorage.removeItem(STORAGE_KEY_THEME_PRESETS);
+                    localStorage.removeItem(STORAGE_KEY_CUSTOM_COLORS);
+                }
+            } catch (e) {}
+        },
+
         getCurrentUserId() {
             try {
-                // 1. Якщо сесія вже в оперативній пам'яті
+                // 1. Сесія користувача в оперативній пам'яті cloudSync
                 const cs = window.App.cloudSync;
                 const user = cs && cs.getCurrentUser ? cs.getCurrentUser() : null;
                 if (user && user.id) return user.id;
 
-                // 2. Якщо додаток щойно перезавантажився, перевіряємо збережений акаунт (синхронно в 0 мс)
-                const rawAccounts = localStorage.getItem('nothing_notes_saved_accounts');
-                if (rawAccounts) {
-                    const accs = JSON.parse(rawAccounts);
-                    const activeAcc = Array.isArray(accs) ? (accs.find(a => a.is_active) || accs[0]) : null;
-                    if (activeAcc && activeAcc.id) return activeAcc.id;
-                }
+                // 2. Активний ID акаунта, зафіксований при вході / перемиканні
+                const activeUid = localStorage.getItem('nothing_notes_active_account_id');
+                if (activeUid) return activeUid;
 
-                // 3. Також перевіряємо сесійний токен Supabase
+                // 3. Сесійний токен клієнта Supabase в localStorage
                 for (let i = 0; i < localStorage.length; i++) {
                     const k = localStorage.key(i);
                     if (k && k.startsWith('sb-') && k.endsWith('-auth-token')) {
-                        const val = JSON.parse(localStorage.getItem(k));
-                        if (val && val.user && val.user.id) return val.user.id;
+                        const raw = localStorage.getItem(k);
+                        if (raw) {
+                            const val = JSON.parse(raw);
+                            if (val && val.access_token && val.user && val.user.id) {
+                                return val.user.id;
+                            }
+                        }
                     }
                 }
                 return null;
@@ -297,14 +327,25 @@ window.App = window.App || {};
         getCustomColors() {
             try {
                 const uid = this.getCurrentUserId();
-                let raw = null;
-                if (uid) {
-                    raw = localStorage.getItem(`${STORAGE_KEY_CUSTOM_COLORS}_${uid}`);
+                const colorsKey = uid ? `${STORAGE_KEY_CUSTOM_COLORS}_${uid}` : `${STORAGE_KEY_CUSTOM_COLORS}_guest`;
+                const activeKey = uid ? `${STORAGE_KEY_ACTIVE_PRESET}_${uid}` : `${STORAGE_KEY_ACTIVE_PRESET}_guest`;
+
+                let raw = localStorage.getItem(colorsKey);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (parsed && typeof parsed === 'object') return parsed;
                 }
-                if (!raw) {
-                    raw = localStorage.getItem(STORAGE_KEY_CUSTOM_COLORS);
+
+                // Якщо збережених кастомних кольорів немає, перевіряємо активний пресет
+                const activeId = localStorage.getItem(activeKey);
+                if (activeId && activeId !== 'builtin_forest') {
+                    const all = this.getAllPresets();
+                    const p = all.find(item => item.id === activeId);
+                    if (p && p.colors) {
+                        return { ...p.colors };
+                    }
                 }
-                return raw ? JSON.parse(raw) : {};
+                return {};
             } catch (e) {
                 return {};
             }
@@ -313,18 +354,14 @@ window.App = window.App || {};
         saveCustomColors(colors, syncToCloud = true) {
             try {
                 const uid = this.getCurrentUserId();
+                const colorsKey = uid ? `${STORAGE_KEY_CUSTOM_COLORS}_${uid}` : `${STORAGE_KEY_CUSTOM_COLORS}_guest`;
                 const json = colors && Object.keys(colors).length > 0 ? JSON.stringify(colors) : null;
                 if (json) {
-                    localStorage.setItem(STORAGE_KEY_CUSTOM_COLORS, json);
-                    if (uid) {
-                        localStorage.setItem(`${STORAGE_KEY_CUSTOM_COLORS}_${uid}`, json);
-                    }
+                    localStorage.setItem(colorsKey, json);
                 } else {
-                    localStorage.removeItem(STORAGE_KEY_CUSTOM_COLORS);
-                    if (uid) {
-                        localStorage.removeItem(`${STORAGE_KEY_CUSTOM_COLORS}_${uid}`);
-                    }
+                    localStorage.removeItem(colorsKey);
                 }
+                localStorage.removeItem(STORAGE_KEY_CUSTOM_COLORS);
             } catch (e) {
                 console.warn('[SettingsThemeTab] Помилка збереження кольорів:', e);
             }
@@ -340,13 +377,8 @@ window.App = window.App || {};
                 const key = `${STORAGE_KEY_THEME_PRESETS}_${uid}`;
                 let raw = localStorage.getItem(key);
                 if (!raw) {
-                    // Якщо в ключі користувача ще пусто, але є старий локальний набір — переносимо його до акаунту
-                    const legacy = localStorage.getItem(STORAGE_KEY_THEME_PRESETS);
-                    if (legacy) {
-                        localStorage.setItem(key, legacy);
-                        localStorage.removeItem(STORAGE_KEY_THEME_PRESETS);
-                        raw = legacy;
-                    }
+                    this.migrateLegacyStorage(uid);
+                    raw = localStorage.getItem(key);
                 }
                 return raw ? JSON.parse(raw) : [];
             } catch (e) {
@@ -365,30 +397,47 @@ window.App = window.App || {};
                 console.warn('[SettingsThemeTab] Помилка збереження пресетів:', e);
             }
             if (syncToCloud) {
-                this.syncThemesToCloud();
+                this.syncThemesToCloud(true);
             }
         },
 
-        async syncThemesToCloud() {
+        syncThemesToCloud(immediate = false) {
+            if (_syncThemesTimer) {
+                clearTimeout(_syncThemesTimer);
+                _syncThemesTimer = null;
+            }
+            if (immediate) {
+                return this._doSyncThemesToCloud();
+            }
+            _syncThemesTimer = setTimeout(() => {
+                this._doSyncThemesToCloud();
+            }, 600);
+        },
+
+        async _doSyncThemesToCloud() {
             try {
                 const supabase = window.App.supabase;
                 const cs = window.App.cloudSync;
                 const user = cs && cs.getCurrentUser ? cs.getCurrentUser() : null;
-                if (!supabase || !user) return;
+                if (!supabase || !user || !user.id) return;
 
                 const presets = this.getSavedPresets();
                 const colors = this.getCustomColors();
+                const activePresetKey = `${STORAGE_KEY_ACTIVE_PRESET}_${user.id}`;
+                const activePresetId = localStorage.getItem(activePresetKey) || this.getActivePresetId() || 'builtin_forest';
 
                 await supabase.auth.updateUser({
                     data: {
                         theme_presets: presets,
-                        custom_colors: colors
+                        custom_colors: colors,
+                        active_theme_preset_id: activePresetId
                     }
                 });
 
                 if (user.user_metadata) {
                     user.user_metadata.theme_presets = presets;
                     user.user_metadata.custom_colors = colors;
+                    user.user_metadata.active_theme_preset_id = activePresetId;
                 }
             } catch (err) {
                 console.warn('[SettingsThemeTab] Не вдалося синхронізувати тему з хмарою:', err);
@@ -396,39 +445,83 @@ window.App = window.App || {};
         },
 
         loadThemesFromCloud(user) {
-            if (!user) return;
+            if (!user || !user.id) return;
             const meta = user.user_metadata || {};
-            const cloudPresets = meta.theme_presets;
-            const cloudColors = meta.custom_colors;
             const uid = user.id;
 
-            // 1. Пресети акаунта: якщо є в хмарі — оновлюємо локальний кеш акаунта
-            if (Array.isArray(cloudPresets)) {
-                localStorage.setItem(`${STORAGE_KEY_THEME_PRESETS}_${uid}`, JSON.stringify(cloudPresets));
-                localStorage.removeItem(STORAGE_KEY_THEME_PRESETS);
-            } else {
-                // Якщо в хмарі ще нема пресетів, але в акаунті локально є — відправляємо в хмару
-                const localPresets = this.getSavedPresets();
-                if (localPresets.length > 0) {
-                    this.syncThemesToCloud();
+            // 1. Пресети акаунта: надійне злиття локальних та хмарних без втрат
+            const cloudPresets = Array.isArray(meta.theme_presets) ? meta.theme_presets : [];
+            const localPresets = this.getSavedPresets();
+
+            const mergedMap = new Map();
+            cloudPresets.forEach(p => {
+                if (p && p.id) mergedMap.set(p.id, p);
+            });
+
+            let hasLocalOnly = false;
+            localPresets.forEach(p => {
+                if (p && p.id && !mergedMap.has(p.id)) {
+                    mergedMap.set(p.id, p);
+                    hasLocalOnly = true;
                 }
+            });
+
+            const finalPresets = Array.from(mergedMap.values());
+            localStorage.setItem(`${STORAGE_KEY_THEME_PRESETS}_${uid}`, JSON.stringify(finalPresets));
+            localStorage.removeItem(STORAGE_KEY_THEME_PRESETS);
+
+            if (hasLocalOnly || (cloudPresets.length === 0 && finalPresets.length > 0)) {
+                this.syncThemesToCloud(true);
             }
 
-            // 2. Кольори теми акаунта
-            if (cloudColors && typeof cloudColors === 'object' && Object.keys(cloudColors).length > 0) {
-                this.saveCustomColors(cloudColors, false);
-                this.applyCustomColors();
-            } else if (meta.hasOwnProperty('custom_colors') && Object.keys(cloudColors || {}).length === 0) {
-                this.resetAll();
-            } else {
-                const current = this.getCustomColors();
-                if (Object.keys(current).length > 0) {
-                    this.syncThemesToCloud();
+            // 2. Активний пресет та кастомні кольори теми
+            const cloudActivePreset = meta.active_theme_preset_id;
+            const cloudColors = meta.custom_colors;
+            const activeKey = `${STORAGE_KEY_ACTIVE_PRESET}_${uid}`;
+            const colorsKey = `${STORAGE_KEY_CUSTOM_COLORS}_${uid}`;
+            const localActivePreset = localStorage.getItem(activeKey);
+            const localColorsRaw = localStorage.getItem(colorsKey);
+
+            if (cloudActivePreset) {
+                localStorage.setItem(activeKey, cloudActivePreset);
+                if (cloudColors && typeof cloudColors === 'object' && Object.keys(cloudColors).length > 0) {
+                    localStorage.setItem(colorsKey, JSON.stringify(cloudColors));
+                } else if (cloudActivePreset === 'builtin_forest') {
+                    localStorage.removeItem(colorsKey);
                 }
+                this.applyCustomColors();
+            } else if (cloudColors && typeof cloudColors === 'object' && Object.keys(cloudColors).length > 0) {
+                localStorage.setItem(colorsKey, JSON.stringify(cloudColors));
+                this.applyCustomColors();
+            } else if (localActivePreset || localColorsRaw) {
+                this.applyCustomColors();
+                this.syncThemesToCloud(true);
+            } else {
+                localStorage.setItem(activeKey, 'builtin_forest');
+                localStorage.removeItem(colorsKey);
+                this.applyCustomColors();
             }
 
             this.updateActivePresetBadges();
             this.refreshPresetsGrid();
+        },
+
+        onUserChanged(user) {
+            if (user && user.id) {
+                try {
+                    localStorage.setItem('nothing_notes_active_account_id', user.id);
+                } catch (e) {}
+                this.migrateLegacyStorage(user.id);
+                this.applyCustomColors();
+                this.loadThemesFromCloud(user);
+            } else {
+                try {
+                    localStorage.removeItem('nothing_notes_active_account_id');
+                } catch (e) {}
+                this.applyCustomColors();
+                this.updateActivePresetBadges();
+                this.refreshPresetsGrid();
+            }
         },
 
         getAllPresets() {
@@ -457,10 +550,25 @@ window.App = window.App || {};
         },
 
         getActivePresetId() {
+            const uid = this.getCurrentUserId();
+            const activeKey = uid ? `${STORAGE_KEY_ACTIVE_PRESET}_${uid}` : `${STORAGE_KEY_ACTIVE_PRESET}_guest`;
+            const savedId = localStorage.getItem(activeKey);
             const all = this.getAllPresets();
+
+            if (savedId) {
+                const found = all.find(p => p.id === savedId);
+                if (found) return found.id;
+            }
+
             for (const p of all) {
                 if (this.isPresetActive(p)) return p.id;
             }
+
+            const colors = this.getCustomColors();
+            if (Object.keys(colors).length === 0) {
+                return 'builtin_forest';
+            }
+
             return null;
         },
 
@@ -547,13 +655,11 @@ window.App = window.App || {};
             if (!isValidHex(hex)) return;
             const colors = this.getCustomColors();
             const normHex = normalizeHex(hex);
-            const defaultColor = this.getDefaultColor(key);
+            colors[key] = normHex;
 
-            if (normHex.toLowerCase() === defaultColor.toLowerCase()) {
-                delete colors[key];
-            } else {
-                colors[key] = normHex;
-            }
+            const uid = this.getCurrentUserId();
+            const activeKey = uid ? `${STORAGE_KEY_ACTIVE_PRESET}_${uid}` : `${STORAGE_KEY_ACTIVE_PRESET}_guest`;
+            localStorage.removeItem(activeKey);
 
             this.saveCustomColors(colors);
             this.applyCustomColors();
@@ -610,6 +716,11 @@ window.App = window.App || {};
             if (window.App.colorPickerPopover) window.App.colorPickerPopover.close();
             const colors = this.getCustomColors();
             delete colors[key];
+
+            const uid = this.getCurrentUserId();
+            const activeKey = uid ? `${STORAGE_KEY_ACTIVE_PRESET}_${uid}` : `${STORAGE_KEY_ACTIVE_PRESET}_guest`;
+            localStorage.removeItem(activeKey);
+
             this.saveCustomColors(colors);
             this.applyCustomColors();
 
@@ -618,15 +729,15 @@ window.App = window.App || {};
             this.updateActivePresetBadges();
         },
 
-        resetAll() {
+        resetAll(syncToCloud = true) {
             if (window.App.colorPickerPopover) window.App.colorPickerPopover.close();
-            try {
-                const uid = this.getCurrentUserId();
-                localStorage.removeItem(STORAGE_KEY_CUSTOM_COLORS);
-                if (uid) {
-                    localStorage.removeItem(`${STORAGE_KEY_CUSTOM_COLORS}_${uid}`);
-                }
-            } catch (e) {}
+            const uid = this.getCurrentUserId();
+            const activeKey = uid ? `${STORAGE_KEY_ACTIVE_PRESET}_${uid}` : `${STORAGE_KEY_ACTIVE_PRESET}_guest`;
+            const colorsKey = uid ? `${STORAGE_KEY_CUSTOM_COLORS}_${uid}` : `${STORAGE_KEY_CUSTOM_COLORS}_guest`;
+
+            localStorage.setItem(activeKey, 'builtin_forest');
+            localStorage.removeItem(colorsKey);
+            localStorage.removeItem(STORAGE_KEY_CUSTOM_COLORS);
 
             const root = document.documentElement;
             for (const group of CUSTOM_TOKEN_GROUPS) {
@@ -650,7 +761,9 @@ window.App = window.App || {};
             if (metaTheme) metaTheme.setAttribute('content', '#1d1e19');
 
             this.updateActivePresetBadges();
-            this.syncThemesToCloud();
+            if (syncToCloud && uid) {
+                this.syncThemesToCloud(true);
+            }
         },
 
         applyPreset(presetId) {
@@ -658,8 +771,25 @@ window.App = window.App || {};
             const preset = all.find(p => p.id === presetId);
             if (!preset) return;
 
+            const uid = this.getCurrentUserId();
+            const activeKey = uid ? `${STORAGE_KEY_ACTIVE_PRESET}_${uid}` : `${STORAGE_KEY_ACTIVE_PRESET}_guest`;
+            const colorsKey = uid ? `${STORAGE_KEY_CUSTOM_COLORS}_${uid}` : `${STORAGE_KEY_CUSTOM_COLORS}_guest`;
+
+            localStorage.setItem(activeKey, preset.id);
+
             if (preset.id === 'builtin_forest') {
-                this.resetAll();
+                localStorage.removeItem(colorsKey);
+                localStorage.removeItem(STORAGE_KEY_CUSTOM_COLORS);
+                this.applyCustomColors();
+
+                for (const group of CUSTOM_TOKEN_GROUPS) {
+                    for (const token of group.tokens) {
+                        this.updateTokenRowState(token.key, token.default);
+                    }
+                }
+
+                this.updateActivePresetBadges();
+                this.syncThemesToCloud(true);
                 return;
             }
 
@@ -667,13 +797,11 @@ window.App = window.App || {};
             for (const group of CUSTOM_TOKEN_GROUPS) {
                 for (const token of group.tokens) {
                     const val = preset.colors[token.key] || token.default;
-                    if (val.toLowerCase() !== token.default.toLowerCase()) {
-                        colorsToSave[token.key] = val.toLowerCase();
-                    }
+                    colorsToSave[token.key] = normalizeHex(val);
                 }
             }
 
-            this.saveCustomColors(colorsToSave);
+            this.saveCustomColors(colorsToSave, false);
             this.applyCustomColors();
 
             // Оновлюємо стан інпутів і свотчів у списку токенів
@@ -685,6 +813,7 @@ window.App = window.App || {};
             }
 
             this.updateActivePresetBadges();
+            this.syncThemesToCloud(true);
         },
 
         saveCurrentAsPreset(name) {
@@ -717,15 +846,28 @@ window.App = window.App || {};
 
             const saved = this.getSavedPresets();
             saved.push(newPreset);
-            this.saveSavedPresets(saved, true);
+            this.saveSavedPresets(saved, false);
 
+            const activeKey = `${STORAGE_KEY_ACTIVE_PRESET}_${uid}`;
+            localStorage.setItem(activeKey, newPreset.id);
+
+            this.syncThemesToCloud(true);
             return newPreset;
         },
 
         deletePreset(presetId) {
+            const uid = this.getCurrentUserId();
             let saved = this.getSavedPresets();
             saved = saved.filter(p => p.id !== presetId);
-            this.saveSavedPresets(saved);
+            this.saveSavedPresets(saved, false);
+
+            const activeKey = uid ? `${STORAGE_KEY_ACTIVE_PRESET}_${uid}` : `${STORAGE_KEY_ACTIVE_PRESET}_guest`;
+            const activeId = localStorage.getItem(activeKey);
+            if (activeId === presetId) {
+                localStorage.removeItem(activeKey);
+            }
+
+            this.syncThemesToCloud(true);
         },
 
         updateActivePresetBadges(container = document) {
@@ -1117,15 +1259,21 @@ window.App = window.App || {};
                     this.resetToken(key);
                 });
             });
+        },
+
+        init() {
+            const uid = this.getCurrentUserId();
+            this.migrateLegacyStorage(uid);
+            this.applyCustomColors();
         }
     };
 
     window.App.settingsThemeTab = settingsThemeTab;
 
-    // Автоматичне застосування збережених кастомних кольорів при ініціалізації
+    // Автоматична ініціалізація та застосування збережених кольорів
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => settingsThemeTab.applyCustomColors());
+        document.addEventListener('DOMContentLoaded', () => settingsThemeTab.init());
     } else {
-        settingsThemeTab.applyCustomColors();
+        settingsThemeTab.init();
     }
 })();

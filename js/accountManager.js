@@ -81,6 +81,9 @@ window.App = window.App || {};
             }
 
             saveAccounts(accounts);
+            try {
+                localStorage.setItem('nothing_notes_active_account_id', user.id);
+            } catch (e) {}
         },
 
         openOverlay() {
@@ -335,6 +338,9 @@ window.App = window.App || {};
                     target.refreshToken = data.session.refresh_token;
                 }
                 saveAccounts(accounts);
+                try {
+                    localStorage.setItem('nothing_notes_active_account_id', target.id);
+                } catch (e) {}
 
                 this.closeOverlay();
             } catch (err) {
@@ -357,6 +363,9 @@ window.App = window.App || {};
                     await this.switchAccount(accounts[0].id);
                 } else {
                     // Інакше повністю виходимо у гостьовий режим
+                    try {
+                        localStorage.removeItem('nothing_notes_active_account_id');
+                    } catch (e) {}
                     if (window.App.supabase) {
                         await window.App.supabase.auth.signOut();
                     }
@@ -369,6 +378,9 @@ window.App = window.App || {};
         },
 
         async logoutCurrent() {
+            try {
+                localStorage.removeItem('nothing_notes_active_account_id');
+            } catch (e) {}
             const currentUser = window.App.cloudSync ? window.App.cloudSync.getCurrentUser() : null;
             if (currentUser) {
                 await this.removeAccount(currentUser.id);

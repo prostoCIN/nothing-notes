@@ -151,6 +151,16 @@ window.App = window.App || {};
             this.updateAuthUI(user);
 
             if (user) {
+                try {
+                    localStorage.setItem('nothing_notes_active_account_id', user.id);
+                } catch (e) {}
+
+                if (window.App.settingsThemeTab && window.App.settingsThemeTab.onUserChanged) {
+                    window.App.settingsThemeTab.onUserChanged(user);
+                } else if (window.App.settingsThemeTab && window.App.settingsThemeTab.loadThemesFromCloud) {
+                    window.App.settingsThemeTab.loadThemesFromCloud(user);
+                }
+
                 if (isSameUser) return;
                 console.log('[CloudSync] Logged in as:', user.email);
                 const supabase = window.App.supabase;
@@ -160,14 +170,17 @@ window.App = window.App || {};
                 await this.pullFromCloud();
                 if (window.App.sidebarView) window.App.sidebarView.render();
                 if (window.App.workspaceView) window.App.workspaceView.render();
-                if (window.App.settingsThemeTab && window.App.settingsThemeTab.loadThemesFromCloud) {
-                    window.App.settingsThemeTab.loadThemesFromCloud(user);
-                } else if (window.App.settingsThemeTab && window.App.settingsThemeTab.applyCustomColors) {
-                    window.App.settingsThemeTab.applyCustomColors();
-                }
                 setTimeout(() => this.cleanupOrphanedImages(), 2000);
             } else {
                 console.log('[CloudSync] Logged out / Guest mode');
+                try {
+                    localStorage.removeItem('nothing_notes_active_account_id');
+                } catch (e) {}
+
+                if (window.App.settingsThemeTab && window.App.settingsThemeTab.onUserChanged) {
+                    window.App.settingsThemeTab.onUserChanged(null);
+                }
+
                 if (wasLoggedIn) {
                     const state = window.App.state;
                     if (state) {
@@ -187,10 +200,6 @@ window.App = window.App || {};
                     if (window.App.historyManager) window.App.historyManager.reset(true);
                     if (window.App.sidebarView) window.App.sidebarView.render();
                     if (window.App.workspaceView) window.App.workspaceView.render();
-                    if (window.App.settingsThemeTab) {
-                        if (window.App.settingsThemeTab.resetAll) window.App.settingsThemeTab.resetAll();
-                        if (window.App.settingsThemeTab.refreshPresetsGrid) window.App.settingsThemeTab.refreshPresetsGrid();
-                    }
                 }
             }
         },
