@@ -293,8 +293,11 @@ window.App = window.App || {};
                     const legacy = localStorage.getItem(STORAGE_KEY_CUSTOM_COLORS);
                     if (legacy) {
                         localStorage.setItem(key, legacy);
+                        localStorage.removeItem(STORAGE_KEY_CUSTOM_COLORS);
                         raw = legacy;
                     }
+                } else if (raw && key !== STORAGE_KEY_CUSTOM_COLORS) {
+                    localStorage.removeItem(STORAGE_KEY_CUSTOM_COLORS);
                 }
                 return raw ? JSON.parse(raw) : {};
             } catch (e) {
@@ -302,12 +305,20 @@ window.App = window.App || {};
             }
         },
 
-        saveCustomColors(colors) {
+        saveCustomColors(colors, syncToCloud = true) {
             try {
                 const key = this.getCustomColorsStorageKey();
-                localStorage.setItem(key, JSON.stringify(colors));
+                if (colors && Object.keys(colors).length > 0) {
+                    localStorage.setItem(key, JSON.stringify(colors));
+                } else {
+                    localStorage.removeItem(key);
+                }
+                localStorage.removeItem(STORAGE_KEY_CUSTOM_COLORS);
             } catch (e) {
                 console.warn('[SettingsThemeTab] Помилка збереження кольорів:', e);
+            }
+            if (syncToCloud) {
+                this.syncThemesToCloud();
             }
         },
 
@@ -319,8 +330,11 @@ window.App = window.App || {};
                     const legacy = localStorage.getItem(STORAGE_KEY_THEME_PRESETS);
                     if (legacy) {
                         localStorage.setItem(key, legacy);
+                        localStorage.removeItem(STORAGE_KEY_THEME_PRESETS);
                         raw = legacy;
                     }
+                } else if (raw && key !== STORAGE_KEY_THEME_PRESETS) {
+                    localStorage.removeItem(STORAGE_KEY_THEME_PRESETS);
                 }
                 return raw ? JSON.parse(raw) : [];
             } catch (e) {
@@ -328,16 +342,90 @@ window.App = window.App || {};
             }
         },
 
-        saveSavedPresets(presets) {
+        saveSavedPresets(presets, syncToCloud = true) {
             try {
                 const key = this.getThemePresetsStorageKey();
                 localStorage.setItem(key, JSON.stringify(presets));
+                localStorage.removeItem(STORAGE_KEY_THEME_PRESETS);
             } catch (e) {
                 console.warn('[SettingsThemeTab] Помилка збереження пресетів:', e);
             }
+            if (syncToCloud) {
+                this.syncThemesToCloud();
+            }
+        },
+
+        async syncThemesToCloud() {
+            try {
+                const supabase = window.App.supabase;
+                const cs = window.App.cloudSync;
+                const user = cs && cs.getCurrentUser ? cs.getCurrentUser() : null;
+                if (!supabase || !user) return;
+
+                const presets = this.getSavedPresets();
+                const colors = this.getCustomColors();
+
+                await supabase.auth.updateUser({
+                    data: {
+                        theme_presets: presets,
+                        custom_colors: colors
+                    }
+                });
+
+                if (user.user_metadata) {
+                    user.user_metadata.theme_presets = presets;
+                    user.user_metadata.custom_colors = colors;
+                }
+            } catch (err) {
+                console.warn('[SettingsThemeTab] Не вдалося синхронізувати тему з хмарою:', err);
+            }
+        },
+
+        loadThemesFromCloud(user) {
+            if (!user) return;
+            const meta = user.user_metadata || {};
+            const cloudPresets = meta.theme_presets;
+            const cloudColors = meta.custom_colors;
+            const uid = user.id;
+
+            // 1. Пресети: якщо є в хмарі — завантажуємо в локальний кеш користувача
+            if (Array.isArray(cloudPresets)) {
+                const key = `${STORAGE_KEY_THEME_PRESETS}_${uid}`;
+                localStorage.setItem(key, JSON.stringify(cloudPresets));
+                localStorage.removeItem(STORAGE_KEY_THEME_PRESETS);
+            } else {
+                // Якщо в хмарі ще нема, але в локальному кеші є — синхронізуємо в акаунт
+                const localPresets = this.getSavedPresets();
+                if (localPresets.length > 0) {
+                    this.syncThemesToCloud();
+                }
+            }
+
+            // 2. Кольори: якщо є в хмарі — застосовуємо
+            if (cloudColors && typeof cloudColors === 'object' && Object.keys(cloudColors).length > 0) {
+                const key = `${STORAGE_KEY_CUSTOM_COLORS}_${uid}`;
+                localStorage.setItem(key, JSON.stringify(cloudColors));
+                localStorage.removeItem(STORAGE_KEY_CUSTOM_COLORS);
+                this.applyCustomColors();
+            } else if (meta.hasOwnProperty('custom_colors') && Object.keys(cloudColors || {}).length === 0) {
+                const key = `${STORAGE_KEY_CUSTOM_COLORS}_${uid}`;
+                localStorage.removeItem(key);
+                localStorage.removeItem(STORAGE_KEY_CUSTOM_COLORS);
+                this.resetAll();
+            } else {
+                this.applyCustomColors();
+            }
+
+            this.updateActivePresetBadges();
+            this.refreshPresetsGrid();
         },
 
         getAllPresets() {
+            const uid = this.getCurrentUserId();
+            // Якщо користувач не увійшов в акаунт — доступний лише базовий набір
+            if (!uid) {
+                return [...BUILTIN_PRESETS];
+            }
             const saved = this.getSavedPresets();
             return [...BUILTIN_PRESETS, ...saved];
         },
@@ -524,6 +612,7 @@ window.App = window.App || {};
             try {
                 const key = this.getCustomColorsStorageKey();
                 localStorage.removeItem(key);
+                localStorage.removeItem(STORAGE_KEY_CUSTOM_COLORS);
             } catch (e) {}
 
             const root = document.documentElement;
@@ -547,8 +636,8 @@ window.App = window.App || {};
             const metaTheme = document.querySelector('meta[name="theme-color"]');
             if (metaTheme) metaTheme.setAttribute('content', '#1d1e19');
 
-            this.applyCustomColors();
             this.updateActivePresetBadges();
+            this.syncThemesToCloud();
         },
 
         applyPreset(presetId) {
@@ -589,6 +678,14 @@ window.App = window.App || {};
             const cleanName = (name || '').trim();
             if (!cleanName) return null;
 
+            const uid = this.getCurrentUserId();
+            if (!uid) {
+                if (window.App.authModal && window.App.authModal.open) {
+                    window.App.authModal.open(false);
+                }
+                return null;
+            }
+
             const currentColors = this.getCustomColors();
             const fullSnapshot = {};
             for (const group of CUSTOM_TOKEN_GROUPS) {
@@ -607,7 +704,7 @@ window.App = window.App || {};
 
             const saved = this.getSavedPresets();
             saved.push(newPreset);
-            this.saveSavedPresets(saved);
+            this.saveSavedPresets(saved, true);
 
             return newPreset;
         },
@@ -848,6 +945,12 @@ window.App = window.App || {};
             if (saveBtn && createForm) {
                 saveBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
+                    if (!this.getCurrentUserId()) {
+                        if (window.App.authModal && window.App.authModal.open) {
+                            window.App.authModal.open(false);
+                        }
+                        return;
+                    }
                     createForm.style.display = 'flex';
                     saveBtn.style.display = 'none';
                     if (nameInput) {
