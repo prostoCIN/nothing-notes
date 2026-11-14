@@ -636,25 +636,32 @@ window.App = window.App || {};
                     <div class="theme-presets-header">
                         <div class="theme-presets-title-wrap">
                             <span class="theme-presets-title">${isUa ? 'Колекції та набори теми' : 'Theme Presets & Palettes'}</span>
-                            <span class="theme-presets-subtitle">${isUa ? 'Оберіть стиль в один клік або збережіть свою комбінацію' : 'Choose a style in one click or save your own'}</span>
+                            <span class="theme-presets-subtitle">${isUa ? 'Оберіть стиль в один клік або налаштуйте власні кольори нижче' : 'Choose a style in one click or customize colors below'}</span>
                         </div>
-                        <button type="button" class="theme-save-preset-btn" id="theme-save-preset-btn">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                            </svg>
-                            <span>${isUa ? 'Зберегти як пресет' : 'Save as preset'}</span>
-                        </button>
-                    </div>
-
-                    <div class="theme-preset-create-form" id="theme-preset-create-form" style="display: none;">
-                        <input type="text" class="theme-preset-name-input" id="theme-preset-name-input" placeholder="${isUa ? 'Введіть назву пресету...' : 'Preset name...'}" maxlength="32" autocomplete="off" spellcheck="false">
-                        <button type="button" class="theme-preset-submit-btn" id="theme-preset-submit-btn">${isUa ? 'Зберегти' : 'Save'}</button>
-                        <button type="button" class="theme-preset-cancel-btn" id="theme-preset-cancel-btn">${isUa ? 'Скасувати' : 'Cancel'}</button>
                     </div>
 
                     <div class="theme-presets-grid" id="theme-presets-grid">
                         ${this.renderPresetsCardsHTML(isUa)}
+                    </div>
+                </div>
+            `;
+        },
+
+        renderSavePresetBottomHTML(isUa) {
+            return `
+                <div class="theme-save-preset-bottom-section">
+                    <button type="button" class="theme-save-preset-btn-large" id="theme-save-preset-btn">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        <span>${isUa ? 'Зберегти поточні кольори як новий пресет' : 'Save current colors as a new preset'}</span>
+                    </button>
+
+                    <div class="theme-preset-create-form" id="theme-preset-create-form" style="display: none;">
+                        <input type="text" class="theme-preset-name-input" id="theme-preset-name-input" placeholder="${isUa ? 'Введіть назву пресету (наприклад: Мій Океан)...' : 'Preset name (e.g. My Ocean)...'}" maxlength="32" autocomplete="off" spellcheck="false">
+                        <button type="button" class="theme-preset-submit-btn" id="theme-preset-submit-btn">${isUa ? 'Зберегти' : 'Save'}</button>
+                        <button type="button" class="theme-preset-cancel-btn" id="theme-preset-cancel-btn">${isUa ? 'Скасувати' : 'Cancel'}</button>
                     </div>
                 </div>
             `;
@@ -731,6 +738,8 @@ window.App = window.App || {};
                     ${this.renderPresetsSectionHTML(isUa)}
 
                     ${groupsHTML}
+
+                    ${this.renderSavePresetBottomHTML(isUa)}
                 </div>
             `;
         },
@@ -795,11 +804,14 @@ window.App = window.App || {};
             if (saveBtn && createForm) {
                 saveBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    const isVisible = createForm.style.display !== 'none';
-                    createForm.style.display = isVisible ? 'none' : 'flex';
-                    if (!isVisible && nameInput) {
+                    createForm.style.display = 'flex';
+                    saveBtn.style.display = 'none';
+                    if (nameInput) {
                         nameInput.value = '';
-                        setTimeout(() => nameInput.focus(), 60);
+                        setTimeout(() => {
+                            nameInput.focus();
+                            createForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }, 50);
                     }
                 });
             }
@@ -814,9 +826,14 @@ window.App = window.App || {};
                 const preset = this.saveCurrentAsPreset(name);
                 if (preset) {
                     createForm.style.display = 'none';
+                    if (saveBtn) saveBtn.style.display = 'flex';
                     nameInput.value = '';
                     this.refreshPresetsGrid(modalOverlayEl);
                     this.updateActivePresetBadges(modalOverlayEl);
+                    const grid = modalOverlayEl.querySelector('#theme-presets-grid');
+                    if (grid) {
+                        grid.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
                 }
             };
 
@@ -831,6 +848,7 @@ window.App = window.App || {};
                 cancelBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     if (createForm) createForm.style.display = 'none';
+                    if (saveBtn) saveBtn.style.display = 'flex';
                     if (nameInput) nameInput.value = '';
                 });
             }
@@ -843,6 +861,7 @@ window.App = window.App || {};
                     } else if (e.key === 'Escape') {
                         e.preventDefault();
                         if (createForm) createForm.style.display = 'none';
+                        if (saveBtn) saveBtn.style.display = 'flex';
                         nameInput.value = '';
                     }
                 });
