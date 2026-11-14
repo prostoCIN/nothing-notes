@@ -265,9 +265,37 @@ window.App = window.App || {};
         CUSTOM_TOKEN_GROUPS,
         BUILTIN_PRESETS,
 
+        getCurrentUserId() {
+            try {
+                const cs = window.App.cloudSync;
+                const user = cs && cs.getCurrentUser ? cs.getCurrentUser() : null;
+                return user && user.id ? user.id : null;
+            } catch (e) {
+                return null;
+            }
+        },
+
+        getCustomColorsStorageKey() {
+            const uid = this.getCurrentUserId();
+            return uid ? `${STORAGE_KEY_CUSTOM_COLORS}_${uid}` : STORAGE_KEY_CUSTOM_COLORS;
+        },
+
+        getThemePresetsStorageKey() {
+            const uid = this.getCurrentUserId();
+            return uid ? `${STORAGE_KEY_THEME_PRESETS}_${uid}` : STORAGE_KEY_THEME_PRESETS;
+        },
+
         getCustomColors() {
             try {
-                const raw = localStorage.getItem(STORAGE_KEY_CUSTOM_COLORS);
+                const key = this.getCustomColorsStorageKey();
+                let raw = localStorage.getItem(key);
+                if (!raw && key !== STORAGE_KEY_CUSTOM_COLORS) {
+                    const legacy = localStorage.getItem(STORAGE_KEY_CUSTOM_COLORS);
+                    if (legacy) {
+                        localStorage.setItem(key, legacy);
+                        raw = legacy;
+                    }
+                }
                 return raw ? JSON.parse(raw) : {};
             } catch (e) {
                 return {};
@@ -276,7 +304,8 @@ window.App = window.App || {};
 
         saveCustomColors(colors) {
             try {
-                localStorage.setItem(STORAGE_KEY_CUSTOM_COLORS, JSON.stringify(colors));
+                const key = this.getCustomColorsStorageKey();
+                localStorage.setItem(key, JSON.stringify(colors));
             } catch (e) {
                 console.warn('[SettingsThemeTab] Помилка збереження кольорів:', e);
             }
@@ -284,7 +313,15 @@ window.App = window.App || {};
 
         getSavedPresets() {
             try {
-                const raw = localStorage.getItem(STORAGE_KEY_THEME_PRESETS);
+                const key = this.getThemePresetsStorageKey();
+                let raw = localStorage.getItem(key);
+                if (!raw && key !== STORAGE_KEY_THEME_PRESETS) {
+                    const legacy = localStorage.getItem(STORAGE_KEY_THEME_PRESETS);
+                    if (legacy) {
+                        localStorage.setItem(key, legacy);
+                        raw = legacy;
+                    }
+                }
                 return raw ? JSON.parse(raw) : [];
             } catch (e) {
                 return [];
@@ -293,7 +330,8 @@ window.App = window.App || {};
 
         saveSavedPresets(presets) {
             try {
-                localStorage.setItem(STORAGE_KEY_THEME_PRESETS, JSON.stringify(presets));
+                const key = this.getThemePresetsStorageKey();
+                localStorage.setItem(key, JSON.stringify(presets));
             } catch (e) {
                 console.warn('[SettingsThemeTab] Помилка збереження пресетів:', e);
             }
@@ -484,7 +522,8 @@ window.App = window.App || {};
         resetAll() {
             if (window.App.colorPickerPopover) window.App.colorPickerPopover.close();
             try {
-                localStorage.removeItem(STORAGE_KEY_CUSTOM_COLORS);
+                const key = this.getCustomColorsStorageKey();
+                localStorage.removeItem(key);
             } catch (e) {}
 
             const root = document.documentElement;

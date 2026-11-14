@@ -160,6 +160,9 @@ window.App = window.App || {};
                 await this.pullFromCloud();
                 if (window.App.sidebarView) window.App.sidebarView.render();
                 if (window.App.workspaceView) window.App.workspaceView.render();
+                if (window.App.settingsThemeTab && window.App.settingsThemeTab.applyCustomColors) {
+                    window.App.settingsThemeTab.applyCustomColors();
+                }
                 setTimeout(() => this.cleanupOrphanedImages(), 2000);
             } else {
                 console.log('[CloudSync] Logged out / Guest mode');
@@ -182,6 +185,9 @@ window.App = window.App || {};
                     if (window.App.historyManager) window.App.historyManager.reset(true);
                     if (window.App.sidebarView) window.App.sidebarView.render();
                     if (window.App.workspaceView) window.App.workspaceView.render();
+                    if (window.App.settingsThemeTab && window.App.settingsThemeTab.applyCustomColors) {
+                        window.App.settingsThemeTab.applyCustomColors();
+                    }
                 }
             }
         },
