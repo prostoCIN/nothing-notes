@@ -469,48 +469,233 @@ window.App = window.App || {};
             const state = window.App.state;
             if (!state) return;
 
-            const isAlreadyOpen = Array.isArray(state.activeChain) && state.activeChain[colIndex + 1] === noteId;
-            state.activeChain = state.activeChain.slice(0, colIndex + 1);
+            const els = window.App.getElements();
+            const container = els ? els.columnsContainer : document.getElementById('columns-container');
 
-            if (isAlreadyOpen) {
+            // Якщо контейнер відсутній або відкритий інший режим (дошка/граф) — безпечний fallback до повного render
+            if (!container || container.classList.contains('has-canvas-mode') || !window.App.workspaceColumn) {
+                const isAlreadyOpen = Array.isArray(state.activeChain) && state.activeChain[colIndex + 1] === noteId;
+                state.activeChain = state.activeChain.slice(0, colIndex + 1);
+                if (!isAlreadyOpen) state.activeChain.push(noteId);
                 this.render();
                 return;
             }
 
-            state.activeChain.push(noteId);
-            this.render();
-
-            // Автоматично розгортаємо гілку в лівому сайдбарі та виділяємо відкриту нотатку
-            if (window.App.sidebarView) {
-                window.App.sidebarView.expandChain(state.activeChain);
-                window.App.sidebarView.setActiveNote(noteId, { autoExpand: true, scrollIntoView: true });
+            const existingCols = Array.from(container.querySelectorAll('.board-column'));
+            // Якщо в DOM ще немає колонок або структура порушена — fallback
+            if (existingCols.length === 0 || existingCols.length <= colIndex) {
+                const isAlreadyOpen = Array.isArray(state.activeChain) && state.activeChain[colIndex + 1] === noteId;
+                state.activeChain = state.activeChain.slice(0, colIndex + 1);
+                if (!isAlreadyOpen) state.activeChain.push(noteId);
+                this.render();
+                return;
             }
 
-            // Миттєвий скрол контейнера колонок до нової колонки без затримок
-            const els = window.App.getElements();
-            const container = els ? els.columnsContainer : document.getElementById('columns-container');
-            if (container) {
-                const lastColIndex = colIndex + 1;
-                const newCol = container.querySelector(`.board-column[data-col-index="${lastColIndex}"]`);
-                if (newCol) {
-                    newCol.scrollIntoView({ behavior: 'auto', block: 'nearest', inline: 'end' });
-                } else {
-                    container.scrollLeft = container.scrollWidth;
+            const isAlreadyOpen = Array.isArray(state.activeChain) && state.activeChain[colIndex + 1] === noteId;
+
+            // 1. ВИПАДОК ЗАКРИТТЯ: якщо колонка для цієї нотатки вже була розгорнута
+            if (isAlreadyOpen) {
+                state.activeChain = state.activeChain.slice(0, colIndex + 1);
+
+                // Швидко видаляємо дочірні колонки праворуч без перемальовування решти DOM
+                existingCols.forEach(col => {
+                    const idx = parseInt(col.dataset.colIndex, 10);
+                    if (idx > colIndex) {
+                        col.remove();
+                    }
+                });
+
+                // Знімаємо підсвітку активного батька з картки
+                const parentCol = container.querySelector(`.board-column[data-col-index="${colIndex}"]`);
+                if (parentCol) {
+                    const card = parentCol.querySelector(`.note-sticker[data-note-id="${noteId}"]`);
+                    if (card) {
+                        card.classList.remove('active-parent-note');
+                        const subBox = card.querySelector('.sticker-subnotes-container');
+                        if (subBox) {
+                            subBox.classList.remove('is-expanded');
+                            const i18n = window.App.i18n;
+                            const navTooltip = i18n ? i18n.t('sticker.openSubnotesCol') : 'Перейти до піднотаток';
+                            const mainArea = subBox.querySelector('.subnotes-main-area');
+                            if (mainArea) mainArea.title = navTooltip;
+                            const navBtn = subBox.querySelector('.subnotes-nav-btn');
+                            if (navBtn) navBtn.title = navTooltip;
+                        }
+                    }
+                }
+
+                // Оновлюємо класи адаптивної ширини
+                const totalCols = state.activeChain.length;
+                container.classList.toggle('has-many-columns', totalCols >= 3);
+
+                // Якщо закрита колонка була розтягнута — скидаємо розтягування
+                if (state.stretchedColumnKey) {
+                    const chainKeys = state.activeChain.map(id => id || 'root');
+                    if (!chainKeys.includes(state.stretchedColumnKey)) {
+                        state.stretchedColumnKey = null;
+                        state.lockedColumnKey = null;
+                        state.lockedScrollLeft = null;
+                        container.classList.remove('has-stretched-column', 'has-locked-column');
+                    }
+                }
+
+                this.renderMobilePagination();
+
+                // Неблокуюча фонова синхронізація сайдбару
+                requestAnimationFrame(() => {
+                    if (window.App.sidebarView) {
+                        window.App.sidebarView.expandChain(state.activeChain);
+                        const lastId = state.activeChain[state.activeChain.length - 1];
+                        window.App.sidebarView.setActiveNote(lastId, { autoExpand: false, scrollIntoView: true });
+                    }
+                });
+                return;
+            }
+
+            // 2. ВИПАДОК ВІДКРИТТЯ НОВОЇ ДОЧІРНЬОЇ КОЛОНКИ
+            // Якщо праворуч уже були відкриті колонки від іншої нотатки — закриваємо їх
+            existingCols.forEach(col => {
+                const idx = parseInt(col.dataset.colIndex, 10);
+                if (idx > colIndex) {
+                    col.remove();
+                }
+            });
+
+            // Знімаємо стан активного батька з будь-якої іншої нотатки поточної колонки
+            const parentCol = container.querySelector(`.board-column[data-col-index="${colIndex}"]`);
+            if (parentCol) {
+                parentCol.querySelectorAll('.note-sticker.active-parent-note').forEach(c => {
+                    c.classList.remove('active-parent-note');
+                    const sBox = c.querySelector('.sticker-subnotes-container');
+                    if (sBox) sBox.classList.remove('is-expanded');
+                });
+
+                // Підсвічуємо поточну нотатку
+                const currentCard = parentCol.querySelector(`.note-sticker[data-note-id="${noteId}"]`);
+                if (currentCard) {
+                    currentCard.classList.add('active-parent-note');
+                    const subBox = currentCard.querySelector('.sticker-subnotes-container');
+                    if (subBox) {
+                        subBox.classList.add('is-expanded');
+                        const i18n = window.App.i18n;
+                        const navTooltip = i18n ? i18n.t('sticker.hideSubnotesCol') : 'Приховати колонку піднотаток';
+                        const mainArea = subBox.querySelector('.subnotes-main-area');
+                        if (mainArea) mainArea.title = navTooltip;
+                        const navBtn = subBox.querySelector('.subnotes-nav-btn');
+                        if (navBtn) navBtn.title = navTooltip;
+                    }
                 }
             }
+
+            // Оновлюємо стан ланцюжка
+            state.activeChain = state.activeChain.slice(0, colIndex + 1);
+            state.activeChain.push(noteId);
+
+            const newColIndex = colIndex + 1;
+            const currentBoard = window.App.boardManager ? window.App.boardManager.getActiveBoard() : null;
+            const isBoardReadOnly = !!(currentBoard && currentBoard.isReadOnly) || (currentBoard && currentBoard.id && currentBoard.id.startsWith('shared_'));
+
+            // Миттєво монтуємо ТІЛЬКИ нову колонку в DOM
+            const newColumnEl = window.App.workspaceColumn.createColumn({
+                colIndex: newColIndex,
+                parentNoteId: noteId,
+                currentBoard,
+                isBoardReadOnly,
+                onCloseColumn: (idx) => this.closeColumn(idx),
+                onLayoutChange: () => this.render(),
+                onFilterChange: () => this.render()
+            });
+
+            newColumnEl.classList.add('column-entering');
+            newColumnEl.addEventListener('animationend', () => {
+                newColumnEl.classList.remove('column-entering');
+            }, { once: true });
+
+            container.appendChild(newColumnEl);
+
+            // Оновлюємо класи адаптивної ширини колонок
+            const totalCols = state.activeChain.length;
+            container.classList.toggle('has-many-columns', totalCols >= 3);
+
+            // Плавний скрол контейнера до нової колонки
+            requestAnimationFrame(() => {
+                newColumnEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'end' });
+            });
+
+            this.renderMobilePagination();
+
+            // Асинхронна синхронізація сайдбару без затримки кадру анімації
+            requestAnimationFrame(() => {
+                if (window.App.sidebarView) {
+                    window.App.sidebarView.expandChain(state.activeChain);
+                    window.App.sidebarView.setActiveNote(noteId, { autoExpand: true, scrollIntoView: true });
+                }
+            });
         },
 
         closeColumn(colIndex) {
             const state = window.App.state;
             if (!state) return;
 
-            state.activeChain = state.activeChain.slice(0, colIndex);
-            this.render();
+            const els = window.App.getElements();
+            const container = els ? els.columnsContainer : document.getElementById('columns-container');
 
-            const lastParentId = state.activeChain[state.activeChain.length - 1];
-            if (window.App.sidebarView) {
-                window.App.sidebarView.setActiveNote(lastParentId, { autoExpand: false, scrollIntoView: true });
+            if (!container || container.classList.contains('has-canvas-mode') || !window.App.workspaceColumn) {
+                state.activeChain = state.activeChain.slice(0, colIndex);
+                this.render();
+                return;
             }
+
+            state.activeChain = state.activeChain.slice(0, colIndex);
+
+            // Миттєво видаляємо закриту колонку та всі наступні
+            container.querySelectorAll('.board-column').forEach(col => {
+                const idx = parseInt(col.dataset.colIndex, 10);
+                if (idx >= colIndex) {
+                    col.remove();
+                }
+            });
+
+            // Знімаємо стан активного батька з картки в попередній колонці
+            const parentCol = container.querySelector(`.board-column[data-col-index="${colIndex - 1}"]`);
+            if (parentCol) {
+                parentCol.querySelectorAll('.note-sticker.active-parent-note').forEach(c => {
+                    c.classList.remove('active-parent-note');
+                    const subBox = c.querySelector('.sticker-subnotes-container');
+                    if (subBox) {
+                        subBox.classList.remove('is-expanded');
+                        const i18n = window.App.i18n;
+                        const navTooltip = i18n ? i18n.t('sticker.openSubnotesCol') : 'Перейти до піднотаток';
+                        const mainArea = subBox.querySelector('.subnotes-main-area');
+                        if (mainArea) mainArea.title = navTooltip;
+                        const navBtn = subBox.querySelector('.subnotes-nav-btn');
+                        if (navBtn) navBtn.title = navTooltip;
+                    }
+                });
+            }
+
+            // Оновлюємо класи адаптивної ширини контейнера
+            const totalCols = state.activeChain.length;
+            container.classList.toggle('has-many-columns', totalCols >= 3);
+
+            if (state.stretchedColumnKey) {
+                const chainKeys = state.activeChain.map(id => id || 'root');
+                if (!chainKeys.includes(state.stretchedColumnKey)) {
+                    state.stretchedColumnKey = null;
+                    state.lockedColumnKey = null;
+                    state.lockedScrollLeft = null;
+                    container.classList.remove('has-stretched-column', 'has-locked-column');
+                }
+            }
+
+            this.renderMobilePagination();
+
+            requestAnimationFrame(() => {
+                const lastParentId = state.activeChain[state.activeChain.length - 1];
+                if (window.App.sidebarView) {
+                    window.App.sidebarView.setActiveNote(lastParentId, { autoExpand: false, scrollIntoView: true });
+                }
+            });
         },
 
         render() {
@@ -925,7 +1110,7 @@ window.App = window.App || {};
 
             setTimeout(() => {
                 noteManager.createNewNote(targetNoteId, true);
-            }, 80);
+            }, 30);
         },
 
         highlightNote(noteId) {

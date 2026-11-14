@@ -38,7 +38,7 @@ window.App = window.App || {};
                         workspaceView.toggleChain(note.id, colIndex);
                     }
                     if (noteManager && noteManager.createNewNote) {
-                        setTimeout(() => noteManager.createNewNote(note.id, true), 80);
+                        setTimeout(() => noteManager.createNewNote(note.id, true), 30);
                     }
                 }
             };
