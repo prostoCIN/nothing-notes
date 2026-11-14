@@ -59,7 +59,7 @@ import './workspace/workspaceColumn.js';
 import './workspace/workspacePagination.js';
 import './workspaceView.js';
 
-// 4. Модулі хмари, преференцій та легкі фасади
+// 4. Модулі хмари, преференцій та модальні вікна
 import './supabaseClient.js';
 import './sync/offlineQueue.js';
 import './sync/syncStorage.js';
@@ -68,10 +68,11 @@ import './sync/syncNotes.js';
 import './sync/syncUI.js';
 import './cloudSync.js';
 import './shareManager.js';
+import './authModal.js';
 import './settings/settingsPreferences.js';
 import './settings/settingsThemeTab.js';
+import './settings/settingsModalModule.js';
 import './accountManager.js';
-import './modalsFacade.js';
 
 // 5. Головний оркестратор та ініціалізація додатку
 import './app.js';

@@ -21,16 +21,6 @@ export default defineConfig({
           if (id.includes('/js/share/') || id.includes('\\js\\share\\')) {
             return 'share';
           }
-          if (
-            id.includes('authModal.js') ||
-            id.includes('settingsModal.js') ||
-            id.includes('settingsModalModule.js') ||
-            id.includes('settingsAppearanceTab.js') ||
-            id.includes('settingsAccountTab.js') ||
-            id.includes('settingsShortcutsTab.js')
-          ) {
-            return 'modals';
-          }
         }
       }
     }

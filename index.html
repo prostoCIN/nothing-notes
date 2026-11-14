@@ -47,11 +47,13 @@
                     for (var i = 0; i < localStorage.length; i++) {
                         var k = localStorage.key(i);
                         if (k && k.startsWith('sb-') && k.endsWith('-auth-token')) {
-                            var tok = JSON.parse(localStorage.getItem(k));
-                            if (tok && tok.user && tok.user.id) {
-                                activeUid = tok.user.id;
-                                break;
-                            }
+                            try {
+                                var tok = JSON.parse(localStorage.getItem(k));
+                                if (tok && tok.user && tok.user.id) {
+                                    activeUid = tok.user.id;
+                                    break;
+                                }
+                            } catch (e) {}
                         }
                     }
                 }
@@ -134,9 +136,37 @@
             var now = Date.now();
             if (!lastReload || now - parseInt(lastReload, 10) > 8000) {
                 sessionStorage.setItem(reloadKey, now.toString());
-                window.location.reload();
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.getRegistrations().then(function(regs) {
+                        for (var i = 0; i < regs.length; i++) {
+                            regs[i].unregister();
+                        }
+                    }).finally(function() {
+                        if ('caches' in window) {
+                            caches.keys().then(function(keys) {
+                                return Promise.all(keys.map(function(k) { return caches.delete(k); }));
+                            }).finally(function() {
+                                window.location.reload();
+                            });
+                        } else {
+                            window.location.reload();
+                        }
+                    });
+                } else {
+                    window.location.reload();
+                }
             }
         }
+
+        window.addEventListener('error', function(event) {
+            var target = event && (event.target || event.srcElement);
+            if (target && (target.tagName === 'SCRIPT' || target.tagName === 'LINK')) {
+                var src = target.src || target.href || '';
+                if (src.indexOf('/assets/') !== -1) {
+                    handleChunkReload();
+                }
+            }
+        }, true);
 
         window.addEventListener('vite:preloadError', function(event) {
             if (event) event.preventDefault();

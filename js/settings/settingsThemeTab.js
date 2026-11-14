@@ -480,7 +480,7 @@ window.App = window.App || {};
             localStorage.removeItem(STORAGE_KEY_THEME_PRESETS);
 
             if (hasLocalOnly || (cloudPresets.length === 0 && finalPresets.length > 0)) {
-                this.syncThemesToCloud(true);
+                this.syncThemesToCloud(false);
             }
 
             // 2. Активний пресет та кастомні кольори теми
@@ -504,7 +504,7 @@ window.App = window.App || {};
                 this.applyCustomColors();
             } else if (localActivePreset || localColorsRaw) {
                 this.applyCustomColors();
-                this.syncThemesToCloud(true);
+                this.syncThemesToCloud(false);
             } else {
                 localStorage.setItem(activeKey, 'builtin_forest');
                 localStorage.removeItem(colorsKey);
