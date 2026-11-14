@@ -225,6 +225,11 @@ window.App = window.App || {};
             if (accountEl) accountEl.style.display = tabKey === 'account' ? 'flex' : 'none';
             if (shortcutsEl) shortcutsEl.style.display = tabKey === 'shortcuts' ? 'flex' : 'none';
 
+            if (tabKey === 'theme' && window.App.settingsThemeTab) {
+                window.App.settingsThemeTab.refreshPresetsGrid(modalOverlayEl);
+                window.App.settingsThemeTab.updateActivePresetBadges(modalOverlayEl);
+            }
+
             if (tabKey === 'account') {
                 this.renderAccountInfo();
             }
@@ -240,6 +245,11 @@ window.App = window.App || {};
             this.isOpen = true;
             this.createModalDOM();
             this.switchTab(tab);
+
+            if (window.App.settingsThemeTab) {
+                window.App.settingsThemeTab.refreshPresetsGrid(modalOverlayEl);
+                window.App.settingsThemeTab.updateActivePresetBadges(modalOverlayEl);
+            }
 
             const prefs = window.App.settingsPreferences;
             if (prefs) {

@@ -370,9 +370,9 @@ window.App = window.App || {};
             }
         },
 
-        getSavedPresets() {
+        getSavedPresets(userId) {
             try {
-                const uid = this.getCurrentUserId();
+                const uid = userId || this.getCurrentUserId();
                 if (!uid) return [];
                 const key = `${STORAGE_KEY_THEME_PRESETS}_${uid}`;
                 let raw = localStorage.getItem(key);
@@ -418,15 +418,15 @@ window.App = window.App || {};
             try {
                 const supabase = window.App.supabase;
                 const cs = window.App.cloudSync;
-                const user = cs && cs.getCurrentUser ? cs.getCurrentUser() : null;
+                const user = (cs && cs.getCurrentUser ? cs.getCurrentUser() : null) || (supabase ? (await supabase.auth.getUser())?.data?.user : null);
                 if (!supabase || !user || !user.id) return;
 
-                const presets = this.getSavedPresets();
+                const presets = this.getSavedPresets(user.id);
                 const colors = this.getCustomColors();
                 const activePresetKey = `${STORAGE_KEY_ACTIVE_PRESET}_${user.id}`;
                 const activePresetId = localStorage.getItem(activePresetKey) || this.getActivePresetId() || 'builtin_forest';
 
-                await supabase.auth.updateUser({
+                const { data, error } = await supabase.auth.updateUser({
                     data: {
                         theme_presets: presets,
                         custom_colors: colors,
@@ -434,10 +434,19 @@ window.App = window.App || {};
                     }
                 });
 
-                if (user.user_metadata) {
-                    user.user_metadata.theme_presets = presets;
-                    user.user_metadata.custom_colors = colors;
-                    user.user_metadata.active_theme_preset_id = activePresetId;
+                if (error) {
+                    console.warn('[SettingsThemeTab] updateUser error:', error);
+                    return;
+                }
+
+                const updatedUser = (data && data.user) || user;
+                if (updatedUser.user_metadata) {
+                    updatedUser.user_metadata.theme_presets = presets;
+                    updatedUser.user_metadata.custom_colors = colors;
+                    updatedUser.user_metadata.active_theme_preset_id = activePresetId;
+                }
+                if (cs) {
+                    cs.currentUser = updatedUser;
                 }
             } catch (err) {
                 console.warn('[SettingsThemeTab] Не вдалося синхронізувати тему з хмарою:', err);
@@ -451,7 +460,7 @@ window.App = window.App || {};
 
             // 1. Пресети акаунта: надійне злиття локальних та хмарних без втрат
             const cloudPresets = Array.isArray(meta.theme_presets) ? meta.theme_presets : [];
-            const localPresets = this.getSavedPresets();
+            const localPresets = this.getSavedPresets(uid);
 
             const mergedMap = new Map();
             cloudPresets.forEach(p => {
@@ -844,7 +853,7 @@ window.App = window.App || {};
                 createdAt: Date.now()
             };
 
-            const saved = this.getSavedPresets();
+            const saved = this.getSavedPresets(uid);
             saved.push(newPreset);
             this.saveSavedPresets(saved, false);
 
@@ -857,7 +866,7 @@ window.App = window.App || {};
 
         deletePreset(presetId) {
             const uid = this.getCurrentUserId();
-            let saved = this.getSavedPresets();
+            let saved = this.getSavedPresets(uid);
             saved = saved.filter(p => p.id !== presetId);
             this.saveSavedPresets(saved, false);
 
@@ -870,11 +879,12 @@ window.App = window.App || {};
             this.syncThemesToCloud(true);
         },
 
-        updateActivePresetBadges(container = document) {
+        updateActivePresetBadges(container) {
             const activeId = this.getActivePresetId();
             const isUa = !window.App.i18n || (window.App.i18n.getLanguage && window.App.i18n.getLanguage() === 'ua');
+            const root = container || document.getElementById('settings-modal-overlay') || document;
 
-            container.querySelectorAll('.theme-preset-card').forEach(card => {
+            root.querySelectorAll('.theme-preset-card').forEach(card => {
                 const id = card.getAttribute('data-preset-id');
                 const isActive = id === activeId;
                 card.classList.toggle('active', isActive);
@@ -968,11 +978,11 @@ window.App = window.App || {};
                             <line x1="12" y1="5" x2="12" y2="19"></line>
                             <line x1="5" y1="12" x2="19" y2="12"></line>
                         </svg>
-                        <span>${isUa ? 'Зберегти поточні кольори як новий пресет' : 'Save current colors as a new preset'}</span>
+                        <span>${isUa ? 'Створити тему' : 'Create theme'}</span>
                     </button>
 
                     <div class="theme-preset-create-form" id="theme-preset-create-form" style="display: none;">
-                        <input type="text" class="theme-preset-name-input" id="theme-preset-name-input" placeholder="${isUa ? 'Введіть назву пресету (наприклад: Мій Океан)...' : 'Preset name (e.g. My Ocean)...'}" maxlength="32" autocomplete="off" spellcheck="false">
+                        <input type="text" class="theme-preset-name-input" id="theme-preset-name-input" placeholder="${isUa ? 'Введіть назву теми (наприклад: Мій Океан)...' : 'Theme name (e.g. My Ocean)...'}" maxlength="32" autocomplete="off" spellcheck="false">
                         <button type="button" class="theme-preset-submit-btn" id="theme-preset-submit-btn">${isUa ? 'Зберегти' : 'Save'}</button>
                         <button type="button" class="theme-preset-cancel-btn" id="theme-preset-cancel-btn">${isUa ? 'Скасувати' : 'Cancel'}</button>
                     </div>
@@ -981,13 +991,14 @@ window.App = window.App || {};
         },
 
         refreshPresetsGrid(modalOverlayEl) {
-            if (!modalOverlayEl) modalOverlayEl = document.querySelector('.modal-overlay');
-            if (!modalOverlayEl) return;
-            const grid = modalOverlayEl.querySelector('#theme-presets-grid');
+            const overlay = modalOverlayEl || document.getElementById('settings-modal-overlay') || document.querySelector('.settings-modal-overlay');
+            const grid = document.getElementById('theme-presets-grid') || (overlay && overlay.querySelector('#theme-presets-grid'));
             if (!grid) return;
             const isUa = !window.App.i18n || (window.App.i18n.getLanguage && window.App.i18n.getLanguage() === 'ua');
             grid.innerHTML = this.renderPresetsCardsHTML(isUa);
-            this.bindPresetCardEvents(modalOverlayEl);
+            if (overlay) {
+                this.bindPresetCardEvents(overlay);
+            }
         },
 
         renderHTML(isVisible) {

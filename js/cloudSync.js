@@ -84,20 +84,22 @@ window.App = window.App || {};
                 console.log('[CloudSync] 📱 App resumed from background. Reconnecting & syncing with Supabase...');
                 const supabase = window.App.supabase;
                 if (supabase) {
-                    supabase.auth.getSession().then(({ data: { session } }) => {
-                        if (session && session.user) {
-                            currentUser = session.user;
-                            this.currentUser = session.user;
-                            this.updateAuthUI(session.user);
+                    supabase.auth.getUser().then(({ data: { user } }) => {
+                        if (user) {
+                            currentUser = user;
+                            this.currentUser = user;
+                            this.updateAuthUI(user);
+                            if (window.App.settingsThemeTab && window.App.settingsThemeTab.loadThemesFromCloud) {
+                                window.App.settingsThemeTab.loadThemesFromCloud(user);
+                            }
                         }
-                        if (window.App.syncRealtime) {
-                            window.App.syncRealtime.initChannel(supabase, this);
-                        }
-                        this.flushOfflineQueue();
-                        this.pullFromCloud();
-                    }).catch(() => {
-                        this.pullFromCloud();
-                    });
+                    }).catch(() => {});
+
+                    if (window.App.syncRealtime) {
+                        window.App.syncRealtime.initChannel(supabase, this);
+                    }
+                    this.flushOfflineQueue();
+                    this.pullFromCloud();
                 }
             };
 

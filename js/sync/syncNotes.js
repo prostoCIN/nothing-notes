@@ -61,6 +61,9 @@ window.App = window.App || {};
                 const { data: freshUserResp } = await supabase.auth.getUser();
                 if (freshUserResp && freshUserResp.user) {
                     cs.currentUser = freshUserResp.user;
+                    if (window.App.settingsThemeTab && window.App.settingsThemeTab.loadThemesFromCloud) {
+                        window.App.settingsThemeTab.loadThemesFromCloud(freshUserResp.user);
+                    }
                 }
 
                 // 1. Завантаження блокнотів із таблиці `boards`
