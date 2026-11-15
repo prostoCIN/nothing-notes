@@ -640,6 +640,9 @@ window.App = window.App || {};
                     const targetScroll = absoluteColLeft - Math.max(0, (container.clientWidth - columnRect.width) / 2);
 
                     container.scrollLeft = Math.max(0, Math.round(targetScroll));
+                    if (state && state.lockedColumnKey === parentKey) {
+                        state.lockedScrollLeft = container.scrollLeft;
+                    }
 
                     if (progress < 1) {
                         window._columnStretchScrollRaf = requestAnimationFrame(step);
@@ -649,8 +652,11 @@ window.App = window.App || {};
                         const cRect = container.getBoundingClientRect();
                         const colRect = columnEl.getBoundingClientRect();
                         const finalColLeft = (colRect.left - cRect.left) + container.scrollLeft;
-                        const finalTarget = finalColLeft - Math.max(0, (cRect.width - colRect.width) / 2);
+                        const finalTarget = Math.max(0, Math.round(finalColLeft - Math.max(0, (cRect.width - colRect.width) / 2)));
                         container.scrollLeft = Math.max(0, Math.round(finalTarget));
+                        if (state && state.lockedColumnKey === parentKey) {
+                            state.lockedScrollLeft = container.scrollLeft;
+                        }
                         if (typeof onComplete === 'function') onComplete();
                     }
                 };
@@ -699,7 +705,6 @@ window.App = window.App || {};
                     }
                     if (container) {
                         container.classList.add('has-stretched-column', 'has-locked-column');
-                        state.lockedScrollLeft = container.scrollLeft;
                     }
                     columnEl.classList.add('column-stretched-full', 'column-locked');
                     expandColumnBtn.classList.add('active', 'is-locked');

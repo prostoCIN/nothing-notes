@@ -384,6 +384,7 @@ window.App = window.App || {};
                     }
                     this.render();
                 }
+                this.syncLockedColumnPosition();
             });
 
             // Горизонтальний скрол колонок робочої області коліщатком миші
@@ -438,6 +439,10 @@ window.App = window.App || {};
                 // Відстежуємо свайп між колонками та блокуємо зсув залоченої колонки
                 columnsContainer.addEventListener('scroll', () => {
                     const state = window.App && window.App.state;
+                    // Під час зміни ширини сайдбару або CSS-анімації центрування не блокуємо динамічний скрол
+                    if (window._columnStretchScrollRaf || document.body.classList.contains('is-sidebar-resizing')) {
+                        return;
+                    }
                     if (state && state.lockedColumnKey && typeof state.lockedScrollLeft === 'number') {
                         if (Math.abs(columnsContainer.scrollLeft - state.lockedScrollLeft) > 1) {
                             columnsContainer.scrollLeft = state.lockedScrollLeft;
@@ -462,6 +467,34 @@ window.App = window.App || {};
                         window.App.sidebarView.setActiveNote(sticker.dataset.noteId, { autoExpand: true, scrollIntoView: true });
                     }
                 }, { passive: true });
+            }
+        },
+
+        // Динамічна синхронізація позиції залоченої / розтягнутої колонки при зміні ширини сайдбару чи екрану
+        syncLockedColumnPosition() {
+            const state = window.App && window.App.state;
+            if (!state) return;
+            const key = state.lockedColumnKey || state.stretchedColumnKey;
+            if (!key) return;
+
+            const els = window.App.getElements ? window.App.getElements() : null;
+            const container = (els && els.columnsContainer) || document.getElementById('columns-container');
+            if (!container || container.classList.contains('has-canvas-mode')) return;
+
+            const lockedCol = container.querySelector(`.board-column[data-parent-id="${key}"]`)
+                           || container.querySelector('.board-column.column-locked')
+                           || container.querySelector('.board-column.column-stretched-full');
+            if (!lockedCol) return;
+
+            const paddingLeft = parseFloat(window.getComputedStyle(container).paddingLeft) || 24;
+            const extraSpace = Math.max(paddingLeft, (container.clientWidth - lockedCol.offsetWidth) / 2);
+            const targetScroll = Math.max(0, Math.round(lockedCol.offsetLeft - extraSpace));
+
+            if (state.lockedColumnKey) {
+                state.lockedScrollLeft = targetScroll;
+            }
+            if (Math.abs(container.scrollLeft - targetScroll) > 1) {
+                container.scrollLeft = targetScroll;
             }
         },
 
@@ -941,8 +974,11 @@ window.App = window.App || {};
             // Відновлюємо горизонтальну позицію скролу
             if (state && state.lockedColumnKey && typeof state.lockedScrollLeft === 'number') {
                 els.columnsContainer.scrollLeft = state.lockedScrollLeft;
+                this.syncLockedColumnPosition();
             } else if (prevContainerScrollLeft > 0) {
                 els.columnsContainer.scrollLeft = prevContainerScrollLeft;
+            } else if (state && state.stretchedColumnKey) {
+                this.syncLockedColumnPosition();
             }
 
             // FLIP-анімація плавного ковзання стікерів

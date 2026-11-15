@@ -42,6 +42,10 @@ window.App = window.App || {};
                 localStorage.setItem(STORAGE_KEY, currentWidth.toString());
             } catch (e) {}
         }
+
+        if (window.App.workspaceView && window.App.workspaceView.syncLockedColumnPosition) {
+            window.App.workspaceView.syncLockedColumnPosition();
+        }
     }
 
     function restoreSavedWidth() {
@@ -66,6 +70,9 @@ window.App = window.App || {};
 
     function notifyResize() {
         window.dispatchEvent(new Event('resize'));
+        if (window.App.workspaceView && window.App.workspaceView.syncLockedColumnPosition) {
+            window.App.workspaceView.syncLockedColumnPosition();
+        }
         if (window.App.boardView && window.App.boardView.resizeCanvas) {
             window.App.boardView.resizeCanvas();
         }
