@@ -158,10 +158,12 @@ window.App = window.App || {};
 
                         <!-- Видалити -->
                         <button class="selection-action-btn selection-action-delete-btn" id="ws-action-delete-btn" title="Видалити виділені" data-i18n-title="selectionBar.deleteSelected">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M3 6h18"></path>
-                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                            </svg>
+                            <span class="selection-btn-icon">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3 6h18"></path>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                            </span>
                             <span class="selection-btn-label desktop-only" data-i18n="selectionBar.deleteSelected">Видалити</span>
                         </button>
                     </div>

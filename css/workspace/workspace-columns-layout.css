@@ -421,9 +421,15 @@
     width: auto;
     padding: 0 9px;
     font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    line-height: 1;
 }
 
 .column-add-note-btn svg {
+    display: block;
     stroke: currentColor;
     flex-shrink: 0;
 }

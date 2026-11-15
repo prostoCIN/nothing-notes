@@ -107,6 +107,13 @@
         border-radius: 10px !important;
     }
 
+    .selection-action-btn .selection-btn-icon {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        line-height: 0 !important;
+    }
+
     .selection-action-btn .selection-btn-label {
         display: none !important;
     }
@@ -114,6 +121,7 @@
     .selection-action-btn svg {
         width: 16px !important;
         height: 16px !important;
+        display: block !important;
     }
 
     .selection-submenu-dropdown {

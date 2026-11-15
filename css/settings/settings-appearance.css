@@ -339,11 +339,23 @@
     color: var(--accent-color);
     font-size: 13.5px;
     font-weight: 700;
+    line-height: 1;
     cursor: pointer;
     font-family: inherit;
     transition: background var(--dur-quick) ease, border-color var(--dur-quick) ease, box-shadow var(--dur-quick) ease, transform var(--dur-quick) ease;
     box-shadow: none;
     box-sizing: border-box;
+}
+
+.theme-save-preset-btn-large svg {
+    display: block;
+    flex-shrink: 0;
+}
+
+.theme-save-preset-btn-large span {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
 }
 
 .theme-save-preset-btn-large:hover {
@@ -520,6 +532,8 @@
 .theme-preset-active-check svg {
     width: 13px;
     height: 13px;
+    display: block;
+    flex-shrink: 0;
 }
 
 /* Якщо на кастомному активному пресеті навести курсор, кнопка видалення плавно замінює галочку */

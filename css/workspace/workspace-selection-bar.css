@@ -200,16 +200,40 @@
     border: 1px solid var(--border-subtle);
     color: var(--text-main);
     padding: 6px 12px;
+    height: 32px;
+    box-sizing: border-box;
     border-radius: 12px;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
     cursor: pointer;
     font-size: var(--font-xs);
     font-weight: 600;
+    line-height: 1;
     transition: all var(--transition-fast);
     font-family: inherit;
     user-select: none;
+}
+
+.selection-btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 0;
+    flex-shrink: 0;
+}
+
+.selection-action-btn svg,
+.selection-btn-icon svg {
+    display: block;
+    flex-shrink: 0;
+}
+
+.selection-btn-label {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
 }
 
 .selection-action-btn:hover:not(:disabled) {
@@ -515,12 +539,24 @@
     color: var(--text-muted);
     font-size: var(--font-xs);
     font-weight: 600;
+    line-height: 1;
     border-radius: 7px;
     cursor: pointer;
     transition: all var(--transition-fast);
     font-family: inherit;
     white-space: nowrap;
     user-select: none;
+}
+
+.selection-nav-tab svg {
+    display: block;
+    flex-shrink: 0;
+}
+
+.selection-nav-tab span {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
 }
 
 .selection-nav-tab:hover {
@@ -561,6 +597,7 @@
     color: var(--text-main);
     font-size: var(--font-xs);
     font-weight: 600;
+    line-height: 1;
     cursor: pointer;
     transition: all var(--transition-fast);
     font-family: inherit;
@@ -573,10 +610,16 @@
     color: var(--text-main);
 }
 
-
 .selection-menu-action-row svg {
     color: var(--text-muted);
+    display: block;
     flex-shrink: 0;
+}
+
+.selection-menu-action-row span {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
 }
 
 .selection-menu-action-row:hover svg {

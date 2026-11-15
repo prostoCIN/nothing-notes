@@ -898,7 +898,7 @@ window.App = window.App || {};
                         check.innerHTML = `
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
                                 <circle cx="12" cy="12" r="10"></circle>
-                                <polyline points="16 9 10.5 14.5 8 12"></polyline>
+                                <polyline points="9 12 11 14 15 10"></polyline>
                             </svg>
                         `;
                         card.appendChild(check);
@@ -927,7 +927,7 @@ window.App = window.App || {};
                             <span class="theme-preset-active-check" title="${isUa ? 'Активний набір' : 'Active preset'}">
                                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
                                     <circle cx="12" cy="12" r="10"></circle>
-                                    <polyline points="16 9 10.5 14.5 8 12"></polyline>
+                                    <polyline points="9 12 11 14 15 10"></polyline>
                                 </svg>
                             </span>
                         ` : ''}
