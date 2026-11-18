@@ -78,15 +78,38 @@ window.App.storage = {
             return {};
         }
     },
-    saveBoardPosition(noteId, x, y) {
-        if (!noteId) return;
+    saveBoardPositionsBatch(positions) {
+        if (!positions) return;
         try {
             const map = this.getBoardPositions();
-            const rx = Math.round(x);
-            const ry = Math.round(y);
-            map[noteId] = { canvasX: rx, canvasY: ry, boardX: rx, boardY: ry, x: rx, y: ry };
-            localStorage.setItem('minimal_board_positions', JSON.stringify(map));
+            let changed = false;
+            if (Array.isArray(positions)) {
+                positions.forEach(item => {
+                    if (item && item.id) {
+                        const rx = Math.round(item.canvasX ?? item.x ?? 0);
+                        const ry = Math.round(item.canvasY ?? item.y ?? 0);
+                        map[item.id] = { canvasX: rx, canvasY: ry, boardX: rx, boardY: ry, x: rx, y: ry };
+                        changed = true;
+                    }
+                });
+            } else if (typeof positions === 'object') {
+                Object.entries(positions).forEach(([id, pos]) => {
+                    if (pos) {
+                        const rx = Math.round(pos.canvasX ?? pos.x ?? 0);
+                        const ry = Math.round(pos.canvasY ?? pos.y ?? 0);
+                        map[id] = { canvasX: rx, canvasY: ry, boardX: rx, boardY: ry, x: rx, y: ry };
+                        changed = true;
+                    }
+                });
+            }
+            if (changed) {
+                localStorage.setItem('minimal_board_positions', JSON.stringify(map));
+            }
         } catch {}
+    },
+    saveBoardPosition(noteId, x, y) {
+        if (!noteId) return;
+        this.saveBoardPositionsBatch([{ id: noteId, canvasX: x, canvasY: y }]);
     },
     getNotes() {
         const raw = JSON.parse(localStorage.getItem('minimal_notes')) || [];

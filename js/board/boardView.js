@@ -406,6 +406,7 @@ window.App = window.App || {};
             let zeroCount = 0;
             const posSet = new Set();
             let hasOverlap = false;
+            const cardsFragment = nodesLayer ? document.createDocumentFragment() : null;
 
             boardNotes.forEach((note, idx) => {
                 const validParentId = (note.parentId && notesMap.has(note.parentId)) ? note.parentId : null;
@@ -484,15 +485,27 @@ window.App = window.App || {};
                     if (!isBoardReadOnly && window.App.boardConnect) {
                         window.App.boardConnect.attachConnectionHandles(card, nodeObj, this);
                     }
-                    nodesLayer.appendChild(card);
-                    nodeObj.element = card;
-                    if (card.offsetWidth > 0) {
-                        nodeObj.width = card.offsetWidth;
-                        nodeObj.height = card.offsetHeight;
+                    if (cardsFragment) {
+                        cardsFragment.appendChild(card);
+                    } else {
+                        nodesLayer.appendChild(card);
                     }
+                    nodeObj.element = card;
                 }
 
                 nodes.push(nodeObj);
+            });
+
+            if (nodesLayer && cardsFragment && cardsFragment.hasChildNodes()) {
+                nodesLayer.appendChild(cardsFragment);
+            }
+
+            // Пакетне зчитування габаритів за 1 прохід браузера (усуває 26+ forced layout reflows)
+            nodes.forEach(nodeObj => {
+                if (nodeObj.element && nodeObj.element.offsetWidth > 0) {
+                    nodeObj.width = nodeObj.element.offsetWidth;
+                    nodeObj.height = nodeObj.element.offsetHeight;
+                }
             });
 
             // Якщо кілька нотаток злиплися в (0, 0) або мають повне накладання координат — запускаємо авторозміщення
@@ -568,7 +581,7 @@ window.App = window.App || {};
                     animate: false,
                     onUpdate: () => this.draw(),
                     onComplete: () => {
-                        nodes.forEach(n => this.saveNodePosition(n));
+                        this.saveNodePositionsBatch(nodes);
                         if (!shouldPreserveCamera || !this.areNotesInViewport()) {
                             this.centerCameraOnAllNodes();
                         } else {
@@ -680,8 +693,8 @@ window.App = window.App || {};
                     if (hasMoved) {
                         dragNodes.forEach(n => {
                             if (n.element) n.element.classList.remove('is-dragging');
-                            this.saveNodePosition(n);
                         });
+                        this.saveNodePositionsBatch(dragNodes);
                         isDraggingNode = false;
                         draggedNode = null;
                         cardEl.dataset.justDragged = 'true';
@@ -1015,46 +1028,52 @@ window.App = window.App || {};
             }
         },
 
-        saveNodePosition(node) {
-            if (!node || !node.id) return;
+        saveNodePositionsBatch(nodesList) {
+            if (!Array.isArray(nodesList) || nodesList.length === 0) return;
             const state = window.App.state;
             if (!state) return;
 
-            const roundX = Math.round(node.x);
-            const roundY = Math.round(node.y);
+            const positions = [];
+            const notesMap = state.notes ? new Map(state.notes.map(n => [n.id, n])) : null;
+            const readOnlyNotesMap = state.readOnlyNotes ? new Map(state.readOnlyNotes.map(n => [n.id, n])) : null;
 
-            // Завжди зберігаємо у локальний кеш координат дошки
-            if (window.App.storage && window.App.storage.saveBoardPosition) {
-                window.App.storage.saveBoardPosition(node.id, roundX, roundY);
-            }
+            nodesList.forEach(node => {
+                if (!node || !node.id) return;
+                const rx = Math.round(node.x);
+                const ry = Math.round(node.y);
+                positions.push({ id: node.id, canvasX: rx, canvasY: ry });
 
-            // Якщо це власна нотатка
-            const ownNote = state.notes ? state.notes.find(item => item.id === node.id) : null;
-            if (ownNote) {
-                ownNote.canvasX = roundX;
-                ownNote.canvasY = roundY;
-                ownNote.boardX = roundX;
-                ownNote.boardY = roundY;
-                if (window.App.storage) {
+                if (notesMap && notesMap.has(node.id)) {
+                    const own = notesMap.get(node.id);
+                    own.canvasX = rx;
+                    own.canvasY = ry;
+                    own.boardX = rx;
+                    own.boardY = ry;
+                } else if (readOnlyNotesMap && readOnlyNotesMap.has(node.id)) {
+                    const ro = readOnlyNotesMap.get(node.id);
+                    ro.canvasX = rx;
+                    ro.canvasY = ry;
+                    ro.boardX = rx;
+                    ro.boardY = ry;
+                }
+            });
+
+            if (window.App.storage) {
+                if (window.App.storage.saveBoardPositionsBatch) {
+                    window.App.storage.saveBoardPositionsBatch(positions);
+                }
+                if (state.notes) {
                     window.App.storage.saveNotes(state.notes);
                 }
-                if (window.App.cloudSync && window.App.cloudSync.syncNote) {
-                    window.App.cloudSync.syncNote(ownNote);
-                }
-                return;
-            }
-
-            // Якщо це спільна нотатка (тільки для читання)
-            const readOnlyNote = state.readOnlyNotes ? state.readOnlyNotes.find(item => item.id === node.id) : null;
-            if (readOnlyNote) {
-                readOnlyNote.canvasX = roundX;
-                readOnlyNote.canvasY = roundY;
-                readOnlyNote.boardX = roundX;
-                readOnlyNote.boardY = roundY;
-                if (window.App.storage && window.App.storage.saveReadOnlyNotes) {
+                if (state.readOnlyNotes && window.App.storage.saveReadOnlyNotes) {
                     window.App.storage.saveReadOnlyNotes(state.readOnlyNotes);
                 }
             }
+        },
+
+        saveNodePosition(node) {
+            if (!node || !node.id) return;
+            this.saveNodePositionsBatch([node]);
         },
 
         runAutoLayout() {
@@ -1063,7 +1082,7 @@ window.App = window.App || {};
                     animate: true,
                     onUpdate: () => this.draw(),
                     onComplete: () => {
-                        nodes.forEach(n => this.saveNodePosition(n));
+                        this.saveNodePositionsBatch(nodes);
                         this.requestRender();
                     }
                 });
@@ -1192,11 +1211,27 @@ window.App = window.App || {};
             }
             ctx.fill();
 
-            // Малюємо кабелі (селективний перерахунок траєкторій тільки для рухомих нотаток)
+            // Малюємо кабелі (динамічний перерахунок траєкторій при будь-якій зміні положення або розмірів нотаток)
             if (window.App.boardCables) {
                 edges.forEach(edge => {
-                    if (!edge.cachedPath || (isDraggingNode && (edge.sourceNode === draggedNode || edge.targetNode === draggedNode))) {
-                        edge.cachedPath = window.App.boardCables.calculatePath(edge.sourceNode, edge.targetNode);
+                    const sn = edge.sourceNode;
+                    const tn = edge.targetNode;
+                    if (!sn || !tn) return;
+
+                    if (!edge.cachedPath ||
+                        edge._sx !== sn.x || edge._sy !== sn.y ||
+                        edge._tx !== tn.x || edge._ty !== tn.y ||
+                        edge._sw !== sn.width || edge._sh !== sn.height ||
+                        edge._tw !== tn.width || edge._th !== tn.height) {
+                        edge.cachedPath = window.App.boardCables.calculatePath(sn, tn);
+                        edge._sx = sn.x;
+                        edge._sy = sn.y;
+                        edge._tx = tn.x;
+                        edge._ty = tn.y;
+                        edge._sw = sn.width;
+                        edge._sh = sn.height;
+                        edge._tw = tn.width;
+                        edge._th = tn.height;
                     }
                 });
                 window.App.boardCables.drawCables(ctx, edges, camera, {
