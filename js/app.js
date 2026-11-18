@@ -1,6 +1,17 @@
 // js/app.js - Головна точка входу (ініціалізація та зв''язування компонентів)
 window.App = window.App || {};
 
+function syncRouteToUrl() {
+    if (!window.App.router || !window.App.state) return;
+    const state = window.App.state;
+    const boardId = state.activeBoardId;
+    if (!boardId) return;
+    const mode = state.viewMode || 'columns';
+    const path = (mode === 'columns') ? `/board/${boardId}` : `/board/${boardId}/${mode}`;
+    window.App.router.syncUrl(path, true);
+}
+window.App.syncRouteToUrl = syncRouteToUrl;
+
 function bootstrapApp() {
     const welcomeView = window.App.welcomeView;
     const boardManager = window.App.boardManager;
@@ -13,16 +24,6 @@ function bootstrapApp() {
 
     if (window.App.historyManager) {
         window.App.historyManager.init();
-    }
-
-    function syncRouteToUrl() {
-        if (!window.App.router || !window.App.state) return;
-        const state = window.App.state;
-        const boardId = state.activeBoardId;
-        if (!boardId) return;
-        const mode = state.viewMode || 'columns';
-        const path = (mode === 'columns') ? `/board/${boardId}` : `/board/${boardId}/${mode}`;
-        window.App.router.syncUrl(path, true);
     }
 
     // Підписка на події через центральний EventBus
@@ -265,6 +266,7 @@ function initApp() {
     const welcomeView = window.App.welcomeView;
     const sidebarView = window.App.sidebarView;
     const workspaceView = window.App.workspaceView;
+    const boardManager = window.App.boardManager;
 
     if (state.boards.length === 0) {
         welcomeView.show();
