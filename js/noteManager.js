@@ -138,7 +138,7 @@ window.DOMPurify = window.DOMPurify || DOMPurify;
             return allNotes.find(n => String(n.id) === strId) || null;
         },
 
-        createNewNote(parentId = null, shouldFocus = true) {
+        createNewNote(parentId = null, shouldFocus = true, initialProps = {}) {
             const state = window.App.state;
             const storage = window.App.storage;
             if (!state.activeBoardId) return null;
@@ -168,8 +168,19 @@ window.DOMPurify = window.DOMPurify || DOMPurify;
                 orderIndex: nextOrderIndex,
                 createdAt: now,
                 updatedAt: now,
-                isOfflineCreated: true
+                isOfflineCreated: true,
+                ...initialProps
             };
+
+            if (typeof initialProps.canvasX === 'number' && typeof initialProps.canvasY === 'number') {
+                newNote.canvasX = Math.round(initialProps.canvasX);
+                newNote.canvasY = Math.round(initialProps.canvasY);
+                newNote.boardX = newNote.canvasX;
+                newNote.boardY = newNote.canvasY;
+                if (storage && storage.saveBoardPosition) {
+                    storage.saveBoardPosition(newNote.id, newNote.canvasX, newNote.canvasY);
+                }
+            }
 
             if (window.App.historyManager) {
                 window.App.historyManager.recordState('create_note');

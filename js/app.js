@@ -29,8 +29,17 @@ function bootstrapApp() {
     // Підписка на події через центральний EventBus
     if (window.App.events) {
         window.App.events.on('notes:changed', () => {
-            sidebarView.renderNotesList();
-            workspaceView.render();
+            if (window.App.state && window.App.state.viewMode === 'board') {
+                requestAnimationFrame(() => {
+                    if (sidebarView && sidebarView.renderNotesList) {
+                        sidebarView.renderNotesList();
+                    }
+                });
+                workspaceView.render();
+            } else {
+                sidebarView.renderNotesList();
+                workspaceView.render();
+            }
         });
 
         window.App.events.on('view:changed', () => {

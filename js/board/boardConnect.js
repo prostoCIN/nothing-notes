@@ -48,7 +48,8 @@ window.App = window.App || {};
                     if (e.button !== 0) return;
                     e.stopPropagation();
                     e.preventDefault();
-                    this.startConnecting(node, side, e, boardView);
+                    const currentNode = cardEl._boardNode || (boardView && boardView.getNodes && boardView.getNodes().find(n => n.id === cardEl.dataset.boardNodeId)) || node;
+                    this.startConnecting(currentNode, side, e, boardView);
                 });
 
                 cardEl.appendChild(handle);
@@ -289,10 +290,12 @@ window.App = window.App || {};
             }
 
             if (window.App.noteManager) {
-                const success = window.App.noteManager.moveNoteToParent(targetNode.id, sourceNode.id);
+                const success = window.App.noteManager.moveNoteToParent(targetNode.id, sourceNode.id, false);
                 if (success) {
                     boardView.buildBoardData({ preserveCamera: true });
-                    if (window.App.sidebarView) window.App.sidebarView.render();
+                    if (window.App.sidebarView && window.App.sidebarView.renderNotesList) {
+                        requestAnimationFrame(() => window.App.sidebarView.renderNotesList());
+                    }
                 }
             }
         },
@@ -306,11 +309,7 @@ window.App = window.App || {};
 
             const targetIds = validTargets.map(t => t.id);
 
-            if (window.App.workspaceSelectionActions && window.App.workspaceSelectionActions.moveNotesToParent) {
-                window.App.workspaceSelectionActions.moveNotesToParent(targetIds, sourceNode.id);
-                boardView.buildBoardData({ preserveCamera: true });
-                if (window.App.sidebarView) window.App.sidebarView.render();
-            } else if (window.App.noteManager) {
+            if (window.App.noteManager) {
                 if (window.App.historyManager) {
                     window.App.historyManager.recordState('connect_nodes');
                 }
@@ -320,8 +319,17 @@ window.App = window.App || {};
                     if (ok) anyMoved = true;
                 });
                 if (anyMoved) {
+                    const state = window.App.state;
+                    if (state && state.selectedWorkspaceNoteIds) {
+                        state.selectedWorkspaceNoteIds.clear();
+                    }
+                    if (window.App.workspaceSelectionBar) {
+                        window.App.workspaceSelectionBar.exitSelectMode();
+                    }
                     boardView.buildBoardData({ preserveCamera: true });
-                    if (window.App.sidebarView) window.App.sidebarView.render();
+                    if (window.App.sidebarView && window.App.sidebarView.renderNotesList) {
+                        requestAnimationFrame(() => window.App.sidebarView.renderNotesList());
+                    }
                 }
             }
         },

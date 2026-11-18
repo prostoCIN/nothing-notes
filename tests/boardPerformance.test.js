@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import '../js/eventBus.js';
 import '../js/state.js';
 import '../js/board/boardCables.js';
+import '../js/board/boardLayout.js';
+import '../js/noteManager.js';
 
 describe('Board Performance & Batch Persistence', () => {
     beforeEach(() => {
@@ -43,5 +45,41 @@ describe('Board Performance & Batch Persistence', () => {
         expect(path.y1).toBe(sourceNode.y + 140);
         expect(path.x2).toBe(targetNode.x + 190);
         expect(path.y2).toBe(targetNode.y);
+    });
+
+    it('should assign canvas coordinates at creation time in noteManager', () => {
+        const state = window.App.state;
+        state.activeBoardId = 'default_board';
+        state.notes = [];
+
+        const note = window.App.noteManager.createNewNote(null, false, {
+            canvasX: 250,
+            canvasY: 420
+        });
+
+        expect(note).toBeDefined();
+        expect(note.canvasX).toBe(250);
+        expect(note.canvasY).toBe(420);
+        expect(note.boardX).toBe(250);
+        expect(note.boardY).toBe(420);
+    });
+
+    it('should perform autoLayout without animation and update node coordinates immediately', () => {
+        const nodes = [
+            { id: 'p1', x: 0, y: 0, width: 380, height: 140, parentId: null },
+            { id: 'c1', x: 0, y: 0, width: 380, height: 140, parentId: 'p1' }
+        ];
+        let completed = false;
+
+        window.App.boardLayout.autoLayout(nodes, [], {
+            animate: false,
+            onComplete: () => { completed = true; }
+        });
+
+        expect(completed).toBe(true);
+        expect(typeof nodes[0].x).toBe('number');
+        expect(nodes[0].x).toBeGreaterThanOrEqual(60);
+        expect(typeof nodes[1].y).toBe('number');
+        expect(nodes[1].y).toBeGreaterThan(nodes[0].y);
     });
 });

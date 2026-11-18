@@ -174,6 +174,14 @@ window.App = window.App || {};
                 if (progress < 1) {
                     requestAnimationFrame(animateStep);
                 } else {
+                    nodes.forEach(n => {
+                        n.x = n.targetX;
+                        n.y = n.targetY;
+                        if (n.element) {
+                            n.element.style.left = n.x + 'px';
+                            n.element.style.top = n.y + 'px';
+                        }
+                    });
                     if (typeof onComplete === 'function') onComplete();
                 }
             };

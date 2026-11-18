@@ -357,13 +357,10 @@ window.App = window.App || {};
             const notesMap = new Map();
             boardNotes.forEach(n => notesMap.set(n.id, n));
 
-            if (nodesLayer) nodesLayer.innerHTML = '';
-            nodes = [];
-            edges = [];
-
             // Якщо на дошці взагалі немає нотаток — відображаємо дружній порожній стан
             if (boardNotes.length === 0) {
                 if (nodesLayer) {
+                    nodesLayer.innerHTML = '';
                     const emptyPlaceholder = document.createElement('div');
                     emptyPlaceholder.className = 'board-empty-placeholder';
                     const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
@@ -382,6 +379,8 @@ window.App = window.App || {};
                     nodesLayer.appendChild(emptyPlaceholder);
                 }
 
+                nodes = [];
+                edges = [];
                 const counterEl = container ? container.querySelector('#board-nodes-counter') : null;
                 if (counterEl) counterEl.textContent = '0';
                 const orphansEl = container ? container.querySelector('#board-orphans-counter') : null;
@@ -389,6 +388,22 @@ window.App = window.App || {};
                 this.draw();
                 return;
             }
+
+            // Видаляємо порожній placeholder та картки видалених нотаток (Reconciliation)
+            if (nodesLayer) {
+                const emptyEl = nodesLayer.querySelector('.board-empty-placeholder');
+                if (emptyEl) emptyEl.remove();
+
+                const currentIdSet = new Set(boardNotes.map(n => n.id));
+                nodesLayer.querySelectorAll('.note-sticker[data-board-node-id]').forEach(el => {
+                    if (!currentIdSet.has(el.dataset.boardNodeId)) {
+                        el.remove();
+                    }
+                });
+            }
+
+            nodes = [];
+            edges = [];
 
             function findRootNoteId(note) {
                 if (!note) return null;
@@ -402,10 +417,6 @@ window.App = window.App || {};
                 return cur ? cur.id : note.id;
             }
 
-            let anyMissingPosition = Boolean(options.forceLayout);
-            let zeroCount = 0;
-            const posSet = new Set();
-            let hasOverlap = false;
             const cardsFragment = nodesLayer ? document.createDocumentFragment() : null;
 
             boardNotes.forEach((note, idx) => {
@@ -446,12 +457,6 @@ window.App = window.App || {};
                 if (typeof rawX === 'number' && typeof rawY === 'number' && !isNaN(rawX) && !isNaN(rawY)) {
                     posX = rawX;
                     posY = rawY;
-                    if (rawX === 0 && rawY === 0) zeroCount++;
-                    const key = `${Math.round(rawX)}_${Math.round(rawY)}`;
-                    if (posSet.has(key)) hasOverlap = true;
-                    posSet.add(key);
-                } else {
-                    anyMissingPosition = true;
                 }
 
                 const branchRootId = findRootNoteId(note);
@@ -474,12 +479,22 @@ window.App = window.App || {};
                     element: null
                 };
 
-                if (nodesLayer && window.App.stickerCard) {
+                // Перевикористовуємо вже існуючу картку в DOM для уникнення важкого перестворення
+                const existingCard = nodesLayer ? nodesLayer.querySelector(`.note-sticker[data-board-node-id="${note.id}"]`) : null;
+                if (existingCard) {
+                    existingCard.style.left = posX + 'px';
+                    existingCard.style.top = posY + 'px';
+                    existingCard._boardNode = nodeObj;
+                    nodeObj.element = existingCard;
+                    nodeObj.width = existingCard.offsetWidth || 380;
+                    nodeObj.height = existingCard.offsetHeight || 140;
+                } else if (nodesLayer && window.App.stickerCard) {
                     const card = window.App.stickerCard.createCard(note, 0);
                     card.style.position = 'absolute';
                     card.style.left = posX + 'px';
                     card.style.top = posY + 'px';
                     card.dataset.boardNodeId = note.id;
+                    card._boardNode = nodeObj;
 
                     this.attachCardDrag(card, nodeObj);
                     if (!isBoardReadOnly && window.App.boardConnect) {
@@ -498,19 +513,13 @@ window.App = window.App || {};
 
             if (nodesLayer && cardsFragment && cardsFragment.hasChildNodes()) {
                 nodesLayer.appendChild(cardsFragment);
-            }
-
-            // Пакетне зчитування габаритів за 1 прохід браузера (усуває 26+ forced layout reflows)
-            nodes.forEach(nodeObj => {
-                if (nodeObj.element && nodeObj.element.offsetWidth > 0) {
-                    nodeObj.width = nodeObj.element.offsetWidth;
-                    nodeObj.height = nodeObj.element.offsetHeight;
-                }
-            });
-
-            // Якщо кілька нотаток злиплися в (0, 0) або мають повне накладання координат — запускаємо авторозміщення
-            if (nodes.length > 1 && (zeroCount > 1 || hasOverlap)) {
-                anyMissingPosition = true;
+                // Однократне зчитування габаритів тільки для нових карток
+                nodes.forEach(nodeObj => {
+                    if (nodeObj.element && (!nodeObj.width || nodeObj.width === 380) && nodeObj.element.offsetWidth > 0) {
+                        nodeObj.width = nodeObj.element.offsetWidth;
+                        nodeObj.height = nodeObj.element.offsetHeight;
+                    }
+                });
             }
 
             // Ієрархічні зв'язки
@@ -576,7 +585,12 @@ window.App = window.App || {};
             const orphansEl = container ? container.querySelector('#board-orphans-counter') : null;
             if (orphansEl) orphansEl.textContent = String(nodes.filter(n => n.isOrphan).length);
 
-            if (anyMissingPosition && window.App.boardLayout) {
+            // Авторозміщення запускається ТІЛЬКИ при явному виклику або якщо ЖОДНА нотатка не має збережених координат
+            const unpositionedCount = boardNotes.filter(n => typeof n.canvasX !== 'number' && typeof n.boardX !== 'number').length;
+            const isFreshUnpositionedBoard = (unpositionedCount === boardNotes.length && boardNotes.length > 0);
+            const shouldRunAutoLayout = Boolean(options.forceLayout || isFreshUnpositionedBoard);
+
+            if (shouldRunAutoLayout && window.App.boardLayout) {
                 window.App.boardLayout.autoLayout(nodes, edges, {
                     animate: false,
                     onUpdate: () => this.draw(),
@@ -622,12 +636,15 @@ window.App = window.App || {};
             }
         },
 
-        attachCardDrag(cardEl, node) {
+        attachCardDrag(cardEl, initialNode) {
             cardEl.addEventListener('pointerdown', (e) => {
                 if (e.target.closest('.board-connect-handle')) {
                     return;
                 }
                 if (e.button !== 0) return;
+
+                const node = cardEl._boardNode || (nodes && nodes.find(n => n.id === cardEl.dataset.boardNodeId)) || initialNode;
+                if (!node) return;
 
                 const state = window.App.state;
                 const isSelectMode = Boolean(state && state.isWorkspaceSelectMode);
@@ -1078,12 +1095,24 @@ window.App = window.App || {};
 
         runAutoLayout() {
             if (window.App.boardLayout) {
+                // Скидаємо закешовані траєкторії кабелів перед початком анімації
+                edges.forEach(edge => {
+                    edge.cachedPath = null;
+                    edge._sx = undefined;
+                    edge._sy = undefined;
+                    edge._tx = undefined;
+                    edge._ty = undefined;
+                });
                 window.App.boardLayout.autoLayout(nodes, edges, {
                     animate: true,
                     onUpdate: () => this.draw(),
                     onComplete: () => {
                         this.saveNodePositionsBatch(nodes);
-                        this.requestRender();
+                        edges.forEach(edge => {
+                            edge.cachedPath = null;
+                        });
+                        this.centerCameraOnAllNodes();
+                        this.draw();
                     }
                 });
             }
@@ -1094,22 +1123,14 @@ window.App = window.App || {};
             if (!currentBoard) return;
             if (currentBoard.isReadOnly || (currentBoard.id && String(currentBoard.id).startsWith('shared_'))) return;
 
+            const targetX = Math.round(worldX - 190);
+            const targetY = Math.round(worldY - 70);
+
             if (window.App.noteManager && window.App.noteManager.createNewNote) {
-                const newNote = window.App.noteManager.createNewNote(null, false);
-                if (newNote) {
-                    newNote.canvasX = Math.round(worldX - 190);
-                    newNote.canvasY = Math.round(worldY - 70);
-                    newNote.boardX = newNote.canvasX;
-                    newNote.boardY = newNote.canvasY;
-                    const state = window.App.state;
-                    if (state && window.App.storage) {
-                        if (window.App.storage.saveBoardPosition) {
-                            window.App.storage.saveBoardPosition(newNote.id, newNote.canvasX, newNote.canvasY);
-                        }
-                        window.App.storage.saveNotes(state.notes);
-                    }
-                    this.buildBoardData({ preserveCamera: true });
-                }
+                window.App.noteManager.createNewNote(null, false, {
+                    canvasX: targetX,
+                    canvasY: targetY
+                });
             }
         },
 
@@ -1120,31 +1141,20 @@ window.App = window.App || {};
             const parentNode = nodes.find(n => n.id === parentId);
             if (!parentNode) return;
 
-            const state = window.App.state;
             const noteManager = window.App.noteManager;
             if (!noteManager) return;
-
-            const newNote = noteManager.createNewNote(parentId, false);
-            if (!newNote) return;
 
             const existingChildren = nodes.filter(n => n.parentId === parentId);
             const ph = parentNode.element ? (parentNode.element.offsetHeight || 140) : 140;
 
-            // Розміщуємо нову піднотатку вертикально під батьківською карткою
-            newNote.canvasX = parentNode.x + (existingChildren.length * 30);
-            newNote.canvasY = parentNode.y + ph + 40 + (existingChildren.length * 150);
-            newNote.boardX = newNote.canvasX;
-            newNote.boardY = newNote.canvasY;
+            const targetX = parentNode.x + (existingChildren.length * 30);
+            const targetY = parentNode.y + ph + 40 + (existingChildren.length * 150);
 
-            if (window.App.storage) {
-                if (window.App.storage.saveBoardPosition) {
-                    window.App.storage.saveBoardPosition(newNote.id, newNote.canvasX, newNote.canvasY);
-                }
-                window.App.storage.saveNotes(state.notes);
-            }
-
-            this.buildBoardData({ preserveCamera: true });
-            this.draw();
+            const newNote = noteManager.createNewNote(parentId, false, {
+                canvasX: targetX,
+                canvasY: targetY
+            });
+            if (!newNote) return;
 
             setTimeout(() => {
                 if (nodesLayer) {
@@ -1154,7 +1164,7 @@ window.App = window.App || {};
                         if (titleEl) titleEl.focus();
                     }
                 }
-            }, 80);
+            }, 60);
         },
 
         applyFilters() {
@@ -1418,6 +1428,10 @@ window.App = window.App || {};
 
         getNodes() {
             return nodes;
+        },
+
+        getNodeById(id) {
+            return nodes.find(n => n.id === id) || null;
         },
 
         panToNote(noteId) {
