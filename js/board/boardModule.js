@@ -4,6 +4,8 @@ import './boardLayout.js';
 import './boardContextMenu.js';
 import './boardInteraction.js';
 import './boardConnect.js';
+import './boardCameraStorage.js';
+import './boardMarquee.js';
 import './boardView.js';
 
 export default window.App.boardView;

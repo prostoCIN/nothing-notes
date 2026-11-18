@@ -13,68 +13,12 @@ window.App = window.App || {};
 
     let currentRenderedBoardId = null;
     let isCameraInitializedForBoard = false;
-    const BOARD_CAMERAS_KEY = 'minimal_board_cameras';
-    const boardCameras = new Map(); // boardId -> { x, y, zoom }
-
-    function loadBoardCameras() {
-        try {
-            const raw = localStorage.getItem(BOARD_CAMERAS_KEY);
-            if (raw) {
-                const parsed = JSON.parse(raw);
-                if (parsed && typeof parsed === 'object') {
-                    Object.entries(parsed).forEach(([id, cam]) => {
-                        if (cam && typeof cam.x === 'number' && typeof cam.y === 'number' && typeof cam.zoom === 'number') {
-                            boardCameras.set(String(id), cam);
-                        }
-                    });
-                }
-            }
-        } catch (e) {
-            console.warn('[BoardView] Failed to load board cameras:', e);
-        }
-    }
-
-    loadBoardCameras();
-
-    let saveCameraTimeout = null;
-    function persistBoardCamerasToStorage(immediate = false) {
-        const doSave = () => {
-            try {
-                const obj = {};
-                boardCameras.forEach((cam, id) => {
-                    obj[id] = cam;
-                });
-                localStorage.setItem(BOARD_CAMERAS_KEY, JSON.stringify(obj));
-            } catch (e) {
-                console.warn('[BoardView] Failed to persist board cameras:', e);
-            }
-        };
-
-        if (immediate) {
-            if (saveCameraTimeout) {
-                clearTimeout(saveCameraTimeout);
-                saveCameraTimeout = null;
-            }
-            doSave();
-        } else {
-            if (saveCameraTimeout) clearTimeout(saveCameraTimeout);
-            saveCameraTimeout = setTimeout(() => {
-                saveCameraTimeout = null;
-                doSave();
-            }, 200);
-        }
-    }
-
     function saveCurrentBoardCamera(immediate = false) {
         if (!currentRenderedBoardId) return;
         const interaction = window.App.boardInteraction;
-        if (!interaction || !interaction.camera) return;
-        boardCameras.set(String(currentRenderedBoardId), {
-            x: interaction.camera.x,
-            y: interaction.camera.y,
-            zoom: interaction.camera.zoom
-        });
-        persistBoardCamerasToStorage(immediate);
+        const storage = window.App.boardCameraStorage;
+        if (!interaction || !interaction.camera || !storage) return;
+        storage.saveCamera(currentRenderedBoardId, interaction.camera, immediate);
     }
 
     window.addEventListener('beforeunload', () => {
@@ -93,12 +37,6 @@ window.App = window.App || {};
     let activeTagFilter = null;
 
     let isSpacePressed = false;
-    let isPreparingMarquee = false;
-    let isMarquee = false;
-    let marqueeStartPos = { x: 0, y: 0 };
-    let marqueeInitialSelection = new Set();
-    let wasInSelectMode = false;
-    let marqueeEl = null;
 
     let boundPointerMove = null;
     let boundPointerUp = null;
@@ -168,8 +106,9 @@ window.App = window.App || {};
 
             const isFreshLoad = !isCameraInitializedForBoard;
 
-            if (boardCameras.has(boardIdStr) && !options.resetCamera) {
-                const saved = boardCameras.get(boardIdStr);
+            const cameraStorage = window.App.boardCameraStorage;
+            if (cameraStorage && cameraStorage.hasSavedCamera(boardIdStr) && !options.resetCamera) {
+                const saved = cameraStorage.getSavedCamera(boardIdStr);
                 const interaction = window.App.boardInteraction;
                 interaction.camera.x = saved.x;
                 interaction.camera.y = saved.y;
@@ -638,111 +577,27 @@ window.App = window.App || {};
         },
 
         areNotesInViewport() {
-            if (!nodes || nodes.length === 0) return true;
-            if (!container || !canvas) return true;
-            const rect = container.getBoundingClientRect();
-            const width = (rect && rect.width > 50) ? rect.width : (canvas.offsetWidth || window.innerWidth || 800);
-            const height = (rect && rect.height > 50) ? rect.height : (canvas.offsetHeight || window.innerHeight || 600);
-            const camera = window.App.boardInteraction ? window.App.boardInteraction.camera : null;
-            if (!camera) return true;
-
-            const zoom = camera.zoom || 1;
-
-            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-            nodes.forEach(n => {
-                const nw = n.width || 380;
-                const nh = n.height || 140;
-                if (typeof n.x === 'number' && !isNaN(n.x)) {
-                    minX = Math.min(minX, n.x);
-                    maxX = Math.max(maxX, n.x + nw);
-                }
-                if (typeof n.y === 'number' && !isNaN(n.y)) {
-                    minY = Math.min(minY, n.y);
-                    maxY = Math.max(maxY, n.y + nh);
-                }
-            });
-
-            if (!isFinite(minX) || !isFinite(minY)) return true;
-
-            const screenMinX = (minX - width / 2) * zoom + camera.x;
-            const screenMaxX = (maxX - width / 2) * zoom + camera.x;
-            const screenMinY = (minY - height / 2) * zoom + camera.y;
-            const screenMaxY = (maxY - height / 2) * zoom + camera.y;
-
-            // Перевіряємо, чи потрапляє хоча б частина прямокутника нотаток у видиму область
-            return (
-                screenMaxX > 60 &&
-                screenMinX < width - 60 &&
-                screenMaxY > 60 &&
-                screenMinY < height - 60
-            );
+            if (window.App.boardCameraStorage) {
+                const camera = window.App.boardInteraction ? window.App.boardInteraction.camera : null;
+                return window.App.boardCameraStorage.areNotesInViewport(nodes, container, canvas, camera);
+            }
+            return true;
         },
 
         centerCameraOnAllNodes() {
-            if (!canvas || !container) return;
-
-            const rect = container.getBoundingClientRect();
-            // Якщо DOM ще не встиг порахувати геометрію контейнера, відкладаємо до кадру анімації
-            if (!rect || rect.width <= 50 || rect.height <= 50) {
-                requestAnimationFrame(() => this.centerCameraOnAllNodes());
-                return;
-            }
-
-            this.resizeCanvas();
-            const w = rect.width;
-            const h = rect.height;
-
-            if (nodes.length === 0) {
-                window.App.boardInteraction.initCamera(w, h);
+            if (window.App.boardCameraStorage) {
+                const camera = window.App.boardInteraction ? window.App.boardInteraction.camera : null;
+                window.App.boardCameraStorage.centerCameraOnAllNodes({
+                    nodes,
+                    container,
+                    canvas,
+                    camera,
+                    onResize: () => this.resizeCanvas(),
+                    onDraw: () => this.draw(),
+                    boardId: currentRenderedBoardId
+                });
                 isCameraInitializedForBoard = true;
-                saveCurrentBoardCamera(true);
-                this.draw();
-                return;
             }
-
-            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-            nodes.forEach(n => {
-                const nw = n.width || (n.element && n.element.offsetWidth > 40 ? n.element.offsetWidth : 380);
-                const nh = n.height || (n.element && n.element.offsetHeight > 40 ? n.element.offsetHeight : 140);
-                if (typeof n.x === 'number' && !isNaN(n.x)) {
-                    minX = Math.min(minX, n.x);
-                    maxX = Math.max(maxX, n.x + nw);
-                }
-                if (typeof n.y === 'number' && !isNaN(n.y)) {
-                    minY = Math.min(minY, n.y);
-                    maxY = Math.max(maxY, n.y + nh);
-                }
-            });
-
-            if (!isFinite(minX) || !isFinite(minY)) {
-                window.App.boardInteraction.initCamera(w, h);
-                isCameraInitializedForBoard = true;
-                saveCurrentBoardCamera(true);
-                this.draw();
-                return;
-            }
-
-            const bboxW = Math.max(100, maxX - minX);
-            const bboxH = Math.max(100, maxY - minY);
-            const padding = Math.min(100, Math.floor(Math.min(w, h) * 0.12));
-
-            const interaction = window.App.boardInteraction;
-            const fitZoom = Math.min((w - padding * 2) / bboxW, (h - padding * 2) / bboxH);
-            const minZ = (interaction && interaction.camera && interaction.camera.minZoom) ? interaction.camera.minZoom : 0.15;
-
-            // Запобігаємо надмірному зуму при 1-3 нотатках: максимальний зум для центрування — 1.0 (натуральний масштаб)
-            const targetZoom = Math.max(minZ, Math.min(1.0, isNaN(fitZoom) ? 1.0 : fitZoom));
-            const bboxCenterX = minX + bboxW / 2;
-            const bboxCenterY = minY + bboxH / 2;
-
-            interaction.camera.x = (w / 2) - (bboxCenterX - (w / 2)) * targetZoom;
-            interaction.camera.y = (h / 2) - (bboxCenterY - (h / 2)) * targetZoom;
-            interaction.camera.zoom = targetZoom;
-
-            isCameraInitializedForBoard = true;
-            saveCurrentBoardCamera(true);
-
-            this.draw();
         },
 
         attachCardDrag(cardEl, node) {
@@ -859,37 +714,6 @@ window.App = window.App || {};
             container.classList.toggle('is-select-mode-active', isSel);
         },
 
-        checkMarqueeIntersection(marqueeRect, initialSet) {
-            const state = window.App.state;
-            if (!state || !state.selectedWorkspaceNoteIds) return;
-            if (!nodesLayer) return;
-
-            const cards = nodesLayer.querySelectorAll('.note-sticker[data-note-id]');
-            cards.forEach(card => {
-                const noteId = card.dataset.noteId;
-                if (!noteId) return;
-                if (card.style.display === 'none') return;
-
-                const cardRect = card.getBoundingClientRect();
-                const isIntersecting = !(
-                    cardRect.right < marqueeRect.left ||
-                    cardRect.left > marqueeRect.right ||
-                    cardRect.bottom < marqueeRect.top ||
-                    cardRect.top > marqueeRect.bottom
-                );
-
-                if (isIntersecting) {
-                    state.selectedWorkspaceNoteIds.add(noteId);
-                } else if (!initialSet || !initialSet.has(noteId)) {
-                    state.selectedWorkspaceNoteIds.delete(noteId);
-                }
-            });
-
-            if (window.App.workspaceSelectionBar) {
-                window.App.workspaceSelectionBar.updateUI();
-            }
-        },
-
         bindEvents() {
             const interaction = window.App.boardInteraction;
 
@@ -921,17 +745,12 @@ window.App = window.App || {};
                 if (e.button !== 0) return;
 
                 const state = window.App.state;
-                const isModifier = Boolean(e.ctrlKey || e.metaKey || e.shiftKey);
                 const shouldMarquee = e.shiftKey || (state && state.isWorkspaceSelectMode && !isSpacePressed);
 
                 if (shouldMarquee) {
-                    isPreparingMarquee = true;
-                    isMarquee = false;
-                    marqueeStartPos = { x: e.clientX, y: e.clientY };
-                    wasInSelectMode = Boolean(state && state.isWorkspaceSelectMode);
-                    marqueeInitialSelection = (isModifier && state && state.selectedWorkspaceNoteIds)
-                        ? new Set(state.selectedWorkspaceNoteIds)
-                        : new Set();
+                    if (window.App.boardMarquee) {
+                        window.App.boardMarquee.start(e);
+                    }
                     return;
                 }
 
@@ -946,49 +765,8 @@ window.App = window.App || {};
                     return;
                 }
 
-                if (isPreparingMarquee) {
-                    const dx = e.clientX - marqueeStartPos.x;
-                    const dy = e.clientY - marqueeStartPos.y;
-
-                    if (!isMarquee && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
-                        isMarquee = true;
-                        document.body.style.userSelect = 'none';
-
-                        const state = window.App.state;
-                        if (window.App.workspaceSelectionBar && state && !state.isWorkspaceSelectMode) {
-                            window.App.workspaceSelectionBar.enterSelectMode();
-                        }
-
-                        const isModifier = Boolean(e.ctrlKey || e.metaKey || e.shiftKey);
-                        if (!isModifier && state && state.selectedWorkspaceNoteIds) {
-                            state.selectedWorkspaceNoteIds.clear();
-                        }
-
-                        if (!marqueeEl) {
-                            marqueeEl = document.createElement('div');
-                            marqueeEl.className = 'workspace-marquee-selection';
-                            document.body.appendChild(marqueeEl);
-                        }
-                    }
-
-                    if (isMarquee && marqueeEl) {
-                        e.preventDefault();
-                        const left = Math.min(marqueeStartPos.x, e.clientX);
-                        const top = Math.min(marqueeStartPos.y, e.clientY);
-                        const width = Math.abs(e.clientX - marqueeStartPos.x);
-                        const height = Math.abs(e.clientY - marqueeStartPos.y);
-
-                        marqueeEl.style.left = left + 'px';
-                        marqueeEl.style.top = top + 'px';
-                        marqueeEl.style.width = width + 'px';
-                        marqueeEl.style.height = height + 'px';
-
-                        this.checkMarqueeIntersection({
-                            left: left,
-                            top: top,
-                            right: left + width,
-                            bottom: top + height
-                        }, marqueeInitialSelection);
+                if (window.App.boardMarquee && window.App.boardMarquee.isPreparing()) {
+                    if (window.App.boardMarquee.move(e, nodesLayer)) {
                         return;
                     }
                 }
@@ -1010,36 +788,8 @@ window.App = window.App || {};
                     return;
                 }
 
-                if (isPreparingMarquee || isMarquee) {
-                    document.body.style.userSelect = '';
-                    if (marqueeEl) {
-                        marqueeEl.remove();
-                        marqueeEl = null;
-                    }
-
-                    const state = window.App.state;
-                    if (isMarquee) {
-                        if (window.App.workspaceSelectionBar) {
-                            window.App.workspaceSelectionBar.updateUI();
-                        }
-                        if (!wasInSelectMode && state && state.selectedWorkspaceNoteIds && state.selectedWorkspaceNoteIds.size === 0) {
-                            if (window.App.workspaceSelectionBar) {
-                                window.App.workspaceSelectionBar.exitSelectMode();
-                            }
-                        }
-                    } else {
-                        // Клік без перетягування
-                        const dx = Math.abs(e.clientX - marqueeStartPos.x);
-                        const dy = Math.abs(e.clientY - marqueeStartPos.y);
-                        if (dx < 5 && dy < 5 && wasInSelectMode && !e.shiftKey) {
-                            if (window.App.workspaceSelectionBar) {
-                                window.App.workspaceSelectionBar.exitSelectMode();
-                            }
-                        }
-                    }
-
-                    isPreparingMarquee = false;
-                    isMarquee = false;
+                if (window.App.boardMarquee && (window.App.boardMarquee.isPreparing() || window.App.boardMarquee.isActive())) {
+                    window.App.boardMarquee.up(e);
                     return;
                 }
 
@@ -1541,12 +1291,9 @@ window.App = window.App || {};
 
         cleanup() {
             saveCurrentBoardCamera(true);
-            if (marqueeEl) {
-                marqueeEl.remove();
-                marqueeEl = null;
+            if (window.App.boardMarquee) {
+                window.App.boardMarquee.cleanup();
             }
-            isPreparingMarquee = false;
-            isMarquee = false;
             isSpacePressed = false;
 
             if (boundPointerMove) {
