@@ -475,7 +475,7 @@ window.App = window.App || {};
             }
         },
 
-        // Динамічна синхронізація позиції залоченої / розтягнутої колонки при зміні ширини сайдбару чи екрану
+        // Динамічна синхронізація позиції залоченої / розтягнутої колонки при зміні ширини сайдбару, фокус-режиму чи екрану
         syncLockedColumnPosition() {
             const state = window.App && window.App.state;
             if (!state) return;
@@ -491,13 +491,22 @@ window.App = window.App || {};
                            || container.querySelector('.board-column.column-stretched-full');
             if (!lockedCol) return;
 
+            const paddingRight = parseFloat(window.getComputedStyle(container).paddingRight) || 24;
             const paddingLeft = parseFloat(window.getComputedStyle(container).paddingLeft) || 24;
-            const extraSpace = Math.max(paddingLeft, (container.clientWidth - lockedCol.offsetWidth) / 2);
-            const targetScroll = Math.max(0, Math.round(lockedCol.offsetLeft - extraSpace));
 
+            let targetScroll = 0;
             if (state.lockedColumnKey) {
+                // Прив'язка камери до упору правої границі заблокованої колонки
+                const colRight = lockedCol.offsetLeft + lockedCol.offsetWidth;
+                const rightUporScroll = colRight - container.clientWidth + paddingRight;
+                targetScroll = Math.max(0, Math.round(rightUporScroll));
                 state.lockedScrollLeft = targetScroll;
+            } else {
+                // Для звичайного розтягування без замка центруємо в полі зору
+                const extraSpace = Math.max(paddingLeft, (container.clientWidth - lockedCol.offsetWidth) / 2);
+                targetScroll = Math.max(0, Math.round(lockedCol.offsetLeft - extraSpace));
             }
+
             if (Math.abs(container.scrollLeft - targetScroll) > 1) {
                 container.scrollLeft = targetScroll;
             }

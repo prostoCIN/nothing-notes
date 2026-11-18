@@ -348,6 +348,24 @@ window.App = window.App || {};
                 zenBtn.addEventListener('click', (e) => {
                     e.preventDefault();
                     document.body.classList.toggle('zen-mode-active');
+
+                    // Синхронізація камери для заблокованої колонки або полотна при зміні режиму
+                    if (window.App.workspaceView && window.App.workspaceView.syncLockedColumnPosition) {
+                        requestAnimationFrame(() => {
+                            window.App.workspaceView.syncLockedColumnPosition();
+                            setTimeout(() => {
+                                if (window.App.workspaceView && window.App.workspaceView.syncLockedColumnPosition) {
+                                    window.App.workspaceView.syncLockedColumnPosition();
+                                }
+                            }, 100);
+                        });
+                    }
+                    if (window.App.boardView && window.App.boardView.resizeCanvas) {
+                        window.App.boardView.resizeCanvas();
+                    }
+                    if (window.App.graphView && window.App.graphView.resizeCanvas) {
+                        window.App.graphView.resizeCanvas();
+                    }
                 });
             }
 

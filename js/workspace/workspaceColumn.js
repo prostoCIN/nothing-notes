@@ -634,10 +634,19 @@ window.App = window.App || {};
 
                     const containerRect = container.getBoundingClientRect();
                     const columnRect = columnEl.getBoundingClientRect();
+                    const paddingRight = parseFloat(window.getComputedStyle(container).paddingRight) || 24;
                     // Точна координата лівого краю колонки всередині скрол-контенту контейнера
                     const absoluteColLeft = (columnRect.left - containerRect.left) + container.scrollLeft;
-                    // Зміщення для ідеального центрування колонки
-                    const targetScroll = absoluteColLeft - Math.max(0, (container.clientWidth - columnRect.width) / 2);
+
+                    let targetScroll;
+                    if (state && state.lockedColumnKey === parentKey) {
+                        // Упор правої границі заблокованої колонки
+                        const absoluteColRight = absoluteColLeft + columnRect.width;
+                        targetScroll = absoluteColRight - container.clientWidth + paddingRight;
+                    } else {
+                        // Зміщення для ідеального центрування колонки
+                        targetScroll = absoluteColLeft - Math.max(0, (container.clientWidth - columnRect.width) / 2);
+                    }
 
                     container.scrollLeft = Math.max(0, Math.round(targetScroll));
                     if (state && state.lockedColumnKey === parentKey) {
@@ -651,8 +660,17 @@ window.App = window.App || {};
                         // Фінальна точна фіксація після повного завершення переходу
                         const cRect = container.getBoundingClientRect();
                         const colRect = columnEl.getBoundingClientRect();
+                        const finalPaddingRight = parseFloat(window.getComputedStyle(container).paddingRight) || 24;
                         const finalColLeft = (colRect.left - cRect.left) + container.scrollLeft;
-                        const finalTarget = Math.max(0, Math.round(finalColLeft - Math.max(0, (cRect.width - colRect.width) / 2)));
+
+                        let finalTarget;
+                        if (state && state.lockedColumnKey === parentKey) {
+                            const finalColRight = finalColLeft + colRect.width;
+                            finalTarget = finalColRight - cRect.width + finalPaddingRight;
+                        } else {
+                            finalTarget = finalColLeft - Math.max(0, (cRect.width - colRect.width) / 2);
+                        }
+
                         container.scrollLeft = Math.max(0, Math.round(finalTarget));
                         if (state && state.lockedColumnKey === parentKey) {
                             state.lockedScrollLeft = container.scrollLeft;
