@@ -222,6 +222,19 @@
     -webkit-backdrop-filter: blur(20px) saturate(180%);
 }
 
+.polaroid-lightbox-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    z-index: 2;
+    pointer-events: none;
+    max-width: 92vw;
+    max-height: 92vh;
+}
+
 .polaroid-lightbox-card {
     position: relative;
     background: #ffffff;
@@ -229,15 +242,15 @@
     border-radius: 8px;
     box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.2);
     max-width: 85vw;
-    max-height: 85vh;
+    max-height: 78vh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    z-index: 2;
     transform: scale(1);
     animation: lightboxZoomIn var(--dur-smooth) var(--ease-ios-bounce);
     will-change: transform;
+    pointer-events: auto;
 }
 
 .polaroid-lightbox-viewport {
@@ -252,7 +265,7 @@
     user-select: none;
     -webkit-user-select: none;
     max-width: 100%;
-    max-height: 75vh;
+    max-height: 72vh;
 }
 
 .polaroid-lightbox-viewport.is-zoomed {
@@ -265,7 +278,7 @@
 
 .polaroid-lightbox-img {
     max-width: 100%;
-    max-height: 75vh;
+    max-height: 72vh;
     object-fit: contain;
     border-radius: 4px;
     display: block;
@@ -278,10 +291,10 @@
 }
 
 .polaroid-lightbox-toolbar {
-    position: absolute;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%);
+    position: relative;
+    bottom: auto;
+    left: auto;
+    transform: none;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -295,6 +308,8 @@
     z-index: 10;
     user-select: none;
     animation: lightboxFadeIn var(--dur-quick) var(--ease-ios-spring);
+    pointer-events: auto;
+    flex-shrink: 0;
 }
 
 .polaroid-zoom-btn {
@@ -361,18 +376,24 @@
 }
 
 @media (max-width: 600px) {
+    .polaroid-lightbox-container {
+        gap: 10px;
+        max-width: 95vw;
+        max-height: 92vh;
+    }
+
     .polaroid-lightbox-card {
-        padding: 8px 8px 28px 8px;
+        padding: 8px 8px 24px 8px;
         max-width: 94vw;
-        max-height: 86vh;
+        max-height: 74vh;
     }
 
     .polaroid-lightbox-viewport {
-        max-height: 72vh;
+        max-height: 68vh;
     }
 
     .polaroid-lightbox-img {
-        max-height: 72vh;
+        max-height: 68vh;
     }
 
     .polaroid-lightbox-close {
@@ -384,9 +405,8 @@
     }
 
     .polaroid-lightbox-toolbar {
-        bottom: calc(max(env(safe-area-inset-bottom, 0px), 16px) + 8px);
-        padding: 3px 6px;
-        gap: 4px;
+        padding: 4px 8px;
+        gap: 5px;
     }
 
     .polaroid-zoom-btn {

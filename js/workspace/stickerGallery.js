@@ -355,33 +355,35 @@ window.App = window.App || {};
             modal.className = 'polaroid-lightbox-modal';
             modal.innerHTML = `
                 <div class="polaroid-lightbox-backdrop"></div>
-                <div class="polaroid-lightbox-card">
-                    <div class="polaroid-lightbox-viewport" id="polaroid-lightbox-viewport">
-                        <img src="${src}" class="polaroid-lightbox-img" id="polaroid-lightbox-img" alt="Enlarged photo" draggable="false">
+                <div class="polaroid-lightbox-container">
+                    <div class="polaroid-lightbox-card">
+                        <div class="polaroid-lightbox-viewport" id="polaroid-lightbox-viewport">
+                            <img src="${src}" class="polaroid-lightbox-img" id="polaroid-lightbox-img" alt="Enlarged photo" draggable="false">
+                        </div>
+                        <button class="polaroid-lightbox-close" title="${t('sticker.closeLightbox')}">×</button>
                     </div>
-                    <button class="polaroid-lightbox-close" title="${t('sticker.closeLightbox')}">×</button>
-                </div>
-                <div class="polaroid-lightbox-toolbar">
-                    <button type="button" class="polaroid-zoom-btn polaroid-zoom-out" title="${t('sticker.zoomOut') || 'Зменшити (-)'}" aria-label="Zoom out" disabled>
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                        </svg>
-                    </button>
-                    <button type="button" class="polaroid-zoom-badge" title="${t('sticker.resetZoom') || 'Скинути масштаб (100%)'}" aria-label="Reset zoom">
-                        <span class="polaroid-zoom-level">100%</span>
-                    </button>
-                    <button type="button" class="polaroid-zoom-btn polaroid-zoom-in" title="${t('sticker.zoomIn') || 'Збільшити (+)'}" aria-label="Zoom in">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                        </svg>
-                    </button>
-                    <button type="button" class="polaroid-zoom-btn polaroid-zoom-reset" title="${t('sticker.resetZoom') || 'Оригінальний розмір'}" aria-label="Reset size" disabled>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-                            <path d="M3 3v5h5"></path>
-                        </svg>
-                    </button>
+                    <div class="polaroid-lightbox-toolbar">
+                        <button type="button" class="polaroid-zoom-btn polaroid-zoom-out" title="${t('sticker.zoomOut') || 'Зменшити (-)'}" aria-label="Zoom out" disabled>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                        </button>
+                        <button type="button" class="polaroid-zoom-badge" title="${t('sticker.resetZoom') || 'Скинути масштаб (100%)'}" aria-label="Reset zoom">
+                            <span class="polaroid-zoom-level">100%</span>
+                        </button>
+                        <button type="button" class="polaroid-zoom-btn polaroid-zoom-in" title="${t('sticker.zoomIn') || 'Збільшити (+)'}" aria-label="Zoom in">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                        </button>
+                        <button type="button" class="polaroid-zoom-btn polaroid-zoom-reset" title="${t('sticker.resetZoom') || 'Оригінальний розмір'}" aria-label="Reset size" disabled>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                                <path d="M3 3v5h5"></path>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             `;
 
