@@ -12,6 +12,15 @@ export default defineConfig({
           if (id.includes('node_modules')) {
             return 'vendor';
           }
+          if (id.includes('emojiData')) {
+            return 'emoji-data';
+          }
+          if (id.includes('/js/settings/') || id.includes('\\js\\settings\\') || id.includes('settingsModal')) {
+            return 'settings';
+          }
+          if (id.includes('/js/workspace/') || id.includes('\\js\\workspace\\')) {
+            return 'workspace';
+          }
           if (id.includes('/js/graph/') || id.includes('\\js\\graph\\')) {
             return 'graph';
           }
@@ -27,5 +36,10 @@ export default defineConfig({
   },
   server: {
     port: 3000
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./tests/setup.js']
   }
 });
