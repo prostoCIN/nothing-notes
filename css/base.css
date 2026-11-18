@@ -130,8 +130,6 @@ body {
 
 /* 1. Усі бекдропи та затемнення оверлеїв автоматично наслідують токен теми та плавний блюр iOS */
 .modal-overlay,
-.auth-modal-backdrop,
-.share-modal-backdrop,
 .account-overlay-backdrop,
 .sidebar-overlay,
 .graph-mobile-sheet-backdrop {

@@ -142,8 +142,8 @@
 
 .board-search-input {
     background: var(--toolbar-bg, rgba(22, 22, 26, 0.92));
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--toolbar-border, rgba(255, 255, 255, 0.15));
     border-radius: 8px;
     height: 32px;
@@ -220,8 +220,8 @@
 
 .board-tag-chip {
     background: var(--toolbar-bg, rgba(26, 26, 30, 0.88));
-    backdrop-filter: blur(12px) saturate(180%);
-    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--border-subtle);
     border-radius: 20px;
     padding: 3px 9px;
