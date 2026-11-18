@@ -343,7 +343,7 @@ window.App = window.App || {};
         },
 
         /**
-         * Відкриває повноекранний Lightbox для перегляду фото
+         * Відкриває повноекранний Lightbox для перегляду фото з підтримкою масштабування (зуму) та жестів
          */
         openImageLightbox(src) {
             const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
@@ -356,25 +356,390 @@ window.App = window.App || {};
             modal.innerHTML = `
                 <div class="polaroid-lightbox-backdrop"></div>
                 <div class="polaroid-lightbox-card">
-                    <img src="${src}" class="polaroid-lightbox-img" alt="Enlarged photo">
+                    <div class="polaroid-lightbox-viewport" id="polaroid-lightbox-viewport">
+                        <img src="${src}" class="polaroid-lightbox-img" id="polaroid-lightbox-img" alt="Enlarged photo" draggable="false">
+                    </div>
                     <button class="polaroid-lightbox-close" title="${t('sticker.closeLightbox')}">×</button>
+                </div>
+                <div class="polaroid-lightbox-toolbar">
+                    <button type="button" class="polaroid-zoom-btn polaroid-zoom-out" title="${t('sticker.zoomOut') || 'Зменшити (-)'}" aria-label="Zoom out" disabled>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </button>
+                    <button type="button" class="polaroid-zoom-badge" title="${t('sticker.resetZoom') || 'Скинути масштаб (100%)'}" aria-label="Reset zoom">
+                        <span class="polaroid-zoom-level">100%</span>
+                    </button>
+                    <button type="button" class="polaroid-zoom-btn polaroid-zoom-in" title="${t('sticker.zoomIn') || 'Збільшити (+)'}" aria-label="Zoom in">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </button>
+                    <button type="button" class="polaroid-zoom-btn polaroid-zoom-reset" title="${t('sticker.resetZoom') || 'Оригінальний розмір'}" aria-label="Reset size" disabled>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                            <path d="M3 3v5h5"></path>
+                        </svg>
+                    </button>
                 </div>
             `;
 
-            const closeModal = () => modal.remove();
+            this.initLightboxZoom(modal);
+            document.body.appendChild(modal);
+        },
 
-            modal.querySelector('.polaroid-lightbox-backdrop').addEventListener('click', closeModal);
-            modal.querySelector('.polaroid-lightbox-close').addEventListener('click', closeModal);
+        /**
+         * Ініціалізує плавний зум, жест pinch-to-zoom, панорамування та подвійний тап для Lightbox
+         */
+        initLightboxZoom(modal) {
+            const viewport = modal.querySelector('.polaroid-lightbox-viewport');
+            const img = modal.querySelector('.polaroid-lightbox-img');
+            const zoomInBtn = modal.querySelector('.polaroid-zoom-in');
+            const zoomOutBtn = modal.querySelector('.polaroid-zoom-out');
+            const zoomBadge = modal.querySelector('.polaroid-zoom-badge');
+            const zoomLevelText = modal.querySelector('.polaroid-zoom-level');
+            const zoomResetBtn = modal.querySelector('.polaroid-zoom-reset');
+            const closeBtn = modal.querySelector('.polaroid-lightbox-close');
+            const backdrop = modal.querySelector('.polaroid-lightbox-backdrop');
 
-            const handleKey = (e) => {
-                if (e.key === 'Escape') {
-                    closeModal();
-                    window.removeEventListener('keydown', handleKey);
+            let scale = 1.0;
+            let translateX = 0;
+            let translateY = 0;
+            const minScale = 1.0;
+            const maxScale = 4.0;
+
+            const clampBounds = () => {
+                if (scale <= 1.001) {
+                    translateX = 0;
+                    translateY = 0;
+                    return;
+                }
+                const vpW = viewport.clientWidth;
+                const vpH = viewport.clientHeight;
+                const imgW = img.offsetWidth || img.naturalWidth || vpW;
+                const imgH = img.offsetHeight || img.naturalHeight || vpH;
+
+                const scaledW = imgW * scale;
+                const scaledH = imgH * scale;
+
+                if (scaledW > vpW) {
+                    const maxX = (scaledW - vpW) / 2;
+                    translateX = Math.max(-maxX, Math.min(maxX, translateX));
+                } else {
+                    translateX = 0;
+                }
+
+                if (scaledH > vpH) {
+                    const maxY = (scaledH - vpH) / 2;
+                    translateY = Math.max(-maxY, Math.min(maxY, translateY));
+                } else {
+                    translateY = 0;
                 }
             };
-            window.addEventListener('keydown', handleKey);
 
-            document.body.appendChild(modal);
+            const updateTransform = (animate = false) => {
+                if (animate) {
+                    img.style.transition = 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1)';
+                } else {
+                    img.style.transition = 'none';
+                }
+
+                img.style.transform = `translate3d(${translateX.toFixed(2)}px, ${translateY.toFixed(2)}px, 0) scale(${scale.toFixed(3)})`;
+
+                const isZoomed = scale > 1.001;
+                viewport.classList.toggle('is-zoomed', isZoomed);
+
+                const pct = Math.round(scale * 100);
+                if (zoomLevelText) zoomLevelText.textContent = `${pct}%`;
+                if (zoomOutBtn) zoomOutBtn.disabled = scale <= minScale + 0.01;
+                if (zoomInBtn) zoomInBtn.disabled = scale >= maxScale - 0.01;
+                if (zoomResetBtn) zoomResetBtn.disabled = !isZoomed;
+            };
+
+            const setScaleAt = (newScale, focalX, focalY, animate = false) => {
+                const oldScale = scale;
+                scale = Math.min(Math.max(newScale, minScale), maxScale);
+
+                if (scale <= 1.001) {
+                    scale = 1.0;
+                    translateX = 0;
+                    translateY = 0;
+                } else {
+                    const rect = viewport.getBoundingClientRect();
+                    const fx = (focalX !== undefined ? focalX : (rect.left + rect.width / 2)) - (rect.left + rect.width / 2);
+                    const fy = (focalY !== undefined ? focalY : (rect.top + rect.height / 2)) - (rect.top + rect.height / 2);
+
+                    const ratio = scale / oldScale;
+                    translateX = fx - (fx - translateX) * ratio;
+                    translateY = fy - (fy - translateY) * ratio;
+                    clampBounds();
+                }
+
+                updateTransform(animate);
+            };
+
+            const resetZoom = () => {
+                scale = 1.0;
+                translateX = 0;
+                translateY = 0;
+                updateTransform(true);
+            };
+
+            if (img.complete) {
+                clampBounds();
+            } else {
+                img.addEventListener('load', () => clampBounds(), { once: true });
+            }
+
+            // Кнопки тулбару
+            if (zoomInBtn) {
+                zoomInBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const target = Math.min(Math.floor((scale + 0.5) * 2) / 2, maxScale);
+                    setScaleAt(target, undefined, undefined, true);
+                });
+            }
+
+            if (zoomOutBtn) {
+                zoomOutBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const target = Math.max(Math.ceil((scale - 0.5) * 2) / 2, minScale);
+                    setScaleAt(target, undefined, undefined, true);
+                });
+            }
+
+            if (zoomBadge) {
+                zoomBadge.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    resetZoom();
+                });
+            }
+
+            if (zoomResetBtn) {
+                zoomResetBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    resetZoom();
+                });
+            }
+
+            // Коліщатко миші (Desktop Wheel Zoom)
+            viewport.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const delta = -e.deltaY;
+                const factor = delta > 0 ? 1.18 : 0.847;
+                setScaleAt(scale * factor, e.clientX, e.clientY, false);
+            }, { passive: false });
+
+            // Подвійний клік (Desktop Double Click)
+            viewport.addEventListener('dblclick', (e) => {
+                e.preventDefault();
+                if (scale > 1.2) {
+                    resetZoom();
+                } else {
+                    setScaleAt(2.5, e.clientX, e.clientY, true);
+                }
+            });
+
+            // Перетягування мишею при зумі (Desktop Drag Pan)
+            let isMouseDown = false;
+            let startMouseX = 0;
+            let startMouseY = 0;
+            let initialTransX = 0;
+            let initialTransY = 0;
+
+            viewport.addEventListener('mousedown', (e) => {
+                if (scale <= 1.001 || e.button !== 0) return;
+                isMouseDown = true;
+                startMouseX = e.clientX;
+                startMouseY = e.clientY;
+                initialTransX = translateX;
+                initialTransY = translateY;
+                viewport.classList.add('is-dragging');
+                e.preventDefault();
+            });
+
+            const onMouseMove = (e) => {
+                if (!isMouseDown) return;
+                translateX = initialTransX + (e.clientX - startMouseX);
+                translateY = initialTransY + (e.clientY - startMouseY);
+                clampBounds();
+                updateTransform(false);
+            };
+
+            const onMouseUp = () => {
+                if (isMouseDown) {
+                    isMouseDown = false;
+                    viewport.classList.remove('is-dragging');
+                }
+            };
+
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('mouseup', onMouseUp);
+
+            // Мобільні сенсорні жести (Mobile Touch: Pinch-to-zoom, Pan, Double-tap)
+            let isPinching = false;
+            let startPinchDist = 0;
+            let startPinchScale = 1;
+            let startPinchCenter = { x: 0, y: 0 };
+
+            let isTouchDragging = false;
+            let startTouchX = 0;
+            let startTouchY = 0;
+            let initialTouchTransX = 0;
+            let initialTouchTransY = 0;
+
+            let lastTapTime = 0;
+            let lastTapPos = { x: 0, y: 0 };
+
+            viewport.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 2) {
+                    isPinching = true;
+                    isTouchDragging = false;
+                    startPinchDist = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX,
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
+                    startPinchScale = scale;
+                    startPinchCenter = {
+                        x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+                        y: (e.touches[0].clientY + e.touches[1].clientY) / 2
+                    };
+                    initialTouchTransX = translateX;
+                    initialTouchTransY = translateY;
+                } else if (e.touches.length === 1) {
+                    const now = Date.now();
+                    const touch = e.touches[0];
+                    const distFromLast = Math.hypot(touch.clientX - lastTapPos.x, touch.clientY - lastTapPos.y);
+
+                    if (now - lastTapTime < 320 && distFromLast < 35) {
+                        e.preventDefault();
+                        if (scale > 1.2) {
+                            resetZoom();
+                        } else {
+                            setScaleAt(2.5, touch.clientX, touch.clientY, true);
+                        }
+                        lastTapTime = 0;
+                        return;
+                    }
+                    lastTapTime = now;
+                    lastTapPos = { x: touch.clientX, y: touch.clientY };
+
+                    if (scale > 1.001) {
+                        isTouchDragging = true;
+                        startTouchX = touch.clientX;
+                        startTouchY = touch.clientY;
+                        initialTouchTransX = translateX;
+                        initialTouchTransY = translateY;
+                        viewport.classList.add('is-dragging');
+                    }
+                }
+            }, { passive: false });
+
+            viewport.addEventListener('touchmove', (e) => {
+                if (isPinching && e.touches.length === 2) {
+                    e.preventDefault();
+                    const dist = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX,
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
+                    const factor = dist / (startPinchDist || 1);
+                    let targetScale = startPinchScale * factor;
+                    targetScale = Math.min(Math.max(targetScale, 0.75), 5.0);
+
+                    const currentCenter = {
+                        x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+                        y: (e.touches[0].clientY + e.touches[1].clientY) / 2
+                    };
+
+                    scale = targetScale;
+                    translateX = initialTouchTransX + (currentCenter.x - startPinchCenter.x);
+                    translateY = initialTouchTransY + (currentCenter.y - startPinchCenter.y);
+                    clampBounds();
+                    updateTransform(false);
+                } else if (isTouchDragging && e.touches.length === 1 && scale > 1.001) {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    translateX = initialTouchTransX + (touch.clientX - startTouchX);
+                    translateY = initialTouchTransY + (touch.clientY - startTouchY);
+                    clampBounds();
+                    updateTransform(false);
+                }
+            }, { passive: false });
+
+            const onTouchEnd = (e) => {
+                if (isPinching && e.touches.length < 2) {
+                    isPinching = false;
+                    if (scale < 1.05) {
+                        resetZoom();
+                    } else if (scale > maxScale) {
+                        scale = maxScale;
+                        clampBounds();
+                        updateTransform(true);
+                    } else {
+                        clampBounds();
+                        updateTransform(true);
+                    }
+                }
+                if (isTouchDragging && e.touches.length === 0) {
+                    isTouchDragging = false;
+                    viewport.classList.remove('is-dragging');
+                    clampBounds();
+                    updateTransform(true);
+                }
+            };
+
+            viewport.addEventListener('touchend', onTouchEnd);
+            viewport.addEventListener('touchcancel', onTouchEnd);
+
+            // Закриття модального вікна
+            const closeModal = () => {
+                window.removeEventListener('keydown', onKeyDown);
+                window.removeEventListener('mousemove', onMouseMove);
+                window.removeEventListener('mouseup', onMouseUp);
+                modal.remove();
+            };
+
+            backdrop.addEventListener('click', closeModal);
+            closeBtn.addEventListener('click', closeModal);
+
+            const onKeyDown = (e) => {
+                if (e.key === 'Escape') {
+                    closeModal();
+                } else if (e.key === '+' || e.key === '=') {
+                    e.preventDefault();
+                    setScaleAt(Math.min(scale + 0.5, maxScale), undefined, undefined, true);
+                } else if (e.key === '-' || e.key === '_') {
+                    e.preventDefault();
+                    setScaleAt(Math.max(scale - 0.5, minScale), undefined, undefined, true);
+                } else if (e.key === '0') {
+                    e.preventDefault();
+                    resetZoom();
+                } else if (scale > 1.001) {
+                    if (e.key === 'ArrowLeft') {
+                        e.preventDefault();
+                        translateX += 50;
+                        clampBounds();
+                        updateTransform(true);
+                    } else if (e.key === 'ArrowRight') {
+                        e.preventDefault();
+                        translateX -= 50;
+                        clampBounds();
+                        updateTransform(true);
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        translateY += 50;
+                        clampBounds();
+                        updateTransform(true);
+                    } else if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        translateY -= 50;
+                        clampBounds();
+                        updateTransform(true);
+                    }
+                }
+            };
+            window.addEventListener('keydown', onKeyDown);
         }
     };
 })();

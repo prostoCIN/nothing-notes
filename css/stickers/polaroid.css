@@ -162,7 +162,8 @@
 
 .img-size-btn.active {
     background: var(--accent-color) !important;
-    color: #ffffff !important;
+    color: var(--accent-contrast, #062419) !important;
+    font-weight: 800;
     box-shadow: 0 1px 4px var(--accent-strong);
 }
 
@@ -232,10 +233,34 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     z-index: 2;
     transform: scale(1);
     animation: lightboxZoomIn var(--dur-smooth) var(--ease-ios-bounce);
     will-change: transform;
+}
+
+.polaroid-lightbox-viewport {
+    position: relative;
+    overflow: hidden;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: none;
+    cursor: zoom-in;
+    user-select: none;
+    -webkit-user-select: none;
+    max-width: 100%;
+    max-height: 75vh;
+}
+
+.polaroid-lightbox-viewport.is-zoomed {
+    cursor: grab;
+}
+
+.polaroid-lightbox-viewport.is-dragging {
+    cursor: grabbing;
 }
 
 .polaroid-lightbox-img {
@@ -244,6 +269,130 @@
     object-fit: contain;
     border-radius: 4px;
     display: block;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
+    pointer-events: auto;
+    transform-origin: center center;
+    will-change: transform;
+}
+
+.polaroid-lightbox-toolbar {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(18, 18, 22, 0.88);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 24px;
+    padding: 4px 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0, 0, 0, 0.3);
+    z-index: 10;
+    user-select: none;
+    animation: lightboxFadeIn var(--dur-quick) var(--ease-ios-spring);
+}
+
+.polaroid-zoom-btn {
+    background: transparent;
+    border: none;
+    color: #e4e4e7;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background var(--dur-instant) ease, transform var(--dur-instant) ease, color var(--dur-instant) ease;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.polaroid-zoom-btn svg {
+    display: block;
+    stroke: currentColor;
+    flex-shrink: 0;
+}
+
+.polaroid-zoom-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    transform: scale(1.08);
+}
+
+.polaroid-zoom-btn:active:not(:disabled) {
+    transform: scale(0.92);
+}
+
+.polaroid-zoom-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.polaroid-zoom-badge {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: var(--accent-color, #16b981);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background var(--dur-instant) ease, color var(--dur-instant) ease, transform var(--dur-instant) ease;
+    min-width: 46px;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.polaroid-zoom-badge:hover {
+    background: var(--accent-subtle, rgba(22, 185, 129, 0.15));
+    border-color: var(--accent-color, #16b981);
+    transform: scale(1.05);
+}
+
+.polaroid-zoom-badge:active {
+    transform: scale(0.95);
+}
+
+@media (max-width: 600px) {
+    .polaroid-lightbox-card {
+        padding: 8px 8px 28px 8px;
+        max-width: 94vw;
+        max-height: 86vh;
+    }
+
+    .polaroid-lightbox-viewport {
+        max-height: 72vh;
+    }
+
+    .polaroid-lightbox-img {
+        max-height: 72vh;
+    }
+
+    .polaroid-lightbox-close {
+        top: -10px;
+        right: -10px;
+        width: 34px;
+        height: 34px;
+        font-size: 20px;
+    }
+
+    .polaroid-lightbox-toolbar {
+        bottom: calc(max(env(safe-area-inset-bottom, 0px), 16px) + 8px);
+        padding: 3px 6px;
+        gap: 4px;
+    }
+
+    .polaroid-zoom-btn {
+        width: 32px;
+        height: 32px;
+    }
 }
 
 .polaroid-lightbox-close {
