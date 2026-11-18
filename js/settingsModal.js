@@ -257,13 +257,12 @@ window.App = window.App || {};
                 const compactToggle = modalOverlayEl.querySelector('#settings-compact-toggle');
                 if (autoCapToggle) autoCapToggle.checked = prefs.isAutoCapitalizeEnabled();
                 if (compactToggle) compactToggle.checked = prefs.isCompactViewEnabled();
-                prefs.setTheme(prefs.getTheme(), false);
             }
 
             modalOverlayEl.style.display = 'flex';
-            requestAnimationFrame(() => {
-                modalOverlayEl.classList.add('active');
-            });
+            // Force a reflow so the browser registers opacity: 0 before starting transition
+            void modalOverlayEl.offsetHeight;
+            modalOverlayEl.classList.add('active');
         },
 
         close() {
