@@ -2,6 +2,21 @@
 window.App = window.App || {};
 
 (function() {
+    let cachedAccentColor = null;
+    let cachedDangerColor = null;
+    let lastColorCheck = 0;
+
+    function getThemeColors() {
+        const now = Date.now();
+        if (!cachedAccentColor || now - lastColorCheck > 2500) {
+            lastColorCheck = now;
+            const style = getComputedStyle(document.documentElement);
+            cachedAccentColor = style.getPropertyValue('--accent-color').trim() || '#10b981';
+            cachedDangerColor = style.getPropertyValue('--danger-color').trim() || '#ef4444';
+        }
+        return { accent: cachedAccentColor, danger: cachedDangerColor };
+    }
+
     window.App.boardCables = {
         /**
          * Обчислює параметри та малює криві Безьє для всіх активних зв'язків
@@ -14,7 +29,7 @@ window.App = window.App || {};
                 activeTagFilter = null
             } = options;
 
-            const defaultAccentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim() || '#10b981';
+            const { accent: defaultAccentColor } = getThemeColors();
 
             edges.forEach(edge => {
                 const p = edge.cachedPath;
@@ -103,10 +118,10 @@ window.App = window.App || {};
         calculatePath(sourceNode, targetNode) {
             if (!sourceNode || !targetNode) return null;
 
-            const pw = sourceNode.width || (sourceNode.element ? (sourceNode.element.offsetWidth || 380) : 380);
-            const ph = sourceNode.height || (sourceNode.element ? (sourceNode.element.offsetHeight || 140) : 140);
-            const cw = targetNode.width || (targetNode.element ? (targetNode.element.offsetWidth || 380) : 380);
-            const ch = targetNode.height || (targetNode.element ? (targetNode.element.offsetHeight || 140) : 140);
+            const pw = sourceNode.width || 380;
+            const ph = sourceNode.height || 140;
+            const cw = targetNode.width || 380;
+            const ch = targetNode.height || 140;
 
             // Визначаємо взаємне розташування: зверху-вниз чи зліва-направо
             const isBelow = (targetNode.y >= sourceNode.y + ph - 25);
@@ -161,8 +176,7 @@ window.App = window.App || {};
         drawDraftCable(ctx, startPos, currentPos, targetNode, isValid, sourceSide, camera, targetNodes = null) {
             if (!ctx || !startPos || !currentPos) return;
 
-            const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim() || '#10b981';
-            const dangerColor = getComputedStyle(document.documentElement).getPropertyValue('--danger-color').trim() || '#ef4444';
+            const { accent: accentColor, danger: dangerColor } = getThemeColors();
 
             // Якщо під курсором група виділених карток — малюємо розгалужені кабелі до кожної з них
             if (Array.isArray(targetNodes) && targetNodes.length > 1 && isValid) {

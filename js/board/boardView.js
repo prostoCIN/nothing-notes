@@ -37,6 +37,7 @@ window.App = window.App || {};
     let activeTagFilter = null;
 
     let isSpacePressed = false;
+    let renderRafId = null;
 
     let boundPointerMove = null;
     let boundPointerUp = null;
@@ -65,6 +66,14 @@ window.App = window.App || {};
 
     window.App.boardView = {
         init() {},
+
+        requestRender() {
+            if (renderRafId) return;
+            renderRafId = requestAnimationFrame(() => {
+                renderRafId = null;
+                this.draw();
+            });
+        },
 
         render(options = {}) {
             const els = window.App.getElements();
@@ -563,7 +572,7 @@ window.App = window.App || {};
                         if (!shouldPreserveCamera || !this.areNotesInViewport()) {
                             this.centerCameraOnAllNodes();
                         } else {
-                            this.draw();
+                            this.requestRender();
                         }
                     }
                 });
@@ -659,7 +668,7 @@ window.App = window.App || {};
                                 item.node.element.style.top = item.node.y + 'px';
                             }
                         });
-                        this.draw();
+                        this.requestRender();
                     }
                 };
 
@@ -778,7 +787,7 @@ window.App = window.App || {};
                     interaction.camera.y += dy;
                     lastMousePos = { x: e.clientX, y: e.clientY };
                     saveCurrentBoardCamera();
-                    this.draw();
+                    this.requestRender();
                 }
             };
 
@@ -838,7 +847,7 @@ window.App = window.App || {};
                     : (e.deltaY < 0 ? 1.1 : 0.9);
                 interaction.zoomAt(delta, e.clientX, e.clientY, canvas);
                 saveCurrentBoardCamera();
-                this.draw();
+                this.requestRender();
             };
 
             boundCanvasContextMenu = (e) => {
@@ -1055,7 +1064,7 @@ window.App = window.App || {};
                     onUpdate: () => this.draw(),
                     onComplete: () => {
                         nodes.forEach(n => this.saveNodePosition(n));
-                        this.draw();
+                        this.requestRender();
                     }
                 });
             }
@@ -1148,9 +1157,8 @@ window.App = window.App || {};
 
             const interaction = window.App.boardInteraction;
             const camera = interaction.camera;
-            const rect = canvas.getBoundingClientRect();
-            const width = rect.width;
-            const height = rect.height;
+            const width = canvas.width || 800;
+            const height = canvas.height || 600;
 
             // Оновлення режиму низької деталізації (LOD) при сильному віддаленні камери
             if (container) {
@@ -1167,7 +1175,7 @@ window.App = window.App || {};
             ctx.scale(camera.zoom, camera.zoom);
             ctx.translate(-width / 2, -height / 2);
 
-            // Малюємо сітку фонових точок
+            // Пакетне малювання сітки фонових точок (1 виклик fill замість тисяч)
             const gridSize = 40;
             const startX = Math.floor((-camera.x / camera.zoom) / gridSize) * gridSize - gridSize;
             const endX = Math.ceil(((width - camera.x) / camera.zoom) / gridSize) * gridSize + gridSize;
@@ -1175,18 +1183,21 @@ window.App = window.App || {};
             const endY = Math.ceil(((height - camera.y) / camera.zoom) / gridSize) * gridSize + gridSize;
 
             ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
+            ctx.beginPath();
             for (let x = startX; x <= endX; x += gridSize) {
                 for (let y = startY; y <= endY; y += gridSize) {
-                    ctx.beginPath();
+                    ctx.moveTo(x + 1.2, y);
                     ctx.arc(x, y, 1.2, 0, Math.PI * 2);
-                    ctx.fill();
                 }
             }
+            ctx.fill();
 
-            // Малюємо кабелі
+            // Малюємо кабелі (селективний перерахунок траєкторій тільки для рухомих нотаток)
             if (window.App.boardCables) {
                 edges.forEach(edge => {
-                    edge.cachedPath = window.App.boardCables.calculatePath(edge.sourceNode, edge.targetNode);
+                    if (!edge.cachedPath || (isDraggingNode && (edge.sourceNode === draggedNode || edge.targetNode === draggedNode))) {
+                        edge.cachedPath = window.App.boardCables.calculatePath(edge.sourceNode, edge.targetNode);
+                    }
                 });
                 window.App.boardCables.drawCables(ctx, edges, camera, {
                     draggedNode: draggedNode,
@@ -1290,6 +1301,10 @@ window.App = window.App || {};
         },
 
         cleanup() {
+            if (renderRafId) {
+                cancelAnimationFrame(renderRafId);
+                renderRafId = null;
+            }
             saveCurrentBoardCamera(true);
             if (window.App.boardMarquee) {
                 window.App.boardMarquee.cleanup();
