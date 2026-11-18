@@ -2,8 +2,8 @@
 
 > Мінімалістичний, надшвидкий персональний простір для думок, ідей та нотаток без фреймворкового оверхеду.
 
-[![Deploy to GitHub Pages](https://github.com/cinlo/minimal-notes/actions/workflows/deploy.yml/badge.svg)](https://github.com/cinlo/minimal-notes/actions/workflows/deploy.yml)
-[![Keep Supabase Alive](https://github.com/cinlo/minimal-notes/actions/workflows/keep-supabase-alive.yml/badge.svg)](https://github.com/cinlo/minimal-notes/actions/workflows/keep-supabase-alive.yml)
+[![Deploy to GitHub Pages](https://github.com/prostoCIN/nothing-notes/actions/workflows/deploy.yml/badge.svg)](https://github.com/prostoCIN/nothing-notes/actions/workflows/deploy.yml)
+[![Keep Supabase Alive](https://github.com/prostoCIN/nothing-notes/actions/workflows/keep-supabase-alive.yml/badge.svg)](https://github.com/prostoCIN/nothing-notes/actions/workflows/keep-supabase-alive.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](LICENSE)
 
 ---
@@ -47,8 +47,8 @@
 
 ### 1. Клонування репозиторію
 ```bash
-git clone https://github.com/cinlo/minimal-notes.git
-cd minimal-notes
+git clone https://github.com/prostoCIN/nothing-notes.git
+cd nothing-notes
 ```
 
 ### 2. Встановлення залежностей
