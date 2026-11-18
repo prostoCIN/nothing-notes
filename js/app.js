@@ -15,11 +15,25 @@ function bootstrapApp() {
         window.App.historyManager.init();
     }
 
+    function syncRouteToUrl() {
+        if (!window.App.router || !window.App.state) return;
+        const state = window.App.state;
+        const boardId = state.activeBoardId;
+        if (!boardId) return;
+        const mode = state.viewMode || 'columns';
+        const path = (mode === 'columns') ? `/board/${boardId}` : `/board/${boardId}/${mode}`;
+        window.App.router.syncUrl(path, true);
+    }
+
     // Підписка на події через центральний EventBus
     if (window.App.events) {
         window.App.events.on('notes:changed', () => {
             sidebarView.renderNotesList();
             workspaceView.render();
+        });
+
+        window.App.events.on('view:changed', () => {
+            syncRouteToUrl();
         });
 
         window.App.events.on('board:changed', () => {
@@ -34,6 +48,7 @@ function bootstrapApp() {
             welcomeView.hide();
             sidebarView.render();
             workspaceView.render();
+            syncRouteToUrl();
         });
 
         window.App.events.on('welcome:needed', () => {
@@ -50,6 +65,7 @@ function bootstrapApp() {
             welcomeView.hide();
             sidebarView.render();
             workspaceView.render();
+            syncRouteToUrl();
         });
 
         window.App.events.on('board:renamed', ({ boardId, name }) => {
@@ -287,6 +303,42 @@ function initApp() {
         welcomeView.hide();
         sidebarView.render();
         workspaceView.render();
+
+        // Ініціалізація клієнтського Hash-роутера
+        if (window.App.router) {
+            const router = window.App.router;
+
+            router.add('/board/:boardId/:mode', ({ params }) => {
+                const state = window.App.state;
+                if (state && params.boardId && state.activeBoardId !== params.boardId) {
+                    if (boardManager && boardManager.getBoardById(params.boardId)) {
+                        boardManager.switchBoard(params.boardId);
+                    }
+                }
+                if (params.mode && workspaceView && workspaceView.switchView) {
+                    workspaceView.switchView(params.mode);
+                }
+            });
+
+            router.add('/board/:boardId', ({ params }) => {
+                const state = window.App.state;
+                if (state && params.boardId && state.activeBoardId !== params.boardId) {
+                    if (boardManager && boardManager.getBoardById(params.boardId)) {
+                        boardManager.switchBoard(params.boardId);
+                    }
+                }
+                if (workspaceView && workspaceView.switchView) {
+                    workspaceView.switchView('columns');
+                }
+            });
+
+            router.add('/share/:token', ({ params, query }) => {
+                handleShareToken(params.token, query.subnotes !== '0');
+            });
+
+            router.init();
+            syncRouteToUrl();
+        }
     }
 
     // Перевіряємо, чи перейшов користувач за посиланням спільного доступу ?share_board=...
@@ -302,10 +354,13 @@ async function handleShareUrlParams() {
     const cleanUrl = window.location.pathname + window.location.hash;
     window.history.replaceState({}, document.title, cleanUrl);
 
-    if (!window.App.shareManager) return;
-
     const subnotesParam = urlParams.get('subnotes');
     const includeSubnotes = subnotesParam !== '0';
+    await handleShareToken(shareToken, includeSubnotes);
+}
+
+async function handleShareToken(shareToken, includeSubnotes = true) {
+    if (!shareToken || !window.App.shareManager) return;
 
     const t = (k, p) => (window.App && window.App.i18n) ? window.App.i18n.t(k, p) : k;
     try {

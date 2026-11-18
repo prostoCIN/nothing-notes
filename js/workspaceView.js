@@ -354,7 +354,12 @@ window.App = window.App || {};
                 }
 
                 this.render();
+                if (window.App.events) {
+                    window.App.events.emit('view:changed', mode);
+                }
             };
+
+            this.switchView = switchView;
 
             if (viewColumnsBtn) {
                 viewColumnsBtn.addEventListener('click', () => switchView('columns'));
