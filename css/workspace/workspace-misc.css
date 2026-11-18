@@ -24,13 +24,13 @@ body.zen-mode-active #workspace-zen-btn svg {
     stroke: #062419 !important;
 }
 
-/* Оптимізована ширина та упор заблокованої колонки в режимі концентрації */
+/* Розтягування заблокованої / розгорнутої колонки на 100% ширини робочої області в режимі концентрації */
 body.zen-mode-active .board-column.column-stretched-full,
 body.zen-mode-active .columns-container.has-many-columns .board-column.column-stretched-full {
     flex: 0 0 100% !important;
     width: 100% !important;
-    min-width: min(100%, 1400px) !important;
-    max-width: min(100%, 1400px) !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
 }
 
 /* Швидка гумка активна */
