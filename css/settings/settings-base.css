@@ -5,6 +5,9 @@
     left: 0;
     width: 100vw;
     height: 100vh;
+    background: var(--backdrop-bg, rgba(0, 0, 0, 0.55));
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -12,7 +15,6 @@
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.22s var(--ease-ios-sheet), visibility 0.22s var(--ease-ios-sheet);
-    will-change: opacity, visibility;
 }
 
 .settings-modal-overlay.active {
@@ -26,10 +28,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.55);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    contain: strict;
+    z-index: 1;
 }
 
 .settings-modal-card {
