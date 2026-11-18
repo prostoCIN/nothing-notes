@@ -119,6 +119,11 @@ function bootstrapApp() {
                 if (sidebarView && sidebarView.updateNoteListItem) {
                     sidebarView.updateNoteListItem(id, updates.title, note.icon);
                 }
+                if (window.App.state && Array.isArray(window.App.state.activeChain) && window.App.state.activeChain.includes(id)) {
+                    if (window.App.workspaceColumn && window.App.workspaceColumn.updateAllBreadcrumbs) {
+                        window.App.workspaceColumn.updateAllBreadcrumbs();
+                    }
+                }
             }
         });
 

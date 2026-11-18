@@ -552,6 +552,11 @@ window.App = window.App || {};
                     }
                 });
 
+                // Оновлюємо історію відкритих рівнів (breadcrumbs) у всіх колонках, що залишилися
+                if (window.App.workspaceColumn && window.App.workspaceColumn.updateAllBreadcrumbs) {
+                    window.App.workspaceColumn.updateAllBreadcrumbs(container);
+                }
+
                 // Знімаємо підсвітку активного батька з картки
                 const parentCol = container.querySelector(`.board-column[data-col-index="${colIndex}"]`);
                 if (parentCol) {
@@ -660,6 +665,11 @@ window.App = window.App || {};
 
             container.appendChild(newColumnEl);
 
+            // Оновлюємо історію відкритих рівнів (breadcrumbs) у ВСІХ колонках (попередніх і новій)
+            if (window.App.workspaceColumn && window.App.workspaceColumn.updateAllBreadcrumbs) {
+                window.App.workspaceColumn.updateAllBreadcrumbs(container);
+            }
+
             // Оновлюємо класи адаптивної ширини колонок
             const totalCols = state.activeChain.length;
             container.classList.toggle('has-many-columns', totalCols >= 3);
@@ -704,6 +714,11 @@ window.App = window.App || {};
                     col.remove();
                 }
             });
+
+            // Оновлюємо історію відкритих рівнів (breadcrumbs) у всіх колонках, що залишилися
+            if (window.App.workspaceColumn && window.App.workspaceColumn.updateAllBreadcrumbs) {
+                window.App.workspaceColumn.updateAllBreadcrumbs(container);
+            }
 
             // Знімаємо стан активного батька з картки в попередній колонці
             const parentCol = container.querySelector(`.board-column[data-col-index="${colIndex - 1}"]`);
