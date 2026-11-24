@@ -357,7 +357,6 @@ export const en = {
         },
         data: {
             backupTitle: 'Backups & Export',
-            backupDesc: 'Save full local backups or migrate your notes to Obsidian and other PKM apps.',
             jsonTitle: 'Full Backup (JSON)',
             jsonDesc: 'Contains all notebooks, notes, connections, canvas layout, and preferences.',
             exportJsonBtn: 'Download .json',

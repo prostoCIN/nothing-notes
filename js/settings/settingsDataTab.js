@@ -19,7 +19,6 @@ window.App = window.App || {};
                 <div class="settings-data-section">
                     <div class="settings-data-header">
                         <div class="settings-section-title" data-i18n="settings.data.backupTitle">${t('settings.data.backupTitle')}</div>
-                        <div class="settings-section-desc" data-i18n="settings.data.backupDesc">${t('settings.data.backupDesc')}</div>
                     </div>
 
                     <div class="settings-data-actions-grid">
