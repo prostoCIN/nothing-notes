@@ -2,7 +2,7 @@
 .settings-data-section {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 12px;
     width: 100%;
     margin-top: 18px;
     padding-top: 16px;
@@ -12,39 +12,51 @@
 .settings-data-header {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 3px;
+    margin-bottom: 2px;
 }
 
 .settings-data-actions-grid {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    width: 100%;
 }
 
 .settings-data-card {
     display: flex;
-    align-items: center;
-    gap: 14px;
+    flex-direction: column;
+    gap: 12px;
     padding: 14px 16px;
-    background: var(--bg-subtle);
-    border: 1px solid var(--border-subtle);
+    background: var(--hover-bg);
+    border: 1px solid var(--border-color);
     border-radius: 12px;
-    transition: border-color var(--transition-fast), background var(--transition-fast);
+    transition: background 0.15s ease, border-color 0.15s ease;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .settings-data-card:hover {
-    background: var(--hover-bg);
-    border-color: var(--border-strong);
+    background: var(--active-bg);
+    border-color: var(--border-color);
+}
+
+.settings-data-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    width: 100%;
 }
 
 .settings-data-card-icon {
-    width: 40px;
-    height: 40px;
+    width: 38px;
+    height: 38px;
     border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    margin-top: 2px;
 }
 
 .settings-data-card-icon.json {
@@ -54,7 +66,7 @@
 }
 
 .settings-data-card-icon.md {
-    background: var(--hover-bg);
+    background: var(--bg-subtle);
     color: var(--text-main);
     border: 1px solid var(--border-subtle);
 }
@@ -66,44 +78,46 @@
 
 .settings-data-card-title {
     font-size: var(--font-sm);
-    font-weight: 700;
+    font-weight: 600;
     color: var(--text-main);
-    margin: 0 0 4px 0;
+    margin: 0 0 3px 0;
+    line-height: 1.3;
 }
 
 .settings-data-card-desc {
     font-size: var(--font-xs);
     color: var(--text-muted);
     margin: 0;
-    line-height: 1.4;
+    line-height: 1.45;
 }
 
 .settings-data-card-btns {
     display: flex;
     align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
+    gap: 10px;
+    width: 100%;
 }
 
 .settings-action-btn {
-    height: 36px;
-    padding: 0 12px;
+    height: 34px;
+    padding: 0 14px;
     border-radius: 8px;
     font-size: var(--font-xs);
     font-weight: 600;
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+    gap: 7px;
     cursor: pointer;
     font-family: inherit;
     transition: all var(--transition-fast);
     white-space: nowrap;
+    border: 1px solid transparent;
 }
 
 .settings-action-btn.primary {
     background: var(--accent-color);
     color: var(--accent-contrast);
-    border: 1px solid transparent;
 }
 
 .settings-action-btn.primary:hover {
@@ -112,14 +126,14 @@
 }
 
 .settings-action-btn.secondary {
-    background: var(--bg-subtle);
+    background: var(--modal-bg);
     color: var(--text-main);
-    border: 1px solid var(--border-subtle);
+    border-color: var(--border-color);
 }
 
 .settings-action-btn.secondary:hover {
-    background: var(--hover-bg);
-    border-color: var(--border-strong);
+    background: var(--active-bg);
+    border-color: var(--border-color);
 }
 
 .settings-data-status {
@@ -148,18 +162,12 @@
     border: 1px solid var(--danger-subtle);
 }
 
-@media (max-width: 640px) {
-    .settings-data-card {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-    }
+@media (max-width: 480px) {
     .settings-data-card-btns {
+        flex-direction: column;
         width: 100%;
-        flex-wrap: wrap;
     }
     .settings-action-btn {
-        flex: 1;
-        justify-content: center;
+        width: 100%;
     }
 }
