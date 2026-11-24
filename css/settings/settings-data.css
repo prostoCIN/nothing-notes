@@ -1,9 +1,18 @@
-/* css/settings/settings-data.css - Стилі вкладки експорту та резервного копіювання */
+/* css/settings/settings-data.css - Стилі блоку експорту та резервного копіювання */
 .settings-data-section {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 14px;
     width: 100%;
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.settings-data-header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .settings-data-actions-grid {

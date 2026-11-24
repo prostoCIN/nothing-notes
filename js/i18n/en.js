@@ -308,8 +308,7 @@ export const en = {
             general: 'General',
             theme: 'Themes',
             account: 'Account',
-            shortcuts: 'Shortcuts',
-            data: 'Data'
+            shortcuts: 'Shortcuts'
         },
         language: {
             title: 'Interface Language',

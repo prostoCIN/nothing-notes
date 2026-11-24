@@ -84,9 +84,6 @@ window.App = window.App || {};
             const shortcutsTabHTML = window.App.settingsShortcutsTab
                 ? window.App.settingsShortcutsTab.renderHTML(currentTab === 'shortcuts')
                 : '';
-            const dataTabHTML = window.App.settingsDataTab
-                ? window.App.settingsDataTab.renderHTML(currentTab === 'data')
-                : '';
 
             modalOverlayEl.innerHTML = `
                 <div class="settings-modal-backdrop" id="settings-backdrop"></div>
@@ -146,21 +143,12 @@ window.App = window.App || {};
                             </svg>
                             <span data-i18n="settings.tabs.shortcuts">${t('settings.tabs.shortcuts')}</span>
                         </button>
-                        <button type="button" class="settings-tab-btn ${currentTab === 'data' ? 'active' : ''}" data-tab="data">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                <polyline points="7 10 12 15 17 10"></polyline>
-                                <line x1="12" y1="15" x2="12" y2="3"></line>
-                            </svg>
-                            <span data-i18n="settings.tabs.data">${t('settings.tabs.data')}</span>
-                        </button>
                     </div>
 
                     ${generalTabHTML}
                     ${themeTabHTML}
                     ${accountTabHTML}
                     ${shortcutsTabHTML}
-                    ${dataTabHTML}
                 </div>
             `;
 
@@ -186,10 +174,6 @@ window.App = window.App || {};
 
             if (window.App.settingsThemeTab) {
                 window.App.settingsThemeTab.bindEvents(modalOverlayEl);
-            }
-
-            if (window.App.settingsDataTab) {
-                window.App.settingsDataTab.bindEvents(modalOverlayEl, () => this.render());
             }
 
             tabButtons.forEach(btn => {
@@ -235,13 +219,11 @@ window.App = window.App || {};
             const themeEl = modalOverlayEl.querySelector('#settings-tab-theme');
             const accountEl = modalOverlayEl.querySelector('#settings-tab-account');
             const shortcutsEl = modalOverlayEl.querySelector('#settings-tab-shortcuts');
-            const dataEl = modalOverlayEl.querySelector('#settings-tab-data');
 
             if (generalEl) generalEl.style.display = tabKey === 'general' ? 'flex' : 'none';
             if (themeEl) themeEl.style.display = tabKey === 'theme' ? 'flex' : 'none';
             if (accountEl) accountEl.style.display = tabKey === 'account' ? 'flex' : 'none';
             if (shortcutsEl) shortcutsEl.style.display = tabKey === 'shortcuts' ? 'flex' : 'none';
-            if (dataEl) dataEl.style.display = tabKey === 'data' ? 'flex' : 'none';
 
             if (tabKey === 'theme' && window.App.settingsThemeTab) {
                 window.App.settingsThemeTab.refreshPresetsGrid(modalOverlayEl);
@@ -250,10 +232,6 @@ window.App = window.App || {};
 
             if (tabKey === 'account') {
                 this.renderAccountInfo();
-            }
-
-            if (tabKey === 'data' && window.App.settingsDataTab && window.App.settingsDataTab.updateStats) {
-                window.App.settingsDataTab.updateStats(modalOverlayEl);
             }
         },
 

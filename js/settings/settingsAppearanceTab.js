@@ -19,6 +19,9 @@ window.App = window.App || {};
     const settingsAppearanceTab = {
         renderHTML(currentTheme, isVisible) {
             const currentLang = getLang();
+            const dataSectionHTML = window.App && window.App.settingsDataTab
+                ? window.App.settingsDataTab.renderSectionHTML()
+                : '';
 
             return `
                 <div class="settings-tab-content" id="settings-tab-general" style="display: ${isVisible ? 'flex' : 'none'};">
@@ -83,6 +86,9 @@ window.App = window.App || {};
                             <div class="settings-item-desc" data-i18n="settings.editor.toolsDesc">${t('settings.editor.toolsDesc')}</div>
                         </div>
                     </div>
+
+                    <!-- Блок: Резервне копіювання та дані -->
+                    ${dataSectionHTML}
                 </div>
             `;
         },
@@ -140,6 +146,10 @@ window.App = window.App || {};
                 compactToggle.addEventListener('change', (e) => {
                     prefs.setCompactView(e.target.checked);
                 });
+            }
+
+            if (window.App && window.App.settingsDataTab) {
+                window.App.settingsDataTab.bindEvents(modalOverlayEl, onLangSelect);
             }
         }
     };
