@@ -1,0 +1,156 @@
+/* css/settings/settings-data.css - Стилі вкладки експорту та резервного копіювання */
+.settings-data-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+}
+
+.settings-data-actions-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.settings-data-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.settings-data-card:hover {
+    background: var(--hover-bg);
+    border-color: var(--border-strong);
+}
+
+.settings-data-card-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.settings-data-card-icon.json {
+    background: var(--accent-subtle);
+    color: var(--accent-color);
+    border: 1px solid var(--accent-border);
+}
+
+.settings-data-card-icon.md {
+    background: var(--hover-bg);
+    color: var(--text-main);
+    border: 1px solid var(--border-subtle);
+}
+
+.settings-data-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.settings-data-card-title {
+    font-size: var(--font-sm);
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0 0 4px 0;
+}
+
+.settings-data-card-desc {
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.4;
+}
+
+.settings-data-card-btns {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.settings-action-btn {
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 8px;
+    font-size: var(--font-xs);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+}
+
+.settings-action-btn.primary {
+    background: var(--accent-color);
+    color: var(--accent-contrast);
+    border: 1px solid transparent;
+}
+
+.settings-action-btn.primary:hover {
+    background: var(--accent-hover);
+    box-shadow: 0 2px 8px var(--accent-glow);
+}
+
+.settings-action-btn.secondary {
+    background: var(--bg-subtle);
+    color: var(--text-main);
+    border: 1px solid var(--border-subtle);
+}
+
+.settings-action-btn.secondary:hover {
+    background: var(--hover-bg);
+    border-color: var(--border-strong);
+}
+
+.settings-data-status {
+    display: flex;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+.settings-data-message {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: var(--font-xs);
+    font-weight: 600;
+    animation: fadeIn var(--dur-quick) var(--ease-ios-spring);
+}
+
+.settings-data-message.success {
+    background: var(--accent-subtle);
+    color: var(--accent-color);
+    border: 1px solid var(--accent-border);
+}
+
+.settings-data-message.error {
+    background: var(--danger-subtle);
+    color: var(--danger-color);
+    border: 1px solid var(--danger-subtle);
+}
+
+@media (max-width: 640px) {
+    .settings-data-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    .settings-data-card-btns {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+    .settings-action-btn {
+        flex: 1;
+        justify-content: center;
+    }
+}

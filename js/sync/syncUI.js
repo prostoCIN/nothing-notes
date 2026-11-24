@@ -114,6 +114,50 @@ window.App = window.App || {};
         },
 
         // Викликається після завершення перетягування картки (pointerup) для безпечного застосування відкладених оновлень
+        markSessionExpired() {
+            const profileCard = document.getElementById('sidebar-user-profile');
+            if (!profileCard) return;
+            const clickWrap = profileCard.querySelector('#user-profile-info-click');
+            if (clickWrap) {
+                clickWrap.classList.add('session-expired');
+                const t = window.App?.i18n?.t ? window.App.i18n.t('auth.sessionExpired') : 'Сесія закінчилася. Натисніть для входу';
+                clickWrap.setAttribute('title', t);
+                const cloudIcon = clickWrap.querySelector('.user-cloud-icon');
+                if (cloudIcon) {
+                    cloudIcon.innerHTML = `
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--danger-color)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                    `;
+                    cloudIcon.setAttribute('title', t);
+                }
+            }
+        },
+
+        clearSessionExpired() {
+            const profileCard = document.getElementById('sidebar-user-profile');
+            if (!profileCard) return;
+            const clickWrap = profileCard.querySelector('#user-profile-info-click');
+            if (clickWrap) {
+                clickWrap.classList.remove('session-expired');
+                const inCloudTitle = window.App?.i18n?.t ? window.App.i18n.t('auth.inCloud') : 'У хмарі';
+                const manageAccountsTitle = window.App?.i18n?.t ? window.App.i18n.t('auth.accountManagement') : 'Керування акаунтами';
+                clickWrap.setAttribute('title', manageAccountsTitle);
+                const cloudIcon = clickWrap.querySelector('.user-cloud-icon');
+                if (cloudIcon) {
+                    cloudIcon.innerHTML = `
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
+                        </svg>
+                    `;
+                    cloudIcon.setAttribute('title', inCloudTitle);
+                }
+            }
+        },
+
+        // Викликається після завершення перетягування картки (pointerup) для безпечного застосування відкладених оновлень
         onDragEnd(cloudSync) {
             const state = window.App.state;
             if (cloudSync._deferredPulledNotes) {

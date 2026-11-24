@@ -96,6 +96,16 @@
     border-color: var(--accent-color);
 }
 
+.user-profile-clickable.session-expired {
+    border-color: var(--danger-color);
+    background: var(--danger-subtle);
+}
+
+.user-profile-clickable.session-expired:hover {
+    border-color: var(--danger-color);
+    background: color-mix(in srgb, var(--danger-color) 22%, transparent);
+}
+
 .user-profile-chevron {
     display: flex;
     align-items: center;

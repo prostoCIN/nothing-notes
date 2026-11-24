@@ -308,7 +308,8 @@ export const ua = {
             general: 'Загальні',
             theme: 'Теми',
             account: 'Акаунт',
-            shortcuts: 'Клавіші'
+            shortcuts: 'Клавіші',
+            data: 'Дані та бекап'
         },
         language: {
             title: 'Мова інтерфейсу',
@@ -354,11 +355,26 @@ export const ua = {
             createSubnote: 'Створити піднотатку',
             close: 'Закрити вікно / вийти з маркера',
             searchNav: 'Навігація по збігах пошуку'
+        },
+        data: {
+            backupTitle: 'Резервні копії та експорт',
+            backupDesc: 'Зберігайте локальні копії даних або переносьте нотатки в Obsidian чи інші PKM-системи.',
+            jsonTitle: 'Повний бекап (JSON)',
+            jsonDesc: 'Містить усі блокноти, нотатки, зв\'язки, координати на дошці та налаштування.',
+            exportJsonBtn: 'Завантажити .json',
+            importJsonBtn: 'Відновити з .json',
+            importConfirm: 'Об\'єднати нотатки з резервної копії з поточними?\n\n[OK] — Об\'єднати (рекомендовано)\n[Cancel] — Скасувати',
+            markdownTitle: 'Експорт у Markdown (ZIP)',
+            markdownDesc: 'Структурований архів із папками для кожного блокнота та .md файлами.',
+            exportMarkdownBtn: 'Завантажити .zip (Markdown)'
         }
     },
     auth: {
         inCloud: 'У хмарі',
         accountManagement: 'Керування акаунтами',
+        sessionExpired: 'Сесія закінчилася. Натисніть для входу',
+        sessionExpiredBadge: 'Потрібен повторний вхід',
+        sessionExpiredNotice: 'Ваша сесія у хмарі закінчилася. Будь ласка, увійдіть знову для синхронізації.',
         brandSubtitle: 'Увійдіть за допомогою логіну або email, щоб синхронізувати нотатки.',
         registerSubtitle: 'Створіть акаунт для надійної синхронізації ваших нотаток.',
         tabLogin: 'Вхід',

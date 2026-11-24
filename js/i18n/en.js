@@ -308,7 +308,8 @@ export const en = {
             general: 'General',
             theme: 'Themes',
             account: 'Account',
-            shortcuts: 'Shortcuts'
+            shortcuts: 'Shortcuts',
+            data: 'Data & Backup'
         },
         language: {
             title: 'Interface Language',
@@ -354,11 +355,26 @@ export const en = {
             createSubnote: 'Create subnote',
             close: 'Close modal / exit highlighter',
             searchNav: 'Navigate search matches'
+        },
+        data: {
+            backupTitle: 'Backups & Export',
+            backupDesc: 'Save full local backups or migrate your notes to Obsidian and other PKM apps.',
+            jsonTitle: 'Full Backup (JSON)',
+            jsonDesc: 'Contains all notebooks, notes, connections, canvas layout, and preferences.',
+            exportJsonBtn: 'Download .json',
+            importJsonBtn: 'Restore from .json',
+            importConfirm: 'Merge notes from backup with existing ones?\n\n[OK] — Merge (recommended)\n[Cancel] — Cancel',
+            markdownTitle: 'Markdown ZIP Export',
+            markdownDesc: 'Structured archive with folders per notebook and .md files with tags.',
+            exportMarkdownBtn: 'Download .zip (Markdown)'
         }
     },
     auth: {
         inCloud: 'In cloud',
         accountManagement: 'Manage accounts',
+        sessionExpired: 'Session expired. Click to sign in',
+        sessionExpiredBadge: 'Sign-in required',
+        sessionExpiredNotice: 'Your cloud session has expired. Please sign in again to continue syncing.',
         brandSubtitle: 'Sign in with your username or email to sync notes.',
         registerSubtitle: 'Create an account for reliable cloud sync.',
         tabLogin: 'Sign In',

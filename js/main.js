@@ -14,6 +14,7 @@ import './eventBus.js';
 import './router.js';
 import './i18n.js';
 import './imageDb.js';
+import './notesDb.js';
 import './state.js';
 import './historyManager.js';
 import './confirmModal.js';
@@ -70,8 +71,10 @@ import './sync/syncUI.js';
 import './cloudSync.js';
 import './shareManager.js';
 import './authModal.js';
+import './backupManager.js';
 import './settings/settingsPreferences.js';
 import './settings/settingsThemeTab.js';
+import './settings/settingsDataTab.js';
 import './settings/settingsModalModule.js';
 import './accountManager.js';
 

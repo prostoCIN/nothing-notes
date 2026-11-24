@@ -175,12 +175,22 @@ window.App.storage = {
     // Негайний фізичний запис у LocalStorage з захистом від помилок переповнення
     flushNotes() {
         if (this._pendingNotes) {
+            const notesToSave = this._pendingNotes;
+            this._pendingNotes = null;
+            clearTimeout(this._notesSaveTimer);
+            this._notesSaveTimer = null;
+
+            // Асинхронно зберігаємо в необмежений IndexedDB
+            if (window.App && window.App.notesDb && window.App.notesDb.saveAllNotes) {
+                window.App.notesDb.saveAllNotes(notesToSave);
+            }
+
             try {
-                if (Array.isArray(this._pendingNotes)) {
+                if (Array.isArray(notesToSave)) {
                     try {
                         const map = JSON.parse(localStorage.getItem('minimal_note_bookmarks') || '{}');
                         let mapChanged = false;
-                        this._pendingNotes.forEach(n => {
+                        notesToSave.forEach(n => {
                             if (Array.isArray(n.linkedNoteIds) && n.linkedNoteIds.length > 0) {
                                 map[n.id] = n.linkedNoteIds;
                                 mapChanged = true;
@@ -196,7 +206,7 @@ window.App.storage = {
                     try {
                         const posMap = JSON.parse(localStorage.getItem('minimal_board_positions') || '{}');
                         let posChanged = false;
-                        this._pendingNotes.forEach(n => {
+                        notesToSave.forEach(n => {
                             if (typeof n.canvasX === 'number' && typeof n.canvasY === 'number') {
                                 posMap[n.id] = { canvasX: n.canvasX, canvasY: n.canvasY, boardX: n.canvasX, boardY: n.canvasY };
                                 posChanged = true;
@@ -207,12 +217,20 @@ window.App.storage = {
                         }
                     } catch {}
                 }
-                localStorage.setItem('minimal_notes', JSON.stringify(this._pendingNotes));
-                this._pendingNotes = null;
-                clearTimeout(this._notesSaveTimer);
-                this._notesSaveTimer = null;
+                localStorage.setItem('minimal_notes', JSON.stringify(notesToSave));
             } catch (err) {
-                console.warn('LocalStorage save error (likely quota exceeded):', err);
+                console.warn('LocalStorage save error (likely quota exceeded), stripping heavy content:', err);
+                try {
+                    if (Array.isArray(notesToSave)) {
+                        const lightweightNotes = notesToSave.map(({ content, images, ...meta }) => ({
+                            ...meta,
+                            content: ''
+                        }));
+                        localStorage.setItem('minimal_notes', JSON.stringify(lightweightNotes));
+                    }
+                } catch (fallbackErr) {
+                    console.error('LocalStorage critical quota exceeded:', fallbackErr);
+                }
             }
         }
     },
@@ -350,6 +368,9 @@ window.App.storage = {
         localStorage.removeItem('minimal_graph_view_mode');
         localStorage.removeItem('minimal_offline_sync_queue');
         localStorage.removeItem('minimal_locally_deleted_ids');
+        if (window.App && window.App.notesDb && window.App.notesDb.clearAllNotes) {
+            window.App.notesDb.clearAllNotes();
+        }
     }
 };
 

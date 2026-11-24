@@ -15,12 +15,15 @@ window.App.imageDb = {
                 return;
             }
 
-            const request = indexedDB.open('NothingNotes_MediaDB', 1);
+            const request = indexedDB.open('NothingNotes_MediaDB', 2);
 
             request.onupgradeneeded = (e) => {
                 const db = e.target.result;
                 if (!db.objectStoreNames.contains('images')) {
                     db.createObjectStore('images', { keyPath: 'id' });
+                }
+                if (!db.objectStoreNames.contains('notes')) {
+                    db.createObjectStore('notes', { keyPath: 'id' });
                 }
             };
 

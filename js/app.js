@@ -147,6 +147,18 @@ function bootstrapApp() {
                 window.App.settingsModal.render();
             }
         });
+
+        window.App.events.on('auth:session_expired', () => {
+            if (window.App.syncUI && window.App.syncUI.markSessionExpired) {
+                window.App.syncUI.markSessionExpired();
+            }
+        });
+
+        window.App.events.on('auth:session_refreshed', () => {
+            if (window.App.syncUI && window.App.syncUI.clearSessionExpired) {
+                window.App.syncUI.clearSessionExpired();
+            }
+        });
     }
 
     boardManager.init();
@@ -281,6 +293,15 @@ function initApp() {
     const sidebarView = window.App.sidebarView;
     const workspaceView = window.App.workspaceView;
     const boardManager = window.App.boardManager;
+
+    // Асинхронна гідратація повного контенту нотаток з IndexedDB
+    if (window.App.notesDb && window.App.notesDb.hydrateNotes && state && state.notes) {
+        window.App.notesDb.hydrateNotes(state.notes).then(() => {
+            if (workspaceView && workspaceView.render) {
+                workspaceView.render();
+            }
+        }).catch(() => {});
+    }
 
     if (state.boards.length === 0) {
         welcomeView.show();

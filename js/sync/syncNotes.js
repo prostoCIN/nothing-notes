@@ -7,6 +7,13 @@ window.App = window.App || {};
     let pullDebounceTimer = null;
 
     window.App.syncNotes = {
+        _safeQuery(fn) {
+            if (window.App.supabaseConfig && typeof window.App.supabaseConfig.safeSupabaseQuery === 'function') {
+                return window.App.supabaseConfig.safeSupabaseQuery(fn);
+            }
+            return fn();
+        },
+
         hasLinkedNoteIdsColumn: (function() {
             try {
                 return localStorage.getItem('minimal_has_linked_note_ids_col') === '1';
@@ -67,11 +74,11 @@ window.App = window.App || {};
                 }
 
                 // 1. Завантаження блокнотів із таблиці `boards`
-                const { data: dbBoards, error: boardsErr } = await supabase
+                const { data: dbBoards, error: boardsErr } = await this._safeQuery(() => supabase
                     .from('boards')
                     .select('*')
                     .order('order_index', { ascending: true, nullsFirst: false })
-                    .order('created_at', { ascending: true });
+                    .order('created_at', { ascending: true }));
 
                 if (boardsErr) {
                     console.warn('[CloudSync] Error fetching boards from table:', boardsErr.message);
@@ -137,9 +144,9 @@ window.App = window.App || {};
 
                 // 2. Синхронізація спільних блокнотів читача з таблиці `user_shared_tokens`
                 let sharedTokens = [];
-                const { data: dbSharedTokens, error: tokensErr } = await supabase
+                const { data: dbSharedTokens, error: tokensErr } = await this._safeQuery(() => supabase
                     .from('user_shared_tokens')
-                    .select('share_token');
+                    .select('share_token'));
 
                 if (dbSharedTokens && dbSharedTokens.length > 0) {
                     sharedTokens = dbSharedTokens.map(t => t.share_token).filter(Boolean);
@@ -199,11 +206,11 @@ window.App = window.App || {};
                     window.App.storage.saveActiveBoardId(state.activeBoardId);
                 }
 
-                const { data: cloudNotes, error } = await supabase
+                const { data: cloudNotes, error } = await this._safeQuery(() => supabase
                     .from('notes')
                     .select('*')
                     .order('order_index', { ascending: true, nullsFirst: false })
-                    .order('created_at', { ascending: true });
+                    .order('created_at', { ascending: true }));
 
                 if (error) {
                     console.error('[CloudSync] Error pulling notes:', error);
@@ -533,9 +540,9 @@ window.App = window.App || {};
             });
 
             try {
-                let { error } = await supabase
+                let { error } = await this._safeQuery(() => supabase
                     .from('notes')
-                    .upsert(payloads, { onConflict: 'id' });
+                    .upsert(payloads, { onConflict: 'id' }));
 
                 if (error && this._isLinkedColumnError(error)) {
                     console.warn('[CloudSync] linked_note_ids column may not exist in database, disabling for future requests and retrying:', error.message);
@@ -611,9 +618,9 @@ window.App = window.App || {};
             }
 
             try {
-                let { error } = await supabase
+                let { error } = await this._safeQuery(() => supabase
                     .from('notes')
-                    .upsert(payload, { onConflict: 'id' });
+                    .upsert(payload, { onConflict: 'id' }));
 
                 if (error && this._isLinkedColumnError(error)) {
                     console.warn('[CloudSync] linked_note_ids column may not exist in database, disabling for future requests and retrying:', error.message);
@@ -663,7 +670,7 @@ window.App = window.App || {};
                     await supabase.from('notes').update({ parent_id: null }).eq('id', noteId);
                 } catch (e) {}
 
-                const { error } = await supabase.from('notes').delete().eq('id', noteId).select('id');
+                const { error } = await this._safeQuery(() => supabase.from('notes').delete().eq('id', noteId).select('id'));
                 if (error) {
                     console.error('[CloudSync] ❌ Delete single note error:', error.message, error);
                 } else {
@@ -700,7 +707,7 @@ window.App = window.App || {};
                     await supabase.from('notes').update({ parent_id: null }).in('id', noteIds);
                 } catch (e) {}
 
-                const { error } = await supabase.from('notes').delete().in('id', noteIds).select('id');
+                const { error } = await this._safeQuery(() => supabase.from('notes').delete().in('id', noteIds).select('id'));
                 if (error) {
                     console.error('[CloudSync] ❌ Batch delete error from Supabase:', error.message, error);
                     for (const singleId of noteIds) {
@@ -740,9 +747,9 @@ window.App = window.App || {};
                     updated_at: new Date().toISOString()
                 }));
 
-                const { error } = await window.App.supabase
+                const { error } = await this._safeQuery(() => window.App.supabase
                     .from('boards')
-                    .upsert(payloads, { onConflict: 'id' });
+                    .upsert(payloads, { onConflict: 'id' }));
 
                 if (error) {
                     console.warn('[CloudSync] boards upsert error:', error.message);
@@ -763,10 +770,10 @@ window.App = window.App || {};
             if (!currentUser || !window.App.supabase) return;
 
             try {
-                const { error } = await window.App.supabase
+                const { error } = await this._safeQuery(() => window.App.supabase
                     .from('boards')
                     .delete()
-                    .eq('id', boardId);
+                    .eq('id', boardId));
 
                 if (error) {
                     console.warn('[CloudSync] deleteBoardFromCloud error:', error.message);
