@@ -91,11 +91,11 @@ window.App = window.App || {};
                         <!-- Data Status Box -->
                         <div class="settings-data-status">
                             <div class="settings-stat-box">
-                                <div class="settings-stat-num">${boardsCount}</div>
+                                <div class="settings-stat-num" id="settings-data-boards-count">${boardsCount}</div>
                                 <div class="settings-stat-label" data-i18n="settings.account.boardsStat">${t('settings.account.boardsStat')}</div>
                             </div>
                             <div class="settings-stat-box">
-                                <div class="settings-stat-num">${notesCount}</div>
+                                <div class="settings-stat-num" id="settings-data-notes-count">${notesCount}</div>
                                 <div class="settings-stat-label" data-i18n="settings.account.notesStat">${t('settings.account.notesStat')}</div>
                             </div>
                         </div>
@@ -104,6 +104,17 @@ window.App = window.App || {};
                     </div>
                 </div>
             `;
+        },
+
+        updateStats(modalOverlayEl) {
+            if (!modalOverlayEl) return;
+            const state = window.App?.state || {};
+            const boardsCount = state.boards ? state.boards.length : 0;
+            const notesCount = state.notes ? state.notes.length : 0;
+            const boardsStatEl = modalOverlayEl.querySelector('#settings-data-boards-count');
+            const notesStatEl = modalOverlayEl.querySelector('#settings-data-notes-count');
+            if (boardsStatEl) boardsStatEl.textContent = boardsCount;
+            if (notesStatEl) notesStatEl.textContent = notesCount;
         },
 
         bindEvents(modalOverlayEl, onRerender) {

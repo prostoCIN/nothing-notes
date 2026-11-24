@@ -309,7 +309,7 @@ export const ua = {
             theme: 'Теми',
             account: 'Акаунт',
             shortcuts: 'Клавіші',
-            data: 'Дані та бекап'
+            data: 'Дані'
         },
         language: {
             title: 'Мова інтерфейсу',

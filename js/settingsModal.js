@@ -235,11 +235,13 @@ window.App = window.App || {};
             const themeEl = modalOverlayEl.querySelector('#settings-tab-theme');
             const accountEl = modalOverlayEl.querySelector('#settings-tab-account');
             const shortcutsEl = modalOverlayEl.querySelector('#settings-tab-shortcuts');
+            const dataEl = modalOverlayEl.querySelector('#settings-tab-data');
 
             if (generalEl) generalEl.style.display = tabKey === 'general' ? 'flex' : 'none';
             if (themeEl) themeEl.style.display = tabKey === 'theme' ? 'flex' : 'none';
             if (accountEl) accountEl.style.display = tabKey === 'account' ? 'flex' : 'none';
             if (shortcutsEl) shortcutsEl.style.display = tabKey === 'shortcuts' ? 'flex' : 'none';
+            if (dataEl) dataEl.style.display = tabKey === 'data' ? 'flex' : 'none';
 
             if (tabKey === 'theme' && window.App.settingsThemeTab) {
                 window.App.settingsThemeTab.refreshPresetsGrid(modalOverlayEl);
@@ -248,6 +250,10 @@ window.App = window.App || {};
 
             if (tabKey === 'account') {
                 this.renderAccountInfo();
+            }
+
+            if (tabKey === 'data' && window.App.settingsDataTab && window.App.settingsDataTab.updateStats) {
+                window.App.settingsDataTab.updateStats(modalOverlayEl);
             }
         },
 

@@ -309,7 +309,7 @@ export const en = {
             theme: 'Themes',
             account: 'Account',
             shortcuts: 'Shortcuts',
-            data: 'Data & Backup'
+            data: 'Data'
         },
         language: {
             title: 'Interface Language',
