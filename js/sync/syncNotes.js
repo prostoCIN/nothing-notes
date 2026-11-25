@@ -348,12 +348,21 @@ window.App = window.App || {};
                         return;
                     }
 
+                    // Перевіряємо, чи є реальні зміни між локальним станом та даними з хмари
+                    const notesChanged = (state.notes.length !== formattedNotes.length) || formattedNotes.some((n, idx) => {
+                        const local = state.notes[idx];
+                        if (!local || local.id !== n.id) return true;
+                        return local.updatedAt !== n.updatedAt || local.title !== n.title || local.content !== n.content;
+                    });
+
                     state.notes = formattedNotes;
                     window.App.storage.saveNotes(state.notes, true);
 
                     if (window.App.welcomeView) window.App.welcomeView.hide();
-                    if (window.App.sidebarView) window.App.sidebarView.render();
-                    if (window.App.workspaceView) window.App.workspaceView.render();
+                    if (notesChanged) {
+                        if (window.App.sidebarView) window.App.sidebarView.render();
+                        if (window.App.workspaceView) window.App.workspaceView.render();
+                    }
 
                     if (window.App.syncStorage) {
                         await window.App.syncStorage.uploadMissingLocalImages();

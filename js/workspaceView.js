@@ -100,7 +100,7 @@ window.App = window.App || {};
         if (!targetCard) return;
         const targetEl = targetCard.querySelector(focusedField === 'title' ? '.sticker-title' : '.sticker-content');
         if (!targetEl) return;
-        targetEl.focus();
+        targetEl.focus({ preventScroll: true });
         try {
             const sel = window.getSelection();
             if (sel && targetEl.childNodes.length > 0) {
@@ -991,11 +991,15 @@ window.App = window.App || {};
 
                     els.columnsContainer.appendChild(columnEl);
 
-                    // Відновлюємо точну позицію скролу цієї колонки
+                    // Відновлюємо точну позицію скролу цієї колонки (синхронно та з підтвердженням у RAF для компенсації динамічної висоти)
                     const parentKey = parentNoteId || 'root';
                     const scrollList = columnEl.querySelector('.column-notes-list, .board-column-notes-list');
                     if (scrollList && scrollPositions.has(parentKey)) {
-                        scrollList.scrollTop = scrollPositions.get(parentKey);
+                        const savedScroll = scrollPositions.get(parentKey);
+                        scrollList.scrollTop = savedScroll;
+                        requestAnimationFrame(() => {
+                            if (scrollList) scrollList.scrollTop = savedScroll;
+                        });
                     }
                 });
             }

@@ -129,9 +129,9 @@ window.App = window.App || {};
                 this.buildBoardData({ preserveCamera: false });
             }
 
-            // Гарантуємо, що після повного завершення розрахунку розмірів браузером нотатки будуть у полі зору
+            // Гарантуємо, що після повного завершення розрахунку розмірів браузером нотатки будуть у полі зору ТІЛЬКИ при першому завантаженні
             requestAnimationFrame(() => {
-                if (container && canvas && !this.areNotesInViewport()) {
+                if (container && canvas && isFreshLoad && !this.areNotesInViewport()) {
                     this.centerCameraOnAllNodes();
                 }
             });
@@ -596,7 +596,7 @@ window.App = window.App || {};
                     onUpdate: () => this.draw(),
                     onComplete: () => {
                         this.saveNodePositionsBatch(nodes);
-                        if (!shouldPreserveCamera || !this.areNotesInViewport()) {
+                        if (!shouldPreserveCamera) {
                             this.centerCameraOnAllNodes();
                         } else {
                             this.requestRender();
@@ -604,7 +604,7 @@ window.App = window.App || {};
                     }
                 });
             } else {
-                if (!shouldPreserveCamera || !this.areNotesInViewport()) {
+                if (!shouldPreserveCamera) {
                     this.centerCameraOnAllNodes();
                 } else {
                     this.draw();
@@ -939,11 +939,7 @@ window.App = window.App || {};
 
             boundResize = () => {
                 this.resizeCanvas();
-                if (!this.areNotesInViewport()) {
-                    this.centerCameraOnAllNodes();
-                } else {
-                    this.draw();
-                }
+                this.draw();
             };
             window.addEventListener('resize', boundResize);
 
