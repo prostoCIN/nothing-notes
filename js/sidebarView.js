@@ -65,6 +65,104 @@ window.App = window.App || {};
                     }
                 });
             }
+
+            // Жести свайпу для мобільного сайдбару (відкриття з крайньої лівої колонки та закриття свайпом назад)
+            this.bindMobileSwipeGestures();
+        },
+
+        bindMobileSwipeGestures() {
+            let startX = 0;
+            let startY = 0;
+            let startTime = 0;
+            let isTracking = false;
+            let canOpenDrawer = false;
+            let canCloseDrawer = false;
+
+            const onTouchStart = (e) => {
+                if (window.innerWidth > 768) return;
+                if (!e.touches || e.touches.length !== 1) return;
+
+                const touch = e.touches[0];
+                startX = touch.clientX;
+                startY = touch.clientY;
+                startTime = Date.now();
+
+                // Ігноруємо якщо користувач взаємодіє з інтерактивними полями введення або модалками
+                if (e.target.closest('input, textarea, [contenteditable="true"], .polaroid-lightbox-viewport, .modal-overlay, #settings-modal-overlay, .color-picker-popover')) {
+                    isTracking = false;
+                    return;
+                }
+
+                // Ігноруємо якщо йде перетягування картки нотатки
+                if (document.body.classList.contains('is-sticker-dragging') || (window.App.state && window.App.state.isDraggingNote)) {
+                    isTracking = false;
+                    return;
+                }
+
+                const isSidebarOpen = document.body.classList.contains('mobile-sidebar-active');
+
+                if (isSidebarOpen) {
+                    // Якщо сайдбар відкритий — дозволяємо свайп вліво для його закриття
+                    canOpenDrawer = false;
+                    canCloseDrawer = true;
+                    isTracking = true;
+                } else {
+                    // Якщо сайдбар закритий — перевіряємо, чи користувач у крайній першій колонці або біля лівого краю
+                    canCloseDrawer = false;
+                    const colsContainer = (window.App.getElements && window.App.getElements().columnsContainer) || document.getElementById('columns-container');
+                    const isAtFirstColumn = !colsContainer || colsContainer.scrollLeft <= 15;
+                    const isEdgeSwipe = startX <= 45;
+
+                    if (isAtFirstColumn || isEdgeSwipe) {
+                        canOpenDrawer = true;
+                        isTracking = true;
+                    } else {
+                        canOpenDrawer = false;
+                        isTracking = false;
+                    }
+                }
+            };
+
+            const onTouchEnd = (e) => {
+                if (!isTracking) return;
+                isTracking = false;
+
+                const touch = (e.changedTouches && e.changedTouches[0]) || null;
+                if (!touch) return;
+
+                const deltaX = touch.clientX - startX;
+                const deltaY = touch.clientY - startY;
+                const elapsed = Date.now() - startTime;
+                const absX = Math.abs(deltaX);
+                const absY = Math.abs(deltaY);
+
+                // Перевіряємо горизонтальну спрямованість жесту
+                const isHorizontal = absX > absY * 1.25;
+
+                if (canOpenDrawer && deltaX > 0 && isHorizontal) {
+                    // Свайп праворуч з першої колонки: достатня відстань (45px) або швидкий рух (30px за < 320мс)
+                    const isDragDistance = deltaX >= 45;
+                    const isQuickFlick = deltaX >= 30 && elapsed < 320;
+
+                    if (isDragDistance || isQuickFlick) {
+                        this.openMobileSidebar();
+                    }
+                } else if (canCloseDrawer && deltaX < 0 && isHorizontal) {
+                    // Свайп ліворуч на відкритому меню для закриття
+                    const isDragDistance = absX >= 45;
+                    const isQuickFlick = absX >= 30 && elapsed < 320;
+
+                    if (isDragDistance || isQuickFlick) {
+                        this.closeMobileSidebar();
+                    }
+                }
+
+                canOpenDrawer = false;
+                canCloseDrawer = false;
+            };
+
+            window.addEventListener('touchstart', onTouchStart, { passive: true });
+            window.addEventListener('touchend', onTouchEnd, { passive: true });
         },
 
         openMobileSidebar() {
@@ -260,3 +358,5 @@ window.App = window.App || {};
         }
     };
 })();
+
+export const sidebarView = window.App?.sidebarView;
