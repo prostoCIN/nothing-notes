@@ -85,12 +85,7 @@ window.App = window.App || {};
 
             function removeNumberPrefixAtCaret(node, prefixText) {
                 if (node && node.nodeType === Node.TEXT_NODE) {
-                    const idx = node.nodeValue.indexOf(prefixText);
-                    if (idx !== -1) {
-                        node.nodeValue = node.nodeValue.slice(0, idx) + node.nodeValue.slice(idx + prefixText.length);
-                    } else {
-                        node.nodeValue = '';
-                    }
+                    node.nodeValue = node.nodeValue.replace(/^[\s\u00A0]*\d+[\.\)][\s\u00A0]*/, '');
                 }
             }
 
@@ -365,6 +360,34 @@ window.App = window.App || {};
                                 selection.addRange(newRange);
 
                                 contentDiv.dispatchEvent(new Event('input'));
+                                return;
+                            }
+
+                            // Автоматична активація нумерованого списку (1. або 1) -> додаємо відступ для наочності)
+                            const numberMatch = textBefore.match(/(?:^|[\r\n])([\s\u00A0]*)(\d+)([\.\)])$/);
+                            if (numberMatch) {
+                                e.preventDefault();
+                                const existingIndent = numberMatch[1] || '';
+                                const num = numberMatch[2];
+                                const delim = numberMatch[3];
+                                // Якщо відступу ще немає — додаємо 2 нерозривні пробіли для візуального акценту списку
+                                const indent = existingIndent ? '' : '\u00A0\u00A0';
+
+                                const prefixLen = numberMatch[0].length;
+                                const newTextBefore = textBefore.slice(0, textBefore.length - prefixLen);
+                                const textAfter = node.nodeValue.slice(range.startOffset);
+
+                                const insertedPrefix = newTextBefore + existingIndent + indent + num + delim + '\u00A0';
+                                node.nodeValue = insertedPrefix + textAfter;
+
+                                const newRange = document.createRange();
+                                newRange.setStart(node, insertedPrefix.length);
+                                newRange.collapse(true);
+                                selection.removeAllRanges();
+                                selection.addRange(newRange);
+
+                                contentDiv.dispatchEvent(new Event('input'));
+                                return;
                             }
                         }
                     }
@@ -436,7 +459,7 @@ window.App = window.App || {};
                         // Перевіряємо, чи поточний рядок є нумерованим списком (1. або 1))
                         const lineInfo = getLineTextBeforeCaret(contentDiv, range);
                         if (lineInfo) {
-                            const numMatch = lineInfo.text.match(/^(\s*)(\d+)([\.\)])\s*(.*)$/);
+                            const numMatch = lineInfo.text.match(/^([\s\u00A0]*)(\d+)([\.\)])[\s\u00A0]*(.*)$/);
                             if (numMatch) {
                                 e.preventDefault();
                                 const indent = numMatch[1] || '';
@@ -452,7 +475,7 @@ window.App = window.App || {};
                                 } else {
                                     // Продовжуємо нумерацію: 1. -> 2. -> 3.
                                     const nextNum = num + 1;
-                                    const nextPrefix = `${indent}${nextNum}${delimiter} `;
+                                    const nextPrefix = `${indent}${nextNum}${delimiter}\u00A0`;
 
                                     const br = document.createElement('br');
                                     const nextTextNode = document.createTextNode(nextPrefix);

@@ -139,5 +139,30 @@ describe('Interactive To-Do Checkboxes & Auto Numbered Lists', () => {
             expect(emptyDiv.innerHTML).toContain('todo-checkbox');
             expect(emptyDiv.getAttribute('data-empty')).toBeNull();
         });
+
+        it('automatically adds visual indentation when user types "1." and presses space', () => {
+            const emptyNote = { id: 'note_numbered_indent', content: '' };
+            const emptyDiv = window.App.stickerContent.createContent(emptyNote, card, false);
+            document.body.appendChild(emptyDiv);
+
+            // Simulate typing '1.'
+            const textNode = document.createTextNode('1.');
+            emptyDiv.appendChild(textNode);
+
+            const sel = window.getSelection();
+            const range = document.createRange();
+            range.setStart(textNode, 2);
+            range.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(range);
+
+            // Press space
+            const spaceEvent = new KeyboardEvent('keydown', { key: ' ', cancelable: true });
+            emptyDiv.dispatchEvent(spaceEvent);
+
+            expect(textNode.nodeValue).toContain('1.');
+            // Should contain non-breaking spaces before 1.
+            expect(textNode.nodeValue).toMatch(/^[\s\u00A0]{2,}1\./);
+        });
     });
 });
