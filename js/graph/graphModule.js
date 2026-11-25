@@ -1,4 +1,5 @@
 // js/graph/graphModule.js - Асинхронний агрегатор модуля інтерактивного графа зв'язків (Obsidian Graph View)
+import './graphPhysics.js';
 import './graphSimulation.js';
 import './graphPreview.js';
 import './graphExport.js';

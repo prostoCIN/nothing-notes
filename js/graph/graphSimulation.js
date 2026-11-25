@@ -1,111 +1,161 @@
-// js/graph/graphSimulation.js - Симуляція сил розташування вузлів графа
+// js/graph/graphSimulation.js - Клієнт фізичної симуляції графа з підтримкою Web Worker та синхронним Fallback
+import { stepPhysics, PHYSICS_CONFIG } from './graphPhysics.js';
+
 window.App = window.App || {};
 
 (function() {
-    window.App.graphSimulation = {
+    let workerInstance = null;
+    let isWorkerBusy = false;
+    let hasWorkerFailed = false;
+    let activeNodesRef = null;
+    let activeEdgesRef = null;
+    let currentDraggedNodeId = null;
+
+    function getOrCreateWorker() {
+        if (workerInstance || hasWorkerFailed) return workerInstance;
+
+        try {
+            if (typeof window !== 'undefined' && typeof window.Worker !== 'undefined') {
+                workerInstance = new Worker(new URL('./graphSimulation.worker.js', import.meta.url), {
+                    type: 'module'
+                });
+
+                workerInstance.onmessage = function(e) {
+                    isWorkerBusy = false;
+                    const data = e.data;
+                    if (data && data.type === 'tick' && data.buffer && activeNodesRef) {
+                        const arr = new Float32Array(data.buffer);
+                        const count = Math.min(activeNodesRef.length, Math.floor(arr.length / 4));
+                        for (let i = 0; i < count; i++) {
+                            const node = activeNodesRef[i];
+                            // Не перезаписуємо вузол, якщо його зараз тягне користувач на головному потоці
+                            if (node && node.id !== currentDraggedNodeId) {
+                                node.x = arr[i * 4];
+                                node.y = arr[i * 4 + 1];
+                                node.vx = arr[i * 4 + 2];
+                                node.vy = arr[i * 4 + 3];
+                            }
+                        }
+                    }
+                };
+
+                workerInstance.onerror = function(err) {
+                    console.warn('[GraphSimulation] Web Worker encountered an error, switching to sync mode:', err);
+                    hasWorkerFailed = true;
+                    if (workerInstance) {
+                        workerInstance.terminate();
+                        workerInstance = null;
+                    }
+                };
+            }
+        } catch (err) {
+            console.warn('[GraphSimulation] Cannot create Web Worker, using sync simulation:', err);
+            hasWorkerFailed = true;
+            workerInstance = null;
+        }
+
+        return workerInstance;
+    }
+
+    const graphSimulation = {
+        CONFIG: PHYSICS_CONFIG,
+
+        // Прямий розрахунок фізики (для тестів та синхронного використання)
+        stepSync(nodes, edges, options = {}) {
+            stepPhysics(nodes, edges, options);
+        },
+
+        // Ініціалізувати воркер списком вузлів та зв'язків
+        init(nodes, edges) {
+            activeNodesRef = nodes;
+            activeEdgesRef = edges;
+            isWorkerBusy = false;
+            currentDraggedNodeId = null;
+
+            const w = getOrCreateWorker();
+            if (w && Array.isArray(nodes) && nodes.length > 0) {
+                try {
+                    w.postMessage({
+                        type: 'init',
+                        nodes: nodes.map(n => ({
+                            id: n.id,
+                            x: n.x,
+                            y: n.y,
+                            vx: n.vx || 0,
+                            vy: n.vy || 0,
+                            isRoot: !!n.isRoot
+                        })),
+                        edges: (edges || []).map(e => ({
+                            source: e.source,
+                            target: e.target,
+                            type: e.type
+                        }))
+                    });
+                } catch (err) {
+                    console.warn('[GraphSimulation] Failed to post init message to worker:', err);
+                }
+            }
+        },
+
+        // Крок симуляції (викликається в requestAnimationFrame loop)
         step(nodes, edges, options = {}) {
             if (!nodes || nodes.length === 0) return;
 
-            const {
-                draggedNode = null,
-                centerX = 400,
-                centerY = 300
-            } = options;
-
-            // Збалансована симуляція: проміжкова між компактною та просторою
-            const repulsionConstant = 6800;
-            const springConstant = 0.032;
-            const springLength = 145;
-            const centerGravity = 0.0032;
-            const damping = 0.87;
-
-            // Відштовхування (Кулон) + м'яке запобігання накладанню кіл
-            for (let i = 0; i < nodes.length; i++) {
-                const n1 = nodes[i];
-                for (let j = i + 1; j < nodes.length; j++) {
-                    const n2 = nodes[j];
-                    const dx = n2.x - n1.x;
-                    const dy = n2.y - n1.y;
-                    const distSq = dx * dx + dy * dy + 1;
-                    const dist = Math.sqrt(distSq);
-
-                    const force = repulsionConstant / (distSq + 64);
-                    const fx = (dx / dist) * force;
-                    const fy = (dy / dist) * force;
-
-                    if (n1 !== draggedNode) {
-                        n1.vx -= fx;
-                        n1.vy -= fy;
-                    }
-                    if (n2 !== draggedNode) {
-                        n2.vx += fx;
-                        n2.vy += fy;
-                    }
-
-                    // М'який буфер проти прямого накладання кіл
-                    const minAllowedDist = (n1.isRoot || n2.isRoot) ? 85 : 68;
-                    if (dist < minAllowedDist && dist > 0.001) {
-                        const overlap = minAllowedDist - dist;
-                        const push = (overlap / minAllowedDist) * 0.9;
-                        const cx = (dx / dist) * push;
-                        const cy = (dy / dist) * push;
-                        if (n1 !== draggedNode) {
-                            n1.vx -= cx;
-                            n1.vy -= cy;
-                        }
-                        if (n2 !== draggedNode) {
-                            n2.vx += cx;
-                            n2.vy += cy;
-                        }
-                    }
-                }
+            // Якщо масив вузлів змінився, але init не викликали окремо
+            if (activeNodesRef !== nodes) {
+                this.init(nodes, edges);
             }
 
-            // Пружність зв'язків (Гук)
-            edges.forEach(edge => {
-                const n1 = edge.sourceNode;
-                const n2 = edge.targetNode;
-                if (!n1 || !n2) return;
+            const draggedNode = options.draggedNode;
+            currentDraggedNodeId = (draggedNode && draggedNode.id) ? draggedNode.id : null;
 
-                const dx = n2.x - n1.x;
-                const dy = n2.y - n1.y;
-                const dist = Math.sqrt(dx * dx + dy * dy) || 0.001;
-                const displacement = dist - (edge.type === 'tag' ? springLength * 1.5 : (edge.type === 'bookmark' ? springLength * 1.3 : springLength));
-
-                const force = springConstant * displacement;
-                const fx = (dx / dist) * force;
-                const fy = (dy / dist) * force;
-
-                if (n1 !== draggedNode) {
-                    n1.vx += fx;
-                    n1.vy += fy;
+            const w = getOrCreateWorker();
+            if (w && !hasWorkerFailed) {
+                if (!isWorkerBusy) {
+                    isWorkerBusy = true;
+                    w.postMessage({
+                        type: 'step',
+                        draggedNodeId: currentDraggedNodeId,
+                        draggedX: draggedNode ? draggedNode.x : 0,
+                        draggedY: draggedNode ? draggedNode.y : 0,
+                        centerX: options.centerX || 400,
+                        centerY: options.centerY || 300
+                    });
                 }
-                if (n2 !== draggedNode) {
-                    n2.vx -= fx;
-                    n2.vy -= fy;
-                }
-            });
+            } else {
+                // Fallback: прямий синхронний розрахунок
+                stepPhysics(nodes, edges, options);
+            }
+        },
 
-            // Центрування навколо реального центру
-            nodes.forEach(node => {
-                if (node === draggedNode) return;
+        stop() {
+            isWorkerBusy = false;
+            currentDraggedNodeId = null;
+            if (workerInstance) {
+                try {
+                    workerInstance.postMessage({ type: 'stop' });
+                } catch {}
+            }
+        },
 
-                node.vx -= (node.x - centerX) * centerGravity;
-                node.vy -= (node.y - centerY) * centerGravity;
+        destroy() {
+            this.stop();
+            if (workerInstance) {
+                workerInstance.terminate();
+                workerInstance = null;
+            }
+            activeNodesRef = null;
+            activeEdgesRef = null;
+            isWorkerBusy = false;
+            currentDraggedNodeId = null;
+        },
 
-                node.vx *= damping;
-                node.vy *= damping;
-
-                node.x += node.vx;
-                node.y += node.vy;
-
-                const speed = Math.sqrt(node.vx * node.vx + node.vy * node.vy);
-                const maxSpeed = 16;
-                if (speed > maxSpeed) {
-                    node.vx = (node.vx / speed) * maxSpeed;
-                    node.vy = (node.vy / speed) * maxSpeed;
-                }
-            });
+        isWorkerActive() {
+            return !!(workerInstance && !hasWorkerFailed);
         }
     };
+
+    window.App.graphSimulation = graphSimulation;
 })();
+
+export { stepPhysics, PHYSICS_CONFIG };

@@ -407,6 +407,10 @@ window.App = window.App || {};
 
             const orphansEl = container ? container.querySelector('#graph-orphans-counter') : null;
             if (orphansEl) orphansEl.textContent = String(nodes.filter(n => n.isOrphan).length);
+
+            if (window.App.graphSimulation && window.App.graphSimulation.init) {
+                window.App.graphSimulation.init(nodes, edges);
+            }
         },
 
         attachNodeEvents(nodeEl, node) {
@@ -943,10 +947,16 @@ window.App = window.App || {};
                 cancelAnimationFrame(animationFrameId);
                 animationFrameId = null;
             }
+            if (window.App.graphSimulation && window.App.graphSimulation.stop) {
+                window.App.graphSimulation.stop();
+            }
         },
 
         cleanup() {
             this.stopSimulation();
+            if (window.App.graphSimulation && window.App.graphSimulation.destroy) {
+                window.App.graphSimulation.destroy();
+            }
             if (boundPointerMove) {
                 window.removeEventListener('pointermove', boundPointerMove);
                 boundPointerMove = null;
