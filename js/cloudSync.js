@@ -172,7 +172,12 @@ window.App = window.App || {};
                 await this.pullFromCloud();
                 if (window.App.sidebarView) window.App.sidebarView.render();
                 if (window.App.workspaceView) window.App.workspaceView.render();
-                setTimeout(() => this.cleanupOrphanedImages(), 2000);
+                // Замість небезпечного авто-видалення файлів запускаємо перевірку та довантаження локальних фото в хмару
+                setTimeout(() => {
+                    if (window.App.syncStorage && window.App.syncStorage.uploadMissingLocalImages) {
+                        window.App.syncStorage.uploadMissingLocalImages();
+                    }
+                }, 2000);
             } else {
                 console.log('[CloudSync] Logged out / Guest mode');
                 try {
@@ -198,7 +203,7 @@ window.App = window.App || {};
                         state.isWorkspaceSelectMode = false;
                     }
                     if (window.App.storage) window.App.storage.clearAll();
-                    if (window.App.imageDb) await window.App.imageDb.clearAll();
+                    // При виході з акаунту зберігаємо локальний кеш imageDb, щоб не втратити несинхронізовані фото
                     if (window.App.historyManager) window.App.historyManager.reset(true);
                     if (window.App.sidebarView) window.App.sidebarView.render();
                     if (window.App.workspaceView) window.App.workspaceView.render();

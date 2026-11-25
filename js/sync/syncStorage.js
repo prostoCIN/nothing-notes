@@ -17,12 +17,17 @@ window.App = window.App || {};
                     console.warn('[CloudSync] Base64 image exceeds 10MB limit');
                     return null;
                 }
-                const filePath = `${currentUser.id}/${imgId}.jpg`;
+                let mimeType = blob.type || 'image/jpeg';
+                let ext = 'jpg';
+                if (mimeType.includes('png')) ext = 'png';
+                else if (mimeType.includes('webp')) ext = 'webp';
+
+                const filePath = `${currentUser.id}/${imgId}.${ext}`;
 
                 const { error } = await supabase.storage
                     .from('note-images')
                     .upload(filePath, blob, {
-                        contentType: 'image/jpeg',
+                        contentType: mimeType,
                         upsert: true
                     });
 
@@ -101,12 +106,18 @@ window.App = window.App || {};
             }
         },
 
-        // Збирач сміття (Garbage Collector): видаляє з Storage всі фото, яких немає в жодній нотатці
+        // Збирач сміття (Garbage Collector): видаляє з Storage тільки старі фото, яких точно немає в жодній нотатці
         async cleanupOrphanedImages() {
             const supabase = window.App.supabase;
             const currentUser = window.App.cloudSync ? window.App.cloudSync.getCurrentUser() : null;
             if (!supabase || !currentUser) return;
             const state = window.App.state;
+
+            // БЕЗПЕКА: Ніколи не видаляємо фото, якщо стан нотаток пустий або ще завантажується
+            if (!state || !Array.isArray(state.notes) || state.notes.length === 0) {
+                console.log('[CloudSync Garbage Collector] Skipped: state.notes is empty or not yet loaded.');
+                return;
+            }
 
             try {
                 // 1. Отримуємо список усіх файлів користувача в Storage
@@ -116,9 +127,10 @@ window.App = window.App || {};
 
                 if (error || !files || files.length === 0) return;
 
-                // 2. Збираємо список усіх актуальних ID картинок з активних нотаток
+                // 2. Збираємо список усіх актуальних ID картинок з активних нотаток І спільних нотаток
                 const activeImageIds = new Set();
-                state.notes.forEach(note => {
+                const allNotes = [...(state.notes || []), ...(state.readOnlyNotes || [])];
+                allNotes.forEach(note => {
                     if (Array.isArray(note.images)) {
                         note.images.forEach(im => {
                             if (im && im.id) activeImageIds.add(im.id);
@@ -126,18 +138,37 @@ window.App = window.App || {};
                     }
                 });
 
-                // 3. Знаходимо файли-сироти
+                // Також перевіряємо чергу офлайн дій (щоб не стерти фото щойно збереженої офлайн нотатки)
+                const queue = window.App.offlineQueue ? window.App.offlineQueue.getOfflineQueue() : [];
+                queue.forEach(item => {
+                    if (item && item.data && Array.isArray(item.data.images)) {
+                        item.data.images.forEach(im => {
+                            if (im && im.id) activeImageIds.add(im.id);
+                        });
+                    }
+                });
+
+                // 3. Знаходимо файли-сироти з безпечним пільговим періодом (grace period 7 днів)
+                // Свіжі файли молодші 7 днів ніколи не чіпаються автоматично
+                const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+                const now = Date.now();
                 const orphanedPaths = [];
+
                 files.forEach(file => {
                     const nameWithoutExt = file.name.replace(/\.[^/.]+$/, "");
-                    if (!activeImageIds.has(nameWithoutExt) && nameWithoutExt !== '.emptyFolderPlaceholder') {
-                        orphanedPaths.push(`${currentUser.id}/${file.name}`);
+                    if (nameWithoutExt === '.emptyFolderPlaceholder') return;
+
+                    if (!activeImageIds.has(nameWithoutExt)) {
+                        const createdAt = file.created_at ? new Date(file.created_at).getTime() : 0;
+                        if (!createdAt || (now - createdAt > SEVEN_DAYS_MS)) {
+                            orphanedPaths.push(`${currentUser.id}/${file.name}`);
+                        }
                     }
                 });
 
                 // 4. Перманентно видаляємо застарілі файли
                 if (orphanedPaths.length > 0) {
-                    console.log(`[CloudSync Garbage Collector] Cleaning up ${orphanedPaths.length} orphaned images from storage...`);
+                    console.log(`[CloudSync Garbage Collector] Cleaning up ${orphanedPaths.length} confirmed orphaned images older than 7 days...`);
                     await supabase.storage.from('note-images').remove(orphanedPaths);
                 }
             } catch (err) {

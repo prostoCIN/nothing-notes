@@ -75,14 +75,46 @@ window.App = window.App || {};
                         <img src="${imgData.url || ''}" class="sticker-embedded-img" alt="Attached image" loading="lazy">
                     `;
 
-                    // Якщо url ще немає в note (бо зберігається в IndexedDB), завантажуємо з IndexedDB
+                    const imgEl = imgWrap.querySelector('.sticker-embedded-img');
+
+                    // 1. Якщо url ще немає в note (зберігається в IndexedDB) — завантажуємо з локальної бази
                     if (!imgData.url && window.App.imageDb) {
-                        const imgEl = imgWrap.querySelector('.sticker-embedded-img');
                         window.App.imageDb.getImage(imgData.id).then(loadedUrl => {
                             if (loadedUrl && imgEl) {
                                 imgEl.src = loadedUrl;
                             }
                         });
+                    }
+
+                    // 2. Двосторонній захист: якщо хмарний URL недоступний (офлайн або помилка мережі) — fallback до IndexedDB
+                    if (imgEl && window.App.imageDb) {
+                        imgEl.addEventListener('error', () => {
+                            window.App.imageDb.getImage(imgData.id).then(fallbackUrl => {
+                                if (fallbackUrl && imgEl.src !== fallbackUrl) {
+                                    imgEl.src = fallbackUrl;
+                                }
+                            });
+                        }, { once: true });
+
+                        // 3. Фоново кешуємо хмарні фото в локальний IndexedDB для надійного офлайн-доступу
+                        if (imgData.url) {
+                            window.App.imageDb.getImage(imgData.id).then(cached => {
+                                if (!cached && typeof imgData.url === 'string' && imgData.url.startsWith('http')) {
+                                    fetch(imgData.url)
+                                        .then(res => res.blob())
+                                        .then(blob => {
+                                            const reader = new FileReader();
+                                            reader.onload = () => {
+                                                if (reader.result && window.App.imageDb) {
+                                                    window.App.imageDb.saveImage(imgData.id, reader.result);
+                                                }
+                                            };
+                                            reader.readAsDataURL(blob);
+                                        })
+                                        .catch(() => {});
+                                }
+                            });
+                        }
                     }
 
                     if (!isReadOnly) {
