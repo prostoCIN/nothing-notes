@@ -652,3 +652,14 @@ window.addEventListener('beforeunload', () => {
         window.App.storage.flushNotes();
     }
 });
+
+export const store = window.App.store;
+export const state = window.App.state;
+export const storage = window.App.storage;
+export const NOTE_COLORS = window.App.NOTE_COLORS;
+export const FONT_SIZES = window.App.FONT_SIZES;
+export const FONT_LABELS = window.App.FONT_LABELS;
+export const BOOKMARK_TAPE_HEX = window.App.BOOKMARK_TAPE_HEX;
+export const TAG_TAPE_HEX = window.App.TAG_TAPE_HEX;
+export const getTagColorIndex = window.App.getTagColorIndex;
+export const getBookmarkColorIndex = window.App.getBookmarkColorIndex;

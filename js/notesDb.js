@@ -168,4 +168,7 @@ window.App = window.App || {};
     };
 
     window.App.notesDb = notesDb;
+    return notesDb;
 })();
+
+export const notesDb = window.App.notesDb;

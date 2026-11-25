@@ -9,6 +9,7 @@ window.supabase = window.supabase || { createClient };
 window.DOMPurify = window.DOMPurify || DOMPurify;
 
 // 1. Базові модулі ядра та стану
+import './types.js';
 import './dom.js';
 import './eventBus.js';
 import './router.js';

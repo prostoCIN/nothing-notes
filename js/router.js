@@ -136,3 +136,6 @@ window.App = window.App || {};
     window.App.HashRouter = HashRouter;
     window.App.router = new HashRouter();
 })();
+
+export const HashRouter = window.App.HashRouter;
+export const router = window.App.router;

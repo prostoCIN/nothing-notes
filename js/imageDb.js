@@ -120,3 +120,5 @@ window.App.imageDb = {
         });
     }
 };
+
+export const imageDb = window.App.imageDb;
