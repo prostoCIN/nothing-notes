@@ -135,20 +135,37 @@ describe('Mobile Sidebar Swipe Gestures', () => {
         expect(mockSidebar.classList.contains('mobile-open')).toBe(false);
     });
 
-    it('closes mobile sidebar when swiping left on open sidebar', () => {
+    it('closes mobile sidebar when swiping left on sidebar overlay', () => {
         sidebarView.openMobileSidebar();
         expect(document.body.classList.contains('mobile-sidebar-active')).toBe(true);
 
         dispatchTouchSequence({
-            startX: 250,
+            startX: 300,
             startY: 200,
-            endX: 150, // deltaX = -100px (swipe left to close)
+            endX: 150, // deltaX = -150px (swipe left on overlay)
             endY: 205,
-            target: mockSidebar
+            target: mockOverlay
         });
 
         expect(mockSidebar.classList.contains('mobile-open')).toBe(false);
         expect(document.body.classList.contains('mobile-sidebar-active')).toBe(false);
+    });
+
+    it('does NOT close mobile sidebar when swiping inside sidebar (preserves item swipe buttons)', () => {
+        sidebarView.openMobileSidebar();
+        expect(document.body.classList.contains('mobile-sidebar-active')).toBe(true);
+
+        dispatchTouchSequence({
+            startX: 200,
+            startY: 200,
+            endX: 100, // deltaX = -100px (swipe left on note/board row inside sidebar)
+            endY: 205,
+            target: mockSidebar
+        });
+
+        // Sidebar remains open so that item actions (edit/share/delete) can work without conflict
+        expect(mockSidebar.classList.contains('mobile-open')).toBe(true);
+        expect(document.body.classList.contains('mobile-sidebar-active')).toBe(true);
     });
 
     it('does NOT open sidebar on desktop screens (> 768px)', () => {

@@ -87,6 +87,13 @@ window.App = window.App || {};
                 startY = touch.clientY;
                 startTime = Date.now();
 
+                // Якщо жест почався всередині самого сайдбару — НЕ перехоплюємо його!
+                // Це повністю усуває конфлікт зі свайпами плашок (викликом кнопок редагування/видалення) та скролом списку
+                if (e.target.closest('#sidebar, .sidebar')) {
+                    isTracking = false;
+                    return;
+                }
+
                 // Ігноруємо якщо користувач взаємодіє з інтерактивними полями введення або модалками
                 if (e.target.closest('input, textarea, [contenteditable="true"], .polaroid-lightbox-viewport, .modal-overlay, #settings-modal-overlay, .color-picker-popover')) {
                     isTracking = false;
@@ -102,10 +109,14 @@ window.App = window.App || {};
                 const isSidebarOpen = document.body.classList.contains('mobile-sidebar-active');
 
                 if (isSidebarOpen) {
-                    // Якщо сайдбар відкритий — дозволяємо свайп вліво для його закриття
-                    canOpenDrawer = false;
-                    canCloseDrawer = true;
-                    isTracking = true;
+                    // Якщо сайдбар відкритий — дозволяємо свайп вліво по оверлею для його закриття
+                    if (e.target.closest('#sidebar-overlay, .sidebar-overlay')) {
+                        canOpenDrawer = false;
+                        canCloseDrawer = true;
+                        isTracking = true;
+                    } else {
+                        isTracking = false;
+                    }
                 } else {
                     // Якщо сайдбар закритий — перевіряємо, чи користувач у крайній першій колонці або біля лівого краю
                     canCloseDrawer = false;
