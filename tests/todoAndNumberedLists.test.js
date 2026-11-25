@@ -243,5 +243,50 @@ describe('Interactive To-Do Checkboxes & Auto Numbered Lists', () => {
 
             expect(div.innerHTML).toContain('2.');
         });
+
+        it('supports two separate numbered lists in the same note', () => {
+            const twoListsNote = {
+                id: 'note_two_lists',
+                content: '1. Пункт А<br>2. Пункт Б'
+            };
+            const div = window.App.stickerContent.createContent(twoListsNote, card, false);
+            document.body.appendChild(div);
+
+            // User enters a blank line (<br>) and starts a new list '1.'
+            const br = document.createElement('br');
+            div.appendChild(br);
+
+            const newTextNode = document.createTextNode('1.');
+            div.appendChild(newTextNode);
+
+            const sel = window.getSelection();
+            const range = document.createRange();
+            range.setStart(newTextNode, 2);
+            range.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(range);
+
+            // Press space
+            const spaceEvent = new KeyboardEvent('keydown', { key: ' ', cancelable: true });
+            div.dispatchEvent(spaceEvent);
+
+            expect(newTextNode.nodeValue).toMatch(/^[\s\u00A0]{2,}1\./);
+
+            // User types text and presses Enter
+            newTextNode.nodeValue += 'Пункт В';
+            const range2 = document.createRange();
+            range2.setStart(newTextNode, newTextNode.nodeValue.length);
+            range2.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(range2);
+
+            const enterEvent = new KeyboardEvent('keydown', { key: 'Enter', cancelable: true });
+            div.dispatchEvent(enterEvent);
+
+            // Second list must continue with 2., not 3.!
+            expect(div.innerHTML).toContain('1.');
+            expect(div.innerHTML).toContain('2.');
+            expect(div.innerHTML).toContain('Пункт В');
+        });
     });
 });

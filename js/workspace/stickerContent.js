@@ -97,6 +97,13 @@ window.App = window.App || {};
                             if (tag === 'br' || /^(div|p|li|h[1-6]|blockquote|hr)$/.test(tag)) {
                                 break;
                             }
+                        } else if (curr.nodeType === Node.TEXT_NODE) {
+                            const val = curr.nodeValue || '';
+                            const prevNl = Math.max(val.lastIndexOf('\n'), val.lastIndexOf('\r'));
+                            if (prevNl !== -1) {
+                                lineParts.unshift(val.slice(prevNl + 1));
+                                break;
+                            }
                         }
                         lineParts.unshift(curr.textContent || '');
                         curr = curr.previousSibling;
@@ -108,7 +115,7 @@ window.App = window.App || {};
 
             function removeNumberPrefixAtCaret(node, prefixText) {
                 if (node && node.nodeType === Node.TEXT_NODE) {
-                    node.nodeValue = node.nodeValue.replace(/^[\s\u00A0]*\d+[\.\)][\s\u00A0]*/, '');
+                    node.nodeValue = node.nodeValue.replace(/((?:^|[\r\n])[\s\u00A0]*)\d+[\.\)][\s\u00A0]*/, '$1');
                 }
             }
 
@@ -502,7 +509,7 @@ window.App = window.App || {};
                         // Перевіряємо, чи поточний рядок є нумерованим списком (1. або 1))
                         const lineInfo = getLineTextBeforeCaret(contentDiv, range);
                         if (lineInfo) {
-                            const numMatch = lineInfo.text.match(/^([\s\u00A0]*)(\d+)([\.\)])[\s\u00A0]*(.*)$/);
+                            const numMatch = lineInfo.text.match(/(?:^|[\r\n])([\s\u00A0]*)(\d+)([\.\)])[\s\u00A0]*(.*)$/);
                             if (numMatch) {
                                 e.preventDefault();
                                 const indent = numMatch[1] || '';
@@ -554,7 +561,7 @@ window.App = window.App || {};
 
                         const lineInfo = getLineTextBeforeCaret(contentDiv, range);
                         if (lineInfo) {
-                            const numMatch = lineInfo.text.match(/^(\s*)(\d+)([\.\)])\s*$/);
+                            const numMatch = lineInfo.text.match(/(?:^|[\r\n])([\s\u00A0]*)(\d+)([\.\)])\s*$/);
                             if (numMatch) {
                                 e.preventDefault();
                                 removeNumberPrefixAtCaret(lineInfo.node, numMatch[0]);
