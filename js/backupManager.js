@@ -143,8 +143,49 @@ export const backupManager = {
             throw new Error('Файл не містить структури блокнотів чи нотаток NothingNotes.');
         }
 
-        const incomingBoards = Array.isArray(data.boards) ? data.boards : [];
-        const incomingNotes = Array.isArray(data.notes) ? data.notes : [];
+        const rawBoards = Array.isArray(data.boards) ? data.boards : [];
+        const rawNotes = Array.isArray(data.notes) ? data.notes : [];
+
+        const sanitizer = window.App?.stickerPasteSanitizer;
+
+        // Санітизація та валідація вхідних блокнотів
+        const incomingBoards = rawBoards
+            .filter(b => b && typeof b === 'object' && b.id)
+            .map(b => ({
+                ...b,
+                id: String(b.id),
+                name: String(b.name || '').slice(0, 100),
+                icon: typeof b.icon === 'string' ? b.icon.slice(0, 30) : null
+            }));
+
+        // Санітизація та валідація вхідних нотаток (захист від Stored XSS та роздутих пейлоадів)
+        const incomingNotes = rawNotes
+            .filter(n => n && typeof n === 'object' && n.id)
+            .map(n => {
+                const rawContent = typeof n.content === 'string' ? n.content : '';
+                const safeContent = (sanitizer && sanitizer.sanitizeNoteHtml)
+                    ? sanitizer.sanitizeNoteHtml(rawContent)
+                    : rawContent.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+
+                const safeTitle = String(n.title || '').slice(0, 500);
+
+                const safeTags = Array.isArray(n.tags)
+                    ? n.tags.filter(t => typeof t === 'string').map(t => t.trim().slice(0, 50)).slice(0, 50)
+                    : [];
+
+                const safeImages = Array.isArray(n.images)
+                    ? n.images.filter(img => typeof img === 'string' && (img.startsWith('http://') || img.startsWith('https://') || img.startsWith('data:image/') || img.startsWith('img_') || img.startsWith('blob:')))
+                    : [];
+
+                return {
+                    ...n,
+                    id: String(n.id),
+                    title: safeTitle,
+                    content: safeContent,
+                    tags: safeTags,
+                    images: safeImages
+                };
+            });
 
         const state = window.App?.state;
         const storage = window.App?.storage;

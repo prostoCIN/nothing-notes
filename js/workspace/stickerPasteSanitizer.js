@@ -504,6 +504,9 @@ window.App = window.App || {};
 
             // 2. Рекурсивне очищення та нормалізація дозволених тегів
             function cleanElement(el) {
+                // Спочатку рекурсивно очищуємо нащадків
+                Array.from(el.children).forEach(child => cleanElement(child));
+
                 const tag = el.tagName.toLowerCase();
 
                 // Видаляємо всі атрибути подій (onerror, onload, onclick тощо) та шкідливі протоколи
@@ -515,10 +518,10 @@ window.App = window.App || {};
                     }
                 });
 
-                const ALLOWED_TAGS = ['b', 'strong', 'mark', 'br', 'span'];
+                const ALLOWED_TAGS = ['b', 'strong', 'mark', 'br', 'span', 'a'];
 
                 if (!ALLOWED_TAGS.includes(tag)) {
-                    // Якщо тег не в білому списку — розгортаємо його, зберігаючи лише внутрішній текст
+                    // Якщо тег не в білому списку — розгортаємо його, зберігаючи лише внутрішній вміст
                     const parent = el.parentNode;
                     if (parent) {
                         while (el.firstChild) {
@@ -529,7 +532,37 @@ window.App = window.App || {};
                     return;
                 }
 
-                if (tag === 'mark' || tag === 'span') {
+                if (tag === 'a') {
+                    const rawHref = el.getAttribute('href') || '';
+                    const trimmedHref = rawHref.trim();
+                    const lowerHref = trimmedHref.toLowerCase();
+
+                    const isSafeProtocol = lowerHref.startsWith('https://') || 
+                                           lowerHref.startsWith('http://') || 
+                                           lowerHref.startsWith('mailto:') ||
+                                           lowerHref.startsWith('tel:');
+
+                    if (!isSafeProtocol) {
+                        const parent = el.parentNode;
+                        if (parent) {
+                            while (el.firstChild) {
+                                parent.insertBefore(el.firstChild, el);
+                            }
+                            parent.removeChild(el);
+                        }
+                        return;
+                    }
+
+                    // Очищаємо всі зайві/потенційно небезпечні атрибути
+                    while (el.attributes.length > 0) {
+                        el.removeAttribute(el.attributes[0].name);
+                    }
+
+                    // Захист від Reverse Tabnabbing та відкриття у новій вкладці
+                    el.setAttribute('href', trimmedHref);
+                    el.setAttribute('target', '_blank');
+                    el.setAttribute('rel', 'noopener noreferrer');
+                } else if (tag === 'mark' || tag === 'span') {
                     // Залишаємо виключно валідні класи маркерів
                     const validClasses = [];
                     el.classList.forEach(cls => {
@@ -567,8 +600,6 @@ window.App = window.App || {};
                         el.removeAttribute(el.attributes[0].name);
                     }
                 }
-
-                Array.from(el.children).forEach(child => cleanElement(child));
             }
 
             Array.from(body.children).forEach(child => cleanElement(child));
