@@ -134,12 +134,12 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                 });
 
                 initialRect = card.getBoundingClientRect();
-                dragHeight = Math.min(initialRect.height, BASE_NOTE_HEIGHT);
+                dragHeight = initialRect.height;
 
                 shiftX = startX - initialRect.left;
-                shiftY = Math.min(startY - initialRect.top, dragHeight - 20);
+                shiftY = startY - initialRect.top;
 
-                // Плейсхолдер (область передперегляду в списку з чіткою фіксованою висотою)
+                // Плейсхолдер (область передперегляду в списку з точною висотою вихідної картки)
                 placeholder = document.createElement('div');
                 placeholder.className = 'sticker-drag-placeholder';
                 placeholder.style.height = `${dragHeight}px`;
@@ -163,12 +163,6 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                 card.style.position = 'fixed';
                 card.style.zIndex = '999999';
                 card.style.margin = '0';
-
-                // На наступному кадрі плавно анімуємо висоту самої картки в руці до базової
-                requestAnimationFrame(() => {
-                    card.style.transition = 'height 0.22s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s ease, opacity 0.2s ease';
-                    card.style.height = `${dragHeight}px`;
-                });
 
                 verticalScroller.update(clientX, clientY);
                 horizontalScroller.update(clientX, clientY);
@@ -691,7 +685,15 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                 // Варіант 3: Звичайне перевпорядкування всередині тієї ж колонки
                 if (noteManager) {
                     const newOrderIds = extractNoteIdsFromColumn(startColumnList);
-                    noteManager.reorderNotesByIds(newOrderIds, originalParentId);
+                    const oldOrderIds = (state && state.notes ? state.notes : [])
+                        .filter(n => n.boardId === state.activeBoardId && (n.parentId || null) === originalParentId)
+                        .sort((a, b) => (typeof a.orderIndex === 'number' ? a.orderIndex : 0) - (typeof b.orderIndex === 'number' ? b.orderIndex : 0))
+                        .map(n => n.id);
+
+                    const isSameOrder = newOrderIds.length === oldOrderIds.length && newOrderIds.every((id, idx) => id === oldOrderIds[idx]);
+                    if (!isSameOrder) {
+                        noteManager.reorderNotesByIds(newOrderIds, originalParentId);
+                    }
                 }
             }
 
