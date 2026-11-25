@@ -102,7 +102,8 @@ window.App = window.App || {};
                 if (isReadOnly) return;
                 const text = getContentText();
                 const hasImg = contentDiv.querySelector('img');
-                if (!text && !hasImg) {
+                const hasCheckbox = contentDiv.querySelector('.todo-checkbox');
+                if (!text && !hasImg && !hasCheckbox) {
                     contentDiv.setAttribute('data-empty', 'true');
                 } else {
                     contentDiv.removeAttribute('data-empty');
@@ -114,7 +115,9 @@ window.App = window.App || {};
             if (!isReadOnly) {
                 contentDiv.addEventListener('input', () => {
                     const text = getContentText();
-                    if (!text) {
+                    const hasImg = contentDiv.querySelector('img');
+                    const hasCheckbox = contentDiv.querySelector('.todo-checkbox');
+                    if (!text && !hasImg && !hasCheckbox) {
                         contentDiv.innerHTML = '';
                         contentDiv.setAttribute('data-empty', 'true');
                         if (noteManager && noteManager.updateNote) {
@@ -122,7 +125,7 @@ window.App = window.App || {};
                         }
                     } else {
                         // Якщо весь текст видалено, але браузер зберіг порожні теги <mark></mark> чи <span></span>
-                        if (contentDiv.textContent.trim() === '') {
+                        if (contentDiv.textContent.trim() === '' && !hasImg && !hasCheckbox) {
                             contentDiv.innerHTML = '';
                             contentDiv.setAttribute('data-empty', 'true');
                             if (noteManager && noteManager.updateNote) {
@@ -140,7 +143,9 @@ window.App = window.App || {};
                 contentDiv.addEventListener('focus', updateContentPlaceholder);
                 contentDiv.addEventListener('blur', () => {
                     const text = getContentText();
-                    if (!text) {
+                    const hasImg = contentDiv.querySelector('img');
+                    const hasCheckbox = contentDiv.querySelector('.todo-checkbox');
+                    if (!text && !hasImg && !hasCheckbox) {
                         contentDiv.innerHTML = '';
                         if (noteManager && noteManager.updateNote) {
                             noteManager.updateNote(note.id, { content: '' });
@@ -169,14 +174,15 @@ window.App = window.App || {};
                 contentDiv.addEventListener('beforeinput', (e) => {
                     const cleanText = getContentText();
                     const hasImg = contentDiv.querySelector('img');
+                    const hasCheckbox = contentDiv.querySelector('.todo-checkbox');
 
                     // Якщо текст порожній, або користувач виділив весь текст перед заміною
                     const selection = window.getSelection();
                     const isAllSelected = selection && !selection.isCollapsed && selection.toString().trim() === cleanText;
 
-                    if ((!cleanText && !hasImg) || isAllSelected) {
-                        // Якщо є залишкові теги mark, span, b
-                        if (contentDiv.querySelector('mark, span, b, strong, font')) {
+                    if ((!cleanText && !hasImg && !hasCheckbox) || isAllSelected) {
+                        // Якщо є залишкові теги mark, span, b (крім todo)
+                        if (contentDiv.querySelector('mark, span:not(.todo-item):not(.todo-checkbox), b, strong, font')) {
                             contentDiv.innerHTML = '';
                             contentDiv.removeAttribute('data-empty');
                         }
@@ -265,7 +271,8 @@ window.App = window.App || {};
                         setTimeout(() => {
                             const cleanText = getContentText();
                             const hasImg = contentDiv.querySelector('img');
-                            if (!cleanText && !hasImg) {
+                            const hasCheckbox = contentDiv.querySelector('.todo-checkbox');
+                            if (!cleanText && !hasImg && !hasCheckbox) {
                                 contentDiv.innerHTML = '';
                                 contentDiv.setAttribute('data-empty', 'true');
                                 if (noteManager && noteManager.updateNote) {
@@ -332,16 +339,24 @@ window.App = window.App || {};
                                 todoSpan.appendChild(checkbox);
                                 todoSpan.appendChild(spaceText);
 
-                                if (node.nextSibling) {
-                                    node.parentNode.insertBefore(todoSpan, node.nextSibling);
-                                } else {
-                                    node.parentNode.appendChild(todoSpan);
-                                }
-
                                 if (textAfter) {
                                     const afterNode = document.createTextNode(textAfter);
                                     todoSpan.appendChild(afterNode);
                                 }
+
+                                if (!newTextBefore) {
+                                    node.parentNode.insertBefore(todoSpan, node);
+                                    node.remove();
+                                } else {
+                                    node.nodeValue = newTextBefore;
+                                    if (node.nextSibling) {
+                                        node.parentNode.insertBefore(todoSpan, node.nextSibling);
+                                    } else {
+                                        node.parentNode.appendChild(todoSpan);
+                                    }
+                                }
+
+                                contentDiv.removeAttribute('data-empty');
 
                                 const newRange = document.createRange();
                                 newRange.setStart(spaceText, spaceText.length);

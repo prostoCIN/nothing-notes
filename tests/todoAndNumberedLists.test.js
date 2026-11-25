@@ -113,5 +113,31 @@ describe('Interactive To-Do Checkboxes & Auto Numbered Lists', () => {
             expect(box.getAttribute('data-checked')).toBe('false');
             expect(window.App.noteManager.updateNote).not.toHaveBeenCalled();
         });
+
+        it('preserves newly created checkbox on first line of an empty note when input event triggers', () => {
+            const emptyNote = { id: 'note_empty_first_line', content: '' };
+            const emptyDiv = window.App.stickerContent.createContent(emptyNote, card, false);
+            document.body.appendChild(emptyDiv);
+
+            // Simulate typing '[]' on first line
+            const textNode = document.createTextNode('[]');
+            emptyDiv.appendChild(textNode);
+
+            const sel = window.getSelection();
+            const range = document.createRange();
+            range.setStart(textNode, 2);
+            range.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(range);
+
+            // Press space
+            const spaceEvent = new KeyboardEvent('keydown', { key: ' ', cancelable: true });
+            emptyDiv.dispatchEvent(spaceEvent);
+
+            const createdBox = emptyDiv.querySelector('.todo-checkbox');
+            expect(createdBox).not.toBeNull();
+            expect(emptyDiv.innerHTML).toContain('todo-checkbox');
+            expect(emptyDiv.getAttribute('data-empty')).toBeNull();
+        });
     });
 });
