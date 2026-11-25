@@ -813,6 +813,7 @@ body.is-sticker-dragging .column-notes-list .note-sticker:not(.is-dragging) .sti
     height: 14px;
     border: 1.5px solid currentColor;
     border-radius: 2px;
+    margin-left: 0.8em; /* Відступ списку, що візуально збігається з нумерованим списком */
     margin-right: 6px;
     vertical-align: -2px;
     cursor: pointer;

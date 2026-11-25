@@ -1166,7 +1166,7 @@ window.App = window.App || {};
         applyFilters() {
             nodes.forEach(node => {
                 if (!node.element) return;
-                const matchSearch = !searchQuery || node.title.toLowerCase().includes(searchQuery) || node.content.toLowerCase().includes(searchQuery);
+                const matchSearch = !searchQuery || (node.title && node.title.toLowerCase().includes(searchQuery));
                 const matchOrphan = !isOrphansOnly || node.isOrphan;
                 const matchTag = !activeTagFilter || (node.tags && node.tags.some(t => (typeof t === 'string' ? t : (t.text || '')) === activeTagFilter));
 

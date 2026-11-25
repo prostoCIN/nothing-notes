@@ -149,7 +149,7 @@ window.App = window.App || {};
             nodes.forEach(node => {
                 if (!node.element) return;
 
-                const isSearchMatch = !searchQuery || node.title.toLowerCase().includes(searchQuery) || node.content.toLowerCase().includes(searchQuery);
+                const isSearchMatch = !searchQuery || (node.title && node.title.toLowerCase().includes(searchQuery));
                 const isOrphanMatch = !isOrphansOnly || node.isOrphan;
                 const isTagMatch = !activeTagFilter || (node.tags && node.tags.some(t => (typeof t === 'string' ? t : (t.text || '')) === activeTagFilter));
 

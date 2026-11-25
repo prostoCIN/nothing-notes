@@ -164,5 +164,30 @@ describe('Interactive To-Do Checkboxes & Auto Numbered Lists', () => {
             // Should contain non-breaking spaces before 1.
             expect(textNode.nodeValue).toMatch(/^[\s\u00A0]{2,}1\./);
         });
+
+        it('creates a new todo-checkbox with matching class on Enter', () => {
+            const todoNote = {
+                id: 'note_enter_test',
+                content: '<span class="todo-item" data-checked="false"><span class="todo-checkbox" contenteditable="false" data-checked="false"></span>Перший пункт</span>'
+            };
+            const div = window.App.stickerContent.createContent(todoNote, card, false);
+            document.body.appendChild(div);
+
+            const item = div.querySelector('.todo-item');
+            const textChild = item.lastChild;
+
+            const sel = window.getSelection();
+            const range = document.createRange();
+            range.setStart(textChild, textChild.length || 0);
+            range.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(range);
+
+            const enterEvent = new KeyboardEvent('keydown', { key: 'Enter', cancelable: true });
+            div.dispatchEvent(enterEvent);
+
+            const allCheckboxes = div.querySelectorAll('.todo-checkbox');
+            expect(allCheckboxes.length).toBe(2);
+        });
     });
 });
