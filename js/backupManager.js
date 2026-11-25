@@ -31,6 +31,10 @@ export function htmlToMarkdown(html) {
     // Links
     text = text.replace(/<a\s+(?:[^>]*?\s+)?href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)');
 
+    // To-Do checkboxes
+    text = text.replace(/<span[^>]*class="[^"]*todo-checkbox[^"]*"[^>]*data-checked="true"[^>]*><\/span>/gi, '- [x] ');
+    text = text.replace(/<span[^>]*class="[^"]*todo-checkbox[^"]*"[^>]*><\/span>/gi, '- [ ] ');
+
     // Lists
     text = text.replace(/<li[^>]*>(.*?)<\/li>/gi, '- $1\n');
     text = text.replace(/<\/?(ul|ol)[^>]*>/gi, '\n');

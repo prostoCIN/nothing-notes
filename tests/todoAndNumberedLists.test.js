@@ -1,0 +1,117 @@
+// tests/todoAndNumberedLists.test.js - Unit tests for Interactive To-Do Checkboxes & Auto Numbered Lists
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import '../js/workspace/stickerPasteSanitizer.js';
+import '../js/workspace/stickerContent.js';
+import { htmlToMarkdown } from '../js/backupManager.js';
+
+describe('Interactive To-Do Checkboxes & Auto Numbered Lists', () => {
+    let sanitizer;
+
+    beforeEach(() => {
+        sanitizer = window.App?.stickerPasteSanitizer;
+        expect(sanitizer).toBeDefined();
+
+        window.App = window.App || {};
+        window.App.noteManager = {
+            updateNote: vi.fn()
+        };
+    });
+
+    describe('HTML Sanitization of To-Do items', () => {
+        it('preserves .todo-item and .todo-checkbox classes and data-checked attribute', () => {
+            const rawHtml = '<span class="todo-item" data-checked="false"><span class="todo-checkbox" contenteditable="false" data-checked="false"></span>Купити молоко</span>';
+            const cleaned = sanitizer.sanitizeNoteHtml(rawHtml);
+
+            expect(cleaned).toContain('todo-item');
+            expect(cleaned).toContain('todo-checkbox');
+            expect(cleaned).toContain('data-checked="false"');
+            expect(cleaned).toContain('Купити молоко');
+        });
+
+        it('preserves checked state data-checked="true"', () => {
+            const rawHtml = '<span class="todo-item" data-checked="true"><span class="todo-checkbox" contenteditable="false" data-checked="true"></span>Виконане завдання</span>';
+            const cleaned = sanitizer.sanitizeNoteHtml(rawHtml);
+
+            expect(cleaned).toContain('data-checked="true"');
+            expect(cleaned).toContain('Виконане завдання');
+        });
+
+        it('sanitizes dangerous inline attributes while keeping todo structure safe', () => {
+            const dirty = '<span class="todo-item" data-checked="false" onclick="steal()"><span class="todo-checkbox" style="color:red" data-checked="false"></span><script>alert(1)</script>Текст</span>';
+            const cleaned = sanitizer.sanitizeNoteHtml(dirty);
+
+            expect(cleaned).not.toContain('onclick');
+            expect(cleaned).not.toContain('script');
+            expect(cleaned).not.toContain('alert');
+            expect(cleaned).toContain('todo-item');
+            expect(cleaned).toContain('todo-checkbox');
+            expect(cleaned).toContain('Текст');
+        });
+    });
+
+    describe('Markdown Export Compatibility', () => {
+        it('converts unchecked todo checkboxes to - [ ] in Markdown', () => {
+            const html = '<span class="todo-item" data-checked="false"><span class="todo-checkbox" contenteditable="false" data-checked="false"></span>Купити молоко</span>';
+            const md = htmlToMarkdown(html);
+            expect(md).toContain('- [ ] Купити молоко');
+        });
+
+        it('converts checked todo checkboxes to - [x] in Markdown', () => {
+            const html = '<span class="todo-item" data-checked="true"><span class="todo-checkbox" contenteditable="false" data-checked="true"></span>Завдання зроблено</span>';
+            const md = htmlToMarkdown(html);
+            expect(md).toContain('- [x] Завдання зроблено');
+        });
+
+        it('exports numbered lists cleanly to Markdown without corruption', () => {
+            const html = '1. Перший пункт<br>2. Другий пункт<br>3. Третій пункт';
+            const md = htmlToMarkdown(html);
+            expect(md).toContain('1. Перший пункт');
+            expect(md).toContain('2. Другий пункт');
+            expect(md).toContain('3. Третій пункт');
+        });
+    });
+
+    describe('DOM Behavior and Event Handlers', () => {
+        let note;
+        let card;
+        let contentDiv;
+
+        beforeEach(() => {
+            note = {
+                id: 'note_test_todo_1',
+                content: '<span class="todo-item" data-checked="false"><span class="todo-checkbox" contenteditable="false" data-checked="false"></span>Купити каву</span>'
+            };
+            card = document.createElement('div');
+            contentDiv = window.App.stickerContent.createContent(note, card, false);
+            document.body.appendChild(contentDiv);
+        });
+
+        it('toggles checkbox data-checked state on click and updates note', () => {
+            const box = contentDiv.querySelector('.todo-checkbox');
+            const item = contentDiv.querySelector('.todo-item');
+            expect(box).toBeDefined();
+            expect(box.getAttribute('data-checked')).toBe('false');
+
+            // Click to check
+            box.click();
+            expect(box.getAttribute('data-checked')).toBe('true');
+            expect(item.getAttribute('data-checked')).toBe('true');
+            expect(window.App.noteManager.updateNote).toHaveBeenCalledWith('note_test_todo_1', expect.objectContaining({
+                content: expect.stringContaining('data-checked="true"')
+            }));
+
+            // Click to uncheck
+            box.click();
+            expect(box.getAttribute('data-checked')).toBe('false');
+            expect(item.getAttribute('data-checked')).toBe('false');
+        });
+
+        it('does not toggle checkbox in read-only mode', () => {
+            const readOnlyDiv = window.App.stickerContent.createContent(note, card, true);
+            const box = readOnlyDiv.querySelector('.todo-checkbox');
+            box.click();
+            expect(box.getAttribute('data-checked')).toBe('false');
+            expect(window.App.noteManager.updateNote).not.toHaveBeenCalled();
+        });
+    });
+});

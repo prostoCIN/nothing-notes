@@ -57,9 +57,50 @@ window.App = window.App || {};
             const safeContent = (sanitizer && sanitizer.sanitizeNoteHtml) ? sanitizer.sanitizeNoteHtml(initialContent) : initialContent;
             contentDiv.innerHTML = safeContent;
 
+            // Допоміжна функція визначення тексту поточного рядка перед кареткою
+            function getLineTextBeforeCaret(div, range) {
+                if (!range || !div.contains(range.startContainer)) return null;
+                const node = range.startContainer;
+                const offset = range.startOffset;
+
+                if (node.nodeType === Node.TEXT_NODE) {
+                    const textInNode = node.nodeValue.slice(0, offset);
+                    const lastNl = Math.max(textInNode.lastIndexOf('\n'), textInNode.lastIndexOf('\r'));
+                    if (lastNl !== -1) {
+                        return { text: textInNode.slice(lastNl + 1), node, offset };
+                    }
+                    const lineParts = [textInNode];
+                    let curr = node.previousSibling;
+                    while (curr) {
+                        if (curr.nodeType === Node.ELEMENT_NODE && curr.tagName.toLowerCase() === 'br') {
+                            break;
+                        }
+                        lineParts.unshift(curr.textContent || '');
+                        curr = curr.previousSibling;
+                    }
+                    return { text: lineParts.join(''), node, offset };
+                }
+                return null;
+            }
+
+            function removeNumberPrefixAtCaret(node, prefixText) {
+                if (node && node.nodeType === Node.TEXT_NODE) {
+                    const idx = node.nodeValue.indexOf(prefixText);
+                    if (idx !== -1) {
+                        node.nodeValue = node.nodeValue.slice(0, idx) + node.nodeValue.slice(idx + prefixText.length);
+                    } else {
+                        node.nodeValue = '';
+                    }
+                }
+            }
+
+            function getContentText() {
+                return (contentDiv.innerText || contentDiv.textContent || '').replace(/\u200B/g, '').trim();
+            }
+
             function updateContentPlaceholder() {
                 if (isReadOnly) return;
-                const text = contentDiv.innerText.replace(/\u200B/g, '').trim();
+                const text = getContentText();
                 const hasImg = contentDiv.querySelector('img');
                 if (!text && !hasImg) {
                     contentDiv.setAttribute('data-empty', 'true');
@@ -72,7 +113,7 @@ window.App = window.App || {};
 
             if (!isReadOnly) {
                 contentDiv.addEventListener('input', () => {
-                    const text = contentDiv.innerText.replace(/\u200B/g, '').trim();
+                    const text = getContentText();
                     if (!text) {
                         contentDiv.innerHTML = '';
                         contentDiv.setAttribute('data-empty', 'true');
@@ -98,7 +139,7 @@ window.App = window.App || {};
 
                 contentDiv.addEventListener('focus', updateContentPlaceholder);
                 contentDiv.addEventListener('blur', () => {
-                    const text = contentDiv.innerText.replace(/\u200B/g, '').trim();
+                    const text = getContentText();
                     if (!text) {
                         contentDiv.innerHTML = '';
                         if (noteManager && noteManager.updateNote) {
@@ -126,7 +167,7 @@ window.App = window.App || {};
                 // 1. Якщо нотатка візуально порожня — гарантуємо чистий корінь без залишкових тегів
                 // 2. Автоматично робимо першу літеру після крапки (. ), оклику (! ), питання (? ) чи нового рядка великою
                 contentDiv.addEventListener('beforeinput', (e) => {
-                    const cleanText = contentDiv.innerText.replace(/\u200B/g, '').trim();
+                    const cleanText = getContentText();
                     const hasImg = contentDiv.querySelector('img');
 
                     // Якщо текст порожній, або користувач виділив весь текст перед заміною
@@ -222,7 +263,7 @@ window.App = window.App || {};
                             lastAutoCapitalized.userDeleted = true;
                         }
                         setTimeout(() => {
-                            const cleanText = contentDiv.innerText.replace(/\u200B/g, '').trim();
+                            const cleanText = getContentText();
                             const hasImg = contentDiv.querySelector('img');
                             if (!cleanText && !hasImg) {
                                 contentDiv.innerHTML = '';
@@ -232,6 +273,214 @@ window.App = window.App || {};
                                 }
                             }
                         }, 0);
+                    }
+                });
+
+                // Клік по чекбоксу для перемикання статусу (To-Do toggle)
+                contentDiv.addEventListener('click', (e) => {
+                    const box = e.target.closest('.todo-checkbox');
+                    if (!box || !contentDiv.contains(box)) return;
+                    if (isReadOnly) return;
+
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const isChecked = box.getAttribute('data-checked') === 'true';
+                    const nextChecked = !isChecked;
+                    box.setAttribute('data-checked', nextChecked ? 'true' : 'false');
+
+                    const parentItem = box.closest('.todo-item');
+                    if (parentItem) {
+                        parentItem.setAttribute('data-checked', nextChecked ? 'true' : 'false');
+                    }
+
+                    if (noteManager && noteManager.updateNote) {
+                        noteManager.updateNote(note.id, { content: contentDiv.innerHTML });
+                    }
+                });
+
+                // Автоматичне перетворення [] або [ ] у To-Do чекбокс при введенні пробілу
+                contentDiv.addEventListener('keydown', (e) => {
+                    if (e.key === ' ') {
+                        const selection = window.getSelection();
+                        if (!selection || !selection.isCollapsed || selection.rangeCount === 0) return;
+                        const range = selection.getRangeAt(0);
+                        const node = range.startContainer;
+
+                        if (node.nodeType === Node.TEXT_NODE && contentDiv.contains(node)) {
+                            const textBefore = node.nodeValue.slice(0, range.startOffset);
+                            const todoMatch = textBefore.match(/(?:^|[\r\n])(\s*)(?:-\s*)?(?:\[\s*\]|\[\])$/);
+                            if (todoMatch) {
+                                e.preventDefault();
+
+                                const prefixLen = todoMatch[0].length;
+                                const newTextBefore = textBefore.slice(0, textBefore.length - prefixLen);
+                                const textAfter = node.nodeValue.slice(range.startOffset);
+
+                                node.nodeValue = newTextBefore;
+
+                                const todoSpan = document.createElement('span');
+                                todoSpan.className = 'todo-item';
+                                todoSpan.setAttribute('data-checked', 'false');
+
+                                const checkbox = document.createElement('span');
+                                checkbox.className = 'todo-checkbox';
+                                checkbox.setAttribute('contenteditable', 'false');
+                                checkbox.setAttribute('data-checked', 'false');
+
+                                const spaceText = document.createTextNode('\u00A0');
+                                todoSpan.appendChild(checkbox);
+                                todoSpan.appendChild(spaceText);
+
+                                if (node.nextSibling) {
+                                    node.parentNode.insertBefore(todoSpan, node.nextSibling);
+                                } else {
+                                    node.parentNode.appendChild(todoSpan);
+                                }
+
+                                if (textAfter) {
+                                    const afterNode = document.createTextNode(textAfter);
+                                    todoSpan.appendChild(afterNode);
+                                }
+
+                                const newRange = document.createRange();
+                                newRange.setStart(spaceText, spaceText.length);
+                                newRange.collapse(true);
+                                selection.removeAllRanges();
+                                selection.addRange(newRange);
+
+                                contentDiv.dispatchEvent(new Event('input'));
+                            }
+                        }
+                    }
+                });
+
+                // Обробка Enter та Backspace для To-Do чекбоксів та автоматичних нумерованих списків
+                contentDiv.addEventListener('keydown', (e) => {
+                    const selection = window.getSelection();
+                    if (!selection || !selection.isCollapsed || selection.rangeCount === 0) return;
+                    const range = selection.getRangeAt(0);
+                    const startNode = range.startContainer;
+                    if (!contentDiv.contains(startNode)) return;
+
+                    // 1. Обробка натискання Enter
+                    if (e.key === 'Enter') {
+                        // Перевіряємо, чи курсор всередині To-Do елемента
+                        const todoItem = (startNode.nodeType === Node.ELEMENT_NODE ? startNode : startNode.parentElement)?.closest('.todo-item');
+                        if (todoItem && contentDiv.contains(todoItem)) {
+                            e.preventDefault();
+
+                            const textContent = todoItem.textContent.replace(/[\u00A0\u200B\s]/g, '');
+                            if (!textContent) {
+                                // Порожній чекбокс -> вихід зі списку
+                                const br = document.createElement('br');
+                                todoItem.parentNode.insertBefore(br, todoItem);
+                                todoItem.remove();
+
+                                const newRange = document.createRange();
+                                newRange.setStartAfter(br);
+                                newRange.collapse(true);
+                                selection.removeAllRanges();
+                                selection.addRange(newRange);
+                                contentDiv.dispatchEvent(new Event('input'));
+                                return;
+                            } else {
+                                // Створення наступного пункту чекбокса
+                                const br = document.createElement('br');
+                                const newTodo = document.createElement('span');
+                                newTodo.className = 'todo-item';
+                                newTodo.setAttribute('data-checked', 'false');
+
+                                const newBox = document.createElement('span');
+                                newBox.className = 'todo-checkbox';
+                                newBox.setAttribute('contenteditable', 'false');
+                                newBox.setAttribute('data-checked', 'false');
+
+                                const spaceText = document.createTextNode('\u00A0');
+                                newTodo.appendChild(newBox);
+                                newTodo.appendChild(spaceText);
+
+                                if (todoItem.nextSibling) {
+                                    todoItem.parentNode.insertBefore(br, todoItem.nextSibling);
+                                    todoItem.parentNode.insertBefore(newTodo, br.nextSibling);
+                                } else {
+                                    todoItem.parentNode.appendChild(br);
+                                    todoItem.parentNode.appendChild(newTodo);
+                                }
+
+                                const newRange = document.createRange();
+                                newRange.setStart(spaceText, spaceText.length);
+                                newRange.collapse(true);
+                                selection.removeAllRanges();
+                                selection.addRange(newRange);
+                                contentDiv.dispatchEvent(new Event('input'));
+                                return;
+                            }
+                        }
+
+                        // Перевіряємо, чи поточний рядок є нумерованим списком (1. або 1))
+                        const lineInfo = getLineTextBeforeCaret(contentDiv, range);
+                        if (lineInfo) {
+                            const numMatch = lineInfo.text.match(/^(\s*)(\d+)([\.\)])\s*(.*)$/);
+                            if (numMatch) {
+                                e.preventDefault();
+                                const indent = numMatch[1] || '';
+                                const num = parseInt(numMatch[2], 10);
+                                const delimiter = numMatch[3];
+                                const textAfter = numMatch[4] || '';
+
+                                if (!textAfter.trim()) {
+                                    // Порожній номер (наприклад користувач на рядку "3. " без тексту) -> вихід зі списку
+                                    removeNumberPrefixAtCaret(lineInfo.node, numMatch[0]);
+                                    contentDiv.dispatchEvent(new Event('input'));
+                                    return;
+                                } else {
+                                    // Продовжуємо нумерацію: 1. -> 2. -> 3.
+                                    const nextNum = num + 1;
+                                    const nextPrefix = `${indent}${nextNum}${delimiter} `;
+
+                                    const br = document.createElement('br');
+                                    const nextTextNode = document.createTextNode(nextPrefix);
+
+                                    range.deleteContents();
+                                    range.insertNode(nextTextNode);
+                                    range.insertNode(br);
+
+                                    const newRange = document.createRange();
+                                    newRange.setStart(nextTextNode, nextTextNode.length);
+                                    newRange.collapse(true);
+                                    selection.removeAllRanges();
+                                    selection.addRange(newRange);
+                                    contentDiv.dispatchEvent(new Event('input'));
+                                    return;
+                                }
+                            }
+                        }
+                    }
+
+                    // 2. Обробка Backspace для швидкого видалення порожніх чекбоксів або префіксів
+                    if (e.key === 'Backspace') {
+                        const todoItem = (startNode.nodeType === Node.ELEMENT_NODE ? startNode : startNode.parentElement)?.closest('.todo-item');
+                        if (todoItem && contentDiv.contains(todoItem)) {
+                            const textContent = todoItem.textContent.replace(/[\u00A0\u200B\s]/g, '');
+                            if (!textContent && range.startOffset <= 1) {
+                                e.preventDefault();
+                                todoItem.remove();
+                                contentDiv.dispatchEvent(new Event('input'));
+                                return;
+                            }
+                        }
+
+                        const lineInfo = getLineTextBeforeCaret(contentDiv, range);
+                        if (lineInfo) {
+                            const numMatch = lineInfo.text.match(/^(\s*)(\d+)([\.\)])\s*$/);
+                            if (numMatch) {
+                                e.preventDefault();
+                                removeNumberPrefixAtCaret(lineInfo.node, numMatch[0]);
+                                contentDiv.dispatchEvent(new Event('input'));
+                                return;
+                            }
+                        }
                     }
                 });
 

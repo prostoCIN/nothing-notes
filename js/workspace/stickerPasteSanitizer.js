@@ -563,10 +563,10 @@ window.App = window.App || {};
                     el.setAttribute('target', '_blank');
                     el.setAttribute('rel', 'noopener noreferrer');
                 } else if (tag === 'mark' || tag === 'span') {
-                    // Залишаємо виключно валідні класи маркерів
+                    // Залишаємо виключно валідні класи маркерів та To-Do списків
                     const validClasses = [];
                     el.classList.forEach(cls => {
-                        if (cls === 'note-marker' || cls.startsWith('hl-')) {
+                        if (cls === 'note-marker' || cls.startsWith('hl-') || cls === 'todo-item' || cls === 'todo-checkbox') {
                             validClasses.push(cls);
                         }
                     });
@@ -574,7 +574,7 @@ window.App = window.App || {};
                     if (validClasses.length > 0) {
                         el.className = validClasses.join(' ');
                     } else if (tag === 'span') {
-                        // Якщо span не містить маркерів — розгортаємо його
+                        // Якщо span не містить валідних класів — розгортаємо його
                         const parent = el.parentNode;
                         if (parent) {
                             while (el.firstChild) {
@@ -585,6 +585,15 @@ window.App = window.App || {};
                         return;
                     } else {
                         el.removeAttribute('class');
+                    }
+
+                    // Зберігаємо валідні атрибути для To-Do чекбоксів
+                    if (el.classList.contains('todo-checkbox')) {
+                        el.setAttribute('contenteditable', 'false');
+                    }
+                    if (el.hasAttribute('data-checked')) {
+                        const val = el.getAttribute('data-checked');
+                        el.setAttribute('data-checked', val === 'true' ? 'true' : 'false');
                     }
 
                     // Для стилів залишаємо тільки безпечні кольори маркера
@@ -621,7 +630,7 @@ window.App = window.App || {};
         let res = html.trim();
         const textOnly = res.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/\u200B/g, '').trim();
         if (!textOnly) {
-            if (!/<img\b/i.test(res)) {
+            if (!/<img\b|class="[^"]*todo-checkbox/i.test(res)) {
                 return '';
             }
         }

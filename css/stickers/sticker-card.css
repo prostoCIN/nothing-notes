@@ -789,3 +789,55 @@ body.is-sticker-dragging .column-notes-list .note-sticker:not(.is-dragging) .sti
         transform: scale(1);
     }
 }
+
+/* ==========================================================================
+   Інтерактивні To-Do чекбокси Nothing OS
+   ========================================================================== */
+
+.todo-item {
+    display: inline;
+    position: relative;
+    transition: opacity var(--dur-quick, 0.15s) ease;
+}
+
+.todo-item[data-checked="true"] {
+    opacity: 0.5;
+    text-decoration: line-through;
+}
+
+.todo-checkbox {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    border: 1.5px solid currentColor;
+    border-radius: 2px;
+    margin-right: 6px;
+    vertical-align: -2px;
+    cursor: pointer;
+    user-select: none;
+    background: transparent;
+    transition: all var(--dur-quick, 0.15s) ease;
+    opacity: 0.85;
+    text-decoration: none !important;
+}
+
+.todo-checkbox:hover {
+    opacity: 1;
+    transform: scale(1.08);
+}
+
+.todo-item[data-checked="true"] .todo-checkbox {
+    opacity: 0.9;
+    text-decoration: none !important;
+}
+
+.todo-item[data-checked="true"] .todo-checkbox::after,
+.todo-checkbox[data-checked="true"]::after {
+    content: "";
+    width: 6px;
+    height: 6px;
+    background: currentColor;
+    border-radius: 1px;
+}
