@@ -274,6 +274,41 @@ body.is-sticker-dragging * {
     display: none !important;
 }
 
+/* Акуратне зменшення висоти інших нотаток у колонках при грабі: видно заголовок і 5-6 рядків тексту без лагів */
+body.is-sticker-dragging .column-notes-list .note-sticker:not(.is-dragging) {
+    max-height: 280px !important;
+    overflow: hidden !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+}
+
+body.is-sticker-dragging .column-notes-list .note-sticker:not(.is-dragging) .sticker-gallery,
+body.is-sticker-dragging .column-notes-list .note-sticker:not(.is-dragging) .sticker-subnotes-container,
+body.is-sticker-dragging .column-notes-list .note-sticker:not(.is-dragging) .sticker-bookmarks-block {
+    display: none !important;
+}
+
+body.is-sticker-dragging .column-notes-list .note-sticker:not(.is-dragging) .sticker-header {
+    margin-bottom: 6px !important;
+}
+
+body.is-sticker-dragging .column-notes-list .note-sticker:not(.is-dragging) .sticker-title {
+    max-height: 48px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    -webkit-line-clamp: 2;
+    display: -webkit-box !important;
+    -webkit-box-orient: vertical;
+}
+
+body.is-sticker-dragging .column-notes-list .note-sticker:not(.is-dragging) .sticker-content {
+    max-height: 160px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    -webkit-line-clamp: 6;
+    display: -webkit-box !important;
+    -webkit-box-orient: vertical;
+}
+
 /* Підсвічування цільової нотатки, коли на неї навели іншу нотатку для створення піднотатки */
 .note-sticker.drag-nest-target {
     border: 2px dashed var(--accent-color) !important;
