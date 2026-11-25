@@ -5,6 +5,8 @@ window.App = window.App || {};
     const STORAGE_KEY_CUSTOM_COLORS = 'nothing_notes_custom_colors';
     const STORAGE_KEY_THEME_PRESETS = 'nothing_notes_theme_presets';
     const STORAGE_KEY_ACTIVE_PRESET = 'nothing_notes_active_preset';
+    const STORAGE_KEY_DELETED_PRESETS = 'nothing_notes_deleted_theme_preset_ids';
+    const STORAGE_KEY_LAST_THEME_SYNC = 'nothing_notes_last_theme_sync';
     let _syncThemesTimer = null;
 
     const CUSTOM_TOKEN_GROUPS = [
@@ -386,6 +388,30 @@ window.App = window.App || {};
             }
         },
 
+        getDeletedPresetIds(userId) {
+            try {
+                const uid = userId || this.getCurrentUserId();
+                if (!uid) return [];
+                const key = `${STORAGE_KEY_DELETED_PRESETS}_${uid}`;
+                const raw = localStorage.getItem(key);
+                return raw ? JSON.parse(raw) : [];
+            } catch (e) {
+                return [];
+            }
+        },
+
+        saveDeletedPresetIds(ids, userId) {
+            try {
+                const uid = userId || this.getCurrentUserId();
+                if (!uid) return;
+                const key = `${STORAGE_KEY_DELETED_PRESETS}_${uid}`;
+                const unique = Array.from(new Set(ids || [])).slice(-100);
+                localStorage.setItem(key, JSON.stringify(unique));
+            } catch (e) {
+                console.warn('[SettingsThemeTab] Помилка збереження видалених пресетів:', e);
+            }
+        },
+
         saveSavedPresets(presets, syncToCloud = true) {
             try {
                 const uid = this.getCurrentUserId();
@@ -422,6 +448,7 @@ window.App = window.App || {};
                 if (!supabase || !user || !user.id) return;
 
                 const presets = this.getSavedPresets(user.id);
+                const deletedIds = this.getDeletedPresetIds(user.id);
                 const colors = this.getCustomColors();
                 const activePresetKey = `${STORAGE_KEY_ACTIVE_PRESET}_${user.id}`;
                 const activePresetId = localStorage.getItem(activePresetKey) || this.getActivePresetId() || 'builtin_forest';
@@ -429,6 +456,7 @@ window.App = window.App || {};
                 const { data, error } = await supabase.auth.updateUser({
                     data: {
                         theme_presets: presets,
+                        deleted_theme_preset_ids: deletedIds,
                         custom_colors: colors,
                         active_theme_preset_id: activePresetId
                     }
@@ -439,9 +467,13 @@ window.App = window.App || {};
                     return;
                 }
 
+                const syncTimestamp = Date.now();
+                localStorage.setItem(`${STORAGE_KEY_LAST_THEME_SYNC}_${user.id}`, syncTimestamp.toString());
+
                 const updatedUser = (data && data.user) || user;
                 if (updatedUser.user_metadata) {
                     updatedUser.user_metadata.theme_presets = presets;
+                    updatedUser.user_metadata.deleted_theme_preset_ids = deletedIds;
                     updatedUser.user_metadata.custom_colors = colors;
                     updatedUser.user_metadata.active_theme_preset_id = activePresetId;
                 }
@@ -458,9 +490,19 @@ window.App = window.App || {};
             const meta = user.user_metadata || {};
             const uid = user.id;
 
-            // 1. Пресети акаунта: надійне злиття локальних та хмарних без втрат
-            const cloudPresets = Array.isArray(meta.theme_presets) ? meta.theme_presets : [];
+            // 0. Об'єднання списку видалених пресетів (tombstones)
+            const cloudDeletedIds = Array.isArray(meta.deleted_theme_preset_ids) ? meta.deleted_theme_preset_ids : [];
+            const localDeletedIds = this.getDeletedPresetIds(uid);
+            const allDeletedSet = new Set([...cloudDeletedIds, ...localDeletedIds]);
+            const mergedDeletedIds = Array.from(allDeletedSet).slice(-100);
+            this.saveDeletedPresetIds(mergedDeletedIds, uid);
+
+            // 1. Пресети акаунта: надійне злиття локальних та хмарних без воскресіння видалених
+            const rawCloudPresets = Array.isArray(meta.theme_presets) ? meta.theme_presets : [];
+            const cloudPresets = rawCloudPresets.filter(p => p && p.id && !allDeletedSet.has(p.id));
             const localPresets = this.getSavedPresets(uid);
+
+            const lastSyncTime = parseInt(localStorage.getItem(`${STORAGE_KEY_LAST_THEME_SYNC}_${uid}`) || '0', 10);
 
             const mergedMap = new Map();
             cloudPresets.forEach(p => {
@@ -469,9 +511,24 @@ window.App = window.App || {};
 
             let hasLocalOnly = false;
             localPresets.forEach(p => {
-                if (p && p.id && !mergedMap.has(p.id)) {
-                    mergedMap.set(p.id, p);
-                    hasLocalOnly = true;
+                if (!p || !p.id) return;
+                // Якщо пресет у списку видалених — видаляємо його локально і не додаємо
+                if (allDeletedSet.has(p.id)) {
+                    return;
+                }
+
+                if (!mergedMap.has(p.id)) {
+                    // Якщо пресет створений до останньої синхронізації і відсутній у хмарі — він був видалений на іншому пристрої
+                    const isOlderThanSync = lastSyncTime > 0 && p.createdAt && p.createdAt < lastSyncTime;
+                    if (isOlderThanSync) {
+                        allDeletedSet.add(p.id);
+                        mergedDeletedIds.push(p.id);
+                        this.saveDeletedPresetIds(mergedDeletedIds, uid);
+                    } else {
+                        // Новий локальний пресет, створений офлайн
+                        mergedMap.set(p.id, p);
+                        hasLocalOnly = true;
+                    }
                 }
             });
 
@@ -479,7 +536,11 @@ window.App = window.App || {};
             localStorage.setItem(`${STORAGE_KEY_THEME_PRESETS}_${uid}`, JSON.stringify(finalPresets));
             localStorage.removeItem(STORAGE_KEY_THEME_PRESETS);
 
-            if (hasLocalOnly || (cloudPresets.length === 0 && finalPresets.length > 0)) {
+            // Оновлюємо timestamp успішної синхронізації
+            localStorage.setItem(`${STORAGE_KEY_LAST_THEME_SYNC}_${uid}`, Date.now().toString());
+
+            const cloudNeedsTombstoneUpdate = cloudDeletedIds.length < mergedDeletedIds.length;
+            if (hasLocalOnly || cloudNeedsTombstoneUpdate) {
                 this.syncThemesToCloud(false);
             }
 
@@ -491,14 +552,24 @@ window.App = window.App || {};
             const localActivePreset = localStorage.getItem(activeKey);
             const localColorsRaw = localStorage.getItem(colorsKey);
 
-            if (cloudActivePreset) {
-                localStorage.setItem(activeKey, cloudActivePreset);
-                if (cloudColors && typeof cloudColors === 'object' && Object.keys(cloudColors).length > 0) {
-                    localStorage.setItem(colorsKey, JSON.stringify(cloudColors));
-                } else if (cloudActivePreset === 'builtin_forest') {
-                    localStorage.removeItem(colorsKey);
-                }
+            if (localActivePreset && allDeletedSet.has(localActivePreset)) {
+                localStorage.setItem(activeKey, 'builtin_forest');
+                localStorage.removeItem(colorsKey);
                 this.applyCustomColors();
+            } else if (cloudActivePreset) {
+                if (allDeletedSet.has(cloudActivePreset)) {
+                    localStorage.setItem(activeKey, 'builtin_forest');
+                    localStorage.removeItem(colorsKey);
+                    this.applyCustomColors();
+                } else {
+                    localStorage.setItem(activeKey, cloudActivePreset);
+                    if (cloudColors && typeof cloudColors === 'object' && Object.keys(cloudColors).length > 0) {
+                        localStorage.setItem(colorsKey, JSON.stringify(cloudColors));
+                    } else if (cloudActivePreset === 'builtin_forest') {
+                        localStorage.removeItem(colorsKey);
+                    }
+                    this.applyCustomColors();
+                }
             } else if (cloudColors && typeof cloudColors === 'object' && Object.keys(cloudColors).length > 0) {
                 localStorage.setItem(colorsKey, JSON.stringify(cloudColors));
                 this.applyCustomColors();
@@ -845,17 +916,22 @@ window.App = window.App || {};
                 }
             }
 
+            const now = Date.now();
             const newPreset = {
-                id: 'custom_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                id: 'custom_' + now + '_' + Math.random().toString(36).substr(2, 4),
                 name: cleanName,
                 isCustom: true,
                 colors: fullSnapshot,
-                createdAt: Date.now()
+                createdAt: now,
+                updatedAt: now
             };
 
             const saved = this.getSavedPresets(uid);
             saved.push(newPreset);
             this.saveSavedPresets(saved, false);
+
+            const deletedIds = this.getDeletedPresetIds(uid).filter(id => id !== newPreset.id);
+            this.saveDeletedPresetIds(deletedIds, uid);
 
             const activeKey = `${STORAGE_KEY_ACTIVE_PRESET}_${uid}`;
             localStorage.setItem(activeKey, newPreset.id);
@@ -865,15 +941,28 @@ window.App = window.App || {};
         },
 
         deletePreset(presetId) {
+            if (!presetId) return;
             const uid = this.getCurrentUserId();
             let saved = this.getSavedPresets(uid);
             saved = saved.filter(p => p.id !== presetId);
             this.saveSavedPresets(saved, false);
 
+            if (uid) {
+                const deletedIds = this.getDeletedPresetIds(uid);
+                if (!deletedIds.includes(presetId)) {
+                    deletedIds.push(presetId);
+                    this.saveDeletedPresetIds(deletedIds, uid);
+                }
+            }
+
             const activeKey = uid ? `${STORAGE_KEY_ACTIVE_PRESET}_${uid}` : `${STORAGE_KEY_ACTIVE_PRESET}_guest`;
             const activeId = localStorage.getItem(activeKey);
             if (activeId === presetId) {
-                localStorage.removeItem(activeKey);
+                localStorage.setItem(activeKey, 'builtin_forest');
+                const colorsKey = uid ? `${STORAGE_KEY_CUSTOM_COLORS}_${uid}` : `${STORAGE_KEY_CUSTOM_COLORS}_guest`;
+                localStorage.removeItem(colorsKey);
+                localStorage.removeItem(STORAGE_KEY_CUSTOM_COLORS);
+                this.applyCustomColors();
             }
 
             this.syncThemesToCloud(true);
@@ -1282,9 +1371,13 @@ window.App = window.App || {};
     window.App.settingsThemeTab = settingsThemeTab;
 
     // Автоматична ініціалізація та застосування збережених кольорів
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => settingsThemeTab.init());
-    } else {
-        settingsThemeTab.init();
+    if (typeof document !== 'undefined') {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => settingsThemeTab.init());
+        } else {
+            settingsThemeTab.init();
+        }
     }
 })();
+
+export const settingsThemeTab = window.App?.settingsThemeTab;
