@@ -274,37 +274,37 @@ body.is-sticker-dragging * {
     display: none !important;
 }
 
-/* Акуратне зменшення висоти інших нотаток у колонках при грабі: видно заголовок і 5-6 рядків тексту без лагів */
+/* Просторе та комфортне обмеження інших нотаток у колонках при грабі (до 480px): повністю зберігає природний вигляд */
 body.is-sticker-dragging .column-notes-list .note-sticker:not(.is-dragging) {
-    max-height: 280px !important;
+    max-height: 480px !important;
     overflow: hidden !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08) !important;
 }
 
-body.is-sticker-dragging .column-notes-list .note-sticker:not(.is-dragging) .sticker-gallery,
-body.is-sticker-dragging .column-notes-list .note-sticker:not(.is-dragging) .sticker-subnotes-container,
-body.is-sticker-dragging .column-notes-list .note-sticker:not(.is-dragging) .sticker-bookmarks-block {
-    display: none !important;
+body.is-sticker-dragging .column-notes-list .note-sticker:not(.is-dragging) .sticker-gallery {
+    max-height: 120px !important;
+    overflow: hidden !important;
 }
 
-body.is-sticker-dragging .column-notes-list .note-sticker:not(.is-dragging) .sticker-header {
-    margin-bottom: 6px !important;
+body.is-sticker-dragging .column-notes-list .note-sticker:not(.is-dragging) .sticker-subnotes-container {
+    max-height: 90px !important;
+    overflow: hidden !important;
 }
 
 body.is-sticker-dragging .column-notes-list .note-sticker:not(.is-dragging) .sticker-title {
-    max-height: 48px !important;
+    max-height: 64px !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 3;
     display: -webkit-box !important;
     -webkit-box-orient: vertical;
 }
 
 body.is-sticker-dragging .column-notes-list .note-sticker:not(.is-dragging) .sticker-content {
-    max-height: 160px !important;
+    max-height: 320px !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
-    -webkit-line-clamp: 6;
+    -webkit-line-clamp: 12;
     display: -webkit-box !important;
     -webkit-box-orient: vertical;
 }
