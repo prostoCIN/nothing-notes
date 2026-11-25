@@ -263,7 +263,9 @@ body.is-sticker-dragging * {
 
 /* Приховуємо піднотатки та маркування повністю під час перетягування, щоб вони не просвічували і не вилазили */
 .note-sticker.is-dragging .sticker-subnotes-container,
-.note-sticker.is-dragging .sticker-tag-container {
+.note-sticker.is-dragging .sticker-tag-container,
+.note-sticker.is-dragging .sticker-gallery,
+.note-sticker.is-dragging .sticker-bookmarks-block {
     display: none !important;
 }
 
@@ -273,10 +275,37 @@ body.is-sticker-dragging * {
     text-overflow: ellipsis !important;
 }
 
+/* Компактне згортання інших нотаток у колонках при грабі, щоб легко переміщати картку повз довгі записи */
+body.is-sticker-dragging .column-notes-list .note-sticker:not(.is-dragging) {
+    max-height: 140px !important;
+    padding-top: 14px !important;
+    padding-bottom: 14px !important;
+    overflow: hidden !important;
+    transition: max-height 0.22s cubic-bezier(0.2, 0, 0, 1), 
+                padding 0.2s cubic-bezier(0.2, 0, 0, 1), 
+                box-shadow 0.2s ease !important;
+}
+
+body.is-sticker-dragging .column-notes-list .note-sticker:not(.is-dragging) .sticker-subnotes-container,
+body.is-sticker-dragging .column-notes-list .note-sticker:not(.is-dragging) .sticker-tag-container,
+body.is-sticker-dragging .column-notes-list .note-sticker:not(.is-dragging) .sticker-gallery,
+body.is-sticker-dragging .column-notes-list .note-sticker:not(.is-dragging) .sticker-bookmarks-block {
+    display: none !important;
+}
+
+body.is-sticker-dragging .column-notes-list .note-sticker:not(.is-dragging) .sticker-content {
+    max-height: 60px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    -webkit-line-clamp: 3;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+}
+
 /* Підсвічування цільової нотатки, коли на неї навели іншу нотатку для створення піднотатки */
 .note-sticker.drag-nest-target {
     border: 2px dashed var(--accent-color) !important;
-    background-color: #dbeafe !important;
+    background-color: var(--accent-subtle) !important;
     transform: scale(0.985);
     box-shadow: 0 0 0 4px var(--accent-border), 0 14px 32px rgba(0, 0, 0, 0.32) !important;
     transition: transform var(--dur-quick) var(--ease-ios-bounce), box-shadow var(--dur-quick) ease;

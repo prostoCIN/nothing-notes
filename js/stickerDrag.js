@@ -71,8 +71,8 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
             let initialRect = null;
             let shiftX = 0;
             let shiftY = 0;
-            let dragHeight = 160;
-            const BASE_NOTE_HEIGHT = 160;
+            let dragHeight = 140;
+            const BASE_NOTE_HEIGHT = 140;
 
             let lastClientX = e.clientX;
             let lastClientY = e.clientY;
