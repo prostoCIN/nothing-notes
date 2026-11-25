@@ -169,7 +169,7 @@ export const ua = {
     },
     sticker: {
         titlePlaceholder: 'Заголовок...',
-        contentPlaceholder: 'Введіть текст...',
+        contentPlaceholder: 'Введіть текст, для введення списку наберіть [] або 1. ...',
         menuTitle: 'Меню дій',
         dragHandle: 'Перетягніть для зміни порядку або між колонками',
         deleteBtn: 'Видалити нотатку',
@@ -350,6 +350,8 @@ export const ua = {
             redo: 'Повторити дію',
             search: 'Пошук слів на дошці',
             bold: 'Жирний текст',
+            todoCheckbox: 'To-Do чекбокс у нотатці',
+            numberedList: 'Нумерований список',
             smartCreate: 'Створити нотатку (в колонці) або піднотатку (над нотаткою)',
             createSubnote: 'Створити піднотатку',
             close: 'Закрити вікно / вийти з маркера',

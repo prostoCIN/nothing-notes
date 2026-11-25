@@ -169,7 +169,7 @@ export const en = {
     },
     sticker: {
         titlePlaceholder: 'Title...',
-        contentPlaceholder: 'Type note text...',
+        contentPlaceholder: 'Type text, to create a list type [] or 1. ...',
         menuTitle: 'Action menu',
         dragHandle: 'Drag to reorder or move between columns',
         deleteBtn: 'Delete note',
@@ -350,6 +350,8 @@ export const en = {
             redo: 'Redo action',
             search: 'Search words on board',
             bold: 'Bold text',
+            todoCheckbox: 'To-Do checklist item',
+            numberedList: 'Numbered list',
             smartCreate: 'Create note (in column) or subnote (on hovered note)',
             createSubnote: 'Create subnote',
             close: 'Close modal / exit highlighter',
