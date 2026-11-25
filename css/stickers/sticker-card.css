@@ -116,19 +116,19 @@
     transition: opacity var(--dur-quick) ease;
 }
 
-/* У режимі вибору: невибрані картки та їхній текст стають напівпрозорими */
+/* У режимі вибору: картки та їхній текст залишаються чіткими без замилювання */
 .note-sticker.in-select-mode:not(.is-ws-selected) .sticker-title,
 .note-sticker.in-select-mode:not(.is-ws-selected) .sticker-content,
 .note-sticker.in-select-mode:not(.is-ws-selected) .sticker-tags-container,
 .note-sticker.in-select-mode:not(.is-ws-selected) .sticker-subnotes-container,
 .note-sticker.in-select-mode:not(.is-ws-selected) .sticker-gallery-container,
 .note-sticker.in-select-mode:not(.is-ws-selected) .sticker-bookmarks-container {
-    opacity: 0.55;
+    opacity: 1;
 }
 
 .note-sticker.in-select-mode:not(.is-ws-selected) .sticker-actions,
 .note-sticker.in-select-mode:not(.is-ws-selected) .sticker-emoji-wrap {
-    opacity: 0.4;
+    opacity: 0.6;
 }
 
 .note-sticker.in-select-mode:not(.is-ws-selected):hover .sticker-title,
@@ -139,7 +139,7 @@
 .note-sticker.in-select-mode:not(.is-ws-selected):hover .sticker-bookmarks-container,
 .note-sticker.in-select-mode:not(.is-ws-selected):hover .sticker-actions,
 .note-sticker.in-select-mode:not(.is-ws-selected):hover .sticker-emoji-wrap {
-    opacity: 0.8;
+    opacity: 1;
 }
 
 /* Коли картка вибрана: повна контрастність та насиченість */
