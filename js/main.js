@@ -1,5 +1,9 @@
 // js/main.js - Єдина модульна точка входу додатку для Vite
 import '../styles.css';
+import { logAppVersion } from './version.js';
+
+// Одноразове логування поточної версії для контролю оновлень у DevTools
+logAppVersion();
 
 // Бібліотеки (замінюють зовнішні CDN на надійні npm-пакети)
 import { createClient } from '@supabase/supabase-js';
