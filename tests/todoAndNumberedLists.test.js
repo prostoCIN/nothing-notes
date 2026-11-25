@@ -189,5 +189,59 @@ describe('Interactive To-Do Checkboxes & Auto Numbered Lists', () => {
             const allCheckboxes = div.querySelectorAll('.todo-checkbox');
             expect(allCheckboxes.length).toBe(2);
         });
+
+        it('automatically continues numbered list when started on line 2 (after <br>)', () => {
+            const noteOnLine2 = {
+                id: 'note_numbered_line_2_br',
+                content: 'Перший рядок тексту<br>1. Пункт списку'
+            };
+            const div = window.App.stickerContent.createContent(noteOnLine2, card, false);
+            document.body.appendChild(div);
+
+            const textNodes = [];
+            const walk = document.createTreeWalker(div, NodeFilter.SHOW_TEXT);
+            while (walk.nextNode()) textNodes.push(walk.currentNode);
+
+            const secondLineText = textNodes[textNodes.length - 1];
+            expect(secondLineText.nodeValue).toContain('1. Пункт списку');
+
+            const sel = window.getSelection();
+            const range = document.createRange();
+            range.setStart(secondLineText, secondLineText.nodeValue.length);
+            range.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(range);
+
+            const enterEvent = new KeyboardEvent('keydown', { key: 'Enter', cancelable: true });
+            div.dispatchEvent(enterEvent);
+
+            expect(div.innerHTML).toContain('2.');
+        });
+
+        it('automatically continues numbered list when started on line 2 (inside separate <div> line)', () => {
+            const div = window.App.stickerContent.createContent({ id: 'note_numbered_line_2_div', content: '' }, card, false);
+            document.body.appendChild(div);
+
+            const divLine1 = document.createElement('div');
+            divLine1.textContent = 'Перший рядок тексту';
+            div.appendChild(divLine1);
+
+            const divLine2 = document.createElement('div');
+            const textNode2 = document.createTextNode('1. Пункт списку');
+            divLine2.appendChild(textNode2);
+            div.appendChild(divLine2);
+
+            const sel = window.getSelection();
+            const range = document.createRange();
+            range.setStart(textNode2, textNode2.nodeValue.length);
+            range.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(range);
+
+            const enterEvent = new KeyboardEvent('keydown', { key: 'Enter', cancelable: true });
+            div.dispatchEvent(enterEvent);
+
+            expect(div.innerHTML).toContain('2.');
+        });
     });
 });

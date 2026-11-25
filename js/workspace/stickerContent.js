@@ -60,8 +60,27 @@ window.App = window.App || {};
             // Допоміжна функція визначення тексту поточного рядка перед кареткою
             function getLineTextBeforeCaret(div, range) {
                 if (!range || !div.contains(range.startContainer)) return null;
-                const node = range.startContainer;
-                const offset = range.startOffset;
+                let node = range.startContainer;
+                let offset = range.startOffset;
+
+                // Якщо каретка на ELEMENT_NODE, знаходимо відповідний текстовий вузол
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    if (offset > 0 && node.childNodes[offset - 1]) {
+                        node = node.childNodes[offset - 1];
+                        while (node && node.nodeType === Node.ELEMENT_NODE && node.lastChild) {
+                            node = node.lastChild;
+                        }
+                        offset = (node && node.nodeType === Node.TEXT_NODE) ? node.nodeValue.length : 0;
+                    } else if (node.childNodes[offset]) {
+                        node = node.childNodes[offset];
+                        while (node && node.nodeType === Node.ELEMENT_NODE && node.firstChild) {
+                            node = node.firstChild;
+                        }
+                        offset = 0;
+                    }
+                }
+
+                if (!node || !div.contains(node)) return null;
 
                 if (node.nodeType === Node.TEXT_NODE) {
                     const textInNode = node.nodeValue.slice(0, offset);
@@ -72,8 +91,12 @@ window.App = window.App || {};
                     const lineParts = [textInNode];
                     let curr = node.previousSibling;
                     while (curr) {
-                        if (curr.nodeType === Node.ELEMENT_NODE && curr.tagName.toLowerCase() === 'br') {
-                            break;
+                        if (curr.nodeType === Node.ELEMENT_NODE) {
+                            const tag = curr.tagName.toLowerCase();
+                            // Будь-який розділювач рядків (br) або блочний елемент (div, p тощо) означає межу рядка
+                            if (tag === 'br' || /^(div|p|li|h[1-6]|blockquote|hr)$/.test(tag)) {
+                                break;
+                            }
                         }
                         lineParts.unshift(curr.textContent || '');
                         curr = curr.previousSibling;
@@ -307,17 +330,36 @@ window.App = window.App || {};
                         const selection = window.getSelection();
                         if (!selection || !selection.isCollapsed || selection.rangeCount === 0) return;
                         const range = selection.getRangeAt(0);
-                        const node = range.startContainer;
+                        let node = range.startContainer;
+                        let offset = range.startOffset;
 
-                        if (node.nodeType === Node.TEXT_NODE && contentDiv.contains(node)) {
-                            const textBefore = node.nodeValue.slice(0, range.startOffset);
-                            const todoMatch = textBefore.match(/(?:^|[\r\n])(\s*)(?:-\s*)?(?:\[\s*\]|\[\])$/);
+                        // Якщо каретка на ELEMENT_NODE, знаходимо відповідний текстовий вузол
+                        if (node.nodeType === Node.ELEMENT_NODE) {
+                            if (offset > 0 && node.childNodes[offset - 1]) {
+                                node = node.childNodes[offset - 1];
+                                while (node && node.nodeType === Node.ELEMENT_NODE && node.lastChild) {
+                                    node = node.lastChild;
+                                }
+                                offset = (node && node.nodeType === Node.TEXT_NODE) ? node.nodeValue.length : 0;
+                            } else if (node.childNodes[offset]) {
+                                node = node.childNodes[offset];
+                                while (node && node.nodeType === Node.ELEMENT_NODE && node.firstChild) {
+                                    node = node.firstChild;
+                                }
+                                offset = 0;
+                            }
+                        }
+
+                        if (node && node.nodeType === Node.TEXT_NODE && contentDiv.contains(node)) {
+                            const textBefore = node.nodeValue.slice(0, offset);
+                            const todoMatch = textBefore.match(/(?:^|([\r\n]))(\s*)(?:-\s*)?(?:\[\s*\]|\[\])$/);
                             if (todoMatch) {
                                 e.preventDefault();
 
-                                const prefixLen = todoMatch[0].length;
+                                const nl = todoMatch[1] || '';
+                                const prefixLen = todoMatch[0].length - nl.length;
                                 const newTextBefore = textBefore.slice(0, textBefore.length - prefixLen);
-                                const textAfter = node.nodeValue.slice(range.startOffset);
+                                const textAfter = node.nodeValue.slice(offset);
 
                                 node.nodeValue = newTextBefore;
 
@@ -364,18 +406,19 @@ window.App = window.App || {};
                             }
 
                             // Автоматична активація нумерованого списку (1. або 1) -> додаємо відступ для наочності)
-                            const numberMatch = textBefore.match(/(?:^|[\r\n])([\s\u00A0]*)(\d+)([\.\)])$/);
+                            const numberMatch = textBefore.match(/(?:^|([\r\n]))([\s\u00A0]*)(\d+)([\.\)])$/);
                             if (numberMatch) {
                                 e.preventDefault();
-                                const existingIndent = numberMatch[1] || '';
-                                const num = numberMatch[2];
-                                const delim = numberMatch[3];
+                                const nl = numberMatch[1] || '';
+                                const existingIndent = numberMatch[2] || '';
+                                const num = numberMatch[3];
+                                const delim = numberMatch[4];
                                 // Якщо відступу ще немає — додаємо 2 нерозривні пробіли для візуального акценту списку
                                 const indent = existingIndent ? '' : '\u00A0\u00A0';
 
-                                const prefixLen = numberMatch[0].length;
+                                const prefixLen = numberMatch[0].length - nl.length;
                                 const newTextBefore = textBefore.slice(0, textBefore.length - prefixLen);
-                                const textAfter = node.nodeValue.slice(range.startOffset);
+                                const textAfter = node.nodeValue.slice(offset);
 
                                 const insertedPrefix = newTextBefore + existingIndent + indent + num + delim + '\u00A0';
                                 node.nodeValue = insertedPrefix + textAfter;
