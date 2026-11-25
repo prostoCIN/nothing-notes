@@ -282,6 +282,10 @@ window.App = window.App || {};
             if (window.App.syncStorage) return window.App.syncStorage.uploadImageFile(file, imgId);
         },
 
+        async uploadBase64Image(base64Data, imgId) {
+            if (window.App.syncStorage) return window.App.syncStorage.uploadBase64Image(base64Data, imgId);
+        },
+
         async deleteImageFile(imgId) {
             if (window.App.syncStorage) return window.App.syncStorage.deleteImageFile(imgId);
         },

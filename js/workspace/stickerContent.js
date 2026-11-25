@@ -101,6 +101,20 @@ window.App = window.App || {};
                     const text = contentDiv.innerText.replace(/\u200B/g, '').trim();
                     if (!text) {
                         contentDiv.innerHTML = '';
+                        if (noteManager && noteManager.updateNote) {
+                            noteManager.updateNote(note.id, { content: '' });
+                        }
+                    } else {
+                        const sanitizer = window.App.stickerPasteSanitizer;
+                        if (sanitizer && sanitizer.sanitizeNoteHtml) {
+                            const cleaned = sanitizer.sanitizeNoteHtml(contentDiv.innerHTML);
+                            if (cleaned !== contentDiv.innerHTML) {
+                                contentDiv.innerHTML = cleaned;
+                                if (noteManager && noteManager.updateNote) {
+                                    noteManager.updateNote(note.id, { content: cleaned });
+                                }
+                            }
+                        }
                     }
                     updateContentPlaceholder();
                     if (window.App.storage && window.App.storage.flushNotes) {

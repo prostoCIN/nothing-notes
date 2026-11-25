@@ -3,7 +3,23 @@ window.App = window.App || {};
 
 (function() {
     /**
-     * Автоматичне клієнтське стиснення зображень перед збереженням
+     * Перевірка підтримки браузером формату WebP у Canvas
+     * @returns {boolean}
+     */
+    function isWebpSupported() {
+        try {
+            if (typeof document === 'undefined') return false;
+            const canvas = document.createElement('canvas');
+            canvas.width = 1;
+            canvas.height = 1;
+            return canvas.toDataURL('image/webp').startsWith('data:image/webp');
+        } catch (e) {
+            return false;
+        }
+    }
+
+    /**
+     * Автоматичне клієнтське стиснення зображень перед збереженням (WebP з якістю 0.80 + JPEG fallback 0.82)
      * @param {File} file
      * @returns {Promise<string>} base64 data URL
      */
@@ -33,11 +49,19 @@ window.App = window.App || {};
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, w, h);
 
-                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.82);
+                    const useWebp = isWebpSupported();
+                    const format = useWebp ? 'image/webp' : 'image/jpeg';
+                    const quality = useWebp ? 0.80 : 0.82;
+
+                    const compressedDataUrl = canvas.toDataURL(format, quality);
                     resolve(compressedDataUrl);
+                };
+                img.onerror = () => {
+                    resolve(e.target.result);
                 };
                 img.src = e.target.result;
             };
+            reader.onerror = () => resolve('');
             reader.readAsDataURL(file);
         });
     }
@@ -327,10 +351,16 @@ window.App = window.App || {};
                     await window.App.imageDb.saveImage(newImgId, base64Url);
                 }
 
-                // Якщо користувач авторизований — вивантажуємо фото у Supabase Storage Bucket
+                // Якщо користувач авторизований — вивантажуємо стиснуте фото (WebP/JPEG) у Supabase Storage Bucket
                 let cloudUrl = null;
                 if (window.App.cloudSync && window.App.cloudSync.isLoggedIn()) {
-                    cloudUrl = await window.App.cloudSync.uploadImageFile(file, newImgId);
+                    if (window.App.cloudSync.uploadBase64Image) {
+                        cloudUrl = await window.App.cloudSync.uploadBase64Image(base64Url, newImgId);
+                    } else if (window.App.syncStorage && window.App.syncStorage.uploadBase64Image) {
+                        cloudUrl = await window.App.syncStorage.uploadBase64Image(base64Url, newImgId);
+                    } else if (window.App.cloudSync.uploadImageFile) {
+                        cloudUrl = await window.App.cloudSync.uploadImageFile(file, newImgId);
+                    }
                 }
 
                 const imgObj = {

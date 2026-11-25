@@ -572,13 +572,33 @@ window.App = window.App || {};
             }
 
             Array.from(body.children).forEach(child => cleanElement(child));
-            return body.innerHTML;
+            return trimEmptyHtml(body.innerHTML);
         } catch (e) {
             console.warn('[stickerPasteSanitizer] Fallback санітизації HTML:', e);
             return rawHtml.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         }
     }
 
+    /**
+     * Мініфікація та очищення надлишкових порожніх тегів (Content Slimming)
+     * Видаляє хвостові та початкові <br>, зайві пробіли, нормалізує подвійні переноси
+     * @param {string} html
+     * @returns {string}
+     */
+    function trimEmptyHtml(html) {
+        if (!html || typeof html !== 'string') return '';
+        let res = html.trim();
+        const textOnly = res.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/\u200B/g, '').trim();
+        if (!textOnly) {
+            if (!/<img\b/i.test(res)) {
+                return '';
+            }
+        }
+        res = res.replace(/^(?:<br\s*[\/]?>|\s|&nbsp;)+/gi, '');
+        res = res.replace(/(?:<br\s*[\/]?>|\s|&nbsp;)+$/gi, '');
+        res = res.replace(/(?:<br\s*[\/]?>\s*){3,}/gi, '<br><br>');
+        return res;
+    }
 
     window.App.stickerPasteSanitizer = {
         resolveColorToRgb,
@@ -586,6 +606,7 @@ window.App = window.App || {};
         getFormattedSelectionHtml,
         sanitizePastedNode,
         normalizeSanitizedHtml,
-        sanitizeNoteHtml
+        sanitizeNoteHtml,
+        trimEmptyHtml
     };
 })();
