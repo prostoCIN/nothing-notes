@@ -111,9 +111,20 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                     state.isDraggingNote = true;
                     state.draggedNoteId = draggedNoteId;
                 }
-                document.body.classList.add('is-sticker-dragging');
 
-                // Візуальна індикація групового перетягування
+                // 1. Спочатку знімаємо точну геометрію картки та зсув курсора ДО будь-яких змін DOM і стилів
+                initialRect = card.getBoundingClientRect();
+                dragHeight = initialRect.height;
+
+                shiftX = clientX - initialRect.left;
+                shiftY = clientY - initialRect.top;
+
+                // 2. Очищаємо можливі застарілі дублікати цієї картки в DOM перед початком перетягування
+                document.querySelectorAll(`.note-sticker[data-note-id="${draggedNoteId}"]`).forEach(dup => {
+                    if (dup !== card) dup.remove();
+                });
+
+                // 3. Візуальна індикація групового перетягування
                 if (isMultiSelectDrag) {
                     const badge = document.createElement('div');
                     badge.className = 'sticker-drag-count-badge';
@@ -128,18 +139,7 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                     });
                 }
 
-                // Очищаємо можливі застарілі дублікати цієї картки в DOM перед початком перетягування
-                document.querySelectorAll(`.note-sticker[data-note-id="${draggedNoteId}"]`).forEach(dup => {
-                    if (dup !== card) dup.remove();
-                });
-
-                initialRect = card.getBoundingClientRect();
-                dragHeight = initialRect.height;
-
-                shiftX = startX - initialRect.left;
-                shiftY = startY - initialRect.top;
-
-                // Плейсхолдер (область передперегляду в списку з точною висотою вихідної картки)
+                // 4. Плейсхолдер (область передперегляду в списку з точною висотою вихідної картки)
                 placeholder = document.createElement('div');
                 placeholder.className = 'sticker-drag-placeholder';
                 placeholder.style.height = `${dragHeight}px`;
@@ -150,7 +150,7 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                     originalParent.insertBefore(placeholder, card);
                 }
 
-                // Переміщуємо картку безпосередньо в body, щоб уникнути зсувів координат від батьківських backdrop-filter/transform
+                // 5. Переміщуємо картку безпосередньо в body, щоб уникнути зсувів координат від батьківських backdrop-filter/transform
                 document.body.appendChild(card);
 
                 card.classList.add('is-dragging');
@@ -163,6 +163,9 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                 card.style.position = 'fixed';
                 card.style.zIndex = '999999';
                 card.style.margin = '0';
+
+                // 6. ТІЛЬКИ ТЕПЕР, коли картка вже надійно у fixed і зафіксована під курсором, активуємо клас на body
+                document.body.classList.add('is-sticker-dragging');
 
                 verticalScroller.update(clientX, clientY);
                 horizontalScroller.update(clientX, clientY);
