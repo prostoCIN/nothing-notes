@@ -114,10 +114,13 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
 
                 // 1. Спочатку знімаємо точну геометрію картки та зсув курсора ДО будь-яких змін DOM і стилів
                 initialRect = card.getBoundingClientRect();
-                dragHeight = initialRect.height;
+                const targetDragHeight = Math.min(initialRect.height, 150);
+                dragHeight = targetDragHeight;
 
                 shiftX = clientX - initialRect.left;
-                shiftY = clientY - initialRect.top;
+                const rawShiftY = clientY - initialRect.top;
+                // Клампимо shiftY у межі 150px, щоб курсор гарантовано залишався на зменшеній картці
+                shiftY = Math.max(0, Math.min(rawShiftY, targetDragHeight - 15));
 
                 // 2. Очищаємо можливі застарілі дублікати цієї картки в DOM перед початком перетягування
                 document.querySelectorAll(`.note-sticker[data-note-id="${draggedNoteId}"]`).forEach(dup => {
@@ -157,7 +160,7 @@ window.App.initStickerDrag = function(card, handles, originalParentId) {
                 card.style.transition = 'none';
                 card.style.transform = 'none';
                 card.style.width = `${initialRect.width}px`;
-                card.style.height = `${initialRect.height}px`;
+                card.style.height = `${targetDragHeight}px`;
                 card.style.left = `${clientX - shiftX}px`;
                 card.style.top = `${clientY - shiftY}px`;
                 card.style.position = 'fixed';

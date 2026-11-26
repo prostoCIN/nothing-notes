@@ -269,10 +269,40 @@ body.is-sticker-dragging * {
     pointer-events: none;
 }
 
-/* Приховуємо тільки важкі піднотатки та галерею всередині картки в руці, щоб полегшити рендеринг перетягування */
+/* Стилі та компактне обмеження перетягуваної картки в руці (рівно до 150px як і в колонках) */
+.note-sticker.is-dragging {
+    max-height: 150px !important;
+    padding-top: 14px !important;
+    padding-bottom: 14px !important;
+    overflow: hidden !important;
+}
+
 .note-sticker.is-dragging .sticker-subnotes-container,
-.note-sticker.is-dragging .sticker-gallery {
+.note-sticker.is-dragging .sticker-gallery,
+.note-sticker.is-dragging .sticker-bookmarks-block {
     display: none !important;
+}
+
+.note-sticker.is-dragging .sticker-header {
+    margin-bottom: 4px !important;
+}
+
+.note-sticker.is-dragging .sticker-title {
+    max-height: 40px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    -webkit-line-clamp: 2;
+    display: -webkit-box !important;
+    -webkit-box-orient: vertical;
+}
+
+.note-sticker.is-dragging .sticker-content {
+    max-height: 68px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    -webkit-line-clamp: 3;
+    display: -webkit-box !important;
+    -webkit-box-orient: vertical;
 }
 
 /* Компактне обмеження інших нотаток у колонках при грабі рівно до 150px: видно заголовок і 2-3 рядки тексту */
@@ -337,7 +367,7 @@ body.is-sticker-dragging .column-notes-list .note-sticker:not(.is-dragging) .sti
     box-sizing: border-box;
     width: 100%;
     flex-shrink: 0 !important;
-    min-height: 160px;
+    min-height: 150px;
     animation: iosPlaceholderIn var(--dur-quick) var(--ease-ios-spring) forwards;
 }
 
